@@ -1,0 +1,37 @@
+.hide-this {
+    visibility: hidden !important;}
+
+#hub-dl .dl-btn {
+  width: 100px !important;}
+#hub-dl .dl-input {
+  margin-top: -15px !important;}
+#hub-dl .dl-row {
+  margin-top: -7px !important;}
+
+#hub-up .up-btn {
+  width: 100px !important;}
+#hub-up .up-input {
+  margin-top: -10px !important;}
+#hub-up .up-row {
+  margin-top: -8px !important;}
+
+#hub-arc .arc-btn {
+  width: 100px !important;}
+#hub-arc .arc-input {
+  margin-top: -15px !important;}
+#hub-arc .arc-row {
+  margin-top: -9px !important;}
+
+#hub .hub-box {
+  border: transparent !important;}
+
+#btn .btn {
+  width: 100px !important;}
+
+#gap .gap {
+  margin-top: 7px !important;}
+
+#asu .hf-margin {
+  width: 50%;
+  margin-top: 10px;
+  margin-bottom: 10px;}
