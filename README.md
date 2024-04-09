@@ -1,7 +1,8 @@
 # Overview
 SD-Hub Extension for Stable Diffusion WebUI.<br>
 Based on [stable-diffusion-webui-huggingface](https://github.com/camenduru/stable-diffusion-webui-huggingface) by camenduru.<br>
-You can Download, Upload, Archive files and that's it.
+You can Download, Upload, Archive files and that's it.<br>
+It won't work on local install, as it was intended to be used only on cloud GPU.
 
 # Usage
 <details>
