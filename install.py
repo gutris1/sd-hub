@@ -11,16 +11,16 @@ def check_env():
         return 'Kaggle'
     else:
         print("SD-Hub: Unknown environment, aria2 installation skipped")
-        pass
+        return None
 
 def install_aria2(env):
     if env in ['Colab', 'Kaggle']:
         try:
-            subprocess.run(['aria2c', '--version'])
+            subprocess.run(['aria2c', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except FileNotFoundError:
             print("Installing aria2")
-            subprocess.run(['apt-get', 'update'])
-            subprocess.run(['apt', 'install', '-y', 'aria2'])
+            subprocess.run(['apt-get', 'update'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(['apt', 'install', '-y', 'aria2'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             
     elif env == 'SageMaker Studio Lab':
         if not launch.is_installed("aria2"):

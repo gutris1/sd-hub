@@ -18,11 +18,13 @@ def on_ui_tabs():
                 with gr.Column(scale=7):
                     gr.Markdown(
                         f"""
-                        ● Append a custom filename with - to rename
-                        ● You can add subdirectories to the tag if you have any, eg; $tag/your/sub/dir
-                        ● Enter your Huggingface token with the role READ to download from your private repo.
-                        ● Enter your Civitai API key if you encounter an Authorization failed.
-                        ● Supported Domains: Civitai Huggingface Github Drive.Google""")
+                        Enter your Huggingface token with the role READ to download from your private repo. Get one [Here](https://huggingface.co/settings/tokens)
+                        Enter your Civitai API key if you encounter an Authorization failed error. Get your API key [Here](https://civitai.com/user/account)
+                        Save = To automatically load token upon Reload UI or relaunch of Stable Diffusion Webui.
+                        Load = Load token.
+
+                        Supported Domains: Civitai Huggingface Github Drive.Google
+                        see usage [Here](https://github.com/gutris1/sd-hub)""")
                 with gr.Column(scale=3):
                     dl_token1 = gr.Textbox(value=token2, label="Huggingface Token (READ)", max_lines=1,
                                            placeholder="Your Huggingface Token here (role = READ)", interactive=True)
@@ -58,11 +60,12 @@ def on_ui_tabs():
                 with gr.Column(scale=7):
                     gr.Markdown(
                     f"""
+                    **Colab**: /content/stable-diffusion-webui/model.safetensors
                     **Kaggle**: /kaggle/working/stable-diffusion-webui/model.safetensors
                     **Sagemaker Studio Lab**: /home/studio-lab-user/stable-diffusion-webui/model.safetensors
 
-                    get token from [here](https://huggingface.co/settings/tokens)
-                    """)
+                    Get your hf token with the role WRITE from [Here](https://huggingface.co/settings/tokens)
+                    See usage [Here](https://github.com/gutris1/sd-hub)""")
                 with gr.Column(scale=3):
                     gr.Textbox(visible=False, max_lines=1)
                     up_token = gr.Textbox(value=token1, label="Huggingface Token (WRITE)", max_lines=1,
