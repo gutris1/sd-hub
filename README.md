@@ -5,8 +5,7 @@ You can Download, Upload, Archive files and that's it.<br>
 It won't work on local install, as it was intended to be used only on cloud GPU.
 
 # Usage
-<details>
-<summary><h3>Downloader</h3></summary>
+<h3>Downloader</h3>
 
 ![downloader](https://github.com/gutris1/sd-hub/assets/132797949/5641052c-54db-4389-8102-4f1cf369b972)
 
@@ -54,10 +53,9 @@ Save = To automatically load token upon Reload UI or relaunch of Stable Diffusio
 Load = Load token.
 
 Supported Domains: Civitai Huggingface Github Drive.Google
-</details>
 
-<details>
-<summary><h3>Uploader</h3></summary>
+
+<h3>Uploader</h3>
   
 ![uploader](https://github.com/gutris1/sd-hub/assets/132797949/8e1f7a18-2d58-47f9-bb5a-6d8b0be32d80)
 
@@ -71,8 +69,9 @@ Token = Obtain your hf token with the role WRITE from [Here](https://huggingface
 For input box, there are only two options:
 - Path targeting to a folder.
 - Path targeting to a file.
-- You can also use $tag to skip the long path name.
-- You can rename the target upload (file or folder) by adding " - " after the input path.
+
+You can also use $tag to skip the long path name.<br>
+You can rename the target upload (file or folder) by adding " - " after the input path.
 
 ```python
 # Folder as input, so all the files inside the folder with its folder uploaded to your repository
@@ -93,10 +92,9 @@ $ckpt/animagineXLV31_v31.safetensors
 # to rename the uploaded file
 $ckpt/animagineXLV31_v31.safetensors - XL-imagine-animeV31.txt
 ```
-</details>
 
-<details>
-<summary><h3>Archiver</h3></summary>
+
+<h3>Archiver</h3>
 
 ![archive](https://github.com/gutris1/sd-hub/assets/132797949/70b4f3b3-894c-48bc-86c0-eff4570f5f0b)
 
@@ -117,7 +115,7 @@ Input path = based on your input
 # else input as folder, to compress the whole files inside the input
 /kaggle/working/stable-diffusion-webui/models/Stable-diffusion
 ```
-</details>
+
 
 # Credit
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
