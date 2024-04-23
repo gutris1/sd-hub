@@ -1,23 +1,23 @@
-import os
-import tarfile
-import zipfile
-import lz4.frame
-import gradio as gr
-from tqdm import tqdm
 from pathlib import Path
-from scripts.hub_builder import paths_dict
+from tqdm import tqdm
+import gradio as gr
+import subprocess
+import zipfile
+import select
+import pty
+import os
+from scripts.hub_folder import paths_dict
 
-bar_format = '{percentage:3.0f}% | {n_fmt}/{total_fmt} | {rate_fmt}{postfix}'
-
-def _zip(input_path, file_name, output_path, input_type):
+def _zip(input_path, file_name, output_path, input_type, format_type):
     zip_in = Path(input_path)
     zip_out = Path(output_path)
     output_zip = zip_out / f"{file_name}.zip"
+    _bar = '{percentage:3.0f}% | {n_fmt}/{total_fmt} | {rate_fmt}{postfix}'
     
     yield f"Compressing {file_name}.zip", False
     
     if input_type == 'file':
-        with tqdm(total=os.path.getsize(zip_in), unit="B", unit_scale=True, bar_format=bar_format) as pbar:
+        with tqdm(total=os.path.getsize(zip_in), unit="B", unit_scale=True, bar_format=_bar) as pbar:
             with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 chunk_size = 4096 * 1024
                 with open(zip_in, 'rb') as file_to_compress:
@@ -31,7 +31,7 @@ def _zip(input_path, file_name, output_path, input_type):
         
     else:
         total_size = sum(f.stat().st_size for f in zip_in.rglob('*') if f.is_file())
-        with tqdm(total=total_size, unit="B", unit_scale=True, bar_format=bar_format) as pbar:
+        with tqdm(total=total_size, unit="B", unit_scale=True, bar_format=_bar) as pbar:
             with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 for file in zip_in.rglob('*'):
                     if file.is_file():
@@ -41,166 +41,224 @@ def _zip(input_path, file_name, output_path, input_type):
     
     yield f"Saved To: {output_zip}", True
 
-def tar_gz(input_path, file_name, output_path, input_type):
-    input_path = Path(input_path)
-    output_path = Path(output_path)
-    output_gz = output_path / f"{file_name}.tar.gz"
+def tar_tar(input_path, file_name, output_path, input_type, format_type):
+    input_path_obj = Path(input_path)
+    output_path_obj = Path(output_path)
 
-    yield f"Compressing {file_name}.tar.gz", False
+    if format_type == "gz":
+        _output = output_path_obj / f"{file_name}.tar.gz"
+        comp_type = "gzip"
+    elif format_type == "lz4":
+        _output = output_path_obj / f"{file_name}.tar.lz4"
+        comp_type = "lz4"
 
-    if input_type == 'file':
-        total_size = input_path.stat().st_size
-        chunk_size = 4096 * 1024
+    yield f"Compressing {_output.name}", False
 
-        with tqdm(total=total_size, unit='B', unit_scale=True, bar_format=bar_format) as pbar:
-            with tarfile.open(output_gz, "w:gz") as tar, input_path.open('rb') as file:
-                tar_info = tarfile.TarInfo(name=input_path.name)
-                tar_info.size = total_size 
-                tar.addfile(tarinfo=tar_info)
-                while True:
-                    chunk = file.read(chunk_size)
-                    if not chunk:
-                        break
-                    tar.fileobj.write(chunk)
-                    pbar.update(len(chunk))
-                    yield pbar, False
-                    
+    if input_type == "file":
+        _tar = ['tar', 'cf', '-', input_path_obj.name]
+        cwd = str(input_path_obj.parent)
     else:
-        file_list = [(f, f.relative_to(input_path)) for f in input_path.glob('**/*') if f.is_file()]
-        total_size = sum(f[0].stat().st_size for f in file_list)
-        
-        with tqdm(total=total_size, unit='B', unit_scale=True, bar_format=bar_format) as pbar:
-            with tarfile.open(output_gz, "w:gz") as tar:
-                for file, arcname in file_list:
-                    tar.add(file, arcname=str(arcname))
-                    pbar.update(file.stat().st_size)
-                    yield pbar, False  
+        _tar = ['tar', 'cf', '-', '.']
+        cwd = str(input_path_obj)
 
-    yield f"Saved to: {output_gz}", True
-    
-def tar_lz4(input_path, file_name, output_path, input_type):
-    input_path = Path(input_path)
-    output_path = Path(output_path)
-    output_lz4 = output_path / f"{file_name}.tar.lz4"
+    _pv = ['pv']
+    _format = [comp_type]
 
-    yield f"Compressing {file_name}.tar.lz4", False
+    ayu, rika = pty.openpty()
 
-    if input_type == 'file':
-        total_size = input_path.stat().st_size
-        chunk_size = 4096 * 1024
-        
-        with tqdm(total=total_size, unit='B', unit_scale=True, bar_format=bar_format) as pbar:
-            with lz4.frame.open(output_lz4, 'wb') as lz4_file:
-                with tarfile.open(fileobj=lz4_file, mode="w|") as tar:
-                    tar_info = tar.gettarinfo(name=str(input_path), arcname=input_path.name)
-                    tar_info.size = total_size
-                    tar.addfile(tarinfo=tar_info)
+    p_tar = subprocess.Popen(_tar, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    p_pv = subprocess.Popen(_pv, stdin=p_tar.stdout, stdout=subprocess.PIPE, stderr=rika, text=True)
+    p_type = subprocess.Popen(_format, stdin=p_pv.stdout, stdout=open(str(_output), 'wb'), stderr=subprocess.PIPE, text=True)
 
-                    with open(input_path, 'rb') as file:
-                        while True:
-                            chunk = file.read(chunk_size)
-                            if not chunk:
-                                break
-                            tar.fileobj.write(chunk)
-                            pbar.update(len(chunk))
-                            yield pbar, False
-                    
-    else:
-        file_list = [(f, f.relative_to(input_path)) for f in input_path.glob('**/*') if f.is_file()]
-        total_size = sum(f[0].stat().st_size for f in file_list)
+    os.close(rika)
 
-        with tqdm(total=total_size, unit='B', unit_scale=True, bar_format=bar_format) as pbar:
-            with lz4.frame.open(output_lz4, 'wb') as lz4_file:
-                with tarfile.open(fileobj=lz4_file, mode="w|") as tar:
-                    for file, arcname in file_list:
-                        tar.add(file, arcname=str(arcname))
-                        pbar.update(file.stat().st_size)
-                        yield pbar, False
+    while True:
+        try:
+            temenan, _, _ = select.select([ayu], [], [])
+            if temenan:
+                ketemuan = os.read(ayu, 8192)
+                if not ketemuan:
+                    break
 
-    yield f"Saved to: {output_lz4}", True
-    
-def arc_process(input_path, file_name, output_path, com_for):
+                yield ketemuan.decode('utf-8'), False
+
+        except OSError:
+            break
+
+    p_tar.stdout.close()
+    p_pv.stdout.close()
+
+    _ = p_tar.wait()
+    _ = p_pv.wait()
+    _ = p_type.wait()
+
+    yield f"Saved to: {_output}", True
+
+def arc_process(input_path, file_name, output_path, arc_format, mkdir_cb1):
     params = [name for name, value in zip(
-        ["Input Path", "Output Name", "Output Path"],
+        ["Input Path", "Name", "Output Path"],
         [input_path, file_name, output_path]) if not value]
+    
     missing = ', '.join(params)
+    
     if missing:
         yield f"Missing: [ {missing} ]", True
         return
+    
+    tag_tag = paths_dict()
+
+    for i, path_str in enumerate([input_path, output_path]):
+        if path_str.startswith('$'):
+            tag_key, _, subpath_or_file = path_str[1:].partition('/')
+            resolved_path = tag_tag.get(tag_key)
+            
+            if resolved_path is None:
+                yield f"{tag_key}\nInvalid tag.", True
+                return
+            
+            resolved_path = Path(resolved_path, subpath_or_file)
+            if i == 0:
+                input_path = resolved_path
+            else:
+                output_path = resolved_path
 
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
-    
+
     if not input_path_obj.exists():
         yield f"{input_path}\nInput Path does not exist.", True
         return
-
+    
+    if output_path_obj.suffix:
+        yield f"{output_path}\nOutput Path is not a directory.", True
+        return
+    
     if input_path_obj.is_file():
         input_type = 'file'
     elif input_path_obj.is_dir():
         input_type = 'folder'
 
-    if not output_path_obj.exists():
-        yield f"{output_path}\nOutput Path does not exist.", True
-        return
-    
-    if not output_path_obj.is_dir():
-        yield f"{output_path}\nOutput Path is not a directory.", True
-        return
-    
-    select_arc = {'zip': _zip, 'tar.gz': tar_gz, 'tar.lz4': tar_lz4}
-    com_type = select_arc.get(com_for)
+    if mkdir_cb1:
+        output_path_obj.mkdir(parents=True, exist_ok=True)
         
-    for output in com_type(input_path, file_name, output_path, input_type):
+    else:
+        if not output_path_obj.exists():
+            yield f"{output_path}\nOutput Path does not exist.", True
+            return
+
+    select_arc = {'zip': _zip, 'tar.gz': tar_tar, 'tar.lz4': tar_tar}
+    arc_select = select_arc.get(arc_format)
+
+    for output in arc_select(input_path, file_name, output_path, input_type, format_type=arc_format.split('.')[-1]):
         yield output
         
-def archive(input_path, file_name, output_path, com_for, hantu=gr.State()):
-    yanto = hantu if hantu else []
-    for udin, bambang in arc_process(input_path, file_name, output_path, com_for):
-        if not bambang:
-            yield udin, "\n".join(yanto)
-        else:
-            yanto.append(udin)
+def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, box_state=gr.State()):
+    output_box = box_state if box_state else []
     
-    catcher = ["not", "Missing", "Error", "Invalid"]
-    if any(asu in wc for asu in catcher for wc in yanto):
-        yield "Error", "\n".join(yanto)
+    for _text, _flag in arc_process(input_path, file_name, output_path, arc_format, mkdir_cb1):
+        if not _flag:
+            yield _text, "\n".join(output_box)
+            
+        else:
+            output_box.append(_text)
+    
+    catcher = ["not", "Missing", "Invalid"]
+    
+    if any(asu in wc for asu in catcher for wc in output_box):
+        yield "Error", "\n".join(output_box)
+        
     else:
-        yield "Done", "\n".join(yanto)
-    return gr.update(), gr.State(yanto)
+        yield "Done", "\n".join(output_box)
+        
+    return gr.update(), gr.State(output_box)
 
 ####################################################################################
 
 def extraction(input_path, output_path, format_type):
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
+    is_done = False
+    
+    yield f"Extracting: {input_path_obj}", False
 
     if format_type == 'zip':
+        _bar = '{n_fmt}/{total_fmt} | [{bar:26}]'
+        
         with zipfile.ZipFile(input_path_obj, 'r') as zip_ref:
-            zip_ref.extractall(output_path_obj)
-            yield f"Extracting ZIP: {input_path} to {output_path}", False
+            file_list = zip_ref.namelist()
+            total_files = len(file_list)
+            
+            with tqdm(total=total_files, unit='file', bar_format=_bar, ascii="▷▶") as pbar:
+                for file_name in file_list:
+                    zip_ref.extract(file_name, output_path_obj)
+                    pbar.update(1)
+                    yield pbar, False
+                    is_done = True
 
-    elif format_type == 'tar.gz':
-        with tarfile.open(input_path_obj, 'r:gz') as tar_ref:
-            tar_ref.extractall(output_path_obj)
-            yield f"Extracting TAR.GZ: {input_path} to {output_path}", False
+    elif format_type in ['tar.gz', 'tar.lz4']:
+        _pv = ['pv', str(input_path_obj)]
+        _type = ['gzip', '-d'] if format_type == 'tar.gz' else ['lz4', '-d']
+        _tar = ['tar', 'xf', '-', '-C', str(output_path_obj)]
 
-    elif format_type == 'tar.lz4':
-        with lz4.frame.open(input_path_obj, 'rb') as lz4_ref:
-            with tarfile.open(fileobj=lz4_ref, mode="r|") as tar_ref:
-                tar_ref.extractall(output_path_obj)
-            yield f"Extracting TAR.LZ4: {input_path} to {output_path}", False
-    else:
-        yield "Unsupported format for extraction", True
+        ayu, rika = pty.openpty()
+
+        p_pv = subprocess.Popen(_pv, stdout=subprocess.PIPE, stderr=rika, text=True)
+        p_type = subprocess.Popen(_type, stdin=p_pv.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        p_tar = subprocess.Popen(_tar, stdin=p_type.stdout, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        os.close(rika)
+
+        while True:
+            try:
+                temenan, _, _ = select.select([ayu], [], [])
+                if temenan:
+                    ketemuan = os.read(ayu, 8192)
+                    if not ketemuan:
+                        break
+
+                    yield ketemuan.decode('utf-8'), False
+                    is_done = True
+
+            except OSError:
+                break
+
+        p_pv.stdout.close()
+        p_type.stdout.close()
+
+        _ = p_pv.wait()
+        _ = p_type.wait()
+        _ = p_tar.wait()
+
+    if is_done:
+        yield f"Extracted To: {output_path}", True
     
-def ext_process(input_path, output_path):
+def ext_process(input_path, output_path, mkdir_cb2):
     params = [name for name, value in zip(
         ["Input Path", "Output Path"],
         [input_path, output_path]) if not value]
+    
     missing = ', '.join(params)
+    
     if missing:
         yield f"Missing: [ {missing} ]", True
         return
+    
+    tag_tag = paths_dict()
+
+    for i, path_str in enumerate([input_path, output_path]):
+        if path_str.startswith('$'):
+            tag_key, _, subpath_or_file = path_str[1:].partition('/')
+            resolved_path = tag_tag.get(tag_key)
+            
+            if resolved_path is None:
+                yield f"{tag_key}\nInvalid tag.", True
+                return
+            
+            resolved_path = Path(resolved_path, subpath_or_file)
+            if i == 0:
+                input_path = resolved_path
+            else:
+                output_path = resolved_path
 
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
@@ -209,36 +267,42 @@ def ext_process(input_path, output_path):
         yield f"{input_path}\nInput Path does not exist.", True
         return
 
-    format_extensions = {'.zip': 'zip', '.tar.gz': 'tar.gz', '.tar.lz4': 'tar.lz4'}
-    input_extension = ''.join(input_path_obj.suffixes)
-    com_for = format_extensions.get(input_extension)
-    
-    if not com_for:
-        yield f"Unsupported format: {input_extension}", True
-        return
-
     if output_path_obj.suffix:
-        yield "Output Path should be a directory, not a file", True
+        yield f"{output_path}\nOutput Path is not a directory.", True
         return
 
-    if not output_path_obj.exists():
-        yield f"Output Path does not exist: {output_path}", True
+    if mkdir_cb2:
+        output_path_obj.mkdir(parents=True, exist_ok=True)
+    else:
+        if not output_path_obj.exists():
+            yield f"{output_path}\nOutput Path does not exist.", True
+            return
+        
+    select_ext = {'.zip': 'zip', '.tar.gz': 'tar.gz', '.tar.lz4': 'tar.lz4'}
+    input_ext = ''.join(input_path_obj.suffixes)
+    format_type = select_ext.get(input_ext)
+    
+    if not format_type:
+        yield f"Unsupported format: {input_ext}", True
         return
-
-    for output in extraction(input_path, output_path, com_for):
+    
+    for output in extraction(input_path, output_path, format_type):
         yield output
         
-def extract(input_path, output_path, hantu=gr.State()):
-    yanto = hantu if hantu else []
-    for udin, bambang in ext_process(input_path, output_path):
-        if not bambang:
-            yield udin, "\n".join(yanto)
-        else:
-            yanto.append(udin)
+def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
+    output_box = box_state if box_state else []
     
-    catcher = ["not", "Missing", "Error", "Invalid"]
-    if any(asu in wc for asu in catcher for wc in yanto):
-        yield "Error", "\n".join(yanto)
+    for _text, _flag in ext_process(input_path, output_path, mkdir_cb2):
+        if not _flag:
+            yield _text, "\n".join(output_box)
+        else:
+            output_box.append(_text)
+    
+    catcher = ["not", "Missing", "Invalid", "Unsupported"]
+    
+    if any(asu in wc for asu in catcher for wc in output_box):
+        yield "Error", "\n".join(output_box)
     else:
-        yield "Done", "\n".join(yanto)
-    return gr.update(), gr.State(yanto)
+        yield "Done", "\n".join(output_box)
+        
+    return gr.update(), gr.State(output_box)

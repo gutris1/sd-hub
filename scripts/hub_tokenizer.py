@@ -1,7 +1,6 @@
 from pathlib import Path
 from modules import scripts
 import json
-import gradio as gr
 
 base_dir = Path(scripts.basedir())
 token_dir = (base_dir / "Token.json")

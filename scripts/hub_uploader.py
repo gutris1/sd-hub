@@ -1,12 +1,10 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
-from modules import scripts
 from pathlib import Path
 import gradio as gr
 import subprocess
 import re
-import os
-from scripts.hub_builder import paths_dict
+from scripts.hub_folder import paths_dict
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_message=""):
     cme = commit_message.replace('"', '\\"')
@@ -45,7 +43,9 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         params = [name for name, value in zip(
             ["Input", "Username", "Repository", "Branch", "Token"],
             [inputs.strip(), user, repo, branch, token]) if not value]
+        
         missing = ', '.join(params)
+        
         yield f"Missing: [ {missing} ]", True
         return
 
@@ -106,29 +106,32 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             token=token,
             branch=branch,
             is_private=repo_radio == "Private",
-            commit_message=f"upload {file_name} with SD-Hub extension"):
+            commit_message=f"Upload {file_name} using SD-Hub extension"):
+            
             yield output
 
-        croottt = (f"{repo_info.id}\n"
+        croottt = (f"{repo_info.id}/{branch}\n"
                    f"{file_name}\n"
-                   f"{branch}\n"
                    f"{repo_info.last_modified.strftime('%Y-%m-%d %H:%M:%S')}\n")
 
         yield croottt, True
         
-def uploader(inputs, user, repo, branch, token, repo_radio, hantu=gr.State()):
-    yanto = hantu if hantu else []
-    for udin, bambang in up_up(inputs, user, repo, branch, token, repo_radio):
-        if not bambang:
-            if "Uploading" in udin:
-                yield udin, "\n".join(yanto)
-            yield udin, "\n".join(yanto)
+def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()):
+    output_box = box_state if box_state else []
+    
+    for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
+        if not _flag:
+            if "Uploading" in _text:
+                yield _text, "\n".join(output_box)
+            yield _text, "\n".join(output_box)
         else:
-            yanto.append(udin)
+            output_box.append(_text)
             
     catcher = ["not", "Missing", "Error", "Invalid"]
-    if any(asu in wc for asu in catcher for wc in yanto):
-        yield "Error", "\n".join(yanto)
+    
+    if any(asu in wc for asu in catcher for wc in output_box):
+        yield "Error", "\n".join(output_box)
     else:
-        yield "Done", "\n".join(yanto)
-    return gr.update(), gr.State(yanto)
+        yield "Done", "\n".join(output_box)
+        
+    return gr.update(), gr.State(output_box)
