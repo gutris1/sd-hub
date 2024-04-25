@@ -1,8 +1,9 @@
-import subprocess, os, re, sys
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-from scripts.hub_builder import paths_dict
+import subprocess
+import re
+from scripts.hub_folder import paths_dict
 
 def gdrown(url, target_path=None, fn=None):
     gfolder = "drive.google.com/drive/folders" in url
@@ -13,7 +14,7 @@ def gdrown(url, target_path=None, fn=None):
     if gfolder:
         gdown_cmd.append("--folder")
 
-    cwd = target_path if target_path else os.getcwd()
+    cwd = target_path if target_path else Path.cwd()
 
     proc = subprocess.Popen(gdown_cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
     
@@ -28,12 +29,19 @@ def gdrown(url, target_path=None, fn=None):
 
         if "Failed to retrieve" in line:
             failure = True
-            yield malam, False
-            break
-
-        if re.search(r'\d{1,3}%', line):
-            yield line.strip(), False
-
+            
+        lines = line.split('\n')
+        for line in lines:
+            if re.search(r'\d{1,3}%', line):
+                yield line.strip(), False
+                break
+            
+    if failure:
+        fail_ = malam.find("Failed to retrieve")
+        outputs_ = malam[fail_:]
+        yield outputs_, False
+        return
+    
     for line in malam.split('\n'):
         if line.startswith("To:"):
             kemarin = re.search(r'[^/]*$', line)
@@ -50,7 +58,8 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             url = url.replace("/blob/", "/resolve/")
 
         if token2:
-            aria2cmd.extend(["--header=User-Agent: Mozilla/5.0", f"--header=Authorization: Bearer {token2}"])
+            aria2cmd.extend(["--header=User-Agent: Mozilla/5.0",
+                             f"--header=Authorization: Bearer {token2}"])
 
     elif "civitai.com" in url:
         if '?' in url:
@@ -60,7 +69,11 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             aria2cmd.extend(["--header=User-Agent: Mozilla/5.0"])
             url += f"?token={token3}"
 
-    aria2cmd.extend(["--console-log-level=error", "--allow-overwrite=true", "--stderr=true", "--summary-interval=1", "-c", "-x16", "-s16", "-k1M", "-j5"])
+    aria2cmd.extend(["--console-log-level=error",
+                     "--allow-overwrite=true",
+                     "--stderr=true",
+                     "--summary-interval=1",
+                     "-c", "-x16", "-s16", "-k1M", "-j5"])
 
     if target_path:
         aria2cmd.extend(["-d", target_path])
@@ -74,7 +87,8 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     
     malam = ""
     ayu_putri_kurniawan = False
-    auth_failed = False
+    auth_fail = False
+    codeerror = False
 
     while True:
         line = proc.stdout.readline()
@@ -84,21 +98,23 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         malam += line
             
         if "errorCode=24" in line:
-            auth_failed = True
+            auth_fail = True
             find_error = re.search(r'URI=(https?://\S+)', line)
+            
             if find_error:
                 error_url = find_error.group(1)
+                
                 if "huggingface.co" in error_url:
                     yield "Authorization failed\nEnter your Huggingface Token", False
                 elif "civitai.com" in error_url:
                     yield "Authorization failed\nEnter your Civitai API Key", False
+                    
             else:
-                yield "failed", False
-            break
+                yield malam, False
+                break
         
         if "errorCode" in line:
-            yield malam, False
-            break
+            codeerror = True
 
         for minggu in line.splitlines():
             match = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', minggu)
@@ -110,10 +126,19 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                 yield output, False
                 ayu_putri_kurniawan = True
                 break
-            
+        
+    if codeerror:
+        fail_ = malam.find("->")
+        if fail_ != -1:
+            line_ = malam.find("\n", fail_)
+            if line_ != -1:
+                outputs_ = malam[fail_:line_]
+                yield outputs_, False
+        return
+
     if ayu_putri_kurniawan:
         pass
-
+    
     kemarin = malam.find("======+====+===========")
     if kemarin != -1:
         for tidur in malam[kemarin:].splitlines():
@@ -169,13 +194,14 @@ def dl_url(url_line, current_path, tags_mappings):
         else:
             return None, None, None, f"{tags_key}\nInvalid Tag."
         return current_path, None, None, None
-
+    
     parts = url_line.split(' ')
     url = parts[0].strip()
+
     is_valid, error_message = check_url(url)
     if not is_valid:
         return None, None, None, error_message
-    
+
     optional_path = None
     optional_fn = None
 
@@ -236,41 +262,48 @@ def dl_dl(command, token2=None, token3=None):
 
         for output in ariari(url, target_path, fn, token2, token3):
             yield output
-        
-def downloader(command, token2, token3, batman=gr.State()):
-    yanto = batman if batman else []
+
+def downloader(command, token2, token3, box_state=gr.State()):
+    output_box = box_state if box_state else []
+    
     yield "Now Downloading...", ""
     
-    for udin, bambang in dl_dl(command, token2, token3):
-        if not bambang:
-            if "errorCode" in udin:
-                yield "Download aborted.", "\n".join([udin] + yanto)
-                return gr.update(), gr.State(yanto)
-            if "Enter your" in udin:
-                yield "Download aborted.", "\n".join([udin] + yanto)
-                return gr.update(), gr.State(yanto)
-            if ".com" in udin:
-                yield "Supported Domain:", "\n".join([udin] + yanto)
-                return gr.update(), gr.State(yanto)
-            if "Failed to retrieve" in udin:
-                yield "Error", "\n".join([udin] + yanto)
-                return gr.update(), gr.State(yanto)
-            yield udin, "\n".join(yanto)
-        else:
-            yanto.append(udin)
+    for _text, _flag in dl_dl(command, token2, token3):
+        if not _flag:
+            if "Enter your" in _text:
+                yield "Error", "\n".join([_text] + output_box)
+                return gr.update(), gr.State(output_box)
             
-    catcher = ["exist", "Invalid", "Tag", "Output", "Nothing", "URL", "filename"]
-    if any(asu in wc for asu in catcher for wc in yanto):
-        yield "Error", "\n".join(yanto)
+            if "errorCode" in _text:
+                yield "Error", "\n".join([_text] + output_box)
+                return gr.update(), gr.State(output_box)
+            
+            if "Failed to retrieve" in _text:
+                yield "Error", "\n".join([_text] + output_box)
+                return gr.update(), gr.State(output_box)
+            
+            yield _text, "\n".join(output_box)
+            
+        else:
+            output_box.append(_text)
+            
+    catcher = ["exist", "Invalid", "Tag", "Output", "Nothing", "URL", "filename", "Supported Domain:"]
+    
+    if any(asu in wc for asu in catcher for wc in output_box):
+        yield "Error", "\n".join(output_box)
     else:
-        yield "Done", "\n".join(yanto)
-    return gr.update(), gr.State(yanto)
+        yield "Done", "\n".join(output_box)
+        
+    return gr.update(), gr.State(output_box)
 
 def read_txt(file):
     if file is not None:
         input_text = file.name
         text = ""
+        
         with open(input_text, 'r') as text_text:
             text = text_text.read()
+            
         yield text
+        
     return ""

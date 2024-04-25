@@ -27,7 +27,18 @@ def paths_paths():
     script_path_obj = Path(script_path)
 
     paths = [
+        ["home", "/path"],
         ["root", script_path],]
+
+    env = {
+        'Colab': '/content',
+        'SageMaker Studio Lab': '/home/studio-lab-user',
+        'Kaggle': '/kaggle/working',}
+
+    for platform, path in env.items():
+        if Path(path) in script_path_obj.parents:
+            paths[0][1] = path
+            break
 
     for subdir, desc in sub_models.items():
         full_path = models_path_obj / subdir
