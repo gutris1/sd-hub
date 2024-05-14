@@ -4,38 +4,64 @@ from pathlib import Path
 import gradio as gr
 import subprocess
 import re
-from scripts.hub_folder import paths_dict
+from sd_hub.paths import hub_path
 
-def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_message=""):
-    cme = commit_message.replace('"', '\\"')
+def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
+    msg = commit_msg.replace('"', '\\"')
 
     cmd = ['huggingface-cli', 'upload', repo_id, file_path, file_name,
-           '--token', token, '--revision', branch, '--commit-message', cme]
-    
+           '--token', token,
+           '--revision', branch,
+           '--commit-message', msg]
+
     if is_private:
         cmd.append('--private')
 
-    gasss = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    try:
-        for dirantai in iter(gasss.stdout.readline, ''):
-            asu = dirantai.strip()
+    if ex_ext:
+        cmd.append('--exclude')
+        cmd.extend([f'*.{ext}' for ext in ex_ext])
+
+    gasss = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    _fail = False
+    _error_msg = ""
+    buffer = ''
+
+    for dirantai in iter(lambda: gasss.stderr.read(8192), ''):
+        buffer += dirantai
+        while "\n" in buffer:
+            line, buffer = buffer.split("\n", 1)
+
+            if "Bad request" in line:
+                _fail = True
+                break
+
+            asu = line.strip()
             kandang = asu.split(':', 1)
             if len(kandang) > 1:
                 asu = kandang[1].strip()
             else:
                 continue
-                
+
             lari = re.compile(r'\d+%|\d+M/\d+G|\d+\.\d+MB/s')
             if lari.search(asu):
                 yield asu, False
-                
+
             elif "Consider using" in asu:
                 continue
-                
-    finally:
-        gasss.stdout.close()
-        gasss.wait()
-            
+
+    if _fail:
+        _error_msg = buffer.rstrip()
+        while "Bad request" in buffer:
+            buffer = gasss.stderr.read(8192)
+            _error_msg += buffer.rstrip()
+        _error_msg = '.\n'.join(_error_msg.split('. '))
+        yield _error_msg, True
+
+    gasss.stdout.close()
+    gasss.wait()
+
+
 def up_up(inputs, user, repo, branch, token, repo_radio):
     input_lines = [line.strip() for line in inputs.strip().splitlines()]
 
@@ -50,17 +76,31 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         return
 
     repo_id = f"{user}/{repo}"
-    tag_tag = paths_dict()
+    tag_tag = hub_path()
     task_task = []
 
     for line in input_lines:
-        if " - " in line:
-            parts = line.split(" - ", 1)
-            input_path = parts[0].strip()
-            given_fn = parts[1].strip() if len(parts) > 1 else None
-        else:
-            input_path = line.strip()
-            given_fn = None
+        parts = line.split()
+        input_path = parts[0]
+
+        given_fn = None
+        ex_ext = None
+
+        if '-' in parts:
+            given_fn_fn = parts.index('-') + 1
+            if given_fn_fn < len(parts):
+                given_fn = parts[given_fn_fn]
+            else:
+                yield "Invalid usage\n[ - ]", True
+                return
+
+        if '--' in parts:
+            ex_ext_ext = parts.index('--') + 1
+            if ex_ext_ext < len(parts):
+                ex_ext = parts[ex_ext_ext:]
+            else:
+                yield "Invalid usage\n[ -- ]", True
+                return
 
         full_path = Path(input_path) if not input_path.startswith('$') else None
         if input_path.startswith('$'):
@@ -99,6 +139,8 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         create_branch(repo_id=repo_id, branch=branch, token=token, exist_ok=True)
         repo_info = model_info(repo_id, token=token)
 
+        erorr = False
+
         for output in push_push(
             repo_id=repo_id,
             file_path=str(file_path),
@@ -106,19 +148,28 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             token=token,
             branch=branch,
             is_private=repo_radio == "Private",
-            commit_message=f"Upload {file_name} using SD-Hub extension"):
-            
+            commit_msg=f"Upload {file_name} using SD-Hub extension",
+            ex_ext=ex_ext):
+
             yield output
 
-        croottt = (f"{repo_info.id}/{branch}\n"
-                   f"{file_name}\n"
-                   f"{repo_info.last_modified.strftime('%Y-%m-%d %H:%M:%S')}\n")
+            if output[1]:
+                erorr = True
+                break
 
-        yield croottt, True
-        
+        if not erorr:
+            details = (
+                f"{repo_info.id}/{branch}\n"
+                f"{file_name}\n"
+                f"{repo_info.last_modified.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            )
+
+            yield details, True
+
+
 def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()):
     output_box = box_state if box_state else []
-    
+
     for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
         if not _flag:
             if "Uploading" in _text:

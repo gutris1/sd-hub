@@ -13,31 +13,39 @@ def scraping(input_string, token=None):
     _lines = input_string.split('\n')
     _outputs = []
     _h = {"User-Agent": "Mozilla/5.0"}
-    _base = Path(__file__).resolve().parent
-    _tmp = _base.parent / "tmp"
+    _base = Path(__file__).parent
+    _tmp = _base / "tmp"
     os.system(f"rm -rf {_tmp}")
 
     if not input_string.strip():
-        yield "Nothing to Scrape Here", True
+        yield "Nothing To Scrape Here", True
 
     for line in _lines:
         url = line.strip()
         url = url.rstrip('/')
         asd = 'huggingface.co' in url or 'pastebin.com' in url
 
-        if 'huggingface.co' in url:            
-            if '/tree/' not in url:
+        if 'huggingface.co' in url:
+            if '/tree/' not in url and '/resolve/' in url:
                 _outputs.append(line)
-                yield "Input should be at least\nhuggingface.co/username/repo/tree/main", True
                 continue
-                
-            else:
-                response = requests.get(url, headers=_h)
+            elif '/tree/' not in url and '/resolve/' not in url:
+                _outputs.append(line)
+                yield "Input should be at least huggingface.co/username/repo/tree/main", True
+                continue
 
+            else:
+                base_url = url
+                ext = None
+
+                if ' - ' in url:
+                    base_url, ext = url.split(' - ')
+
+                response = requests.get(base_url, headers=_h)
                 if response.status_code == 401 and not token:
                     _outputs.append(line)
                     yield (
-                        f"{url}\n"
+                        f"{base_url}\n"
                         f"{response.status_code} {response.reason}\n"
                         "Please Enter your Huggingface Token with the role Read"
                     ), True
@@ -46,36 +54,38 @@ def scraping(input_string, token=None):
                 if response.status_code != 200 and response.status_code != 401:
                     _outputs.append(line)
                     yield (
-                        f"{url}\n"
+                        f"{base_url}\n"
                         f"{response.status_code} {response.reason}\n"
                     ), True
                     continue
 
                 _tmp.mkdir(exist_ok=True)
-
-                _parts = urlparse(url).path.split('/')
+                _parts = urlparse(base_url).path.split('/')
                 _tree = _parts.index('tree')
                 _branch = _parts[_tree + 1]
                 _folder = '/'.join(_parts[_tree + 2:]) if len(_parts) > _tree + 2 else None
-
-                _url = url.split('/tree/')[0]
+                _url = base_url.split('/tree/')[0]
 
                 if token:
                     _url = f"https://hf_user:{token}@huggingface.co/{_url.split('huggingface.co/')[1]}"
 
                 if _branch != 'main':
                     subprocess.run(["git", "clone", "--no-checkout", "--depth=1", "-b", _branch, _url, _tmp],
-                                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
                 else:
                     subprocess.run(["git", "clone", "--no-checkout", "--depth=1", _url, _tmp],
-                                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 output = subprocess.run(["git", "--git-dir", _tmp / ".git", "ls-tree", "-r", _branch],
                                         capture_output=True, text=True)
 
                 _file_list = output.stdout.split('\n')
 
-                _ext_list = ['.safetensors', '.bin', '.pth', '.pt', '.ckpt', '.yaml']
+                if ext:
+                    _ext_list = ext.split()
+                else:
+                    _ext_list = ['.safetensors', '.bin', '.pth', '.pt', '.ckpt', '.yaml']
 
                 for _items in _file_list:
                     if not _items:
@@ -96,7 +106,7 @@ def scraping(input_string, token=None):
                             else:
                                 continue
 
-                            url_url = url.replace('/tree/', '/resolve/') + f'/{_file}'
+                            url_url = base_url.replace('/tree/', '/resolve/') + f'/{_file}'
                             
                             _outputs.append(url_url)
                             os.system(f"rm -rf {_tmp}")
