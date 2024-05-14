@@ -17,12 +17,14 @@ def _sub(inputs: List[str]) -> bool:
         subprocess.run(
             inputs, check=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.STDOUT
         )
 
         return True
         
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
+        print(f"Error running command: {' '.join(inputs)}")
+        print(f"Error message: {e}")
         return False
 
 
