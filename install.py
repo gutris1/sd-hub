@@ -22,9 +22,7 @@ def _sub(inputs: List[str]) -> bool:
 
         return True
         
-    except subprocess.CalledProcessError as e:
-        print(f"Error running command: {' '.join(inputs)}")
-        print(f"Error message: {e}")
+    except subprocess.CalledProcessError:
         return False
 
 
