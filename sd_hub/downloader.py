@@ -3,7 +3,7 @@ from pathlib import Path
 import gradio as gr
 import subprocess
 import re
-from scripts.hub_folder import paths_dict
+from sd_hub.paths import hub_path
 
 def gdrown(url, target_path=None, fn=None):
     gfolder = "drive.google.com/drive/folders" in url
@@ -16,8 +16,15 @@ def gdrown(url, target_path=None, fn=None):
 
     cwd = target_path if target_path else Path.cwd()
 
-    proc = subprocess.Popen(gdown_cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
-    
+    proc = subprocess.Popen(
+        gdown_cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+        text=True
+    )
+
     malam = ""
     failure = False
 
@@ -29,19 +36,19 @@ def gdrown(url, target_path=None, fn=None):
 
         if "Failed to retrieve" in line:
             failure = True
-            
+
         lines = line.split('\n')
         for line in lines:
             if re.search(r'\d{1,3}%', line):
                 yield line.strip(), False
                 break
-            
+
     if failure:
         fail_ = malam.find("Failed to retrieve")
         outputs_ = malam[fail_:]
         yield outputs_, False
         return
-    
+
     for line in malam.split('\n'):
         if line.startswith("To:"):
             kemarin = re.search(r'[^/]*$', line)
@@ -49,7 +56,8 @@ def gdrown(url, target_path=None, fn=None):
                 yield f"Saved To: {target_path}/{kemarin.group()}", True
 
     proc.wait()
-    
+
+
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     aria2cmd = ["aria2c"]
 
@@ -69,11 +77,14 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             aria2cmd.extend(["--header=User-Agent: Mozilla/5.0"])
             url += f"?token={token3}"
 
-    aria2cmd.extend(["--console-log-level=error",
-                     "--allow-overwrite=true",
-                     "--stderr=true",
-                     "--summary-interval=1",
-                     "-c", "-x16", "-s16", "-k1M", "-j5"])
+    aria2cmd.extend([
+        "--console-log-level=error",
+        "--allow-overwrite=true",
+        "--stderr=true",
+        "--summary-interval=1",
+        "-c", "-x16", "-s16", "-k1M", "-j5"
+        ]
+    )
 
     if target_path:
         aria2cmd.extend(["-d", target_path])
@@ -83,12 +94,18 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     aria2cmd.append(url)
 
-    proc = subprocess.Popen(aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
+    proc = subprocess.Popen(
+        aria2cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+        text=True
+    )     
     
     malam = ""
-    ayu_putri_kurniawan = False
+    break_line = False
     auth_fail = False
-    codeerror = False
+    codeError = False
 
     while True:
         line = proc.stdout.readline()
@@ -99,22 +116,9 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             
         if "errorCode=24" in line:
             auth_fail = True
-            find_error = re.search(r'URI=(https?://\S+)', line)
-            
-            if find_error:
-                error_url = find_error.group(1)
-                
-                if "huggingface.co" in error_url:
-                    yield "Authorization failed\nEnter your Huggingface Token", False
-                elif "civitai.com" in error_url:
-                    yield "Authorization failed\nEnter your Civitai API Key", False
-                    
-            else:
-                yield malam, False
-                break
         
         if "errorCode" in line:
-            codeerror = True
+            codeError = True
 
         for minggu in line.splitlines():
             match = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', minggu)
@@ -124,19 +128,42 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                 speed = match.group(3)
                 output = f"{percent} | {sizes} | {speed}/s"
                 yield output, False
-                ayu_putri_kurniawan = True
+
+                break_line = True
                 break
-        
-    if codeerror:
+
+    if auth_fail:
+        find_url = re.search(r'URI=(https?://\S+)', line)
+        if find_url:
+            url_find = find_url.group(1)
+            uri = {
+                "huggingface.co": "Authorization failed\nEnter your Huggingface Token",
+                "civitai.com": "Authorization failed\nEnter your Civitai API Key"
+            }
+            
+            for domain, msg in uri.items():
+                if domain in url_find:
+                    yield msg, False
+                    break
+        else:
+            yield malam, False
+        return
+
+    if codeError:
         fail_ = malam.find("->")
         if fail_ != -1:
-            line_ = malam.find("\n", fail_)
-            if line_ != -1:
-                outputs_ = malam[fail_:line_]
+            arrow_ = malam.find("\n", fail_)
+            if arrow_ != -1:
+                outputs_ = malam[fail_:arrow_]
+                line_ = re.search(r'URI=(https?://\S+)', malam)
+                if line_:
+                    uri = line_.group(1)
+                    outputs_ += '\n' + uri + '\n'
+
                 yield outputs_, False
         return
 
-    if ayu_putri_kurniawan:
+    if break_line:
         pass
     
     kemarin = malam.find("======+====+===========")
@@ -150,6 +177,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     proc.wait()
 
+
 def get_fn(url):
     fn_fn = urlparse(url)
 
@@ -158,6 +186,7 @@ def get_fn(url):
     else:
         fn = Path(fn_fn.path).name
         return fn
+
 
 def check_url(url):
     try:
@@ -178,6 +207,7 @@ def check_url(url):
         return True, ""
     except Exception as e:
         return False, str(e)
+
 
 def dl_url(url_line, current_path, tags_mappings):     
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
@@ -231,12 +261,13 @@ def dl_url(url_line, current_path, tags_mappings):
 
     return target_path, url, fn, None
 
+
 def dl_dl(command, token2=None, token3=None):
     if not command.strip():
         yield "Nothing To See Here.", True
         return
     
-    tags_mappings = paths_dict()
+    tags_mappings = hub_path()
     current_path = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
 
@@ -260,8 +291,15 @@ def dl_dl(command, token2=None, token3=None):
                 yield message, isError
             continue
 
-        for output in ariari(url, target_path, fn, token2, token3):
+        for output in ariari(
+            url,
+            target_path,
+            fn,
+            token2,
+            token3
+        ):
             yield output
+
 
 def downloader(command, token2, token3, box_state=gr.State()):
     output_box = box_state if box_state else []
@@ -296,14 +334,25 @@ def downloader(command, token2, token3, box_state=gr.State()):
         
     return gr.update(), gr.State(output_box)
 
-def read_txt(file):
+
+def read_txt(file, box):
+    text_box = []
+
     if file is not None:
-        input_text = file.name
-        text = ""
-        
-        with open(input_text, 'r') as text_text:
-            text = text_text.read()
-            
-        yield text
-        
-    return ""
+        inputs = file.name
+        txt = ""
+
+        with open(inputs, 'r') as content:
+            txt = content.read()
+
+        if box.strip() == "":
+            result = txt
+        else:
+            result = box + '\n' + txt
+
+        text_box.append(result)
+        output = '\n'.join(text_box)
+
+        return output
+
+    return '\n'.join(text_box)

@@ -4,16 +4,16 @@
 #hub-dl .dl-btn {
   width: 100px !important;}
 #hub-dl .dl-input {
-  margin-top: -15px !important;}
+  margin-top: 0px !important;}
 #hub-dl .dl-row {
   margin-top: -7px !important;}
 
 #hub-up .up-btn {
   width: 100px !important;}
 #hub-up .up-input {
-  margin-top: -10px !important;}
+  margin-top: -15px !important;}
 #hub-up .up-row {
-  margin-top: -8px !important;}
+  margin-top: -14px !important;}
 
 #hub-arc .arc-btn {
   width: 100px !important;}
@@ -21,6 +21,8 @@
   margin-top: -15px !important;}
 #hub-arc .arc-row {
   margin-top: -9px !important;}
+#hub-arc .cb {
+  margin-left: 60px !important;}
 
 #hub .hub-box {
   border: transparent !important;}
