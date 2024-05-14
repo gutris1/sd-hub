@@ -1,14 +1,26 @@
-# Overview
-SD-Hub Extension for Stable Diffusion WebUI.<br>
+# SD-Hub
+an Extension for Stable Diffusion WebUI.<br>
 You can Download, Upload, Archive files and that's it.<br>
-and this doesn't work on Windows.
+and this won't work on Windows.
 
 # Changelog
-<details>
-<summary>2024-04-22 v2.0.2</summary>
-● Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.<br>
-● Improved Compress and Decompress logic for Archiver.<br>
-</details>
+### 2024-05-14 | v3.2.1
+- Added an optional argument <code>-</code> for the Scrape button to filter specific extension instead of using the default extension list.
+```python
+https://huggingface.co/ckpt/controlnet-sdxl-1.0/tree/main - pth md txt safetensors
+```
+- Added an optional argument <code>--</code> for the Uploader input box to exclude specific file extension instead of uploading all files.
+```python
+$ext/sd-hub -- json txt py
+```
+- Moved <code>Token.json</code> to the Stable Diffusion root directory and renamed to <code>sd-hub-token.json</code>.
+- Added a <code>Split by</code> radio button for the Archiver to split compressed files based on the total number of files if input is pointing to a folder.
+<br>
+
+### 2024-04-22 | v2.0.2
+- Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.
+- Improved Compress and Decompress logic for Archiver.
+
 
 # Usage
 <h3>Downloader</h3>
@@ -64,12 +76,16 @@ Load = Load token.
 
 
 For Huggingface repository:<br>
-Press the Scrape Button to return a list of URLs that match these extensions (.safetensors .bin .pth .pt .ckpt .yaml)<br>
-Paste the repository URL in the following format:<br>
+By default it will return a list of resolve URLs that match these extensions <code>.safetensors .bin .pth .pt .ckpt .yaml</code><br>
+add <code>-</code> to return only a specific file extension.<br>
 
+Paste the repository URL in the following format:<br>
 ```python
 # To scrape everything in the branch tree list (folders and subfolders won't be included)
 htttps://huggingface.co/user_name/repo_name/tree/branch_name
+
+# To filter specific extension
+htttps://huggingface.co/user_name/repo_name/tree/branch_name - pth safetensors
 
 # To Scrape a folder
 htttps://huggingface.co/user_name/repo_name/tree/branch_name/folder
@@ -84,13 +100,13 @@ Simply paste the pastebin URL<br>
 ```python
 https://pastebin.com/696969
 ```
-And it will return a list of whatever is available at the pastebin URL you just input.<br>
+And it will return a list of whatever is available at the pastebin URL.<br>
 If it has a hashtag from batchlink, it will automatically be replaced with SD-Hub Tags.<br>
 
 ### ● Insert TXT Button
 To upload a TXT file from your device, simply select it and upload it into the input box.<br>
 
-Supported Domains for Downloader: Civitai Huggingface Github Drive.Google
+<code>Supported Domains for Downloader: Civitai Huggingface Github Drive.Google</code>
 
 <h3>Uploader</h3>
   
@@ -98,14 +114,15 @@ Supported Domains for Downloader: Civitai Huggingface Github Drive.Google
 
 ### ● Input
 Username = Your username at huggingface.co.<br>
-Repository = Your model repository at hf.co. You can also create a new repository.<br>
+Repository = Your model repository at huggingface.co, it will automatically create a new repository if reponame does not exist.<br>
 Branch = Defaults to main. You can change the branch name to create a new branch.<br>
 Visibility = Defaults to Private and will only take effect if you are creating a new repository; otherwise, it will be ignored.<br>
 Token = Obtain your huggingface token with the role WRITE from [Here](https://huggingface.co/settings/tokens).<br>
 
 For the input box, you can either provide a path pointing to a folder or a single file.<br>
-You can also use $tag to skip the long path name.<br>
-You can rename the upload (file or folder) by adding " - " after the input path.<br>
+You can also use <code>$tag</code> to skip the long path name.<br>
+You can rename the upload (file or folder) by adding <code>-</code> after the input path.<br>
+You can exclude specific file extension from being uploaded by adding <code>--</code>.<br>
 ```python
 # Folder as input, so all the files inside the folder with its folder uploaded to your repository
 /kaggle/working/stable-diffusion-webui/models/Stable-diffusion
@@ -113,8 +130,11 @@ You can rename the upload (file or folder) by adding " - " after the input path.
 # With tag
 $ckpt
 
-# To rename the uploaded folder
+# To rename the folder
 $ckpt - my-merge
+
+# To rename and exclude specific file extension
+$ext/sd-hub - mymodel -- json txt py
 
 # File as input, so only the file gets uploaded to your repository
 /kaggle/working/stable-diffusion-webui/models/Stable-diffusion/animagineXLV31_v31.safetensors
@@ -130,23 +150,21 @@ $ckpt/animagineXLV31_v31.safetensors - XL-imagine-animeV31.txt
 ![arc](https://github.com/gutris1/sd-hub/assets/132797949/f66e58f6-37e6-4f9b-91f7-5e7ce27cce0f)
 
 
-Supported Format:
-- tar.lz4
-- tar.gz
-- zip
+<code>Supported Format: tar.lz4 tar.gz zip</code>
 
-For Archive:<br>
-Name = name for the compressed file (excluding the file extension).<br>
-Input Path = path pointing a single file or folder containing multiple files.<br>
-Output Path = path where the compressed file will be saved.<br>
-Create Directory Checkbox = to create a new folder corresponding to the Output Path if it does not exist.<br>
+Archive:<br>
+<code>Name</code> Name for the compressed file (excluding the file extension).<br>
+<code>Input Path</code> Path pointing a single file or folder containing multiple files.<br>
+<code>Output Path</code> Path where the compressed file will be saved.<br>
+<code>Create Directory</code> Automatically creates a new folder at the Output Path if not already existing.<br>
+<code>Split by</code> Divide the compression into multiple files based on number of files in **Input Path**.<br>
 
-For Extract:<br>
-Input Path = path pointing to a compressed file.<br>
-Output Path = path where the uncompressed file will be extract.<br>
-Create Directory Checkbox = to create a new folder corresponding to the Output Path if it does not exist.<br>
+Extract:<br>
+<code>Input Path</code> Path pointing to a compressed file.<br>
+<code>Output Path</code> Path where the compressed file will be saved.<br>
+<code>Create Directory</code> Automatically creates a new folder at the Output Path if not already existing.<br>
 
-You can use Tag for the path in Input and Output Path.<br>
+You can use <code>$tag</code> for the path in Input and Output Path.<br>
 ```python
 # if input as a file, to compress a single file
 /kaggle/working/stable-diffusion-webui/models/Stable-diffusion/animagineXLV31_v31.safetensors
@@ -161,7 +179,7 @@ $ckpt/animagineXLV31_v31.safetensors
 $ckpt
 ```
 
-# Credit
+# Credits
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
 [etherealxx](https://github.com/etherealxx) Thanks for the [inspiration](https://github.com/etherealxx/batchlinks-webui)<br>
 Thanks to my Discord friends [DEX-1101](https://github.com/DEX-1101), [VeonN4](https://github.com/VeonN4), [kokomif](https://github.com/kokomif), for always being there in the middle of the night.<br>
