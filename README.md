@@ -1,7 +1,7 @@
 # Overview
 SD-Hub Extension for Stable Diffusion WebUI.<br>
 You can Download, Upload, Archive files and that's it.<br>
-It doesn't work on local install.
+and this doesn't work on Windows.
 
 # Changelog
 <details>
@@ -13,7 +13,8 @@ It doesn't work on local install.
 # Usage
 <h3>Downloader</h3>
 
-![downloader](https://github.com/gutris1/sd-hub/assets/132797949/7d3f2d46-36cb-47b9-b9ed-9e7d3198ea27)
+![dl](https://github.com/gutris1/sd-hub/assets/132797949/bbe49e03-9c08-4208-8174-438b47d15927)
+
 
 ### ● Input box
 Similar to [batchlink](https://github.com/etherealxx/batchlinks-webui), you use tag then URL:
@@ -22,7 +23,7 @@ Similar to [batchlink](https://github.com/etherealxx/batchlinks-webui), you use 
 $tag
 URL
 ```
-Tag should begin with " $ "<br>
+Tag should begin with <code>$</code><br>
 Tag is mandatory and there is no default path.<br>
 For available tags, refer to the [Tag List] at the bottom of the extension.<br>
 ![taglist](https://github.com/gutris1/sd-hub/assets/132797949/4e08189c-9617-4681-8985-38cbfd5acb2e)
@@ -39,7 +40,7 @@ $ckpt
 https://civitai.com/api/download/models/403131 /kaggle/working/stable-diffusion-webui/zzzzz
 ```
 
-To download with custom filename, add " - " after the URL or optional path (if provided):
+To download with custom filename, add <code>-</code> after the URL or optional path (if provided):
 ```python
 # Without optional path
 $ckpt
@@ -55,11 +56,12 @@ https://civitai.com/api/download/models/403131 /kaggle/working/stable-diffusion-
 
 Enter your Huggingface token with the role READ to download from your private repo, get one [Here](https://huggingface.co/settings/tokens).<br>
 Enter your Civitai API key if you encounter an Authorization failed error. Get your key [Here](https://civitai.com/user/account).<br>
-Save = To automatically load token upon Reload UI or relaunch of Stable Diffusion Webui.<br>
+Save = To automatically load token upon Reload UI or Webui launch.<br>
 Load = Load token.
 
 ### ● Scrape Button
-![111](https://github.com/gutris1/sd-hub/assets/132797949/005e0a1b-1552-48bb-b331-d0eb11789f1c)
+![UntitledProject-ezgif com-video-to-gif-converter (2)](https://github.com/gutris1/sd-hub/assets/132797949/67f09cca-d433-4f16-982b-cb39b3f2dbed)
+
 
 For Huggingface repository:<br>
 Press the Scrape Button to return a list of URLs that match these extensions (.safetensors .bin .pth .pt .ckpt .yaml)<br>
@@ -92,7 +94,7 @@ Supported Domains for Downloader: Civitai Huggingface Github Drive.Google
 
 <h3>Uploader</h3>
   
-![uploader](https://github.com/gutris1/sd-hub/assets/132797949/9b05b84a-f904-453a-9191-84c0be819c3a)
+![upl](https://github.com/gutris1/sd-hub/assets/132797949/c71a2e75-8a32-4572-b62c-6b3deb6e5993)
 
 ### ● Input
 Username = Your username at huggingface.co.<br>
@@ -125,7 +127,8 @@ $ckpt/animagineXLV31_v31.safetensors - XL-imagine-animeV31.txt
 ```
 <h3>Archiver</h3>
 
-![archive](https://github.com/gutris1/sd-hub/assets/132797949/4fbb2d11-929e-4f80-bd23-cc86b2a13bc5)
+![arc](https://github.com/gutris1/sd-hub/assets/132797949/f66e58f6-37e6-4f9b-91f7-5e7ce27cce0f)
+
 
 Supported Format:
 - tar.lz4
