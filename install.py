@@ -107,9 +107,10 @@ def _install_req_2() -> None:
     pkg_list: List[str] = []
     
     if env in ['Colab', 'Kaggle']:
-        if _sub(pkg_cmds['apt']):
-            for pkg, args in pv_lz4.items():
-                _check_req(pkg, args, f"apt -y install {pkg}", pkg_list)
+        for pkg_cmd, args in pkg_cmds.items():
+            if _sub([pkg_cmd, args]):
+                for pkg, args in pv_lz4.items():
+                    _check_req(pkg, args, f"{pkg_cmd} -y install {pkg}", pkg_list)
             
     elif env == 'SageMaker Studio Lab':
         for pkg, args in pv_lz4.items():
@@ -117,7 +118,7 @@ def _install_req_2() -> None:
         
     elif env == 'Unknown':
         for pkg_cmd, args in pkg_cmds.items():
-            if _sub(args):
+            if _sub([pkg_cmd, args]):
                 for pkg, args in pv_lz4.items():
                     _check_req(pkg, args, f"{pkg_cmd} -y install {pkg}", pkg_list)
                 
