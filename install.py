@@ -17,7 +17,7 @@ def _sub(inputs: List[str]) -> bool:
         subprocess.run(
             inputs, check=True,
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL
+            stderr=subprocess.STDOUT
         )
 
         return True
@@ -93,8 +93,8 @@ def _install_req_2() -> None:
             break
 
     pkg_cmds: Dict[str, str] = {
-        'apt': 'apt-get update',
-        'conda': 'conda --version'
+        'apt': 'update',
+        'conda': '--version'
     }
 
     pv_lz4: Dict[str, str] = {
@@ -105,20 +105,22 @@ def _install_req_2() -> None:
     pkg_list: List[str] = []
     
     if env in ['Colab', 'Kaggle']:
-        if _sub(pkg_cmds['apt']):
+        if _sub(['apt', pkg_cmds['apt']]):
             for pkg, args in pv_lz4.items():
                 _check_req(pkg, args, f"apt -y install {pkg}", pkg_list)
             
     elif env == 'SageMaker Studio Lab':
-        for pkg, args in pv_lz4.items():
-            _check_req(pkg, args, f"conda install -qyc conda-forge {pkg}", pkg_list)
-        
+        if _sub(['conda', pkg_cmds['conda']]):
+            for pkg, args in pv_lz4.items():
+                _check_req(pkg, args, f"conda install -qyc conda-forge {pkg}", pkg_list)
+
     elif env == 'Unknown':
-        for pkg_cmd, args in pkg_cmds.items():
-            if _sub(args):
-                for pkg, args in pv_lz4.items():
-                    _check_req(pkg, args, f"{pkg_cmd} -y install {pkg}", pkg_list)
-                
+        if _sub(['apt', pkg_cmds['apt']]):
+            for pkg, args in pv_lz4.items():
+                _check_req(pkg, args, f"apt -y install {pkg}", pkg_list)
+        elif _sub(['conda', pkg_cmds['conda']]):
+            for pkg, args in pv_lz4.items():
+                _check_req(pkg, args, f"conda install -qyc conda-forge {pkg}", pkg_list)
         else:
             print("SD-Hub: Failed to install pv and lz4 in an unknown environment")
 
