@@ -1,23 +1,24 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess
-import re
+import subprocess, re
 from sd_hub.paths import hub_path
+from sd_hub.version import xyz
 
 def gdrown(url, target_path=None, fn=None):
     gfolder = "drive.google.com/drive/folders" in url
-    gdown_cmd = ["gdown", "--fuzzy", url]
-    
+    cli = xyz('gdown')
+    cmd = cli + ["--fuzzy", url]
+
     if fn:
-        gdown_cmd += ["-O", fn]
+        cmd += ["-O", fn]
     if gfolder:
-        gdown_cmd.append("--folder")
+        cmd.append("--folder")
 
     cwd = target_path if target_path else Path.cwd()
 
     proc = subprocess.Popen(
-        gdown_cmd,
+        cmd,
         cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -59,7 +60,7 @@ def gdrown(url, target_path=None, fn=None):
 
 
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
-    aria2cmd = ["aria2c"]
+    aria2cmd = xyz('aria2c')
 
     if "huggingface.co" in url:
         if "/blob/" in url:
@@ -70,12 +71,15 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                              f"--header=Authorization: Bearer {token2}"])
 
     elif "civitai.com" in url:
-        if '?' in url:
-            url = url.split('?')[0]
-
         if token3:
             aria2cmd.extend(["--header=User-Agent: Mozilla/5.0"])
-            url += f"?token={token3}"
+
+            if '?token=' in url:
+                url = url.split('?token=')[0]
+            if '?type=' in url:
+                url = url.replace('?type=', f'?token={token3}&type=')
+            else:
+                url = f"{url}?token={token3}"
 
     aria2cmd.extend([
         "--console-log-level=error",
@@ -100,8 +104,8 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         stderr=subprocess.STDOUT,
         bufsize=1,
         text=True
-    )     
-    
+    )
+
     malam = ""
     break_line = False
     auth_fail = False
@@ -113,10 +117,10 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             break
 
         malam += line
-            
+
         if "errorCode=24" in line:
             auth_fail = True
-        
+
         if "errorCode" in line:
             codeError = True
 
@@ -140,7 +144,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                 "huggingface.co": "Authorization failed\nEnter your Huggingface Token",
                 "civitai.com": "Authorization failed\nEnter your Civitai API Key"
             }
-            
+
             for domain, msg in uri.items():
                 if domain in url_find:
                     yield msg, False
@@ -165,7 +169,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     if break_line:
         pass
-    
+
     kemarin = malam.find("======+====+===========")
     if kemarin != -1:
         for tidur in malam[kemarin:].splitlines():
@@ -194,7 +198,7 @@ def check_url(url):
 
         if not (url_parsed.scheme and url_parsed.netloc):
             return False, "Invalid URL."
-        
+
         supported = ["civitai.com",
                      "huggingface.co",
                      "github.com",
@@ -209,10 +213,10 @@ def check_url(url):
         return False, str(e)
 
 
-def dl_url(url_line, current_path, tags_mappings):     
+def dl_url(url_line, current_path, tags_mappings):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
         return None, None, None, "Invalid usage, Tag should start with $"
-      
+
     if url_line.startswith('$'):
         parts = url_line[1:].strip().split('/', 1)
         tags_key = parts[0].lower()       
@@ -224,7 +228,7 @@ def dl_url(url_line, current_path, tags_mappings):
         else:
             return None, None, None, f"{tags_key}\nInvalid Tag."
         return current_path, None, None, None
-    
+
     parts = url_line.split(' ')
     url = parts[0].strip()
 
@@ -242,7 +246,7 @@ def dl_url(url_line, current_path, tags_mappings):
             optional_fn = ' '.join(parts[dash_index + 1:]).strip()
         else:
             optional_path_raw = ' '.join(parts[1:]).strip()
-        
+
         optional_path = Path(optional_path_raw) if optional_path_raw else None
 
     if optional_path and optional_path.suffix:
@@ -266,7 +270,7 @@ def dl_dl(command, token2=None, token3=None):
     if not command.strip():
         yield "Nothing To See Here.", True
         return
-    
+
     tags_mappings = hub_path()
     current_path = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
@@ -277,11 +281,11 @@ def dl_dl(command, token2=None, token3=None):
 
     for url_line in urls:
         target_path, url, fn, error = dl_url(url_line, current_path, tags_mappings)
-        
+
         if error:
             yield error, True
             return
-        
+
         if not url:
             current_path = target_path
             continue
@@ -303,35 +307,35 @@ def dl_dl(command, token2=None, token3=None):
 
 def downloader(command, token2, token3, box_state=gr.State()):
     output_box = box_state if box_state else []
-    
+
     yield "Now Downloading...", ""
-    
+
     for _text, _flag in dl_dl(command, token2, token3):
         if not _flag:
             if "Enter your" in _text:
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
-            
+
             if "errorCode" in _text:
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
-            
+
             if "Failed to retrieve" in _text:
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
-            
+
             yield _text, "\n".join(output_box)
-            
+
         else:
             output_box.append(_text)
-            
+
     catcher = ["exist", "Invalid", "Tag", "Output", "Nothing", "URL", "filename", "Supported Domain:"]
-    
+
     if any(asu in wc for asu in catcher for wc in output_box):
         yield "Error", "\n".join(output_box)
     else:
         yield "Done", "\n".join(output_box)
-        
+
     return gr.update(), gr.State(output_box)
 
 

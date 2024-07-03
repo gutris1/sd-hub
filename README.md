@@ -1,10 +1,16 @@
 # SD-Hub
-an Extension for Stable Diffusion WebUI.<br>
+an Extension for Stable Diffusion WebUI and Forge.<br>
 You can Download, Upload, Archive files and that's it.<br>
 and this won't work on Windows.
 
 # Changelog
-### 2024-05-14 | v3.2.1
+<details><summary>2024-07-03  v3.3.3</summary><br>
+  
+- added venv support.
+</details>
+
+<details><summary>2024-05-14  v3.2.1</summary><br>
+
 - Added an optional argument <code>-</code> for the Scrape button to filter specific extension instead of using the default extension list.
 ```python
 https://huggingface.co/ckpt/controlnet-sdxl-1.0/tree/main - pth md txt safetensors
@@ -15,12 +21,13 @@ $ext/sd-hub -- json txt py
 ```
 - Moved <code>Token.json</code> to the Stable Diffusion root directory and renamed to <code>sd-hub-token.json</code>.
 - Added a <code>Split by</code> radio button for the Archiver to split compressed files based on the total number of files if input is pointing to a folder.
-<br>
+</details>
 
-### 2024-04-22 | v2.0.2
+<details><summary>2024-04-22  v2.0.2</summary><br>
+
 - Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.
 - Improved Compress and Decompress logic for Archiver.
-
+</details>
 
 # Usage
 <h3>Downloader</h3>

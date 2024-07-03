@@ -2,17 +2,17 @@ from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from pathlib import Path
 import gradio as gr
-import subprocess
-import re
+import subprocess, re
 from sd_hub.paths import hub_path
+from sd_hub.version import xyz
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
     msg = commit_msg.replace('"', '\\"')
-
-    cmd = ['huggingface-cli', 'upload', repo_id, file_path, file_name,
-           '--token', token,
-           '--revision', branch,
-           '--commit-message', msg]
+    cli = xyz('huggingface-cli')
+    cmd = cli + ['upload', repo_id, file_path, file_name,
+                 '--token', token,
+                 '--revision', branch,
+                 '--commit-message', msg]
 
     if is_private:
         cmd.append('--private')
