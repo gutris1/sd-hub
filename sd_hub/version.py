@@ -3,12 +3,8 @@ version = "3.3.3"
 import sys
 from pathlib import Path
 
-def xyz(z):
-    x = Path(sys.executable).name
+def xyz(y):
+    x = Path(sys.executable).parent
+    z = x / y
 
-    if 'python3' in x:
-        y = x.replace('python3', z)
-    elif 'python' in x:
-        y = x.replace('python', z)
-
-    return [y]
+    return [str(z)]
