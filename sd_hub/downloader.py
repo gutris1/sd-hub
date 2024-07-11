@@ -1,13 +1,15 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess, re
+import subprocess
+import re
+import sys
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
 
 def gdrown(url, target_path=None, fn=None):
     gfolder = "drive.google.com/drive/folders" in url
-    cli = xyz('gdown')
+    cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
     cmd = cli + ["--fuzzy", url]
 
     if fn:
@@ -60,7 +62,8 @@ def gdrown(url, target_path=None, fn=None):
 
 
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
-    aria2cmd = xyz('aria2c')
+    exe = Path(__file__).parent.parent / 'aria2c.exe'
+    aria2cmd = [str(exe)] if sys.platform == 'win32' else xyz('aria2c')
 
     if "huggingface.co" in url:
         if "/blob/" in url:
