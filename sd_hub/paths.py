@@ -49,11 +49,15 @@ def path_path():
                     paths.append([_desc, path_data])
  
             if _desc == "cn" and len([p for p in paths if p[0] == "cn"]) == 0:
-                cn_dir = next(os.walk(str(_data / "extensions/sd-webui-controlnet/models")))[1]
-                cn_dir_lower = [d.lower() for d in cn_dir]
-                if _name.lower() in cn_dir_lower:
-                    path_cn = _data / "extensions/sd-webui-controlnet/models" / cn_dir[cn_dir_lower.index(_name.lower())]
-                    paths.append(["cn", path_cn])
+                cn_path = _data / "extensions/sd-webui-controlnet/models"
+                if cn_path.is_dir():
+                    cn_dir = next(os.walk(str(cn_path)))[1]
+                    cn_dir_lower = [d.lower() for d in cn_dir]
+                    if _name.lower() in cn_dir_lower:
+                        path_cn = cn_path / cn_dir[cn_dir_lower.index(_name.lower())]
+                        paths.append(["cn", path_cn])
+                else:
+                    paths.append(["cn", ""])
 
     paths.append(["root", str(_data)])
 
