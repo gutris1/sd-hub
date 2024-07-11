@@ -307,7 +307,8 @@ def extraction_win(input_path, output_path, format_type):
                     is_done = True
 
     elif format_type in ['tar.gz', 'tar.lz4']:
-        #######
+        is_done = True
+
 
     if is_done:
         yield f"Extracted To: {output_path}", True
