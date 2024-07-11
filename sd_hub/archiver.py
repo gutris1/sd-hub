@@ -4,11 +4,12 @@ import gradio as gr
 import subprocess
 import zipfile
 import select
-import pty
 import os
+import sys
 from sd_hub.paths import hub_path
 
 def tar_process(_tar, cwd, _pv, _format, _output):
+    import pty
     ayu, rika = pty.openpty()
 
     p_tar = subprocess.Popen(
@@ -279,7 +280,41 @@ def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by,
 ####################################################################################
 ####################################################################################
 
+def extraction_win(input_path, output_path, format_type):
+    input_path_obj = Path(input_path)
+    output_path_obj = Path(output_path)
+    is_done = False
+
+    yield f"Extracting: {input_path_obj}", False
+
+    if format_type == 'zip':
+        _bar = '{n_fmt}/{total_fmt} | [{bar:26}]'
+
+        with zipfile.ZipFile(input_path_obj, 'r') as zip_ref:
+            file_list = zip_ref.namelist()
+            total_files = len(file_list)
+
+            with tqdm(
+                total=total_files,
+                unit='file',
+                bar_format=_bar,
+                ascii="▷▶"
+            ) as pbar:
+                for file_name in file_list:
+                    zip_ref.extract(file_name, output_path_obj)
+                    pbar.update(1)
+                    yield pbar, False
+                    is_done = True
+
+    elif format_type in ['tar.gz', 'tar.lz4']:
+        #######
+
+    if is_done:
+        yield f"Extracted To: {output_path}", True
+                   
 def extraction(input_path, output_path, format_type):
+    import pty
+
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
     is_done = False
@@ -419,11 +454,12 @@ def ext_process(input_path, output_path, mkdir_cb2):
         yield f"Unsupported format: {input_ext}", True
         return
     
-    for output in extraction(
-        input_path,
-        output_path,
-        format_type
-    ):
+    if sys.platform == 'win32':
+        ext_func = extraction_win
+    else:
+        ext_func = extraction
+
+    for output in ext_func(input_path, output_path, format_type):
         yield output
 
 
