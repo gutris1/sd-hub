@@ -1,6 +1,6 @@
 from modules.paths_internal import data_path
 from pathlib import Path
-import json
+import json, os
 
 token_dir = Path(data_path) / "sd-hub-token.json"
 
