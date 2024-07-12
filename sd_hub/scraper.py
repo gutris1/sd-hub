@@ -1,13 +1,25 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess
-import requests
-import os
+import os, stat, sys, shutil, requests, subprocess
 
 def is_valid_url(url):
     parsing = urlparse(url)
     return all([parsing.scheme, parsing.netloc])
+
+def remove_readonly(func, path, exc_info):
+    "Clear the readonly bit and reattempt the removal"
+    "https://bugs.python.org/issue43657#msg389724"
+    if func not in (os.unlink, os.rmdir) or exc_info[1].winerror != 5:
+        raise exc_info[1]
+    os.chmod(path, stat.S_IWRITE)
+    func(path)
+
+def delete(_tmp):
+    if sys.platform == 'win32':
+        shutil.rmtree(_tmp, onerror=remove_readonly)
+    else:
+        os.system(f"rm -rf {_tmp}")
 
 def scraping(input_string, token=None):
     _lines = input_string.split('\n')
@@ -15,7 +27,9 @@ def scraping(input_string, token=None):
     _h = {"User-Agent": "Mozilla/5.0"}
     _base = Path(__file__).parent
     _tmp = _base / "tmp"
-    os.system(f"rm -rf {_tmp}")
+    
+    if _tmp.exists():
+        delete(_tmp)
 
     if not input_string.strip():
         yield "Nothing To Scrape Here", True
@@ -107,10 +121,12 @@ def scraping(input_string, token=None):
                                 continue
 
                             url_url = base_url.replace('/tree/', '/resolve/') + f'/{_file}'
-                            
+
                             _outputs.append(url_url)
-                            os.system(f"rm -rf {_tmp}")
-        
+
+                            if _tmp.exists():
+                                delete(_tmp)
+
         elif 'pastebin.com' in url:
             p_url = url.replace('pastebin.com', 'pastebin.com/raw')
             response = requests.get(p_url, headers=_h)
