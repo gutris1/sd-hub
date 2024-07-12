@@ -1,9 +1,11 @@
 # SD-Hub
 an Extension for Stable Diffusion WebUI and Forge.<br>
 You can Download, Upload, Archive files and that's it.<br>
-and this won't work on Windows.
 
 # Changelog
+### 2024-07-12  v4.4.4
+- Added support for Windows.
+
 <details><summary>2024-07-03  v3.3.3</summary><br>
   
 - added venv support.

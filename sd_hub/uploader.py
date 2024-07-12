@@ -2,13 +2,14 @@ from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from pathlib import Path
 import gradio as gr
-import subprocess, re
+import subprocess, re, sys
+
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
     msg = commit_msg.replace('"', '\\"')
-    cli = xyz('huggingface-cli')
+    cli = xyz('huggingface-cli.exe') if sys.platform == 'win32' else xyz('huggingface-cli')
     cmd = cli + ['upload', repo_id, file_path, file_name,
                  '--token', token,
                  '--revision', branch,
@@ -82,6 +83,7 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
     for line in input_lines:
         parts = line.split()
         input_path = parts[0]
+        input_path = input_path.strip('"').strip("'")
 
         given_fn = None
         ex_ext = None

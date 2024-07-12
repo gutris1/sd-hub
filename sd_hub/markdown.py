@@ -30,5 +30,5 @@ arc_md2 = """<p>
 
 **Extract :**
 <code>Input Path</code> Path pointing to a compressed file
-<code>Output Path</code> Path where the compressed file will be saved
+<code>Output Path</code> Path where the compressed file will be extracted
 <code>Create Directory</code> Automatically creates a new folder at the Output Path if not already existing</p>"""

@@ -1,14 +1,67 @@
 from pathlib import Path
 from tqdm import tqdm
 import gradio as gr
-import subprocess
-import zipfile
-import select
-import pty
-import os
+import subprocess, zipfile, select, time, sys, os
+
 from sd_hub.paths import hub_path
 
+def tar_win_process(inputs, paths, formats, outputs):
+    import tarfile, gzip, lz4.frame
+
+    tar_out = str(outputs) + '.tar'
+    
+    with tarfile.open(tar_out, 'w') as tar:
+        for file in inputs:
+            tar.add(paths / file, arcname=file.name)
+    
+    if formats == 'lz4':
+        lz4_out = str(outputs) + '.tar.lz4'
+        with open(tar_out, 'rb') as tar_file:
+            with open(lz4_out, 'wb') as lz4_file:
+                data = lz4.frame.compress(tar_file.read())
+                lz4_file.write(data)
+
+        Path(tar_out).unlink()
+
+    elif formats == 'gz':
+        gz_out = str(outputs) + '.tar.gz'
+        with open(tar_out, 'rb') as tar_file:
+            with gzip.open(gz_out, 'wb') as gz_file:
+                gz_file.write(tar_file.read())
+
+        Path(tar_out).unlink()
+
+    yield f"Saved to: {outputs}.tar.{formats}", True
+
+def tar_win(input_path, file_name, output_path, input_type, format_type, split_by):
+    input_path_obj = Path(input_path)
+    output_path_obj = Path(output_path)
+
+    yield f"Compressing {input_path_obj}", False
+
+    if input_type == "folder":
+        all_files = [f for f in input_path_obj.iterdir() if f.is_file() or f.is_dir()]
+
+        total_parts = len(all_files)
+        files_split = min(split_by, total_parts) if split_by > 0 else 1
+
+        for i in range(files_split):
+            start = i * (total_parts // files_split)
+            end = start + (total_parts // files_split) if i < files_split - 1 else None
+            split = all_files[start:end]
+
+            output = output_path_obj / f"{file_name}{'_' + str(i + 1) if split_by > 0 else ''}"
+
+            yield from tar_win_process(split, input_path_obj, format_type, output)
+
+    else:
+        output = output_path_obj / f"{file_name}"
+
+        yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
+
 def tar_process(_tar, cwd, _pv, _format, _output):
+    import pty
+
     ayu, rika = pty.openpty()
 
     p_tar = subprocess.Popen(
@@ -20,7 +73,7 @@ def tar_process(_tar, cwd, _pv, _format, _output):
     )
     
     p_pv = subprocess.Popen(
-        _pv + ['-i', '0.1'],
+        _pv,
         stdin=p_tar.stdout,
         stdout=subprocess.PIPE,
         stderr=rika,
@@ -59,7 +112,6 @@ def tar_process(_tar, cwd, _pv, _format, _output):
 
     yield f"Saved to: {_output}", True
 
-
 def tar_tar(input_path, file_name, output_path, input_type, format_type, split_by):
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
@@ -76,7 +128,7 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
             if (f.is_file() or (f.is_dir() and any(f.iterdir())))
         ]
 
-        _count = 0
+        count = 0
         total_parts = len(all_files)
         files_split = min(split_by, total_parts) if split_by > 0 else 1
 
@@ -85,8 +137,8 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
             end = start + (total_parts // files_split) if i < files_split - 1 else None
             _split = all_files[start:end]
 
-            _count += 1
-            _output = output_path_obj / f"{file_name}{'_' + str(_count) if split_by > 0 else ''}.tar.{format_type}"
+            count += 1
+            _output = output_path_obj / f"{file_name}{'_' + str(count) if split_by > 0 else ''}.tar.{format_type}"
             _tar = ['tar', 'cfh', '-'] + [f.name for f in _split]
             _pv = ['pv']
             _format = [comp_type]
@@ -102,7 +154,6 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
 
         yield from tar_process(_tar, cwd, _pv, _format, _output)
 
-
 def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
     _ = format_type
     zip_in = Path(input_path)
@@ -116,7 +167,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             if (file.is_file() or (file.is_dir() and any(file.iterdir())))
         ]
         
-        _count = 0
+        count = 0
         total_parts = len(all_files)
         files_split = min(split_by, total_parts) if split_by > 0 else 1
 
@@ -128,8 +179,8 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             if not _split:
                 continue
 
-            _count += 1
-            output_zip = zip_out / f"{file_name}{'_' + str(_count) if split_by > 0 else ''}.zip"
+            count += 1
+            output_zip = zip_out / f"{file_name}{'_' + str(count) if split_by > 0 else ''}.zip"
 
             yield f"Compressing {output_zip.name}", False
 
@@ -176,8 +227,10 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
 
         yield f"Saved To: {output_zip}", True
 
+def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by):
+    input_path = input_path.strip('"').strip("'")
+    output_path = output_path.strip('"').strip("'")
 
-def arc_process(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by):
     params = [
         name for name, value in zip(
             ["Input Path", "Name", "Output Path"],
@@ -232,7 +285,12 @@ def arc_process(input_path, file_name, output_path, arc_format, mkdir_cb1, split
             yield f"{output_path}\nOutput Path does not exist.", True
             return
 
-    select_arc = {'zip': _zip, 'tar.gz': tar_tar, 'tar.lz4': tar_tar}
+    if sys.platform == 'win32':
+        select_arc = {'zip': _zip, 'tar.gz': tar_win, 'tar.lz4': tar_win}
+    else:
+        select_arc = {'zip': _zip, 'tar.gz': tar_tar, 'tar.lz4': tar_tar}
+
+
     arc_select = select_arc.get(arc_format)
 
     split_dict = {"None": 0, "2": 2, "3": 3, "4": 4, "5": 5}
@@ -248,11 +306,10 @@ def arc_process(input_path, file_name, output_path, arc_format, mkdir_cb1, split
     ):
         yield output
 
-
 def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by, box_state=gr.State()):
     output_box = box_state if box_state else []
     
-    for _text, _flag in arc_process(
+    for _text, _flag in path_archive(
         input_path,
         file_name,
         output_path,
@@ -279,7 +336,56 @@ def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by,
 ####################################################################################
 ####################################################################################
 
+def extraction_win(input_path, output_path, format_type):
+    import tarfile, lz4.frame
+
+    input_path_obj = Path(input_path)
+    output_path_obj = Path(output_path)
+    is_done = False
+
+    yield f"Extracting: {input_path_obj}", False
+
+    if format_type == 'zip':
+        _bar = '{n_fmt}/{total_fmt} | [{bar:26}]'
+
+        with zipfile.ZipFile(input_path_obj, 'r') as zip_ref:
+            file_list = zip_ref.namelist()
+            total_files = len(file_list)
+
+            with tqdm(
+                total=total_files,
+                unit='file',
+                bar_format=_bar,
+                ascii="▷▶"
+            ) as pbar:
+                for file_name in file_list:
+                    zip_ref.extract(file_name, output_path_obj)
+                    pbar.update(1)
+                    yield pbar, False
+
+                is_done = True
+
+    elif format_type in ['tar.gz', 'tar.lz4']:
+        mode = 'r:gz' if format_type == 'tar.gz' else 'r|' if format_type == 'tar.lz4' else None
+
+        if format_type == 'tar.lz4':
+            with open(input_path_obj, 'rb') as lz4_file:
+                with lz4.frame.open(lz4_file, mode='rb') as tar_lz4_file:
+                    with tarfile.open(fileobj=tar_lz4_file, mode=mode) as tar:
+                        tar.extractall(output_path_obj)
+
+        elif format_type == 'tar.gz':
+            with tarfile.open(input_path_obj, mode=mode) as tar:
+                tar.extractall(output_path_obj)
+
+        is_done = True
+
+    if is_done:
+        yield f"Extracted To: {output_path}", True
+                   
 def extraction(input_path, output_path, format_type):
+    import pty
+
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
     is_done = False
@@ -361,8 +467,10 @@ def extraction(input_path, output_path, format_type):
     if is_done:
         yield f"Extracted To: {output_path}", True
 
+def path_extract(input_path, output_path, mkdir_cb2):
+    input_path = input_path.strip('"').strip("'")
+    output_path = output_path.strip('"').strip("'")
 
-def ext_process(input_path, output_path, mkdir_cb2):
     params = [
         name for name, value in zip(
             ["Input Path", "Output Path"],
@@ -418,19 +526,16 @@ def ext_process(input_path, output_path, mkdir_cb2):
     if not format_type:
         yield f"Unsupported format: {input_ext}", True
         return
-    
-    for output in extraction(
-        input_path,
-        output_path,
-        format_type
-    ):
-        yield output
 
+    ext_func = extraction_win if sys.platform == 'win32' else extraction
+
+    for output in ext_func(input_path, output_path, format_type):
+        yield output
 
 def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
     output_box = box_state if box_state else []
     
-    for _text, _flag in ext_process(
+    for _text, _flag in path_extract(
         input_path,
         output_path,
         mkdir_cb2
