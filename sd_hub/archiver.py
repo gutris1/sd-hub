@@ -73,7 +73,7 @@ def tar_process(_tar, cwd, _pv, _format, _output):
     )
     
     p_pv = subprocess.Popen(
-        _pv + ['-i', '0.1'],
+        _pv,
         stdin=p_tar.stdout,
         stdout=subprocess.PIPE,
         stderr=rika,
@@ -111,7 +111,6 @@ def tar_process(_tar, cwd, _pv, _format, _output):
     _ = p_type.wait()
 
     yield f"Saved to: {_output}", True
-
 
 def tar_tar(input_path, file_name, output_path, input_type, format_type, split_by):
     input_path_obj = Path(input_path)
