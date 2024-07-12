@@ -48,7 +48,7 @@ def path_path():
                     path_data = _data / data_dir[data_dir_lower.index(_name.lower())]
                     paths.append([_desc, path_data])
  
-            if _desc == "cn" and len([p for p in paths if p[0] == "cn"]) == 0:
+            if _desc == "cn":
                 cn_path = _data / "extensions/sd-webui-controlnet/models"
                 if cn_path.is_dir():
                     cn_dir = next(os.walk(str(cn_path)))[1]
