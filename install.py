@@ -62,8 +62,9 @@ def _install_req_1() -> None:
                     names.append(pkg)
         
         if not sys.platform == 'win32':
-            reqs.append('aria2')
-            names.append('aria2')
+            if not launch.is_installed('aria2'):
+                reqs.append('aria2')
+                names.append('aria2')
 
         if reqs:
             print(
