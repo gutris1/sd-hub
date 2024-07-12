@@ -1,4 +1,4 @@
-version = "3.3.3"
+version = "4.4.4"
 
 import sys
 from pathlib import Path
