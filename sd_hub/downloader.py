@@ -1,9 +1,8 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess
-import re
-import sys
+import subprocess, re, sys
+
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
 
@@ -222,7 +221,7 @@ def dl_url(url_line, current_path, tags_mappings):
 
     if url_line.startswith('$'):
         parts = url_line[1:].strip().split('/', 1)
-        tags_key = parts[0].lower()       
+        tags_key = parts[0].lower()
         subfolder = parts[1] if len(parts) > 1 else None
         base_path = tags_mappings.get(tags_key)
         if base_path is not None:
@@ -250,6 +249,7 @@ def dl_url(url_line, current_path, tags_mappings):
         else:
             optional_path_raw = ' '.join(parts[1:]).strip()
 
+        optional_path_raw = optional_path_raw.strip('"').strip("'")
         optional_path = Path(optional_path_raw) if optional_path_raw else None
 
     if optional_path and optional_path.suffix:
