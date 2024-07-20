@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys
+import subprocess, re, sys, requests
 
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
@@ -28,7 +28,7 @@ def gdrown(url, target_path=None, fn=None):
     )
 
     malam = ""
-    failure = False
+    download_error = False
 
     while True:
         line = proc.stdout.readline()
@@ -37,25 +37,25 @@ def gdrown(url, target_path=None, fn=None):
         malam += line
 
         if "Failed to retrieve" in line:
-            failure = True
+            fail_ = malam.find("Failed to retrieve")
+            outputs_ = malam[fail_:]
+            yield outputs_, True
+            download_error = True
+            continue
 
         lines = line.split('\n')
         for line in lines:
             if re.search(r'\d{1,3}%', line):
                 yield line.strip(), False
+                download_error = False
                 break
 
-    if failure:
-        fail_ = malam.find("Failed to retrieve")
-        outputs_ = malam[fail_:]
-        yield outputs_, False
-        return
-
-    for line in malam.split('\n'):
-        if line.startswith("To:"):
-            kemarin = re.search(r'[^/]*$', line)
-            if kemarin:
-                yield f"Saved To: {target_path}/{kemarin.group()}", True
+    if not download_error:
+        for line in malam.split('\n'):
+            if line.startswith("To:"):
+                kemarin = re.search(r'[^/]*$', line)
+                if kemarin:
+                    yield f"Saved To: {target_path}/{kemarin.group()}", True
 
     proc.wait()
 
@@ -83,6 +83,18 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             else:
                 url = f"{url}?token={token3}"
 
+        if "civitai.com/models/" in url:
+            if '?modelVersionId=' in url:
+                version_id = url.split('?modelVersionId=')[1]
+                response = requests.get(f"https://civitai.com/api/v1/model-versions/{version_id}")
+            else:
+                model_id = url.split('/models/')[1].split('/')[0]
+                response = requests.get(f"https://civitai.com/api/v1/models/{model_id}")
+
+            data = response.json()
+            download_url = data["downloadUrl"] if "downloadUrl" in data else data["modelVersions"][0]["downloadUrl"]
+            url = f"{download_url}?token={token3}" if token3 else download_url
+
     aria2cmd.extend([
         "--console-log-level=error",
         "--allow-overwrite=true",
@@ -100,7 +112,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     aria2cmd.append(url)
 
-    proc = subprocess.Popen(
+    p = subprocess.Popen(
         aria2cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -108,26 +120,50 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         text=True
     )
 
-    malam = ""
+    aria2_outputs = ""
     break_line = False
-    auth_fail = False
-    codeError = False
+    download_error = False
 
     while True:
-        line = proc.stdout.readline()
-        if not line:
+        lines = p.stdout.readline()
+        if not lines:
             break
 
-        malam += line
+        aria2_outputs += lines
 
-        if "errorCode=24" in line:
-            auth_fail = True
+        if "errorCode=24" in lines:
+            uri_pattern = re.search(r'URI=(https?://\S+)', lines)
+            if uri_pattern:
+                find_url = uri_pattern.group(1)
+                url_list = {
+                    "huggingface.co": f"## Authorization Failed, Enter your Huggingface Token\n-> {url}",
+                    "civitai.com": f"## Authorization Failed, Enter your Civitai API Key\n-> {url}\n"
+                }
 
-        if "errorCode" in line:
-            codeError = True
+                for domain, msg in url_list.items():
+                    if domain in find_url:
+                        yield msg, True
+                        download_error = True
+                        break
+            continue
 
-        for minggu in line.splitlines():
-            match = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', minggu)
+        if "errorCode" in lines:
+            error_arrow = aria2_outputs.find("->")
+            if error_arrow != -1:
+                error_code = aria2_outputs.find("\n", error_arrow)
+                if error_code != -1:
+                    error_outputs = aria2_outputs[error_arrow:error_code]
+                    uri_pattern = re.search(r'URI=(https?://\S+)', aria2_outputs)
+                    if uri_pattern:
+                        uri = uri_pattern.group(1)
+                        error_outputs += '\n' + uri + '\n'
+
+                    yield error_outputs, True
+                    download_error = True
+            continue
+
+        for download_outputs in lines.splitlines():
+            match = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', download_outputs)
             if match:
                 sizes = match.group(1)
                 percent = match.group(2)
@@ -136,52 +172,23 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                 yield output, False
 
                 break_line = True
+                download_error = False
                 break
-
-    if auth_fail:
-        find_url = re.search(r'URI=(https?://\S+)', line)
-        if find_url:
-            url_find = find_url.group(1)
-            uri = {
-                "huggingface.co": "Authorization failed\nEnter your Huggingface Token",
-                "civitai.com": "Authorization failed\nEnter your Civitai API Key"
-            }
-
-            for domain, msg in uri.items():
-                if domain in url_find:
-                    yield msg, False
-                    break
-        else:
-            yield malam, False
-        return
-
-    if codeError:
-        fail_ = malam.find("->")
-        if fail_ != -1:
-            arrow_ = malam.find("\n", fail_)
-            if arrow_ != -1:
-                outputs_ = malam[fail_:arrow_]
-                line_ = re.search(r'URI=(https?://\S+)', malam)
-                if line_:
-                    uri = line_.group(1)
-                    outputs_ += '\n' + uri + '\n'
-
-                yield outputs_, False
-        return
 
     if break_line:
         pass
 
-    kemarin = malam.find("======+====+===========")
-    if kemarin != -1:
-        for tidur in malam[kemarin:].splitlines():
-            if "|" in tidur:
-                bangun = tidur.split('|')
-                if len(bangun) > 3:
-                    disiram = bangun[3].strip()
-                    yield f"Saved To: {disiram}", True
+    if not download_error:
+        separator = aria2_outputs.find("======+====+===========")
+        if separator != -1:
+            for outputs_complete in aria2_outputs[separator:].splitlines():
+                if "|" in outputs_complete:
+                    pipe = outputs_complete.split('|')
+                    if len(pipe) > 3:
+                        output_dir = pipe[3].strip()
+                        yield f"Saved To: {output_dir}", True
 
-    proc.wait()
+    p.wait()
 
 
 def get_fn(url):
