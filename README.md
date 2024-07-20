@@ -3,8 +3,14 @@ an Extension for Stable Diffusion WebUI and Forge.<br>
 You can Download, Upload, Archive files and that's it.<br>
 
 # Changelog
-### 2024-07-12  v4.4.4
+### 2024-07-21  v4.5.6
+- Added support for downloading from Civitai using webpage URLs directly.<br>
+![image](https://github.com/user-attachments/assets/2cde28e1-e88b-45cf-aae4-88bf0bfcf17b)
+
+<details><summary>2024-07-12  v4.4.4</summary><br>
+
 - Added support for Windows.
+</details>
 
 <details><summary>2024-07-03  v3.3.3</summary><br>
   

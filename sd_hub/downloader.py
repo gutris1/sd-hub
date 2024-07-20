@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys
+import subprocess, re, sys, requests
 
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
@@ -18,7 +18,7 @@ def gdrown(url, target_path=None, fn=None):
 
     cwd = target_path if target_path else Path.cwd()
 
-    proc = subprocess.Popen(
+    p = subprocess.Popen(
         cmd,
         cwd=cwd,
         stdout=subprocess.PIPE,
@@ -27,38 +27,38 @@ def gdrown(url, target_path=None, fn=None):
         text=True
     )
 
-    malam = ""
-    failure = False
+    gdown_output = ""
+    error = False
 
     while True:
-        line = proc.stdout.readline()
-        if not line:
+        output = p.stdout.readline()
+        if not output:
             break
-        malam += line
 
-        if "Failed to retrieve" in line:
-            failure = True
+        gdown_output += output
 
-        lines = line.split('\n')
-        for line in lines:
-            if re.search(r'\d{1,3}%', line):
-                yield line.strip(), False
+        if "Failed to retrieve" in output:
+            failed = gdown_output.find("Failed to retrieve")
+            failed_line = gdown_output[failed:]
+            yield failed_line, True
+            error = True
+            continue
+
+        dl_line = output.split('\n')
+        for lines in dl_line:
+            if re.search(r'\d{1,3}%', lines):
+                yield lines.strip(), False
+                error = False
                 break
 
-    if failure:
-        fail_ = malam.find("Failed to retrieve")
-        outputs_ = malam[fail_:]
-        yield outputs_, False
-        return
+    if not error:
+        for lines in gdown_output.split('\n'):
+            if lines.startswith("To:"):
+                completed = re.search(r'[^/]*$', lines)
+                if completed:
+                    yield f"Saved To: {target_path}/{completed.group()}", True
 
-    for line in malam.split('\n'):
-        if line.startswith("To:"):
-            kemarin = re.search(r'[^/]*$', line)
-            if kemarin:
-                yield f"Saved To: {target_path}/{kemarin.group()}", True
-
-    proc.wait()
-
+    p.wait()
 
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     exe = Path(__file__).parent.parent / 'aria2c.exe'
@@ -83,6 +83,32 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             else:
                 url = f"{url}?token={token3}"
 
+        if "civitai.com/models/" in url:
+            try:
+                if '?modelVersionId=' in url:
+                    version_id = url.split('?modelVersionId=')[1]
+                    response = requests.get(f"https://civitai.com/api/v1/model-versions/{version_id}")
+                else:
+                    model_id = url.split('/models/')[1].split('/')[0]
+                    response = requests.get(f"https://civitai.com/api/v1/models/{model_id}")
+
+                response.raise_for_status()
+                data = response.json()
+
+                if "downloadUrl" in data:
+                    download_url = data["downloadUrl"]
+                elif "modelVersions" in data and data["modelVersions"]:
+                    download_url = data["modelVersions"][0].get("downloadUrl", "")
+                else:
+                    yield f"Unable to find download URL for\n-> {url}\n", True
+                    return
+
+                url = f"{download_url}?token={token3}" if token3 else download_url
+
+            except requests.exceptions.RequestException as e:
+                yield f"{str(e)}\n", True
+                return
+
     aria2cmd.extend([
         "--console-log-level=error",
         "--allow-overwrite=true",
@@ -100,7 +126,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     aria2cmd.append(url)
 
-    proc = subprocess.Popen(
+    p = subprocess.Popen(
         aria2cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -108,81 +134,75 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         text=True
     )
 
-    malam = ""
+    aria2_output = ""
     break_line = False
-    auth_fail = False
-    codeError = False
+    error = False
 
     while True:
-        line = proc.stdout.readline()
-        if not line:
+        output = p.stdout.readline()
+        if not output:
             break
 
-        malam += line
+        aria2_output += output
 
-        if "errorCode=24" in line:
-            auth_fail = True
+        if "errorCode=24" in output:
+            uri_pattern = re.search(r'URI=(https?://\S+)', output)
+            if uri_pattern:
+                uri = uri_pattern.group(1)
+                url_list = {
+                    "huggingface.co": f"## Authorization Failed, Enter your Huggingface Token\n-> {url}\n",
+                    "civitai.com": f"## Authorization Failed, Enter your Civitai API Key\n-> {url}\n"
+                }
 
-        if "errorCode" in line:
-            codeError = True
+                for domain, msg in url_list.items():
+                    if domain in uri:
+                        yield msg, True
+                        error = True
+                        break
+            continue
 
-        for minggu in line.splitlines():
-            match = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', minggu)
-            if match:
-                sizes = match.group(1)
-                percent = match.group(2)
-                speed = match.group(3)
-                output = f"{percent} | {sizes} | {speed}/s"
-                yield output, False
+        if "errorCode" in output:
+            arrow = aria2_output.find("->")
+            if arrow != -1:
+                lines = aria2_output.find("\n", arrow)
+                if lines != -1:
+                    errorcode = aria2_output[arrow:lines]
+                    uri_pattern = re.search(r'URI=(https?://\S+)', aria2_output)
+                    if uri_pattern:
+                        uri = uri_pattern.group(1)
+                        errorcode += '\n' + uri + '\n'
+
+                    yield errorcode, True
+                    error = True
+            continue
+
+        for lines in output.splitlines():
+            dl_line = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', lines)
+            if dl_line:
+                sizes = dl_line.group(1)
+                percent = dl_line.group(2)
+                speed = dl_line.group(3)
+                outputs = f"{percent} | {sizes} | {speed}/s"
+                yield outputs, False
 
                 break_line = True
+                error = False
                 break
-
-    if auth_fail:
-        find_url = re.search(r'URI=(https?://\S+)', line)
-        if find_url:
-            url_find = find_url.group(1)
-            uri = {
-                "huggingface.co": "Authorization failed\nEnter your Huggingface Token",
-                "civitai.com": "Authorization failed\nEnter your Civitai API Key"
-            }
-
-            for domain, msg in uri.items():
-                if domain in url_find:
-                    yield msg, False
-                    break
-        else:
-            yield malam, False
-        return
-
-    if codeError:
-        fail_ = malam.find("->")
-        if fail_ != -1:
-            arrow_ = malam.find("\n", fail_)
-            if arrow_ != -1:
-                outputs_ = malam[fail_:arrow_]
-                line_ = re.search(r'URI=(https?://\S+)', malam)
-                if line_:
-                    uri = line_.group(1)
-                    outputs_ += '\n' + uri + '\n'
-
-                yield outputs_, False
-        return
 
     if break_line:
         pass
 
-    kemarin = malam.find("======+====+===========")
-    if kemarin != -1:
-        for tidur in malam[kemarin:].splitlines():
-            if "|" in tidur:
-                bangun = tidur.split('|')
-                if len(bangun) > 3:
-                    disiram = bangun[3].strip()
-                    yield f"Saved To: {disiram}", True
+    if not error:
+        separator = aria2_output.find("======+====+===========")
+        if separator != -1:
+            for lines in aria2_output[separator:].splitlines():
+                if "|" in lines:
+                    pipe = lines.split('|')
+                    if len(pipe) > 3:
+                        output_dir = pipe[3].strip()
+                        yield f"Saved To: {output_dir}", True
 
-    proc.wait()
-
+    p.wait()
 
 def get_fn(url):
     fn_fn = urlparse(url)
@@ -193,8 +213,7 @@ def get_fn(url):
         fn = Path(fn_fn.path).name
         return fn
 
-
-def check_url(url):
+def url_check(url):
     try:
         url_parsed = urlparse(url)
 
@@ -208,14 +227,13 @@ def check_url(url):
 
         if url_parsed.netloc not in supported:
             supported_str = "\n".join(supported)
-            return False, f"{supported_str}"
+            return False, f"Supported Domain :\n{supported_str}"
 
         return True, ""
     except Exception as e:
         return False, str(e)
 
-
-def dl_url(url_line, current_path, tags_mappings):
+def input_process(url_line, current_path, tags_mappings):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
         return None, None, None, "Invalid usage, Tag should start with $"
 
@@ -234,7 +252,7 @@ def dl_url(url_line, current_path, tags_mappings):
     parts = url_line.split(' ')
     url = parts[0].strip()
 
-    is_valid, error_message = check_url(url)
+    is_valid, error_message = url_check(url)
     if not is_valid:
         return None, None, None, error_message
 
@@ -268,8 +286,7 @@ def dl_url(url_line, current_path, tags_mappings):
 
     return target_path, url, fn, None
 
-
-def dl_dl(command, token2=None, token3=None):
+def surface(command, token2=None, token3=None):
     if not command.strip():
         yield "Nothing To See Here.", True
         return
@@ -283,7 +300,7 @@ def dl_dl(command, token2=None, token3=None):
         return
 
     for url_line in urls:
-        target_path, url, fn, error = dl_url(url_line, current_path, tags_mappings)
+        target_path, url, fn, error = input_process(url_line, current_path, tags_mappings)
 
         if error:
             yield error, True
@@ -307,13 +324,12 @@ def dl_dl(command, token2=None, token3=None):
         ):
             yield output
 
-
 def downloader(command, token2, token3, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     yield "Now Downloading...", ""
 
-    for _text, _flag in dl_dl(command, token2, token3):
+    for _text, _flag in surface(command, token2, token3):
         if not _flag:
             if "Enter your" in _text:
                 yield "Error", "\n".join([_text] + output_box)
@@ -332,7 +348,10 @@ def downloader(command, token2, token3, box_state=gr.State()):
         else:
             output_box.append(_text)
 
-    catcher = ["exist", "Invalid", "Tag", "Output", "Nothing", "URL", "filename", "Supported Domain:"]
+    catcher = [
+        "exist", "Invalid", "Tag", "Output", "Nothing",
+        "URL", "filename", "Supported Domain:"
+    ]
 
     if any(asu in wc for asu in catcher for wc in output_box):
         yield "Error", "\n".join(output_box)
@@ -340,7 +359,6 @@ def downloader(command, token2, token3, box_state=gr.State()):
         yield "Done", "\n".join(output_box)
 
     return gr.update(), gr.State(output_box)
-
 
 def read_txt(file, box):
     text_box = []
