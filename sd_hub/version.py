@@ -1,10 +1,14 @@
-version = "4.5.6"
+version = "4.6.0"
 
-import sys
+import os, sys
 from pathlib import Path
+from typing import List
 
-def xyz(y):
-    x = Path(sys.executable).parent
+def xyz(y: str) -> List[str]:
+    if 'COLAB_JUPYTER_TRANSPORT' in os.environ:
+        x = Path('/usr/local/bin')
+    else:
+        x = Path(sys.executable).parent
+
     z = x / y
-
     return [str(z)]
