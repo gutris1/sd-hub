@@ -97,8 +97,9 @@ def tar_process(_tar, cwd, _pv, _format, _output):
                 ketemuan = os.read(ayu, 8192)
                 if not ketemuan:
                     break
-
+                
                 yield ketemuan.decode('utf-8'), False
+                time.sleep(1)
 
         except OSError:
             break
