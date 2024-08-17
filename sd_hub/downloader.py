@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys, requests
+import subprocess, re, sys, requests, time
 
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
@@ -47,6 +47,7 @@ def gdrown(url, target_path=None, fn=None):
         dl_line = output.split('\n')
         for lines in dl_line:
             if re.search(r'\d{1,3}%', lines):
+                time.sleep(1)
                 yield lines.strip(), False
                 error = False
                 break
