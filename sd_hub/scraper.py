@@ -15,12 +15,6 @@ def remove_readonly(func, path, exc_info):
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
-def delete(_tmp):
-    if sys.platform == 'win32':
-        shutil.rmtree(_tmp, onerror=remove_readonly)
-    else:
-        os.system(f"rm -rf {_tmp}")
-
 def scraping(input_string, token=None):
     _lines = input_string.split('\n')
     _outputs = []
@@ -29,7 +23,10 @@ def scraping(input_string, token=None):
     _tmp = _base / "tmp"
     
     if _tmp.exists():
-        delete(_tmp)
+        if sys.platform == 'win32':
+            shutil.rmtree(_tmp, onerror=remove_readonly)
+        else:
+            os.system(f"rm -rf {_tmp}")
 
     if not input_string.strip():
         yield "Nothing To Scrape Here", True
@@ -125,7 +122,10 @@ def scraping(input_string, token=None):
                             _outputs.append(url_url)
 
                             if _tmp.exists():
-                                delete(_tmp)
+                                if sys.platform == 'win32':
+                                    shutil.rmtree(_tmp, onerror=remove_readonly)
+                                else:
+                                    os.system(f"rm -rf {_tmp}")
 
         elif 'pastebin.com' in url:
             p_url = url.replace('pastebin.com', 'pastebin.com/raw')

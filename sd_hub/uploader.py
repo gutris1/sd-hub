@@ -2,7 +2,7 @@ from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys
+import subprocess, re, sys, time
 
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
@@ -10,10 +10,12 @@ from sd_hub.version import xyz
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
     msg = commit_msg.replace('"', '\\"')
     cli = xyz('huggingface-cli.exe') if sys.platform == 'win32' else xyz('huggingface-cli')
-    cmd = cli + ['upload', repo_id, file_path, file_name,
-                 '--token', token,
-                 '--revision', branch,
-                 '--commit-message', msg]
+    cmd = cli + [
+        'upload', repo_id, file_path, file_name,
+        '--token', token,
+        '--revision', branch,
+        '--commit-message', msg
+    ]
 
     if is_private:
         cmd.append('--private')
@@ -22,45 +24,51 @@ def push_push(repo_id, file_path, file_name, token, branch, is_private=False, co
         cmd.append('--exclude')
         cmd.extend([f'*.{ext}' for ext in ex_ext])
 
-    gasss = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True
+    )
+    
+    failed = False
+    error = ""
+    starting_line = time.time()
 
-    _fail = False
-    _error_msg = ""
-    buffer = ''
+    for line in p.stdout:
+        output = line.strip()
 
-    for dirantai in iter(lambda: gasss.stderr.read(8192), ''):
-        buffer += dirantai
-        while "\n" in buffer:
-            line, buffer = buffer.split("\n", 1)
+        if "Bad request" in output:
+            failed = True
+            break
 
-            if "Bad request" in line:
-                _fail = True
-                break
+        kandang = output.split(':', 1)
+        if len(kandang) > 1:
+            asu = kandang[1].strip()
+        else:
+            continue
 
-            asu = line.strip()
-            kandang = asu.split(':', 1)
-            if len(kandang) > 1:
-                asu = kandang[1].strip()
-            else:
-                continue
-
-            lari = re.compile(r'\d+%|\d+M/\d+G|\d+\.\d+MB/s')
-            if lari.search(asu):
+        lari = re.compile(r'\d+%|\d+M/\d+G|\d+\.\d+MB/s')
+        now_line = time.time()
+        if lari.search(asu):
+            if now_line - starting_line >= 1:
+                if "Consider using" in asu:
+                    continue
                 yield asu, False
+                starting_line = now_line
 
-            elif "Consider using" in asu:
-                continue
+    if failed:
+        error = output
+        while True:
+            part = p.stdout.readline()
+            if not part:
+                break
+            error += part
+        error = '.\n'.join(error.split('. '))
+        yield error, True
 
-    if _fail:
-        _error_msg = buffer.rstrip()
-        while "Bad request" in buffer:
-            buffer = gasss.stderr.read(8192)
-            _error_msg += buffer.rstrip()
-        _error_msg = '.\n'.join(_error_msg.split('. '))
-        yield _error_msg, True
-
-    gasss.stdout.close()
-    gasss.wait()
+    p.stdout.close()
+    p.wait()
 
 
 def up_up(inputs, user, repo, branch, token, repo_radio):

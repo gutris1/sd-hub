@@ -1,7 +1,7 @@
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys, requests
+import subprocess, re, sys, requests, time
 
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
@@ -28,35 +28,36 @@ def gdrown(url, target_path=None, fn=None):
     )
 
     gdown_output = ""
-    error = False
+    gdown_progress = None
+    starting_line = time.time()
+    failure = False
 
     while True:
         output = p.stdout.readline()
         if not output:
             break
-
         gdown_output += output
 
-        if "Failed to retrieve" in output:
-            failed = gdown_output.find("Failed to retrieve")
-            failed_line = gdown_output[failed:]
-            yield failed_line, True
-            error = True
-            continue
+        if "Failed to retrieve file url" in output:
+            failure = True
 
-        dl_line = output.split('\n')
-        for lines in dl_line:
-            if re.search(r'\d{1,3}%', lines):
-                yield lines.strip(), False
-                error = False
-                break
+        if re.search(r'\d{1,3}%', output):
+            gdown_progress = output.strip()
 
-    if not error:
-        for lines in gdown_output.split('\n'):
-            if lines.startswith("To:"):
-                completed = re.search(r'[^/]*$', lines)
-                if completed:
-                    yield f"Saved To: {target_path}/{completed.group()}", True
+        if gdown_progress and time.time() - starting_line >= 1:
+            yield gdown_progress, False
+            starting_line = time.time()
+
+    if failure:
+        failed = gdown_output.find("Failed to retrieve file url")
+        lines = gdown_output[failed:]
+        yield lines, False
+    
+    for lines in gdown_output.split('\n'):
+        if lines.startswith("To:"):
+            completed = re.search(r'[^/]*$', lines)
+            if completed:
+                yield f"Saved To: {target_path}/{completed.group()}", True
 
     p.wait()
 
