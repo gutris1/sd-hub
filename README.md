@@ -3,9 +3,14 @@ an Extension for Stable Diffusion WebUI and Forge.<br>
 You can Download, Upload, Archive files and that's it.<br>
 
 # Changelog
-### 2024-07-21  v4.5.6
+### 2024-09-30  v4.8.4
+- Gradio 4 Compatibility Update for Forge Webui.<br>
+
+<details><summary>2024-07-21  v4.5.6</summary><br>
+
 - Added support for downloading from Civitai using webpage URLs directly.<br>
 ![image](https://github.com/user-attachments/assets/2cde28e1-e88b-45cf-aae4-88bf0bfcf17b)
+</details>
 
 <details><summary>2024-07-12  v4.4.4</summary><br>
 
@@ -14,7 +19,7 @@ You can Download, Upload, Archive files and that's it.<br>
 
 <details><summary>2024-07-03  v3.3.3</summary><br>
   
-- added venv support.
+- Added venv support.
 </details>
 
 <details><summary>2024-05-14  v3.2.1</summary><br>
