@@ -1,8 +1,17 @@
+import gradio as gr
+import pkg_resources
+
+gr_v = pkg_resources.get_distribution("gradio").version
+m_v = int(gr_v.split('.')[0])
+
 from modules.ui_components import FormRow, FormColumn
 from modules import script_callbacks
-import gradio as gr
 
-from sd_hub.markdown import dl_md, upl_md, arc_md1, arc_md2
+if m_v > 3:
+    from sd_hub.markdown2 import dl_md, upl_md, arc_md1, arc_md2
+else:
+    from sd_hub.markdown1 import dl_md, upl_md, arc_md1, arc_md2
+
 from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
 from sd_hub.archiver import archive, extract
@@ -22,13 +31,13 @@ def on_ui_tabs():
                 with FormColumn(scale=7):
                     gr.Markdown(f"{dl_md}")
                     
-                with FormColumn(scale=3, variant="panel"):
+                with FormColumn(scale=3):
                     dl_token1 = gr.Textbox(value=token2, label="Huggingface Token (READ)", max_lines=1,
                                            placeholder="Your Huggingface Token here (role = READ)", interactive=True)
                     dl_token2 = gr.Textbox(value=token3, label="Civitai API Key", max_lines=1,
                                            placeholder="Your Civitai API Key here", interactive=True)
                     
-                    with FormRow(scale=1):
+                    with FormRow() if m_v > 3 else FormRow(scale=1):
                         dl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
                         dl_load = gr.Button(value="LOAD", variant="primary", min_width=0)
 
@@ -38,7 +47,7 @@ def on_ui_tabs():
                 with FormColumn(scale=1):
                     dl_dl = gr.Button("DOWNLOAD", variant="primary")
                     
-                with FormColumn(scale=1), FormRow(scale=1, variant="compact"):
+                with FormColumn(scale=1), FormRow(variant="compact") if m_v > 3 else FormRow(scale=1, variant="compact"):
                     dl_scrape = gr.Button("Scrape", variant="secondary", min_width=0)
                     dl_txt = gr.UploadButton(label="Insert TXT", variant="secondary",
                                              file_count="single", file_types=[".txt"], min_width=0)
@@ -60,16 +69,16 @@ def on_ui_tabs():
                 with FormColumn(scale=7):
                     gr.Markdown(f"{upl_md}")
 
-                with FormColumn(scale=3, variant="panel"):
+                with FormColumn(scale=3):
                     gr.Textbox(visible=False, max_lines=1)
                     upl_token = gr.Textbox(value=token1, label="Huggingface Token (WRITE)", max_lines=1,
-                                          placeholder="Your Huggingface Token here (role = WRITE)", interactive=True)
+                                           placeholder="Your Huggingface Token here (role = WRITE)", interactive=True)
 
-                    with FormRow(scale=1):
+                    with FormRow() if m_v > 3 else FormRow(scale=1):
                         upl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
                         upl_load = gr.Button(value="LOAD", variant="primary", min_width=0)                               
 
-            with FormRow(scale=1):
+            with FormRow() if m_v > 3 else FormRow(scale=1):
                 user_box = gr.Textbox(max_lines=1, placeholder="Username", label="Username", scale=1)
                 repo_box = gr.Textbox(max_lines=1, placeholder="Repository", label="Repository", scale=1)
                 branch_box = gr.Textbox(value="main", max_lines=1, placeholder="Branch", label="Branch", elem_classes="up-btn", scale=1)
@@ -101,7 +110,7 @@ def on_ui_tabs():
                 with FormColumn():
                     gr.Markdown(f"{arc_md2}")
 
-            gr.Markdown("""<div><h3 style='font-size: 17px;'>Archive</h3></div>""", scale=1)
+            gr.Markdown("""<div><h3 style='font-size: 17px;'>Archive</h3></div>""")
             arc_format = gr.Radio(["tar.lz4", "tar.gz", "zip"], value="tar.lz4", label="Format", interactive=True)
             arc_split = gr.Radio(["None", "2", "3", "4", "5"], value="None", label="Split by", interactive=True)
                     
@@ -117,7 +126,7 @@ def on_ui_tabs():
                 with gr.Column():
                     with gr.Row():
                         arc_run = gr.Button("Compress", variant="primary")
-                        mkdir_cb1 = gr.Checkbox(label="Create Directory", default=False, elem_classes="cb")
+                        mkdir_cb1 = gr.Checkbox(label="Create Directory", elem_classes="cb")
 
                 with gr.Column():
                     arc_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
@@ -131,7 +140,7 @@ def on_ui_tabs():
                 with gr.Column():
                     with gr.Row():
                         extr_btn = gr.Button("Decompress", variant="primary", elem_classes="arc-btn")
-                        mkdir_cb2 = gr.Checkbox(label="Create Directory", default=False, elem_classes="cb")
+                        mkdir_cb2 = gr.Checkbox(label="Create Directory", elem_classes="cb")
                     
                 with gr.Column():
                     gr.Textbox(show_label=False, interactive=False, max_lines=1, elem_classes="hide-this")

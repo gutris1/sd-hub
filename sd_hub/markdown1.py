@@ -2,8 +2,8 @@ dl_md = """<p>
 
 Enter your **Huggingface Token** with the role **READ** to download from your private repo. Get one <code>[Here](https://huggingface.co/settings/tokens)</code>
 Enter your **Civitai API Key** if you encounter an Authorization failed error. Get your key <code>[Here](https://civitai.com/user/account)</code>
-Save = To automatically load token upon Reload UI or Webui launch.
-Load = Load token.
+Save = To automatically load token upon Reload UI or Webui launch
+Load = Load token
 
 Supported Domains: <code>Civitai</code> • <code>Huggingface</code> • <code>Github</code> • <code>Drive.Google</code>
 See usage <code>[Here](https://github.com/gutris1/sd-hub/blob/master/README.md#downloader)</code></p>"""
