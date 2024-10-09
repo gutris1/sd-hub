@@ -14,15 +14,21 @@ def load_token():
         token3 = value.get("civitai-api-key", "")
 
         msg = []
-
+        title = 'SD-Hub :'
         if token1:
-            msg.append("Huggingface Token (WRITE) loaded")
+            msg1 = "Huggingface Token (WRITE) loaded"
+            msg.append(msg1)
+            print(f"{title} {msg1}")
 
         if token2:
-            msg.append("Huggingface Token (READ) loaded")
+            msg2 = "Huggingface Token (READ) loaded"
+            msg.append(msg2)
+            print(f"{title} {msg2}")
 
         if token3:
-            msg.append("Civitai API Key loaded")
+            msg3 = "Civitai API Key loaded"
+            msg.append(msg3)
+            print(f"{title} {msg3}")
 
         if not msg:
             return "", "", "", "No Token Found", "No Token Found"
