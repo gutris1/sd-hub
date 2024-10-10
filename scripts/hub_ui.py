@@ -7,11 +7,6 @@ m_v = int(gr_v.split('.')[0])
 from modules.ui_components import FormRow, FormColumn
 from modules import script_callbacks
 
-if m_v > 3:
-    from sd_hub.markdown2 import dl_md, upl_md, arc_md1, arc_md2
-else:
-    from sd_hub.markdown1 import dl_md, upl_md, arc_md1, arc_md2
-
 from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
 from sd_hub.archiver import archive, extract
@@ -20,10 +15,14 @@ from sd_hub.paths import path_path
 from sd_hub.scraper import scraper
 from sd_hub.version import version
 
-token1, token2, token3, _, _ = load_token()
+if m_v > 3:
+    from sd_hub.markdown2 import dl_md, upl_md, arc_md1, arc_md2
+else:
+    from sd_hub.markdown1 import dl_md, upl_md, arc_md1, arc_md2
 
-def on_ui_tabs():    
+def on_ui_tabs():
     with gr.Blocks(analytics_enabled=False) as hub, gr.Tabs():
+        token1, token2, token3, _, _ = load_token()
         
         with gr.TabItem("Downloader", elem_id="hub-dl"):
             gr.Markdown("""<div style='text-align: center;'><h3 style='font-size: 18px;'>🔽 Download Command Center</h3></div>""")
@@ -32,10 +31,10 @@ def on_ui_tabs():
                     gr.Markdown(f"{dl_md}")
                     
                 with FormColumn(scale=3):
-                    dl_token1 = gr.Textbox(value=token2, label="Huggingface Token (READ)", max_lines=1,
-                                           placeholder="Your Huggingface Token here (role = READ)", interactive=True)
-                    dl_token2 = gr.Textbox(value=token3, label="Civitai API Key", max_lines=1,
-                                           placeholder="Your Civitai API Key here", interactive=True)
+                    dl_token1 = gr.TextArea(value=token2, label="Huggingface Token (READ)", lines=1, max_lines=1,
+                                            placeholder="Your Huggingface Token here (role = READ)", interactive=True)
+                    dl_token2 = gr.TextArea(value=token3, label="Civitai API Key", lines=1, max_lines=1,
+                                            placeholder="Your Civitai API Key here", interactive=True)
                     
                     with FormRow() if m_v > 3 else FormRow(scale=1):
                         dl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
@@ -61,8 +60,7 @@ def on_ui_tabs():
             dl_dl.click(fn=downloader, inputs=[dl_input, dl_token1, dl_token2, gr.State()], outputs=[dl_out1, dl_out2])
             dl_txt.upload(fn=read_txt, inputs=[dl_txt, dl_input], outputs=dl_input)
             dl_scrape.click(fn=scraper, inputs=[dl_input, dl_token1, gr.State()], outputs=[dl_input, dl_out2])
-
-
+            
         with gr.TabItem("Uploader", elem_id="hub-up"):
             gr.Markdown("""<div style='text-align: center;'><h3 style='font-size: 18px;'>🤗 Upload To Huggingface</h3></div>""")
             with FormRow():
@@ -71,8 +69,8 @@ def on_ui_tabs():
 
                 with FormColumn(scale=3):
                     gr.Textbox(visible=False, max_lines=1)
-                    upl_token = gr.Textbox(value=token1, label="Huggingface Token (WRITE)", max_lines=1,
-                                           placeholder="Your Huggingface Token here (role = WRITE)", interactive=True)
+                    upl_token = gr.TextArea(value=token1, label="Huggingface Token (WRITE)", lines=1, max_lines=1,
+                                            placeholder="Your Huggingface Token here (role = WRITE)", interactive=True)
 
                     with FormRow() if m_v > 3 else FormRow(scale=1):
                         upl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
@@ -153,8 +151,6 @@ def on_ui_tabs():
             
         gr.HTML(f"""<div style="text-align: center; font-size: 12px;">
         <h4><a href="https://github.com/gutris1/sd-hub" style="color: gray;">SD-Hub • v{version}</a></h4>""")
-        
-        hub.load(fn=load_token, inputs=[], outputs=[upl_token, dl_token1, dl_token2, dl_out2, upl_output2], queue=False)
         
     return (hub, "HUB", "hub"),
 
