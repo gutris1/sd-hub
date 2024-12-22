@@ -1,39 +1,88 @@
-.hide-this {
-    visibility: hidden !important;}
+#tab_sdhub .tabs > .tab-nav > button.selected {
+  color: var(--primary-500);
+}
 
-#hub-dl .dl-btn {
+.hide-this {
+  visibility: hidden !important;
+}
+
+#sdhub-downloader .dl-btn {
   width: 100px !important;}
-#hub-dl .dl-input {
+#sdhub-downloader .dl-input {
   margin-top: 0px !important;}
-#hub-dl .dl-row {
+#sdhub-downloader .dl-row {
   margin-top: -7px !important;}
 
-#hub-up .up-btn {
+#sdhub-uploader .up-btn {
   width: 100px !important;}
-#hub-up .up-input {
+#sdhub-uploader .up-input {
   margin-top: -15px !important;}
-#hub-up .up-row {
+#sdhub-uploader .up-row {
   margin-top: -14px !important;}
 
-#hub-arc .arc-btn {
+#sdhub-archiver .arc-btn {
   width: 100px !important;}
-#hub-arc .arc-input {
+#sdhub-archiver .arc-input {
   margin-top: -15px !important;}
-#hub-arc .arc-row {
+#sdhub-archiver .arc-row {
   margin-top: -9px !important;}
-#hub-arc .cb {
+#sdhub-archiver .cb {
   margin-left: 60px !important;}
 
-#hub .hub-box {
-  border: transparent !important;}
+.gradio-container-4-40-0 #sdhub-downloader-button-row,
+.gradio-container-4-40-0 #sdhub-uploder-button-row,
+.gradio-container-4-40-0 #sdhub-uploder-inputs {
+	margin-top: -10px;
+}
 
-#btn .btn {
-  width: 100px !important;}
+#sdhub-uploder-radio-box .svelte-1kzox3m,
+#sdhub-uploder-radio-box .svelte-1p9xokt {
+  margin-top: -1px;
+}
 
-#gap .gap {
-  margin-top: 7px !important;}
+#sdhub-repo {
+	margin-top: 10px;
+	text-align: center;
+	font-size: 13px;
+	transition: 0.4s ease;
+	font-weight: normal;
+}
 
-#asu .hf-margin {
-  width: 50%;
-  margin-top: 10px;
-  margin-bottom: 10px;}
+#sdhub-repo:hover {
+	color: var(--primary-500);
+}
+
+#sdhub-tab-title {
+	text-align: center;
+	font-size: 20px;
+	padding-bottom: 5px;
+}
+
+#sdhub-tab-info {
+  font-weight: normal;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+#sdhub-tab-info .sdhub-link,
+#sdhub-tab-info .sdhub-nonlink {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border: 1px solid var(--primary-500);
+  transition: 0.4s ease;
+}
+
+#sdhub-tab-info .sdhub-link:hover {
+  var(--link-text-color-hover);
+  border: 1px solid orange;
+}
+
+#sdhub-tab-info .sdhub-nonlink {
+  pointer-events: none;
+}
+
+#sdhub-tab-info .sdhub-nonlink:hover {
+  color: unset;
+}

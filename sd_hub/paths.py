@@ -1,9 +1,10 @@
-from modules.paths_internal import models_path, data_path
+from modules.paths_internal import models_path, data_path, extensions_dir
+from modules import shared, sd_models
 from pathlib import Path
 import os
 
-_data = Path(data_path)
-_model = Path(models_path)
+Root = Path(data_path)
+Models = Path(models_path)
 
 def hub_path():
     paths = path_path()
@@ -16,60 +17,34 @@ def hub_path():
   
 def path_path():
     tags_list = {
-        "ckpt": ("stable-diffusion", "_model"),
-        "lora": ("lora", "_model"),
-        "vae": ("vae", "_model"),
-        "emb": ("embeddings", "_data"),
-        "ups": ("esrgan", "_model"),
-        "ups2": ("gfpgan", "_model"),
-        "ups3": ("realesrgan", "_model"),
-        "cn": ("controlnet", "_model"),
-        "hn": ("hypernetworks", "_model"),
-        "ad": ("adetailer", "_model"),
-        "cf": ("codeformer", "_model"),
-        "ext": ("extensions", "_data"),
+        "$ckpt": shared.cmd_opts.ckpt_dir or sd_models.model_path,
+        "$lora": shared.cmd_opts.lora_dir,
+        "$vae": shared.cmd_opts.vae_dir or Models / 'VAE',
+        "$emb": shared.cmd_opts.embeddings_dir,
+        "$ups": shared.cmd_opts.esrgan_models_path or Models / 'ESRGAN',
+        "$cn": shared.cmd_opts.controlnet_dir or Models / 'ControlNet',
+        "$hn": shared.cmd_opts.hypernetwork_dir or Models / 'hypernetworks',
+        "$ad": Models / 'adetailer',
+        "$cf": shared.cmd_opts.codeformer_models_path or Models / 'Codeformer',
+        "$ext": extensions_dir,
     }
 
     paths = []
 
-    for _desc, (_name, _in) in tags_list.items():
-        if _name is not None:
-            if _in == "_model":
-                model_dir = next(os.walk(str(_model)))[1]
-                model_dir_lower = [d.lower() for d in model_dir]
-                if _name.lower() in model_dir_lower:
-                    path_model = _model / model_dir[model_dir_lower.index(_name.lower())]
-                    paths.append([_desc, path_model])
+    for t, d in tags_list.items():
+        paths.append([t, str(d)])
 
-            if _in == "_data":
-                data_dir = next(os.walk(str(_data)))[1]
-                data_dir_lower = [d.lower() for d in data_dir]
-                if _name.lower() in data_dir_lower:
-                    path_data = _data / data_dir[data_dir_lower.index(_name.lower())]
-                    paths.append([_desc, path_data])
- 
-            if _desc == "cn":
-                cn_path = _data / "extensions/sd-webui-controlnet/models"
-                if cn_path.is_dir():
-                    cn_dir = next(os.walk(str(cn_path)))[1]
-                    cn_dir_lower = [d.lower() for d in cn_dir]
-                    if _name.lower() in cn_dir_lower:
-                        path_cn = cn_path / cn_dir[cn_dir_lower.index(_name.lower())]
-                        paths.append(["cn", path_cn])
-                else:
-                    paths.append(["cn", ""])
+    paths.append(["$root", str(Root)])
 
-    paths.append(["root", str(_data)])
-
-    env_list = {
+    e = {
         'COLAB_JUPYTER_TRANSPORT': '/content',
         'SAGEMAKER_INTERNAL_IMAGE_URI': '/home/studio-lab-user',
         'KAGGLE_DATA_PROXY_TOKEN': '/kaggle/working'
     }
 
-    for var, path in env_list.items():
-        if var in os.environ:
-            paths.append(["home", path])
+    for v, p in e.items():
+        if v in os.environ:
+            paths.append(["$home", p])
             break    
 
     return paths
