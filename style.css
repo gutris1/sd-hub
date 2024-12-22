@@ -40,11 +40,11 @@
 }
 
 #sdhub-repo {
-  margin-top: 10px;
+	margin-top: 10px;
 	text-align: center;
 	font-size: 13px;
 	transition: 0.4s ease;
-  font-weight: normal;
+	font-weight: normal;
 }
 
 #sdhub-repo:hover {
@@ -52,9 +52,9 @@
 }
 
 #sdhub-tab-title {
-  text-align: center;
-  font-size: 20px;
-  padding-bottom: 5px;
+	text-align: center;
+	font-size: 20px;
+	padding-bottom: 5px;
 }
 
 #sdhub-tab-info {
