@@ -240,7 +240,7 @@ def input_process(url_line, current_path, tags_mappings):
 
     if url_line.startswith('$'):
         parts = url_line[1:].strip().split('/', 1)
-        tags_key = parts[0].lower()
+        tags_key = f"${parts[0].lower()}"
         subfolder = parts[1] if len(parts) > 1 else None
         base_path = tags_mappings.get(tags_key)
         if base_path is not None:
