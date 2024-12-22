@@ -1,4 +1,4 @@
-#tab_sd_hub .tabs > .tab-nav > button.selected {
+#tab_sdhub .tabs > .tab-nav > button.selected {
   color: var(--primary-500);
 }
 
