@@ -2,7 +2,7 @@ from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys, time
+import subprocess, re, sys, time, json
 
 from sd_hub.paths import hub_path
 from sd_hub.version import xyz
@@ -177,7 +177,21 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             yield details, True
 
 
+def SaveUploaderInfo(user, repo, branch):
+    jsonpath = Path(__file__).parent.parent / "uploader-info.json"
+
+    data = {
+        "username": user,
+        "repository": repo,
+        "branch": branch
+    }
+
+    with open(jsonpath, "w") as f:
+        json.dump(data, f, indent=4)
+
+
 def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()):
+    SaveUploaderInfo(user, repo, branch)
     output_box = box_state if box_state else []
 
     for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
