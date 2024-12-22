@@ -255,6 +255,7 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
             tag_key, _, subpath_or_file = path_str[1:].partition('/')
+            tag_key = f"${tag_key.lower()}"
             resolved_path = tag_tag.get(tag_key)
             
             if resolved_path is None:
@@ -494,6 +495,7 @@ def path_extract(input_path, output_path, mkdir_cb2):
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
             tag_key, _, subpath_or_file = path_str[1:].partition('/')
+            tag_key = f"${tag_key.lower()}"
             resolved_path = tag_tag.get(tag_key)
             
             if resolved_path is None:
