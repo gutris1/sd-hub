@@ -126,14 +126,14 @@ def on_ui_tabs():
                     max_lines=1,
                     placeholder="Username",
                     label="Username",
-                    min_width=20
+                    elem_id="sdhub-uploader-username-box"
                 )
 
                 repo_box = gr.Textbox(
                     max_lines=1,
                     placeholder="Repository",
                     label="Repository",
-                    min_width=20
+                    elem_id="sdhub-uploader-repo-box"
                 )
 
                 branch_box = gr.Textbox(
@@ -141,8 +141,7 @@ def on_ui_tabs():
                     max_lines=1,
                     placeholder="Branch",
                     label="Branch",
-                    elem_classes="sdhub-uploader-branch-box",
-                    min_width=15
+                    elem_id="sdhub-uploader-branch-box"
                 )
 
                 repo_radio = gr.Radio(
@@ -150,14 +149,13 @@ def on_ui_tabs():
                     value="Private",
                     label="Visibility",
                     interactive=True,
-                    min_width=20,
-                    elem_id="sdhub-uploder-radio"
+                    elem_id="sdhub-uploder-radio-box"
                 )
 
                 gr.Textbox(
                     max_lines=1,
                     show_label=False,
-                    min_width=25,
+                    elem_id="sdhub-uploder-ghost-box",
                     elem_classes="hide-this"
                 )
 
