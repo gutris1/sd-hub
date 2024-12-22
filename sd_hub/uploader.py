@@ -115,21 +115,32 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         full_path = Path(input_path) if not input_path.startswith('$') else None
         if input_path.startswith('$'):
             tag_key, _, subpath_or_file = input_path[1:].partition('/')
+            tag_key = f"${tag_key.lower()}"
             resolved_path = tag_tag.get(tag_key)
             if resolved_path is None:
                 yield f"{tag_key}\nInvalid tag.", True
                 return
             full_path = Path(resolved_path, subpath_or_file)
 
-        if full_path:
+        def isEmpty(fp):
+            for f in fp.iterdir():
+                rp = f.resolve()
+                if rp.is_file() or (rp.is_dir() and any(rp.iterdir())):
+                    return False
+            return True
+
+        if full_path.exists():
             if full_path.is_file():
                 type_ = "file"
             elif full_path.is_dir():
+                if isEmpty(full_path):
+                    yield f"{full_path}\nInput Path is empty.", True
+                    return
                 type_ = "folder"
             else:
                 type_ = "unknown"
         else:
-            yield f"{input_path}\nInput Path does not exist.", True
+            yield f"{full_path}\nInput Path does not exist.", True
             return
 
         if given_fn and not Path(given_fn).suffix and full_path.is_file():
