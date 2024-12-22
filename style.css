@@ -35,8 +35,9 @@
 	margin-top: -10px;
 }
 
-#sdhub-uploder-radio .svelte-1kzox3m {
-  margin-top: -3px;
+#sdhub-uploder-radio-box .svelte-1kzox3m,
+#sdhub-uploder-radio-box .svelte-1p9xokt {
+  margin-top: -1px;
 }
 
 #sdhub-repo {
