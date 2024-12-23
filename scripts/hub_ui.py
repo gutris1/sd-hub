@@ -270,7 +270,7 @@ def on_ui_tabs():
         with gr.Accordion("Tag List", open=False, visible=True):
             gr.DataFrame(
                 path_path(),
-                headers=["Tag", "Path"],
+                headers=["SD-Hub Tag", "WebUI Path"],
                 datatype=["str", "str"],
                 interactive=False,
                 elem_id="sdhub-tag-dataframe"
