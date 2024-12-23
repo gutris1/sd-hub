@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 from pathlib import Path
 from modules.scripts import basedir
+from modules.paths_internal import data_path
 import gradio as gr
 import subprocess, re, sys, requests, time
 
@@ -119,7 +120,6 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     aria2cmd.extend([
         "--console-log-level=error",
-        "--allow-overwrite=true",
         "--stderr=true",
         "--summary-interval=1",
         "-c", 
@@ -129,10 +129,30 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         "-j5"
     ])
 
+    root_abs = Path(data_path).resolve()
+    target_abs = None
+
     if target_path:
+        if sys.platform == "win32":
+            if "WINDOWS" in target_path.upper():
+                yield "Not allowed: output path contains WINDOWS", False
+                return
+
+        target_abs = Path(target_path).resolve()
+
+        if target_abs != root_abs and root_abs in target_abs.parents:
+            aria2cmd.extend(["--allow-overwrite=true"])
+
         aria2cmd.extend(["-d", target_path])
 
     if fn:
+        if target_abs:
+            fp = target_abs / fn 
+
+            if not (root_abs in target_abs.parents or target_abs == root_abs) and fp.exists():
+                yield "File already exists", False
+                return
+
         aria2cmd.extend(["-o", fn])
 
     aria2cmd.append(url)
@@ -344,7 +364,9 @@ def downloader(command, token2, token3, box_state=gr.State()):
         "The model is in early access",
         "Unable to find",
         "errorCode",
-        "Failed to retrieve"
+        "Failed to retrieve",
+        "File already exists",
+        "Not allowed"
     ]
 
     yield "Now Downloading...", ""
