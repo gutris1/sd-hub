@@ -1,7 +1,8 @@
+from importlib import metadata
 from packaging import version
 from typing import List, Dict
 from pathlib import Path
-import pkg_resources, subprocess, requests, zipfile, launch, sys, os
+import subprocess, requests, zipfile, launch, sys, os
 
 base = Path(__file__).parent
 req_ = base / "requirements.txt"
@@ -50,12 +51,12 @@ def _install_req_1() -> None:
             if '==' in pkg:
                 pkg_name, pkg_version = pkg.split('==')
                 try:
-                    _version = pkg_resources.get_distribution(pkg_name).version
+                    _version = metadata.version(pkg_name)
                     if version.parse(_version) < version.parse(pkg_version):
                         reqs.append(pkg)
                         names.append(pkg_name)
                         
-                except pkg_resources.DistributionNotFound:
+                except metadata.PackageNotFoundError:
                     reqs.append(pkg)
                     names.append(pkg_name)
                     
