@@ -1,3 +1,24 @@
+function CopyTextFromUselessDataFrame() {
+  document.addEventListener("click", (e) => {
+    const table = gradioApp().querySelector("#sdhub-tag-dataframe");
+
+    if (table && table.contains(e.target)) {
+      const td = e.target.closest("td");
+      const span = td.querySelector("span");
+      const text = span ? span.textContent : null;
+
+      if (text) {
+        navigator.clipboard.writeText(text);
+
+        td.classList.add("pulse-td");
+        setTimeout(() => {
+          td.classList.remove("pulse-td");
+        }, 2000);
+      }
+    }
+  });
+}
+
 onUiLoaded(function () {
   window.getRunningScript = () => () => new Error().stack.match(/(?:[a-z]+:\/\/)?[^ \n]*\.js/)[0];
   var FilePath = getRunningScript()().match(/file=([^\/]+\/[^\/]+)\//);
@@ -37,4 +58,6 @@ onUiLoaded(function () {
         console.log("Error:", error);
       });
   }
+
+  CopyTextFromUselessDataFrame();
 });

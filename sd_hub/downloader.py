@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 from pathlib import Path
+from modules.scripts import basedir
 import gradio as gr
 import subprocess, re, sys, requests, time
 
@@ -61,9 +62,11 @@ def gdrown(url, target_path=None, fn=None):
 
     p.wait()
 
+
+aria2cexe = Path(basedir()) / 'aria2c.exe'
+
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
-    exe = Path(__file__).parent.parent / 'aria2c.exe'
-    aria2cmd = [str(exe)] if sys.platform == 'win32' else xyz('aria2c')
+    aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
 
     if "huggingface.co" in url:
         if "/blob/" in url:
@@ -98,10 +101,14 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
                 if "downloadUrl" in data:
                     download_url = data["downloadUrl"]
+                    early_access = data.get("earlyAccessConfig")
+                    if early_access and early_access.get("chargeForDownload", False):
+                        yield f"-> {download_url}\nThe model is in early access and requires payment for downloading.", False
+                        return
                 elif "modelVersions" in data and data["modelVersions"]:
                     download_url = data["modelVersions"][0].get("downloadUrl", "")
                 else:
-                    yield f"Unable to find download URL for\n-> {url}\n", True
+                    yield f"Unable to find download URL for\n-> {url}\n", False
                     return
 
                 url = f"{download_url}?token={token3}" if token3 else download_url
@@ -115,9 +122,12 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         "--allow-overwrite=true",
         "--stderr=true",
         "--summary-interval=1",
-        "-c", "-x16", "-s16", "-k1M", "-j5"
-        ]
-    )
+        "-c", 
+        "-x16", 
+        "-s16", 
+        "-k1M", 
+        "-j5"
+    ])
 
     if target_path:
         aria2cmd.extend(["-d", target_path])
@@ -157,7 +167,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
                 for domain, msg in url_list.items():
                     if domain in uri:
-                        yield msg, True
+                        yield msg, False
                         error = True
                         break
             continue
@@ -173,7 +183,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                         uri = uri_pattern.group(1)
                         errorcode += '\n' + uri + '\n'
 
-                    yield errorcode, True
+                    yield errorcode, False
                     error = True
             continue
 
@@ -202,7 +212,6 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
                     if len(pipe) > 3:
                         output_dir = pipe[3].strip()
                         yield f"Saved To: {output_dir}", True
-
     p.wait()
 
 def get_fn(url):
@@ -221,10 +230,12 @@ def url_check(url):
         if not (url_parsed.scheme and url_parsed.netloc):
             return False, "Invalid URL."
 
-        supported = ["civitai.com",
-                     "huggingface.co",
-                     "github.com",
-                     "drive.google.com"]
+        supported = [
+            "civitai.com",
+            "huggingface.co",
+            "github.com",
+            "drive.google.com"
+        ]
 
         if url_parsed.netloc not in supported:
             supported_str = "\n".join(supported)
@@ -328,19 +339,19 @@ def surface(command, token2=None, token3=None):
 def downloader(command, token2, token3, box_state=gr.State()):
     output_box = box_state if box_state else []
 
+    ngword = [
+        "## Authorization Failed",
+        "The model is in early access",
+        "Unable to find",
+        "errorCode",
+        "Failed to retrieve"
+    ]
+
     yield "Now Downloading...", ""
 
     for _text, _flag in surface(command, token2, token3):
         if not _flag:
-            if "Enter your" in _text:
-                yield "Error", "\n".join([_text] + output_box)
-                return gr.update(), gr.State(output_box)
-
-            if "errorCode" in _text:
-                yield "Error", "\n".join([_text] + output_box)
-                return gr.update(), gr.State(output_box)
-
-            if "Failed to retrieve" in _text:
+            if any(k in _text for k in ngword):
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
 
@@ -350,11 +361,11 @@ def downloader(command, token2, token3, box_state=gr.State()):
             output_box.append(_text)
 
     catcher = [
-        "exist", "Invalid", "Tag", "Output", "Nothing",
-        "URL", "filename", "Supported Domain:"
+        "exist", "Invalid", "Tag", "Output", "Nothing", "URL",
+        "filename", "Supported Domain:", "500 Server Error"
     ]
 
-    if any(asu in wc for asu in catcher for wc in output_box):
+    if any(k in w for k in catcher for w in output_box):
         yield "Error", "\n".join(output_box)
     else:
         yield "Done", "\n".join(output_box)

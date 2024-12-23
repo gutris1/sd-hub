@@ -1,7 +1,10 @@
 from urllib.parse import urlparse
 from pathlib import Path
+from modules.scripts import basedir
 import gradio as gr
 import os, stat, sys, shutil, requests, subprocess
+
+_tmp = Path(basedir()) / 'tmp'
 
 def is_valid_url(url):
     parsing = urlparse(url)
@@ -19,8 +22,6 @@ def scraping(input_string, token=None):
     _lines = input_string.split('\n')
     _outputs = []
     _h = {"User-Agent": "Mozilla/5.0"}
-    _base = Path(__file__).parent
-    _tmp = _base / "tmp"
     
     if _tmp.exists():
         if sys.platform == 'win32':
@@ -172,10 +173,16 @@ def scraping(input_string, token=None):
     
 def scraper(input_string, token, box_state=gr.State()):
     output_box = box_state if box_state else []
-    
+
+    ngword = [
+        "Nothing",
+        "should be",
+        "Supported Domains"
+    ]
+
     for _text, _flag in scraping(input_string, token):
         if not _flag:
-            if "Nothing" in _text or "should be" in _text or "Supported Domains" in _text:
+            if any(k in _text for k in ngword):
                 yield _text, "\n".join(output_box)
             else:
                 yield _text, "\n".join(output_box)

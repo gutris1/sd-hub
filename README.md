@@ -3,8 +3,15 @@ an Extension for Stable Diffusion WebUI and Forge.<br>
 You can Download, Upload, Archive files and that's it.<br>
 
 # Changelog
-### 2024-09-30  v4.8.4
+### 2024-12-23  v5.0.0
+- Added a click event listener to the Tag List in the Gradio DataFrame to copy the table values, making it easier to copy especially for mobile users.<br>
+- Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
+- Fixed path handling.<br>
+
+<details><summary>2024-09-30  v4.8.4</summary><br>
+
 - Gradio 4 Compatibility Update for Forge Webui.<br>
+</details>
 
 <details><summary>2024-07-21  v4.5.6</summary><br>
 
