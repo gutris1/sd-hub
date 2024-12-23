@@ -65,7 +65,9 @@ URL
 Tag should begin with <code>$</code><br>
 Tag is mandatory and there is no default path.<br>
 For available tags, refer to the [Tag List] at the bottom of the extension.<br>
-![taglist](https://github.com/gutris1/sd-hub/assets/132797949/4e08189c-9617-4681-8985-38cbfd5acb2e)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/37ed0ab7-a52d-42ac-9252-44eaa88181a8", width=1000px>
+</p>
 
 You can also add subdirectories to the tag if you have any:
 ```python
