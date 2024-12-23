@@ -7,7 +7,7 @@ The extension also has functionality to archive and extract files in formats lik
 
 # Changelog
 ### 2024-12-23  v5.0.0
-- Added a click event listener to the Tag List in the Gradio DataFrame to copy the table values, making it easier to copy especially for mobile users.<br>
+- Added a click event listener to the Tag List in the Gradio DataFrame to automatically copy the table text, making it easier to copy especially for mobile users.<br>
 - Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
 - Fixed path handling.<br>
 
@@ -70,6 +70,8 @@ URL
 Tag should begin with <code>$</code><br>
 Tag is mandatory and there is no default path.<br>
 For available tags, refer to the [Tag List] at the bottom of the extension.<br>
+
+Click on the table row, tag or path to automatically copy its text.<br>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/37ed0ab7-a52d-42ac-9252-44eaa88181a8", width=1000px>
 </p>
