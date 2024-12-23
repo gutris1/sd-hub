@@ -1,7 +1,8 @@
+from importlib import metadata
 from packaging import version
 from typing import List, Dict
 from pathlib import Path
-import pkg_resources, subprocess, requests, zipfile, launch, sys, os
+import subprocess, requests, zipfile, launch, sys, os
 
 base = Path(__file__).parent
 req_ = base / "requirements.txt"
@@ -9,6 +10,7 @@ req_ = base / "requirements.txt"
 orange_ = '\033[38;5;208m'
 blue_ = '\033[38;5;39m'
 reset_ = '\033[0m'
+
 
 def _sub(inputs: List[str]) -> bool:
     try:
@@ -23,6 +25,7 @@ def _sub(inputs: List[str]) -> bool:
     except subprocess.CalledProcessError:
         return False
 
+
 def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
     try:
         subprocess.run(
@@ -36,6 +39,7 @@ def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
         pkg_list.append(pkg)
         _sub(cmd.split())
 
+
 def _install_req_1() -> None:
     reqs = []
     names = []
@@ -47,12 +51,12 @@ def _install_req_1() -> None:
             if '==' in pkg:
                 pkg_name, pkg_version = pkg.split('==')
                 try:
-                    _version = pkg_resources.get_distribution(pkg_name).version
+                    _version = metadata.version(pkg_name)
                     if version.parse(_version) < version.parse(pkg_version):
                         reqs.append(pkg)
                         names.append(pkg_name)
                         
-                except pkg_resources.DistributionNotFound:
+                except metadata.PackageNotFoundError:
                     reqs.append(pkg)
                     names.append(pkg_name)
                     
@@ -76,7 +80,8 @@ def _install_req_1() -> None:
                 subprocess.run(
                     [sys.executable, '-m', 'pip', 'install', '-q', pkg]
                 )
-   
+
+
 def _install_req_2() -> None:
     pkg_list: List[str] = []
 
@@ -160,6 +165,7 @@ def _install_req_2() -> None:
             f"Installing SD-Hub requirement: "
             f"{' '.join(f'{blue_}{pkg}{reset_}' for pkg in pkg_list)}"
         )
+
 
 _install_req_1()
 _install_req_2()

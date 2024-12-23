@@ -2,3 +2,5 @@ __pycache__/
 *.png
 *.gif
 *.jpg
+aria2c.exe
+sd_hub/hf-logo.svg
