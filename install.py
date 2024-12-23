@@ -10,6 +10,7 @@ orange_ = '\033[38;5;208m'
 blue_ = '\033[38;5;39m'
 reset_ = '\033[0m'
 
+
 def _sub(inputs: List[str]) -> bool:
     try:
         subprocess.run(
@@ -23,6 +24,7 @@ def _sub(inputs: List[str]) -> bool:
     except subprocess.CalledProcessError:
         return False
 
+
 def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
     try:
         subprocess.run(
@@ -35,6 +37,7 @@ def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
     except FileNotFoundError:
         pkg_list.append(pkg)
         _sub(cmd.split())
+
 
 def _install_req_1() -> None:
     reqs = []
@@ -76,7 +79,8 @@ def _install_req_1() -> None:
                 subprocess.run(
                     [sys.executable, '-m', 'pip', 'install', '-q', pkg]
                 )
-   
+
+
 def _install_req_2() -> None:
     pkg_list: List[str] = []
 
@@ -160,6 +164,7 @@ def _install_req_2() -> None:
             f"Installing SD-Hub requirement: "
             f"{' '.join(f'{blue_}{pkg}{reset_}' for pkg in pkg_list)}"
         )
+
 
 _install_req_1()
 _install_req_2()
