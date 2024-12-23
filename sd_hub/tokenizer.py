@@ -2,7 +2,7 @@ from modules.paths_internal import data_path
 from pathlib import Path
 import json
 
-token_dir = Path(data_path) / "sd-hub-token.json"
+token_dir = Path(data_path) / ".sd-hub-token.json"
 
 def load_token():
     try:
