@@ -1,5 +1,6 @@
 from modules.paths_internal import models_path, data_path, extensions_dir
-from modules import shared, sd_models
+from modules.sd_models import model_path
+from modules.shared import cmd_opts
 from pathlib import Path
 import os
 
@@ -7,25 +8,25 @@ Root = Path(data_path)
 Models = Path(models_path)
 
 def hub_path():
-    paths = path_path()
-    paths_dict = {}
-    
-    for _desc, full_path in paths:
-        paths_dict[_desc.lower()] = full_path
+    p = path_path()
+    pd = {}
+
+    for d, fp in p:
+        pd[d.lower()] = fp
         
-    return paths_dict
+    return pd
   
 def path_path():
     tags_list = {
-        "$ckpt": shared.cmd_opts.ckpt_dir or sd_models.model_path,
-        "$lora": shared.cmd_opts.lora_dir,
-        "$vae": shared.cmd_opts.vae_dir or Models / 'VAE',
-        "$emb": shared.cmd_opts.embeddings_dir,
-        "$ups": shared.cmd_opts.esrgan_models_path or Models / 'ESRGAN',
-        "$cn": shared.cmd_opts.controlnet_dir or Models / 'ControlNet',
-        "$hn": shared.cmd_opts.hypernetwork_dir or Models / 'hypernetworks',
+        "$ckpt": cmd_opts.ckpt_dir or model_path,
+        "$lora": cmd_opts.lora_dir,
+        "$vae": cmd_opts.vae_dir or Models / 'VAE',
+        "$emb": cmd_opts.embeddings_dir,
+        "$ups": cmd_opts.esrgan_models_path or Models / 'ESRGAN',
+        "$cn": cmd_opts.controlnet_dir or Models / 'ControlNet',
+        "$hn": cmd_opts.hypernetwork_dir or Models / 'hypernetworks',
         "$ad": Models / 'adetailer',
-        "$cf": shared.cmd_opts.codeformer_models_path or Models / 'Codeformer',
+        "$cf": cmd_opts.codeformer_models_path or Models / 'Codeformer',
         "$ext": extensions_dir,
     }
 
@@ -34,7 +35,7 @@ def path_path():
     for t, d in tags_list.items():
         paths.append([t, str(d)])
 
-    paths.append(["$root", str(Root)])
+    paths.append(["$root", Root])
 
     e = {
         'COLAB_JUPYTER_TRANSPORT': '/content',
@@ -42,9 +43,10 @@ def path_path():
         'KAGGLE_DATA_PROXY_TOKEN': '/kaggle/working'
     }
 
-    for v, p in e.items():
-        if v in os.environ:
-            paths.append(["$home", p])
-            break    
+    if cmd_opts.enable_insecure_extension_access:
+        for v, p in e.items():
+            if v in os.environ:
+                paths.append(["$home", p])
+                break
 
     return paths
