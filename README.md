@@ -4,6 +4,7 @@ It lets you download files from sites like <code>Civitai</code>, <code>Hugging F
 You can also upload files or entire folders to the <code>Hugging Face</code> model repository (with a WRITE token, of course), making sharing and access easier.<br>
 The extension also has functionality to archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
 
+Support both Windows and Unix.
 
 # Changelog
 ### 2024-12-23  v5.0.0
