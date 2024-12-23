@@ -1,5 +1,6 @@
 from urllib.parse import urlparse
 from pathlib import Path
+from modules.shared import cmd_opts
 from modules.scripts import basedir
 from modules.paths_internal import data_path
 import gradio as gr
@@ -60,8 +61,16 @@ def gdrown(url, target_path=None, fn=None):
             completed = re.search(r'[^/]*$', lines)
             if completed:
                 yield f"Saved To: {target_path}/{completed.group()}", True
-
     p.wait()
+
+
+def police_the_path(inputs):
+    target = Path(inputs).resolve()
+    root = Path(data_path).resolve()
+
+    if root not in target.parents and target != root:
+        return False
+    return True
 
 
 aria2cexe = Path(basedir()) / 'aria2c.exe'
@@ -133,26 +142,18 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     target_abs = None
 
     if target_path:
-        if sys.platform == "win32":
-            if "WINDOWS" in target_path.upper():
-                yield "Not allowed: output path contains WINDOWS", False
+        if not cmd_opts.enable_insecure_extension_access:
+            if not police_the_path(target_path):
+                yield f"{target_path}\nTarget Path is outside of WebUI path\nNot allowed.", False
                 return
 
         target_abs = Path(target_path).resolve()
-
         if target_abs != root_abs and root_abs in target_abs.parents:
             aria2cmd.extend(["--allow-overwrite=true"])
 
         aria2cmd.extend(["-d", target_path])
 
     if fn:
-        if target_abs:
-            fp = target_abs / fn 
-
-            if not (root_abs in target_abs.parents or target_abs == root_abs) and fp.exists():
-                yield "File already exists", False
-                return
-
         aria2cmd.extend(["-o", fn])
 
     aria2cmd.append(url)
@@ -377,8 +378,11 @@ def downloader(command, token2, token3, box_state=gr.State()):
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
 
-            yield _text, "\n".join(output_box)
+            if "Target Path is outside" in _text: 
+                yield "Blocked", "\n".join([_text] + output_box)
+                return gr.update(), gr.State(output_box)
 
+            yield _text, "\n".join(output_box)
         else:
             output_box.append(_text)
 
