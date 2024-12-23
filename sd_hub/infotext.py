@@ -1,8 +1,25 @@
+import urllib.request, shutil, re
+from pathlib import Path
+from sd_hub.version import version
+
 blt = "<strong>•</strong>"
 
 dl_title = """
-<h3 id="sdhub-tab-title">
-  🔽 Download Command Center
+<h3 id="sdhub-tab-title" style="
+    display: flex;
+    align-items: center;
+    justify-content: center;">
+  <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"
+      viewBox="0 0 32 32" style="margin-right: 8px;">
+    <path
+      fill="var(--primary-500)"
+      stroke="var(--primary-500)"
+      stroke-width="1.8"
+      d="M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10
+      l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z">
+    </path>
+  </svg>
+  Download Command Center
 </h3>
 """
 
@@ -20,9 +37,34 @@ dl_info = f"""
 </p>
 """
 
-upl_title = """
-<h3 id="sdhub-tab-title">
-  🤗 Upload To Huggingface
+def getsvg(u, f):
+    if f.exists():
+        svg = f.read_text()
+    else:
+        with urllib.request.urlopen(u) as r, open(f, 'wb') as o:
+            shutil.copyfileobj(r, o)
+        svg = f.read_text()
+
+    svg = re.sub(r'width="\d+"', 'width="40"', svg)
+    svg = re.sub(r'height="\d+"', 'height="40"', svg)
+    svg = re.sub(r'<svg([^>]+)>', r'<svg\1 style="margin-right: 8px;">', svg)
+    svg = re.sub(r'fill="white"', 'fill="transparent"', svg)
+
+    return svg
+
+hfurl = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
+hfsvg = Path(__file__).parent / 'hf-logo.svg'
+SVG = getsvg(hfurl, hfsvg)
+
+upl_title = f"""
+<h3 id="sdhub-tab-title" style="
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 3px;
+    margin-top: -5px;">
+  {SVG} Upload To Huggingface
 </h3>
 """
 
@@ -55,8 +97,6 @@ arc_info = """
   <br>
 </p>
 """
-
-from sd_hub.version import version
 
 sdhub_repo = f"""
 <h4 id="sdhub-repo">
