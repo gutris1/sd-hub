@@ -52,7 +52,9 @@ $ext/sd-hub -- json txt py
 # Usage
 <h3>Downloader</h3>
 
-![dl](https://github.com/gutris1/sd-hub/assets/132797949/bbe49e03-9c08-4208-8174-438b47d15927)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/59e3ffc6-a63a-4a4b-a29d-e6787aa946ac", width=1000px>
+</p>
 
 
 ### ● Input box
@@ -138,8 +140,9 @@ To upload a TXT file from your device, simply select it and upload it into the i
 <code>Supported Domains for Downloader: Civitai Huggingface Github Drive.Google</code>
 
 <h3>Uploader</h3>
-  
-![upl](https://github.com/gutris1/sd-hub/assets/132797949/c71a2e75-8a32-4572-b62c-6b3deb6e5993)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a2f0b341-8743-43da-b857-2e925f3eb7fb", width=1000px>
+</p>
 
 ### ● Input
 Username = Your username at huggingface.co.<br>
@@ -175,8 +178,10 @@ $ckpt/animagineXLV31_v31.safetensors
 $ckpt/animagineXLV31_v31.safetensors - XL-imagine-animeV31.txt
 ```
 <h3>Archiver</h3>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/81bdcde3-8043-4339-af30-d1305379f7f4", width=1000px>
+</p>
 
-![arc](https://github.com/gutris1/sd-hub/assets/132797949/f66e58f6-37e6-4f9b-91f7-5e7ce27cce0f)
 
 
 <code>Supported Format: tar.lz4 tar.gz zip</code>
