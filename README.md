@@ -7,7 +7,7 @@ The extension also has functionality to archive and extract files in formats lik
 
 # Changelog
 ### 2024-12-23  v5.0.0
-- Added a click event listener to the Tag List in the Gradio DataFrame to automatically copy the table text, making it easier to copy especially for mobile users.<br>
+- Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
 - Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
 - Fixed path handling.<br>
 
