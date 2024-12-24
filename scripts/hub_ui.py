@@ -28,7 +28,8 @@ def onSDHUBloaded():
                         lines=1,
                         max_lines=1,
                         placeholder="Your Huggingface Token here (role = READ)",
-                        interactive=True
+                        interactive=True,
+                        elem_id="sdhub-downloader-token1"
                     )
 
                     dl_token2 = gr.TextArea(
@@ -37,7 +38,8 @@ def onSDHUBloaded():
                         lines=1,
                         max_lines=1,
                         placeholder="Your Civitai API Key here",
-                        interactive=True
+                        interactive=True,
+                        elem_id="sdhub-downloader-token1"
                     )
 
                     with FormRow():
@@ -45,10 +47,10 @@ def onSDHUBloaded():
                         dl_load = gr.Button(value="LOAD", variant="primary", min_width=0)
 
             dl_input = gr.Textbox(
-                label="Input",
+                show_label=False,
                 lines=5,
                 placeholder="$tag\nURL",
-                elem_classes="dl-input"
+                elem_id="sdhub-downloader-inputs"
             )
 
             with FormRow(elem_id="sdhub-downloader-button-row"):
@@ -99,7 +101,7 @@ def onSDHUBloaded():
                 outputs=[dl_input, dl_out2]
             )
 
-        with gr.TabItem("Uploader", elem_id="sdhub-uploder"):
+        with gr.TabItem("Uploader", elem_id="sdhub-uploader"):
             gr.HTML(upl_title)
 
             with FormRow():
@@ -114,7 +116,8 @@ def onSDHUBloaded():
                         lines=1,
                         max_lines=1,
                         placeholder="Your Huggingface Token here (role = WRITE)",
-                        interactive=True
+                        interactive=True,
+                        elem_id="sdhub-uploader-token"
                     )
 
                     with FormRow():
@@ -149,24 +152,24 @@ def onSDHUBloaded():
                     value="Private",
                     label="Visibility",
                     interactive=True,
-                    elem_id="sdhub-uploder-radio-box"
+                    elem_id="sdhub-uploader-radio-box"
                 )
 
                 gr.Textbox(
                     max_lines=1,
                     show_label=False,
-                    elem_id="sdhub-uploder-ghost-box",
+                    elem_id="sdhub-uploader-ghost-box",
                     elem_classes="hide-this"
                 )
 
             upl_inputs = gr.Textbox(
-                elem_id="sdhub-uploder-inputs",
+                elem_id="sdhub-uploader-inputs",
                 show_label=False,
                 lines=5,
                 placeholder="Input File Path"
             )
 
-            with FormRow(elem_id="sdhub-uploder-button-row"):
+            with FormRow(elem_id="sdhub-uploader-button-row"):
                 with FormColumn(scale=1):
                     upl_btn = gr.Button("UPLOAD", variant="primary")
 
@@ -215,12 +218,29 @@ def onSDHUBloaded():
             )
 
             with FormRow():
-                arc_name = gr.Textbox(max_lines=1, placeholder="Name", show_label=False)
+                arc_name = gr.Textbox(
+                    max_lines=1,
+                    placeholder="Name",
+                    show_label=False,
+                    elem_id="sdhub-archiver-arc-inputname"
+                )
+
                 gr.Textbox("hantu", max_lines=1, show_label=False, elem_classes="hide-this")
 
             with gr.Column(elem_classes="arc-row"):
-                arc_in = gr.Textbox(max_lines=1, placeholder="Input Path", show_label=False)
-                arc_out = gr.Textbox(max_lines=1, placeholder="Output Path", show_label=False)
+                arc_in = gr.Textbox(
+                    max_lines=1,
+                    placeholder="Input Path",
+                    show_label=False,
+                    elem_id="sdhub-archiver-arc-inputpath"
+                )
+
+                arc_out = gr.Textbox(
+                    max_lines=1,
+                    placeholder="Output Path",
+                    show_label=False,
+                    elem_id="sdhub-archiver-arc-outputpath"
+                )
 
             with gr.Row(elem_classes="arc-row"):
                 with gr.Column():
@@ -233,8 +253,19 @@ def onSDHUBloaded():
                     arc_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
 
             gr.HTML("""<h3 style='font-size: 17px;'>Extract</h3>""")
-            extr_in = gr.Textbox(max_lines=1, placeholder="Input Path", show_label=False)
-            extr_out = gr.Textbox(max_lines=1, placeholder="Output Path", show_label=False)
+            extr_in = gr.Textbox(
+                max_lines=1,
+                placeholder="Input Path",
+                show_label=False,
+                elem_id="sdhub-archiver-extr-inputpath"
+            )
+
+            extr_out = gr.Textbox(
+                max_lines=1,
+                placeholder="Output Path",
+                show_label=False,
+                elem_id="sdhub-archiver-extr-outputpath"
+            )
 
             with gr.Row(elem_classes="arc-row"):
                 with gr.Column():
