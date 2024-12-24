@@ -5,7 +5,7 @@ from pathlib import Path
 import gradio as gr
 import subprocess, re, sys, time, json
 
-from sd_hub.paths import hub_path
+from sd_hub.paths import SDHubPath
 from sd_hub.version import xyz
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
@@ -86,7 +86,7 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         return
 
     repo_id = f"{user}/{repo}"
-    tag_tag = hub_path()
+    tag_tag = SDHubPath()
     task_task = []
 
     for line in input_lines:
