@@ -1,12 +1,10 @@
 from urllib.parse import urlparse
 from pathlib import Path
-from modules.shared import cmd_opts
 from modules.scripts import basedir
-from modules.paths_internal import data_path
 import gradio as gr
 import subprocess, re, sys, requests, time
 
-from sd_hub.paths import hub_path
+from sd_hub.paths import SDHubPath, CheckPath
 from sd_hub.version import xyz
 
 def gdrown(url, target_path=None, fn=None):
@@ -62,15 +60,6 @@ def gdrown(url, target_path=None, fn=None):
             if completed:
                 yield f"Saved To: {target_path}/{completed.group()}", True
     p.wait()
-
-
-def police_the_path(inputs):
-    target = Path(inputs).resolve()
-    root = Path(data_path).resolve()
-
-    if root not in target.parents and target != root:
-        return False
-    return True
 
 
 aria2cexe = Path(basedir()) / 'aria2c.exe'
@@ -138,17 +127,8 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         "-j5"
     ])
 
-    root_abs = Path(data_path).resolve()
-    target_abs = None
-
     if target_path:
-        if not cmd_opts.enable_insecure_extension_access:
-            if not police_the_path(target_path):
-                yield f"{target_path}\nTarget Path is outside of WebUI path\nNot allowed.", False
-                return
-
-        target_abs = Path(target_path).resolve()
-        if target_abs != root_abs and root_abs in target_abs.parents:
+        if CheckPath(target_path):
             aria2cmd.extend(["--allow-overwrite=true"])
 
         aria2cmd.extend(["-d", target_path])
@@ -324,7 +304,7 @@ def surface(command, token2=None, token3=None):
         yield "Nothing To See Here.", True
         return
 
-    tags_mappings = hub_path()
+    tags_mappings = SDHubPath()
     current_path = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
 
