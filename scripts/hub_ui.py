@@ -6,7 +6,7 @@ from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
 from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
-from sd_hub.paths import TagsAndPath
+from sd_hub.paths import SDPaths
 from sd_hub.scraper import scraper
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
 
@@ -269,7 +269,7 @@ def onSDHUBloaded():
 
         with gr.Accordion("Tag List", open=False, visible=True):
             gr.DataFrame(
-                TagsAndPath(),
+                SDPaths.SDHubTagsAndPaths(),
                 headers=["SD-Hub Tag", "WebUI Path"],
                 datatype=["str", "str"],
                 interactive=False,
