@@ -1,10 +1,12 @@
 from urllib.parse import urlparse
 from pathlib import Path
+from modules.paths_internal import models_path
+from modules.shared import cmd_opts
 from modules.scripts import basedir
 import gradio as gr
 import subprocess, re, sys, requests, time
 
-from sd_hub.paths import SDHubPath, CheckPath
+from sd_hub.paths import SDHubPath
 from sd_hub.version import xyz
 
 def gdrown(url, target_path=None, fn=None):
@@ -61,6 +63,21 @@ def gdrown(url, target_path=None, fn=None):
                 yield f"Saved To: {target_path}/{completed.group()}", True
     p.wait()
 
+
+BLOCK = (
+    "Downloading files outside of Models or Embeddings folder is blocked "
+    "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk."
+)
+
+def CheckPath(inputs):
+    target = Path(inputs).resolve()
+    models = Path(models_path).resolve()
+    embeddings = Path(cmd_opts.embeddings_dir)
+
+    if models not in target.parents and target != embeddings:
+        return False, BLOCK
+
+    return True, ""
 
 aria2cexe = Path(basedir()) / 'aria2c.exe'
 
@@ -128,7 +145,12 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     ])
 
     if target_path:
-        if CheckPath(target_path):
+        allowed, err = CheckPath(target_path)
+        if not allowed:
+            yield err, False
+            return
+
+        else:
             aria2cmd.extend(["--allow-overwrite=true"])
 
         aria2cmd.extend(["-d", target_path])
@@ -346,8 +368,7 @@ def downloader(command, token2, token3, box_state=gr.State()):
         "Unable to find",
         "errorCode",
         "Failed to retrieve",
-        "File already exists",
-        "Not allowed"
+        "File already exists"
     ]
 
     yield "Now Downloading...", ""
@@ -358,8 +379,9 @@ def downloader(command, token2, token3, box_state=gr.State()):
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
 
-            if "Target Path is outside" in _text: 
+            if "files outside of Models" in _text: 
                 yield "Blocked", "\n".join([_text] + output_box)
+                assert not cmd_opts.disable_extension_access, BLOCK
                 return gr.update(), gr.State(output_box)
 
             yield _text, "\n".join(output_box)
