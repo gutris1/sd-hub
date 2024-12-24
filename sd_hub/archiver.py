@@ -7,7 +7,7 @@ if sys.platform == 'win32':
 else:
     import pty
 
-from sd_hub.paths import hub_path
+from sd_hub.paths import SDHubPath
 
 
 def tar_win_process(inputs, paths, formats, outputs):
@@ -250,7 +250,7 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
         yield f"Missing: [ {missing} ]", True
         return
     
-    tag_tag = hub_path()
+    tag_tag = SDHubPath()
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
@@ -490,7 +490,7 @@ def path_extract(input_path, output_path, mkdir_cb2):
         yield f"Missing: [ {missing} ]", True
         return
     
-    tag_tag = hub_path()
+    tag_tag = SDHubPath()
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
