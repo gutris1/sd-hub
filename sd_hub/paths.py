@@ -50,16 +50,3 @@ def TagsAndPath():
                 break
 
     return paths
-
-def CheckPath(inputs):
-    target = Path(inputs).resolve()
-    models = Path(models_path).resolve()
-    embeddings = Path(cmd_opts.embeddings_dir)
-
-    if models not in target.parents and target != embeddings:
-        assert not cmd_opts.disable_extension_access, (
-            "\nDownloading files outside of Models or Embeddings folder is blocked "
-            "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk"
-        )
-
-    return True
