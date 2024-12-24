@@ -1,16 +1,16 @@
 import gradio as gr
 from modules.ui_components import FormRow, FormColumn
-from modules import script_callbacks
+from modules.script_callbacks import on_ui_tabs
 
 from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
 from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
-from sd_hub.paths import path_path
+from sd_hub.paths import TagsAndPath
 from sd_hub.scraper import scraper
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
 
-def on_ui_tabs():
+def onSDHUBloaded():
     token1, token2, token3, _, _ = load_token()
 
     with gr.Blocks(analytics_enabled=False) as sdhub, gr.Tabs():
@@ -269,7 +269,7 @@ def on_ui_tabs():
 
         with gr.Accordion("Tag List", open=False, visible=True):
             gr.DataFrame(
-                path_path(),
+                TagsAndPath(),
                 headers=["SD-Hub Tag", "WebUI Path"],
                 datatype=["str", "str"],
                 interactive=False,
@@ -280,4 +280,4 @@ def on_ui_tabs():
 
     return (sdhub, "HUB", "sdhub"),
 
-script_callbacks.on_ui_tabs(on_ui_tabs)
+on_ui_tabs(onSDHUBloaded)
