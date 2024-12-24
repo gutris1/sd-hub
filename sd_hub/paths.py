@@ -4,11 +4,6 @@ from modules.shared import cmd_opts
 from pathlib import Path
 import os
 
-BLOCK = (
-    "Downloading files outside of Models or Embeddings folder is blocked "
-    "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk."
-)
-
 class SDPaths:
     root = Path(data_path)
     models = Path(models_path)
@@ -77,6 +72,11 @@ class SDPaths:
         ]
 
         if not any(dirs in target.parents or target == dirs for dirs in allowed_dirs):
-            return False, f"{target}\n{BLOCK}"
+            return False, f"{target}\n\n{BLOCK}"
 
         return True, ""
+
+BLOCK = (
+    "Downloading/Uploading files from/to outside Models or Embeddings folders is blocked. "
+    "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk."
+)
