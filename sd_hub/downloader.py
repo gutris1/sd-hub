@@ -1,10 +1,9 @@
 from urllib.parse import urlparse
 from pathlib import Path
-from modules.paths_internal import models_path
 from modules.shared import cmd_opts
 from modules.scripts import basedir
 import gradio as gr
-import subprocess, re, sys, requests, time
+import subprocess, re, sys, requests, time, shlex
 
 from sd_hub.paths import SDPaths, BLOCK
 from sd_hub.version import xyz
@@ -272,7 +271,7 @@ def input_process(url_line, current_path, tags_mappings):
             return None, None, None, f"{tags_key}\nInvalid Tag."
         return current_path, None, None, None
 
-    parts = url_line.split(' ')
+    parts = shlex.split(url_line)
     url = parts[0].strip()
 
     is_valid, error_message = url_check(url)
@@ -355,8 +354,7 @@ def downloader(command, token2, token3, box_state=gr.State()):
         "The model is in early access",
         "Unable to find",
         "errorCode",
-        "Failed to retrieve",
-        "File already exists"
+        "Failed to retrieve"
     ]
 
     yield "Now Downloading...", ""
@@ -367,10 +365,9 @@ def downloader(command, token2, token3, box_state=gr.State()):
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
 
-            if "files outside of Models" in _text: 
+            if "files from/to outside" in _text: 
                 yield "Blocked", "\n".join([_text] + output_box)
                 assert not cmd_opts.disable_extension_access, BLOCK
-                return gr.update(), gr.State(output_box)
 
             yield _text, "\n".join(output_box)
         else:
