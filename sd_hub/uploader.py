@@ -1,11 +1,12 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
+from modules.shared import cmd_opts
 from modules.scripts import basedir
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys, time, json
+import subprocess, re, sys, time, json, shlex
 
-from sd_hub.paths import SDHubPath
+from sd_hub.paths import SDPaths, BLOCK
 from sd_hub.version import xyz
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
@@ -72,6 +73,14 @@ def push_push(repo_id, file_path, file_name, token, branch, is_private=False, co
     p.wait()
 
 
+def isEmpty(fp):
+    for f in fp.iterdir():
+        rp = f.resolve()
+        if rp.is_file() or (rp.is_dir() and any(rp.iterdir())):
+            return False
+    return True
+
+
 def up_up(inputs, user, repo, branch, token, repo_radio):
     input_lines = [line.strip() for line in inputs.strip().splitlines()]
 
@@ -79,18 +88,18 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         params = [name for name, value in zip(
             ["Input", "Username", "Repository", "Branch", "Token"],
             [inputs.strip(), user, repo, branch, token]) if not value]
-        
+
         missing = ', '.join(params)
-        
+
         yield f"Missing: [ {missing} ]", True
         return
 
     repo_id = f"{user}/{repo}"
-    tag_tag = SDHubPath()
+    tag_tag = SDPaths.SDHubPaths()
     task_task = []
 
     for line in input_lines:
-        parts = line.split()
+        parts = shlex.split(line)
         input_path = parts[0]
         input_path = input_path.strip('"').strip("'")
 
@@ -123,12 +132,12 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
                 return
             full_path = Path(resolved_path, subpath_or_file)
 
-        def isEmpty(fp):
-            for f in fp.iterdir():
-                rp = f.resolve()
-                if rp.is_file() or (rp.is_dir() and any(rp.iterdir())):
-                    return False
-            return True
+        if not cmd_opts.enable_insecure_extension_access:
+            sd_paths = SDPaths()
+            allowed, err = sd_paths.SDHubCheckPaths(full_path)
+            if not allowed:
+                yield err, False
+                return
 
         if full_path.exists():
             if full_path.is_file():
@@ -208,8 +217,13 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
 
     for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
         if not _flag:
+            if "files from/to outside" in _text: 
+                yield "Blocked", "\n".join([_text] + output_box)
+                assert not cmd_opts.disable_extension_access, BLOCK
+
             if "Uploading" in _text:
                 yield _text, "\n".join(output_box)
+
             yield _text, "\n".join(output_box)
         else:
             output_box.append(_text)
