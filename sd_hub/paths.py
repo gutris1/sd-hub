@@ -13,7 +13,10 @@ class SDPaths:
     vae_dir = cmd_opts.vae_dir or models / "VAE"
     embeddings_dir = cmd_opts.embeddings_dir
     esrgan_dir = cmd_opts.esrgan_models_path or models / "ESRGAN"
-    controlnet_dir = cmd_opts.controlnet_dir or models / "ControlNet"
+    try:
+        controlnet_dir = cmd_opts.controlnet_dir or models / "ControlNet"
+    except AttributeError:
+        controlnet_dir = models / "ControlNet"
     hypernetwork_dir = cmd_opts.hypernetwork_dir or models / "hypernetworks"
     ad_model = models / "adetailer"
     codeformer_dir = cmd_opts.codeformer_models_path or models / "Codeformer"
