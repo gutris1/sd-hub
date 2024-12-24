@@ -7,8 +7,8 @@ import os
 Root = Path(data_path)
 Models = Path(models_path)
 
-def hub_path():
-    p = path_path()
+def SDHubPath():
+    p = TagsAndPath()
     pd = {}
 
     for d, fp in p:
@@ -16,7 +16,7 @@ def hub_path():
         
     return pd
   
-def path_path():
+def TagsAndPath():
     tags_list = {
         "$ckpt": cmd_opts.ckpt_dir or model_path,
         "$lora": cmd_opts.lora_dir,
@@ -26,16 +26,13 @@ def path_path():
         "$cn": cmd_opts.controlnet_dir or Models / 'ControlNet',
         "$hn": cmd_opts.hypernetwork_dir or Models / 'hypernetworks',
         "$ad": Models / 'adetailer',
-        "$cf": cmd_opts.codeformer_models_path or Models / 'Codeformer',
-        "$ext": extensions_dir,
+        "$cf": cmd_opts.codeformer_models_path or Models / 'Codeformer'
     }
 
     paths = []
 
     for t, d in tags_list.items():
         paths.append([t, str(d)])
-
-    paths.append(["$root", Root])
 
     e = {
         'COLAB_JUPYTER_TRANSPORT': '/content',
@@ -44,9 +41,25 @@ def path_path():
     }
 
     if cmd_opts.enable_insecure_extension_access:
+        paths.append(["$ext", extensions_dir])
+        paths.append(["$root", Root])
+
         for v, p in e.items():
             if v in os.environ:
                 paths.append(["$home", p])
                 break
 
     return paths
+
+def CheckPath(inputs):
+    target = Path(inputs).resolve()
+    models = Path(models_path).resolve()
+    embeddings = Path(cmd_opts.embeddings_dir)
+
+    if models not in target.parents and target != embeddings:
+        assert not cmd_opts.disable_extension_access, (
+            "\nDownloading files outside of Models or Embeddings folder is blocked "
+            "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk"
+        )
+
+    return True
