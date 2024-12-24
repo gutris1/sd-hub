@@ -6,7 +6,7 @@ from modules.scripts import basedir
 import gradio as gr
 import subprocess, re, sys, requests, time
 
-from sd_hub.paths import SDHubPath
+from sd_hub.paths import SDPaths, BLOCK
 from sd_hub.version import xyz
 
 def gdrown(url, target_path=None, fn=None):
@@ -63,21 +63,6 @@ def gdrown(url, target_path=None, fn=None):
                 yield f"Saved To: {target_path}/{completed.group()}", True
     p.wait()
 
-
-BLOCK = (
-    "Downloading files outside of Models or Embeddings folder is blocked "
-    "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk."
-)
-
-def CheckPath(inputs):
-    target = Path(inputs).resolve()
-    models = Path(models_path).resolve()
-    embeddings = Path(cmd_opts.embeddings_dir)
-
-    if models not in target.parents and target != embeddings:
-        return False, BLOCK
-
-    return True, ""
 
 aria2cexe = Path(basedir()) / 'aria2c.exe'
 
@@ -145,11 +130,14 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     ])
 
     if target_path:
-        allowed, err = CheckPath(target_path)
-        if not allowed:
-            yield err, False
-            return
-
+        if not cmd_opts.enable_insecure_extension_access:
+            sd_paths = SDPaths()
+            allowed, err = sd_paths.SDHubCheckPaths(target_path)
+            if not allowed:
+                yield err, False
+                return
+            else:
+                aria2cmd.extend(["--allow-overwrite=true"])
         else:
             aria2cmd.extend(["--allow-overwrite=true"])
 
@@ -326,7 +314,7 @@ def surface(command, token2=None, token3=None):
         yield "Nothing To See Here.", True
         return
 
-    tags_mappings = SDHubPath()
+    tags_mappings = SDPaths.SDHubPaths()
     current_path = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
 
