@@ -15,6 +15,7 @@ Support both Windows and Unix.
 - Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
 - Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
 - Fixed path handling.<br>
+- Relocated the token file to the extension folder and renamed it to <code>.sd-hub-token.json</code>.<br>
 
 <details><summary>2024-09-30  v4.8.4</summary><br>
 
