@@ -1,5 +1,6 @@
 from pathlib import Path
 from tqdm import tqdm
+from modules.shared import cmd_opts
 import gradio as gr
 import subprocess, zipfile, select, sys, os
 if sys.platform == 'win32':
@@ -7,16 +8,16 @@ if sys.platform == 'win32':
 else:
     import pty
 
-from sd_hub.paths import hub_path
+from sd_hub.paths import SDPaths, BLOCK
 
 
 def tar_win_process(inputs, paths, formats, outputs):
     tar_out = str(outputs) + '.tar'
-    
+
     with tarfile.open(tar_out, 'w') as tar:
         for file in inputs:
             tar.add(paths / file, arcname=file.name)
-    
+
     if formats == 'lz4':
         lz4_out = str(outputs) + '.tar.lz4'
         with open(tar_out, 'rb') as tar_file:
@@ -65,7 +66,7 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
 
 
 def tar_process(_tar, cwd, _pv, _format, _output):
-    ayu, rika = pty.openpty()
+    ayu, rika = pty.openpty() # type: ignore
 
     p_tar = subprocess.Popen(
         _tar,
@@ -74,7 +75,7 @@ def tar_process(_tar, cwd, _pv, _format, _output):
         stderr=subprocess.PIPE,
         text=True
     )
-    
+
     p_pv = subprocess.Popen(
         _pv,
         stdin=p_tar.stdout,
@@ -82,7 +83,7 @@ def tar_process(_tar, cwd, _pv, _format, _output):
         stderr=rika,
         text=True
     )
-    
+
     p_type = subprocess.Popen(
         _format,
         stdin=p_pv.stdout,
@@ -100,7 +101,7 @@ def tar_process(_tar, cwd, _pv, _format, _output):
                 ketemuan = os.read(ayu, 8192)
                 if not ketemuan:
                     break
-                
+
                 yield ketemuan.decode('utf-8'), False
 
         except OSError:
@@ -171,7 +172,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             file for file in cwd.iterdir() 
             if (file.is_file() or (file.is_dir() and any(file.iterdir())))
         ]
-        
+
         _count = 0
         total_parts = len(all_files)
         files_split = min(split_by, total_parts) if split_by > 0 else 1
@@ -180,7 +181,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             start = i * (total_parts // files_split)
             end = (i + 1) * (total_parts // files_split) if i < files_split - 1 else None
             _split = all_files[start:end]
-            
+
             if not _split:
                 continue
 
@@ -198,7 +199,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
                         if file.is_file():
                             zipf.write(file, file.relative_to(cwd))
                             pbar.update(file.stat().st_size)
-                            
+
                         else:
                             for sub_file in file.rglob('*'):
                                 if sub_file.is_file():
@@ -224,7 +225,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
                         chunk = file_to_compress.read(chunk_size)
                         if not chunk:
                             break
-                            
+
                         zipf.writestr(zip_in.name, chunk)
                         pbar.update(len(chunk))
 
@@ -243,25 +244,25 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
             [input_path, file_name, output_path]
         ) if not value
     ]
-    
+
     missing = ', '.join(params)
-    
+
     if missing:
         yield f"Missing: [ {missing} ]", True
         return
-    
-    tag_tag = hub_path()
+
+    tag_tag = SDPaths.SDHubPaths()
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
             tag_key, _, subpath_or_file = path_str[1:].partition('/')
             tag_key = f"${tag_key.lower()}"
             resolved_path = tag_tag.get(tag_key)
-            
+
             if resolved_path is None:
                 yield f"{tag_key}\nInvalid tag.", True
                 return
-            
+
             resolved_path = Path(resolved_path, subpath_or_file)
             if i == 0:
                 input_path = resolved_path
@@ -271,14 +272,23 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
 
-    if not input_path_obj.exists():
-        yield f"{input_path}\nInput Path does not exist.", True
-        return
-    
+    if input_path_obj or output_path_obj:
+        for path_obj in [input_path_obj, output_path_obj]:
+            if path_obj and path_obj.exists():
+                if not cmd_opts.enable_insecure_extension_access:
+                    sd_paths = SDPaths()
+                    allowed, err = sd_paths.SDHubCheckPaths(path_obj)
+                    if not allowed:
+                        yield err, True
+                        return
+            else:
+                yield f"{path_obj}\ndoes not exist", True
+                return
+
     if output_path_obj.suffix:
         yield f"{output_path}\nOutput Path is not a directory.", True
         return
-    
+
     if input_path_obj.is_file():
         input_type = 'file'
     elif input_path_obj.is_dir():
@@ -286,17 +296,11 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
 
     if mkdir_cb1:
         output_path_obj.mkdir(parents=True, exist_ok=True)
-        
-    else:
-        if not output_path_obj.exists():
-            yield f"{output_path}\nOutput Path does not exist.", True
-            return
 
     if sys.platform == 'win32':
         select_arc = {'zip': _zip, 'tar.gz': tar_win, 'tar.lz4': tar_win}
     else:
         select_arc = {'zip': _zip, 'tar.gz': tar_tar, 'tar.lz4': tar_tar}
-
 
     arc_select = select_arc.get(arc_format)
 
@@ -316,7 +320,7 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
 
 def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by, box_state=gr.State()):
     output_box = box_state if box_state else []
-    
+
     for _text, _flag in path_archive(
         input_path,
         file_name,
@@ -327,18 +331,20 @@ def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by,
     ):
         if not _flag:
             yield _text, "\n".join(output_box)
-            
+
         else:
             output_box.append(_text)
-    
+
     catcher = ["not", "Missing", "Invalid"]
-    
+
     if any(asu in wc for asu in catcher for wc in output_box):
         yield "Error", "\n".join(output_box)
-        
+    elif "files from/to outside" in output_box:
+        yield "Blocked", "\n".join(output_box)
+        assert not cmd_opts.disable_extension_access, BLOCK
     else:
         yield "Done", "\n".join(output_box)
-        
+
     return gr.update(), gr.State(output_box)
 
 ####################################################################################
@@ -421,7 +427,7 @@ def extraction(input_path, output_path, format_type):
         _type = ['gzip', '-d'] if format_type == 'tar.gz' else ['lz4', '-d']
         _tar = ['tar', 'xf', '-', '-C', str(output_path_obj)]
 
-        ayu, rika = pty.openpty()
+        ayu, rika = pty.openpty() # type: ignore
 
         p_pv = subprocess.Popen(
             _pv, 
@@ -429,7 +435,7 @@ def extraction(input_path, output_path, format_type):
             stderr=rika, 
             text=True
         )
-        
+
         p_type = subprocess.Popen(
             _type, 
             stdin=p_pv.stdout, 
@@ -437,7 +443,7 @@ def extraction(input_path, output_path, format_type):
             stderr=subprocess.PIPE, 
             text=True
         )
-        
+
         p_tar = subprocess.Popen(
             _tar, 
             stdin=p_type.stdout, 
@@ -483,25 +489,25 @@ def path_extract(input_path, output_path, mkdir_cb2):
             [input_path, output_path]
         ) if not value
     ]
-    
+
     missing = ', '.join(params)
-    
+
     if missing:
         yield f"Missing: [ {missing} ]", True
         return
-    
-    tag_tag = hub_path()
+
+    tag_tag = SDPaths.SDHubPaths()
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
             tag_key, _, subpath_or_file = path_str[1:].partition('/')
             tag_key = f"${tag_key.lower()}"
             resolved_path = tag_tag.get(tag_key)
-            
+
             if resolved_path is None:
                 yield f"{tag_key}\nInvalid tag.", True
                 return
-            
+
             resolved_path = Path(resolved_path, subpath_or_file)
             if i == 0:
                 input_path = resolved_path
@@ -511,9 +517,18 @@ def path_extract(input_path, output_path, mkdir_cb2):
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
 
-    if not input_path_obj.exists():
-        yield f"{input_path}\nInput Path does not exist.", True
-        return
+    if input_path_obj or output_path_obj:
+        for path_obj in [input_path_obj, output_path_obj]:
+            if path_obj and path_obj.exists():
+                if not cmd_opts.enable_insecure_extension_access:
+                    sd_paths = SDPaths()
+                    allowed, err = sd_paths.SDHubCheckPaths(path_obj)
+                    if not allowed:
+                        yield err, True
+                        return
+            else:
+                yield f"{path_obj}\ndoes not exist", True
+                return
 
     if output_path_obj.suffix:
         yield f"{output_path}\nOutput Path is not a directory.", True
@@ -521,15 +536,11 @@ def path_extract(input_path, output_path, mkdir_cb2):
 
     if mkdir_cb2:
         output_path_obj.mkdir(parents=True, exist_ok=True)
-    else:
-        if not output_path_obj.exists():
-            yield f"{output_path}\nOutput Path does not exist.", True
-            return
-        
+
     select_ext = {'.zip': 'zip', '.tar.gz': 'tar.gz', '.tar.lz4': 'tar.lz4'}
     input_ext = ''.join(input_path_obj.suffixes)
     format_type = select_ext.get(input_ext)
-    
+
     if not format_type:
         yield f"Unsupported format: {input_ext}", True
         return
@@ -542,7 +553,7 @@ def path_extract(input_path, output_path, mkdir_cb2):
 
 def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
     output_box = box_state if box_state else []
-    
+
     for _text, _flag in path_extract(
         input_path,
         output_path,
@@ -550,16 +561,18 @@ def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
     ):
         if not _flag:
             yield _text, "\n".join(output_box)
-            
+
         else:
             output_box.append(_text)
-    
+
     catcher = ["not", "Missing", "Invalid", "Unsupported"]
-    
+
     if any(asu in wc for asu in catcher for wc in output_box):
         yield "Error", "\n".join(output_box)
-        
+    elif "files from/to outside" in output_box:
+        yield "Blocked", "\n".join(output_box)
+        assert not cmd_opts.disable_extension_access, BLOCK
     else:
         yield "Done", "\n".join(output_box)
-        
+
     return gr.update(), gr.State(output_box)

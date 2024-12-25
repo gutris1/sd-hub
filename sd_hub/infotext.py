@@ -52,9 +52,9 @@ def getsvg(u, f):
 
     return svg
 
-hfurl = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
-hfsvg = Path(__file__).parent / 'hf-logo.svg'
-SVG = getsvg(hfurl, hfsvg)
+url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
+fp = Path(__file__).parent / 'hf-logo.svg'
+SVG = getsvg(url, fp)
 
 upl_title = f"""
 <h3 id="sdhub-tab-title" style="

@@ -1,10 +1,11 @@
 from urllib.parse import urlparse
 from pathlib import Path
+from modules.shared import cmd_opts
 from modules.scripts import basedir
 import gradio as gr
-import subprocess, re, sys, requests, time
+import subprocess, re, sys, requests, time, shlex
 
-from sd_hub.paths import hub_path
+from sd_hub.paths import SDPaths, BLOCK
 from sd_hub.version import xyz
 
 def gdrown(url, target_path=None, fn=None):
@@ -59,7 +60,6 @@ def gdrown(url, target_path=None, fn=None):
             completed = re.search(r'[^/]*$', lines)
             if completed:
                 yield f"Saved To: {target_path}/{completed.group()}", True
-
     p.wait()
 
 
@@ -119,7 +119,6 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     aria2cmd.extend([
         "--console-log-level=error",
-        "--allow-overwrite=true",
         "--stderr=true",
         "--summary-interval=1",
         "-c", 
@@ -130,6 +129,17 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     ])
 
     if target_path:
+        if not cmd_opts.enable_insecure_extension_access:
+            sd_paths = SDPaths()
+            allowed, err = sd_paths.SDHubCheckPaths(target_path)
+            if not allowed:
+                yield err, False
+                return
+            else:
+                aria2cmd.extend(["--allow-overwrite=true"])
+        else:
+            aria2cmd.extend(["--allow-overwrite=true"])
+
         aria2cmd.extend(["-d", target_path])
 
     if fn:
@@ -261,7 +271,7 @@ def input_process(url_line, current_path, tags_mappings):
             return None, None, None, f"{tags_key}\nInvalid Tag."
         return current_path, None, None, None
 
-    parts = url_line.split(' ')
+    parts = shlex.split(url_line)
     url = parts[0].strip()
 
     is_valid, error_message = url_check(url)
@@ -303,7 +313,7 @@ def surface(command, token2=None, token3=None):
         yield "Nothing To See Here.", True
         return
 
-    tags_mappings = hub_path()
+    tags_mappings = SDPaths.SDHubPaths()
     current_path = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
 
@@ -355,8 +365,11 @@ def downloader(command, token2, token3, box_state=gr.State()):
                 yield "Error", "\n".join([_text] + output_box)
                 return gr.update(), gr.State(output_box)
 
-            yield _text, "\n".join(output_box)
+            if "files from/to outside" in _text: 
+                yield "Blocked", "\n".join([_text] + output_box)
+                assert not cmd_opts.disable_extension_access, BLOCK
 
+            yield _text, "\n".join(output_box)
         else:
             output_box.append(_text)
 

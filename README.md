@@ -1,10 +1,18 @@
 # SD-Hub
-an Extension for Stable Diffusion WebUI and Forge.<br>
-You can Download, Upload, Archive files and that's it.<br>
+An extension for <code>Stable Diffusion WebUI</code>, designed to streamline your collection.<br>
+It lets you download files from sites like <code>Civitai</code>, <code>Hugging Face</code>, <code>GitHub</code>, and <code>Google Drive</code>, whether individually or in batch.<br>
+You can also upload files or entire folders to the <code>Hugging Face</code> model repository (with a WRITE token, of course), making sharing and access easier.<br>
+The extension also has functionality to archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
+<br>
+Downloading/Uploading files from/to outside Models or Embeddings folders is blocked.<br>
+Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
+<br>
+Support both Windows and Unix.
 
 # Changelog
-### 2024-12-23  v5.0.0
-- Added a click event listener to the Tag List in the Gradio DataFrame to copy the table values, making it easier to copy especially for mobile users.<br>
+### 2024-12-25  v5.5.5
+- Added security measures to restrict downloading, uploading, and compressing to the Models and Embeddings folders only when WebUI is run without <code>--enable-insecure-extension-access</code>.<br>
+- Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
 - Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
 - Fixed path handling.<br>
 
@@ -67,6 +75,8 @@ URL
 Tag should begin with <code>$</code><br>
 Tag is mandatory and there is no default path.<br>
 For available tags, refer to the [Tag List] at the bottom of the extension.<br>
+
+Click on the table row, tag or path to automatically copy its text.<br>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/37ed0ab7-a52d-42ac-9252-44eaa88181a8", width=1000px>
 </p>

@@ -11,8 +11,11 @@ def is_valid_url(url):
     return all([parsing.scheme, parsing.netloc])
 
 def remove_readonly(func, path, exc_info):
-    "Clear the readonly bit and reattempt the removal"
-    "https://bugs.python.org/issue43657#msg389724"
+    """
+    Clear the readonly bit and reattempt the removal
+    https://bugs.python.org/issue43657#msg389724
+    """
+
     if func not in (os.unlink, os.rmdir) or exc_info[1].winerror != 5:
         raise exc_info[1]
     os.chmod(path, stat.S_IWRITE)

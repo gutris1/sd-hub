@@ -4,3 +4,5 @@ __pycache__/
 *.jpg
 aria2c.exe
 sd_hub/hf-logo.svg
+uploader-info.json
+.sd-hub-token.json
