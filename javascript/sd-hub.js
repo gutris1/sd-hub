@@ -27,7 +27,7 @@ onUiLoaded(function () {
     var Path = `file=${FilePath[1]}/`;
     var NameFile = 'uploader-info.json';
 
-    fetch(Path + NameFile)
+    fetch(Path + NameFile, { cache: "no-store" })
       .then(response => {
         if (!response.ok) return;
         return response.json();
