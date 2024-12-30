@@ -4,18 +4,27 @@ It lets you download files from sites like <code>Civitai</code>, <code>Hugging F
 You can also upload files or entire folders to the <code>Hugging Face</code> model repository (with a WRITE token, of course), making sharing and access easier.<br>
 The extension also has functionality to archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
 <br>
-Downloading/Uploading files from/to outside Models or Embeddings folders is blocked.<br>
+Downloading/Uploading/compressing/extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 <br>
 Support both Windows and Unix.
 
 # Changelog
-### 2024-12-25  v5.5.5
+### 2024-12-30  v5.6.1
+- Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
+- Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/74802d39-fcee-4d12-ba9f-302b67eb6375", width=1000px>
+</p>
+
+<details><summary>2024-12-25  v5.5.5</summary><br>
+
 - Added security measures to restrict downloading, uploading, and compressing to the Models and Embeddings folders only when WebUI is run without <code>--enable-insecure-extension-access</code>.<br>
 - Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
 - Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
 - Fixed path handling.<br>
 - Relocated the token file to the extension folder and renamed it to <code>.sd-hub-token.json</code>.<br>
+</details>
 
 <details><summary>2024-09-30  v4.8.4</summary><br>
 
