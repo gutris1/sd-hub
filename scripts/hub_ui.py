@@ -1,6 +1,7 @@
 import gradio as gr
 from modules.ui_components import FormRow, FormColumn
 from modules.script_callbacks import on_ui_tabs
+from modules.shared import cmd_opts
 
 from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
@@ -9,6 +10,7 @@ from sd_hub.uploader import uploader
 from sd_hub.paths import SDPaths
 from sd_hub.scraper import scraper
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
+from sd_hub.zipoutputs import ZipOutputs
 
 def onSDHUBloaded():
     token1, token2, token3, _, _ = load_token()
@@ -202,20 +204,26 @@ def onSDHUBloaded():
             with gr.Accordion("ReadMe", open=False):
                 gr.HTML(arc_info)
 
-            gr.HTML("""<h3 style='font-size: 17px;'>Archive</h3>""")
-            arc_format = gr.Radio(
-                ["tar.lz4", "tar.gz", "zip"],
-                value="tar.lz4",
-                label="Format",
-                interactive=True
-            )
+            if cmd_opts.enable_insecure_extension_access:
+                ZipOutputs()
 
-            arc_split = gr.Radio(
-                ["None", "2", "3", "4", "5"],
-                value="None",
-                label="Split by",
-                interactive=True
-            )
+            gr.HTML("""<h3 style='font-size: 17px;'>Archive</h3>""")
+            with FormRow():
+                arc_format = gr.Radio(
+                    ["tar.lz4", "tar.gz", "zip"],
+                    value="tar.lz4",
+                    label="Format",
+                    scale=1,
+                    interactive=True
+                )
+
+                arc_split = gr.Radio(
+                    ["None", "2", "3", "4", "5"],
+                    value="None",
+                    label="Split by",
+                    scale=3,
+                    interactive=True
+                )
 
             with FormRow():
                 arc_name = gr.Textbox(
@@ -224,8 +232,6 @@ def onSDHUBloaded():
                     show_label=False,
                     elem_id="sdhub-archiver-arc-inputname"
                 )
-
-                gr.Textbox("hantu", max_lines=1, show_label=False, elem_classes="hide-this")
 
             with gr.Column(elem_classes="arc-row"):
                 arc_in = gr.Textbox(
@@ -277,7 +283,7 @@ def onSDHUBloaded():
                         )
 
                         mkdir_cb2 = gr.Checkbox(label="Create Directory", elem_classes="cb")
-                    
+
                 with gr.Column():
                     gr.Textbox(
                         show_label=False,
