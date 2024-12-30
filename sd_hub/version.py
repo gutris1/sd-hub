@@ -1,4 +1,4 @@
-version = "5.5.5"
+version = "5.6.1"
 
 import os, sys
 from pathlib import Path
