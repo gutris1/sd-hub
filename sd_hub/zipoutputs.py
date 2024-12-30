@@ -54,9 +54,9 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
         else:
             output_box.append(_text)
 
-    c = ["not", "Missing", "Invalid"]
+    cc = ["not", "Missing", "Invalid"]
 
-    if any(a in b for a in c for b in output_box):
+    if any(aa in bb for aa in cc for bb in output_box):
         yield "Error", "\n".join(output_box)
     else:
         yield "Done", "\n".join(output_box)
