@@ -41,6 +41,23 @@
   margin-top: 10px;
 }
 
+#sdhub-downloader-scrape {
+  transition: 0.4s ease;
+  border-top-left-radius: var(--button-large-radius);
+  border-bottom-left-radius: var(--button-large-radius);
+}
+
+#sdhub-downloader-txt {
+  transition: 0.4s ease;
+  border-top-right-radius: var(--button-large-radius);
+  border-bottom-right-radius: var(--button-large-radius);
+}
+
+#sdhub-downloader-scrape:hover,
+#sdhub-downloader-txt:hover {
+  box-shadow: 0 0 0 1.5px var(--color-accent);
+}
+
 #sdhub-downloader-inputs textarea,
 #sdhub-downloader-token1 input,
 #sdhub-downloader-token2 input,
