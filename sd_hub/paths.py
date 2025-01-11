@@ -1,85 +1,68 @@
 from modules.paths_internal import models_path, data_path, extensions_dir
-from modules.sd_models import model_path
+from modules.sd_models import model_path as ckpt_path
 from modules.shared import cmd_opts
 from pathlib import Path
 import os
-
-class SDPaths:
-    root = Path(data_path)
-    models = Path(models_path)
-
-    ckpt_dir = cmd_opts.ckpt_dir or model_path
-    lora_dir = cmd_opts.lora_dir
-    vae_dir = cmd_opts.vae_dir or models / "VAE"
-    embeddings_dir = cmd_opts.embeddings_dir
-    esrgan_dir = cmd_opts.esrgan_models_path or models / "ESRGAN"
-    try:
-        controlnet_dir = cmd_opts.controlnet_dir or models / "ControlNet"
-    except AttributeError:
-        controlnet_dir = models / "ControlNet"
-    hypernetwork_dir = cmd_opts.hypernetwork_dir or models / "hypernetworks"
-    ad_model = models / "adetailer"
-    codeformer_dir = cmd_opts.codeformer_models_path or models / "Codeformer"
-    extensions_dir = extensions_dir
-
-    @staticmethod
-    def SDHubTagsAndPaths():
-        tags_list = {
-            "$ckpt": SDPaths.ckpt_dir,
-            "$lora": SDPaths.lora_dir,
-            "$vae": SDPaths.vae_dir,
-            "$emb": SDPaths.embeddings_dir,
-            "$ups": SDPaths.esrgan_dir,
-            "$cn": SDPaths.controlnet_dir,
-            "$hn": SDPaths.hypernetwork_dir,
-            "$ad": SDPaths.ad_model,
-            "$cf": SDPaths.codeformer_dir
-        }
-
-        paths = [[t, str(d)] for t, d in tags_list.items()]
-
-        if cmd_opts.enable_insecure_extension_access:
-            paths.append(["$ext", str(SDPaths.extensions_dir)])
-            paths.append(["$root", str(SDPaths.root)])
-
-            env_list = {
-                "COLAB_JUPYTER_TRANSPORT": "/content",
-                "SAGEMAKER_INTERNAL_IMAGE_URI": "/home/studio-lab-user",
-                "KAGGLE_DATA_PROXY_TOKEN": "/kaggle/working"
-            }
-
-            for var, path in env_list.items():
-                if var in os.environ:
-                    paths.append(["$home", path])
-                    break
-
-        return paths
-
-    @staticmethod
-    def SDHubPaths():
-        paths = SDPaths.SDHubTagsAndPaths()
-        return {tag.lower(): path for tag, path in paths}
-
-    def SDHubCheckPaths(self, inputs):
-        target = Path(inputs).resolve()
-        allowed_dirs = [
-            Path(self.ckpt_dir).resolve(),
-            Path(self.lora_dir).resolve(),
-            Path(self.vae_dir).resolve(),
-            Path(self.embeddings_dir).resolve(),
-            Path(self.esrgan_dir).resolve(),
-            Path(self.controlnet_dir).resolve(),
-            Path(self.hypernetwork_dir).resolve(),
-            Path(self.ad_model).resolve(),
-            Path(self.codeformer_dir).resolve(),
-        ]
-
-        if not any(dirs in target.parents or target == dirs for dirs in allowed_dirs):
-            return False, f"{target}\n\n{BLOCK}"
-
-        return True, ""
 
 BLOCK = (
     "Downloading/Uploading files from/to outside Models or Embeddings folders is blocked. "
     "\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk."
 )
+
+ROOT_PATH = Path(data_path).resolve()
+MODELS_PATH = Path(models_path).resolve()
+EXTENSIONS_PATH = Path(extensions_dir).resolve()
+
+class SDPaths:
+    def __init__(self, root_path=None, models_path=None):
+        root_path = Path(root_path or ROOT_PATH).resolve()
+        models_path = Path(models_path or MODELS_PATH).resolve()
+
+        self.SDHubTagsList = {
+            "$ckpt": Path(cmd_opts.ckpt_dir or ckpt_path).resolve(),
+            "$lora": Path(cmd_opts.lora_dir or models_path / "Lora").resolve(),
+            "$vae": Path(cmd_opts.vae_dir or models_path / "VAE").resolve(),
+            "$emb": Path(cmd_opts.embeddings_dir or root_path / "embeddings").resolve(),
+            "$ups": Path(cmd_opts.esrgan_models_path or models_path / "ESRGAN").resolve(),
+            "$cn": Path(
+                (cmd_opts.controlnet_dir or models_path / "ControlNet")
+                if hasattr(cmd_opts, "controlnet_dir")
+                else models_path / "ControlNet"
+            ).resolve(),
+            "$hn": Path(cmd_opts.hypernetwork_dir or models_path / "hypernetwork").resolve(),
+            "$ad": (models_path / "adetailer").resolve(),
+            "$cf": Path(cmd_opts.codeformer_models_path or models_path / "Codeformer").resolve(),
+        }
+
+        if cmd_opts.enable_insecure_extension_access:
+            self.SDHubTagsList["$ext"] = Path(EXTENSIONS_PATH).resolve()
+            self.SDHubTagsList["$root"] = root_path
+
+            env_path = {
+                "COLAB_JUPYTER_TRANSPORT": Path("/content"),
+                "SAGEMAKER_INTERNAL_IMAGE_URI": Path("/home/studio-lab-user"),
+                "KAGGLE_DATA_PROXY_TOKEN": Path("/kaggle/working"),
+            }
+            for env_var, path in env_path.items():
+                if env_var in os.environ:
+                    self.SDHubTagsList["$home"] = path.resolve()
+
+    def SDHubCheckPaths(self, paths):
+        paths = Path(paths).resolve()
+
+        if not any(
+            dirs in paths.parents or paths == dirs for dirs in self.SDHubTagsList.values()
+        ):
+            return False, f"{paths}\n\n{BLOCK}"
+        return True, ""
+
+    def SDHubTagsAndPaths(self):
+        return {tag.lower(): str(path) for tag, path in self.SDHubTagsList.items()}
+
+SDHubVar = SDPaths(ROOT_PATH, MODELS_PATH)
+
+def SDHubPaths():
+    global SDHubVar
+    if SDHubVar is None:
+        SDHubVar = SDPaths(ROOT_PATH, MODELS_PATH)
+    return SDHubVar
