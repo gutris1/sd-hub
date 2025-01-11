@@ -7,7 +7,7 @@ from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
 from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
-from sd_hub.paths import SDPaths
+from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
 from sd_hub.zipoutputs import ZipOutputs
@@ -60,13 +60,20 @@ def onSDHUBloaded():
                     dl_dl = gr.Button("DOWNLOAD", variant="primary")
 
                 with FormColumn(scale=1), FormRow(variant="compact"):
-                    dl_scrape = gr.Button("Scrape", variant="secondary", min_width=0)
+                    dl_scrape = gr.Button(
+                        "Scrape",
+                        variant="secondary",
+                        min_width=0,
+                        elem_id="sdhub-downloader-scrape"
+                    )
+
                     dl_txt = gr.UploadButton(
                         label="Insert TXT",
                         variant="secondary",
                         file_count="single",
                         file_types=[".txt"],
-                        min_width=0
+                        min_width=0,
+                        elem_id="sdhub-downloader-txt"
                     )
 
                 with FormColumn(scale=2, variant="compact"):
@@ -306,7 +313,7 @@ def onSDHUBloaded():
 
         with gr.Accordion("Tag List", open=False, visible=True):
             gr.DataFrame(
-                SDPaths.SDHubTagsAndPaths(),
+                [[tag, path] for tag, path in SDHubPaths().SDHubTagsAndPaths().items()],
                 headers=["SD-Hub Tag", "WebUI Path"],
                 datatype=["str", "str"],
                 interactive=False,
