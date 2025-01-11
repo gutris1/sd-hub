@@ -6,8 +6,10 @@ from pathlib import Path
 import gradio as gr
 import subprocess, re, sys, time, json, shlex
 
-from sd_hub.paths import SDPaths, BLOCK
+from sd_hub.paths import SDHubPaths, BLOCK
 from sd_hub.version import xyz
+
+tag_tag = SDHubPaths().SDHubTagsAndPaths()
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
     msg = commit_msg.replace('"', '\\"')
@@ -95,7 +97,6 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         return
 
     repo_id = f"{user}/{repo}"
-    tag_tag = SDPaths.SDHubPaths()
     task_task = []
 
     for line in input_lines:
@@ -133,8 +134,7 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             full_path = Path(resolved_path, subpath_or_file)
 
         if not cmd_opts.enable_insecure_extension_access:
-            sd_paths = SDPaths()
-            allowed, err = sd_paths.SDHubCheckPaths(full_path)
+            allowed, err = SDHubPaths().SDHubCheckPaths(full_path)
             if not allowed:
                 yield err, False
                 return
