@@ -11,7 +11,6 @@ BLOCK = (
 
 ROOT_PATH = Path(data_path).resolve()
 MODELS_PATH = Path(models_path).resolve()
-EXTENSIONS_PATH = Path(extensions_dir).resolve()
 
 class SDPaths:
     def __init__(self, root_path=None, models_path=None):
@@ -37,7 +36,7 @@ class SDPaths:
         }
 
         if cmd_opts.enable_insecure_extension_access:
-            self.SDHubTagsList["$ext"] = Path(EXTENSIONS_PATH).resolve()
+            self.SDHubTagsList["$ext"] = Path(extensions_dir).resolve()
             self.SDHubTagsList["$root"] = root_path
 
             env_path = {
