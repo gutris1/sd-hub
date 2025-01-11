@@ -5,8 +5,11 @@ from modules.scripts import basedir
 import gradio as gr
 import subprocess, re, sys, requests, time, shlex
 
-from sd_hub.paths import SDPaths, BLOCK
+from sd_hub.paths import SDHubPaths, BLOCK
 from sd_hub.version import xyz
+
+tag_tag = SDHubPaths().SDHubTagsAndPaths()
+aria2cexe = Path(basedir()) / 'aria2c.exe'
 
 def gdrown(url, target_path=None, fn=None):
     gfolder = "drive.google.com/drive/folders" in url
@@ -63,8 +66,6 @@ def gdrown(url, target_path=None, fn=None):
     p.wait()
 
 
-aria2cexe = Path(basedir()) / 'aria2c.exe'
-
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
 
@@ -80,8 +81,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         if token3:
             aria2cmd.extend(["--header=User-Agent: Mozilla/5.0"])
 
-            if '?token=' in url:
-                url = url.split('?token=')[0]
+            url = url.split('?token=')[0] if '?token=' in url else url
             if '?type=' in url:
                 url = url.replace('?type=', f'?token={token3}&type=')
             else:
@@ -89,30 +89,29 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
         if "civitai.com/models/" in url:
             try:
+                model_id, version_id = (url.split('/models/')[1].split('/')[0], None)
                 if '?modelVersionId=' in url:
                     version_id = url.split('?modelVersionId=')[1]
                     response = requests.get(f"https://civitai.com/api/v1/model-versions/{version_id}")
                 else:
-                    model_id = url.split('/models/')[1].split('/')[0]
                     response = requests.get(f"https://civitai.com/api/v1/models/{model_id}")
 
                 response.raise_for_status()
                 data = response.json()
 
-                if "downloadUrl" in data:
-                    download_url = data["downloadUrl"]
-                    early_access = data.get("earlyAccessConfig")
-                    if early_access and early_access.get("chargeForDownload", False):
-                        yield f"-> {download_url}\nThe model is in early access and requires payment for downloading.", False
-                        return
-                elif "modelVersions" in data and data["modelVersions"]:
-                    download_url = data["modelVersions"][0].get("downloadUrl", "")
-                else:
+                early_access = data.get("earlyAccessEndsAt")
+                if early_access:
+                    model_page = f"https://civitai.com/models/{data.get('modelId')}?modelVersionId={data.get('id')}"
+                    msg = f"The model is in early access and requires payment for downloading."
+                    yield f"-> {model_page}\n{msg}", False
+                    return
+
+                download_url = data.get("downloadUrl") or data.get("modelVersions", [{}])[0].get("downloadUrl", "")
+                if not download_url:
                     yield f"Unable to find download URL for\n-> {url}\n", False
                     return
 
                 url = f"{download_url}?token={token3}" if token3 else download_url
-
             except requests.exceptions.RequestException as e:
                 yield f"{str(e)}\n", True
                 return
@@ -130,8 +129,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     if target_path:
         if not cmd_opts.enable_insecure_extension_access:
-            sd_paths = SDPaths()
-            allowed, err = sd_paths.SDHubCheckPaths(target_path)
+            allowed, err = SDHubPaths().SDHubCheckPaths(target_path)
             if not allowed:
                 yield err, False
                 return
@@ -255,7 +253,7 @@ def url_check(url):
     except Exception as e:
         return False, str(e)
 
-def input_process(url_line, current_path, tags_mappings):
+def input_process(url_line, current_path):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
         return None, None, None, "Invalid usage, Tag should start with $"
 
@@ -263,7 +261,7 @@ def input_process(url_line, current_path, tags_mappings):
         parts = url_line[1:].strip().split('/', 1)
         tags_key = f"${parts[0].lower()}"
         subfolder = parts[1] if len(parts) > 1 else None
-        base_path = tags_mappings.get(tags_key)
+        base_path = tag_tag.get(tags_key)
         if base_path is not None:
             full_path = Path(base_path, subfolder) if subfolder else Path(base_path)
             current_path = full_path
@@ -313,7 +311,6 @@ def surface(command, token2=None, token3=None):
         yield "Nothing To See Here.", True
         return
 
-    tags_mappings = SDPaths.SDHubPaths()
     current_path = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
 
@@ -322,7 +319,7 @@ def surface(command, token2=None, token3=None):
         return
 
     for url_line in urls:
-        target_path, url, fn, error = input_process(url_line, current_path, tags_mappings)
+        target_path, url, fn, error = input_process(url_line, current_path)
 
         if error:
             yield error, True
