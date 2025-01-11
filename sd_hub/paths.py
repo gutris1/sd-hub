@@ -24,13 +24,15 @@ class SDPaths:
             "$vae": Path(cmd_opts.vae_dir or models_path / "VAE").resolve(),
             "$emb": Path(cmd_opts.embeddings_dir or root_path / "embeddings").resolve(),
             "$ups": Path(cmd_opts.esrgan_models_path or models_path / "ESRGAN").resolve(),
-            "$cn": Path(
-                (cmd_opts.controlnet_dir or models_path / "ControlNet")
-                if hasattr(cmd_opts, "controlnet_dir")
-                else models_path / "ControlNet"
-            ).resolve(),
+            **({
+                "$cn": Path(cmd_opts.controlnet_dir or models_path / "ControlNet").resolve()
+                } if hasattr(cmd_opts, "controlnet_dir") else {}
+            ),
             "$hn": Path(cmd_opts.hypernetwork_dir or models_path / "hypernetwork").resolve(),
-            "$ad": (models_path / "adetailer").resolve(),
+            **({
+                "$ad": (models_path / "adetailer").resolve()
+                } if hasattr(cmd_opts, "ad_no_huggingface") else {}
+            ),
             "$cf": Path(cmd_opts.codeformer_models_path or models_path / "Codeformer").resolve(),
         }
 
