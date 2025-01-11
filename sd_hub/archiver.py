@@ -3,13 +3,15 @@ from tqdm import tqdm
 from modules.shared import cmd_opts
 import gradio as gr
 import subprocess, zipfile, select, sys, os
+
 if sys.platform == 'win32':
     import tarfile, gzip, lz4.frame
 else:
     import pty
 
-from sd_hub.paths import SDPaths, BLOCK
+from sd_hub.paths import SDHubPaths, BLOCK
 
+tag_tag = SDHubPaths().SDHubTagsAndPaths()
 
 def tar_win_process(inputs, paths, formats, outputs):
     tar_out = str(outputs) + '.tar'
@@ -251,8 +253,6 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
         yield f"Missing: [ {missing} ]", True
         return
 
-    tag_tag = SDPaths.SDHubPaths()
-
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
             tag_key, _, subpath_or_file = path_str[1:].partition('/')
@@ -276,8 +276,7 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
         for path_obj in [input_path_obj, output_path_obj]:
             if path_obj and path_obj.exists():
                 if not cmd_opts.enable_insecure_extension_access:
-                    sd_paths = SDPaths()
-                    allowed, err = sd_paths.SDHubCheckPaths(path_obj)
+                    allowed, err = SDHubPaths().SDHubCheckPaths(path_obj)
                     if not allowed:
                         yield err, True
                         return
@@ -496,8 +495,6 @@ def path_extract(input_path, output_path, mkdir_cb2):
         yield f"Missing: [ {missing} ]", True
         return
 
-    tag_tag = SDPaths.SDHubPaths()
-
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
             tag_key, _, subpath_or_file = path_str[1:].partition('/')
@@ -521,8 +518,7 @@ def path_extract(input_path, output_path, mkdir_cb2):
         for path_obj in [input_path_obj, output_path_obj]:
             if path_obj and path_obj.exists():
                 if not cmd_opts.enable_insecure_extension_access:
-                    sd_paths = SDPaths()
-                    allowed, err = sd_paths.SDHubCheckPaths(path_obj)
+                    allowed, err = SDHubPaths().SDHubCheckPaths(path_obj)
                     if not allowed:
                         yield err, True
                         return

@@ -5,9 +5,40 @@ from modules.paths_internal import data_path
 import gradio as gr
 import zipfile
 
+from sd_hub.paths import SDHubPaths
+
+tag_tag = SDHubPaths().SDHubTagsAndPaths()
+
+def is_that_tag(output_path):
+    if output_path.startswith('$'):
+        parts = output_path[1:].strip().split('/', 1)
+        tags_key = f"${parts[0].lower()}"
+        subfolder = parts[1] if len(parts) > 1 else None
+        path = tag_tag.get(tags_key)
+
+        if path is not None:
+            fp = Path(path, subfolder) if subfolder else Path(path)
+            return fp, None
+        else:
+            return None, f"Invalid tag: {tags_key}"
+    else:
+        return Path(output_path), None
+
 def zipping(file_name, output_path, mkdir_zip):
-    out = Path(output_path) if output_path else Path(data_path)
+    resolved, err = is_that_tag(output_path)
+    if err:
+        yield err, True
+        return
+
+    out = resolved if resolved else Path(data_path)
     fn = Path(file_name.strip()) if file_name else 'ZipOutputs'
+
+    if not mkdir_zip:
+        if not out.exists():
+            yield f"{out}\nOutput path does not exist.", True
+            return
+    else:
+        out.mkdir(parents=True, exist_ok=True)
 
     zip_in = Path(data_path) / 'outputs'
     zip_out = out / f"{fn}.zip"
