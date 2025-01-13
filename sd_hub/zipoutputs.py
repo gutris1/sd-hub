@@ -7,7 +7,7 @@ import zipfile
 
 from sd_hub.paths import SDHubPaths
 
-tag_tag = SDHubPaths().SDHubTagsAndPaths()
+tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
 def is_that_tag(output_path):
     if output_path.startswith('$'):
