@@ -11,7 +11,7 @@ else:
 
 from sd_hub.paths import SDHubPaths, BLOCK
 
-tag_tag = SDHubPaths().SDHubTagsAndPaths()
+tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
 def tar_win_process(inputs, paths, formats, outputs):
     tar_out = str(outputs) + '.tar'
@@ -276,7 +276,7 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
         for path_obj in [input_path_obj, output_path_obj]:
             if path_obj and path_obj.exists():
                 if not cmd_opts.enable_insecure_extension_access:
-                    allowed, err = SDHubPaths().SDHubCheckPaths(path_obj)
+                    allowed, err = SDHubPaths.SDHubCheckPaths(path_obj)
                     if not allowed:
                         yield err, True
                         return
@@ -518,7 +518,7 @@ def path_extract(input_path, output_path, mkdir_cb2):
         for path_obj in [input_path_obj, output_path_obj]:
             if path_obj and path_obj.exists():
                 if not cmd_opts.enable_insecure_extension_access:
-                    allowed, err = SDHubPaths().SDHubCheckPaths(path_obj)
+                    allowed, err = SDHubPaths.SDHubCheckPaths(path_obj)
                     if not allowed:
                         yield err, True
                         return
