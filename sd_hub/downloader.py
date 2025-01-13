@@ -8,7 +8,7 @@ import subprocess, re, sys, requests, time, shlex
 from sd_hub.paths import SDHubPaths, BLOCK
 from sd_hub.version import xyz
 
-tag_tag = SDHubPaths().SDHubTagsAndPaths()
+tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
 
 def gdrown(url, target_path=None, fn=None):
@@ -129,7 +129,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     if target_path:
         if not cmd_opts.enable_insecure_extension_access:
-            allowed, err = SDHubPaths().SDHubCheckPaths(target_path)
+            allowed, err = SDHubPaths.SDHubCheckPaths(target_path)
             if not allowed:
                 yield err, False
                 return
