@@ -60,10 +60,4 @@ class SDPaths:
     def SDHubTagsAndPaths(self):
         return {tag.lower(): str(path) for tag, path in self.SDHubTagsList.items()}
 
-SDHubVar = SDPaths(ROOT_PATH, MODELS_PATH)
-
-def SDHubPaths():
-    global SDHubVar
-    if SDHubVar is None:
-        SDHubVar = SDPaths(ROOT_PATH, MODELS_PATH)
-    return SDHubVar
+SDHubPaths = SDPaths(ROOT_PATH, MODELS_PATH)
