@@ -313,7 +313,7 @@ def onSDHUBloaded():
 
         with gr.Accordion("Tag List", open=False, visible=True):
             gr.DataFrame(
-                [[tag, path] for tag, path in SDHubPaths().SDHubTagsAndPaths().items()],
+                [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
                 headers=["SD-Hub Tag", "WebUI Path"],
                 datatype=["str", "str"],
                 interactive=False,
