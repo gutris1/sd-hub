@@ -40,7 +40,7 @@ class SDPaths:
             self.SDHubTagsList["$root"] = root_path
 
             env_path = {
-                "COLAB_JUPYTER_IP": Path("/content"),
+                "COLAB_JUPYTER_TOKEN": Path("/content"),
                 "SAGEMAKER_INTERNAL_IMAGE_URI": Path("/home/studio-lab-user"),
                 "KAGGLE_DATA_PROXY_TOKEN": Path("/kaggle/working"),
             }
