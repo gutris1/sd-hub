@@ -1,8 +1,12 @@
+from modules.shared import cmd_opts
 from pathlib import Path
 from tqdm import tqdm
-from modules.shared import cmd_opts
 import gradio as gr
-import subprocess, zipfile, select, sys, os
+import subprocess
+import zipfile
+import select
+import sys
+import os
 
 if sys.platform == 'win32':
     import tarfile, gzip, lz4.frame
@@ -65,12 +69,11 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
         yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
 
 
-def tar_process(_tar, cwd, _pv, _format, _output):
+def tar_process(_tar, _pv, _format, _output):
     ayu, rika = pty.openpty() # type: ignore
 
     p_tar = subprocess.Popen(
         _tar,
-        cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -121,14 +124,19 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
 
+    parent_dir = str(input_path_obj.parent)
+
     if format_type == "gz":
         comp_type = "gzip"
     elif format_type == "lz4":
         comp_type = "lz4"
 
-    if input_type == "folder":
-        cwd = str(input_path_obj.parent)
+    _pv = ['pv']
+    _format = [comp_type]
 
+    cmd = ['tar', 'cf', '-', '-C', parent_dir, input_path_obj.name]
+
+    if input_type == "folder":
         all_files = [
             f.relative_to(input_path_obj.parent)
             for f in input_path_obj.rglob('*')
@@ -143,23 +151,15 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
             start = i * (total_parts // files_split)
             end = start + (total_parts // files_split) if i < files_split - 1 else None
             _split = all_files[start:end]
-
             count += 1
             _output = output_path_obj / f"{file_name}{'_' + str(count) if split_by > 0 else ''}.tar.{format_type}"
-            _tar = ['tar', 'cfh', '-'] + [str(f) for f in _split]
-            _pv = ['pv']
-            _format = [comp_type]
-
-            yield from tar_process(_tar, cwd, _pv, _format, _output)
+            cmds = ['tar', 'cfh', '-', '-C', parent_dir] + [str(f) for f in _split]
+            params = (cmds if files_split > 1 else cmd, _pv, _format, _output)
+            yield from tar_process(*params)
 
     else:
-        _tar = ['tar', 'cf', '-', input_path_obj.name]
-        cwd = str(input_path_obj.parent)
         _output = output_path_obj / f"{file_name}.tar.{format_type}"
-        _pv = ['pv']
-        _format = [comp_type]
-
-        yield from tar_process(_tar, cwd, _pv, _format, _output)
+        yield from tar_process(cmd, _pv, _format, _output)
 
 
 def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
