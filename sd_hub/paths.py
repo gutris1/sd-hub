@@ -12,6 +12,8 @@ BLOCK = (
 ROOT_PATH = Path(data_path).resolve()
 MODELS_PATH = Path(models_path).resolve()
 
+INSECURE_ACCESS = cmd_opts.enable_insecure_extension_access
+
 class SDPaths:
     def __init__(self, root_path=None, models_path=None):
         root_path = Path(root_path or ROOT_PATH).resolve()
@@ -35,18 +37,13 @@ class SDPaths:
             "$cf": Path(cmd_opts.codeformer_models_path or models_path / "Codeformer").resolve(),
         }
 
-        if cmd_opts.enable_insecure_extension_access:
+        if INSECURE_ACCESS:
             self.SDHubTagsList["$ext"] = Path(extensions_dir).resolve()
             self.SDHubTagsList["$root"] = root_path
 
-            env_path = {
-                "COLAB_JUPYTER_TOKEN": Path("/content"),
-                "SAGEMAKER_INTERNAL_IMAGE_URI": Path("/home/studio-lab-user"),
-                "KAGGLE_DATA_PROXY_TOKEN": Path("/kaggle/working"),
-            }
-            for env_var, path in env_path.items():
-                if env_var in os.environ:
-                    self.SDHubTagsList["$home"] = path.resolve()
+            home = self.getENV()
+            if home:
+                self.SDHubTagsList["$home"] = home
 
     def SDHubCheckPaths(self, paths):
         paths = Path(paths).resolve()
@@ -59,5 +56,20 @@ class SDPaths:
 
     def SDHubTagsAndPaths(self):
         return {tag.lower(): str(path) for tag, path in self.SDHubTagsList.items()}
+
+    def getENV(self):
+        if not INSECURE_ACCESS:
+            return None
+
+        env_list = {
+            "COLAB_JUPYTER_TOKEN": Path("/content"),
+            "SAGEMAKER_INTERNAL_IMAGE_URI": Path("/home/studio-lab-user"),
+            "KAGGLE_DATA_PROXY_TOKEN": Path("/kaggle/working"),
+        }
+
+        for var, path in env_list.items():
+            if var in os.environ:
+                return path.resolve()
+        return None
 
 SDHubPaths = SDPaths(ROOT_PATH, MODELS_PATH)
