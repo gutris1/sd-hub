@@ -273,28 +273,31 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        for path_obj in [input_path_obj, output_path_obj]:
-            if path_obj and path_obj.exists():
-                if not cmd_opts.enable_insecure_extension_access:
-                    allowed, err = SDHubPaths.SDHubCheckPaths(path_obj)
-                    if not allowed:
-                        yield err, True
-                        return
-            else:
-                yield f"{path_obj}\ndoes not exist", True
-                return
+        if not input_path_obj.exists():
+            yield f"{input_path_obj}\ndoes not exist", True
+            return
 
-    if output_path_obj.suffix:
-        yield f"{output_path}\nOutput Path is not a directory.", True
-        return
+        if output_path_obj.suffix:
+            yield f"{output_path}\nOutput Path is not a directory.", True
+            return
+
+        if not mkdir_cb1 and not output_path_obj.exists():
+            yield f"{output_path_obj}\ndoes not exist", True
+            return
+        elif mkdir_cb1:
+            output_path_obj.mkdir(parents=True, exist_ok=True)
+
+        if not cmd_opts.enable_insecure_extension_access:
+            for path in [input_path_obj, output_path_obj]:
+                allowed, err = SDHubPaths.SDHubCheckPaths(path)
+                if not allowed:
+                    yield err, True
+                    return
 
     if input_path_obj.is_file():
         input_type = 'file'
     elif input_path_obj.is_dir():
         input_type = 'folder'
-
-    if mkdir_cb1:
-        output_path_obj.mkdir(parents=True, exist_ok=True)
 
     if sys.platform == 'win32':
         select_arc = {'zip': _zip, 'tar.gz': tar_win, 'tar.lz4': tar_win}
@@ -515,23 +518,26 @@ def path_extract(input_path, output_path, mkdir_cb2):
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        for path_obj in [input_path_obj, output_path_obj]:
-            if path_obj and path_obj.exists():
-                if not cmd_opts.enable_insecure_extension_access:
-                    allowed, err = SDHubPaths.SDHubCheckPaths(path_obj)
-                    if not allowed:
-                        yield err, True
-                        return
-            else:
-                yield f"{path_obj}\ndoes not exist", True
-                return
+        if not input_path_obj.exists():
+            yield f"{input_path_obj}\ndoes not exist", True
+            return
 
-    if output_path_obj.suffix:
-        yield f"{output_path}\nOutput Path is not a directory.", True
-        return
+        if output_path_obj.suffix:
+            yield f"{output_path}\nOutput Path is not a directory.", True
+            return
 
-    if mkdir_cb2:
-        output_path_obj.mkdir(parents=True, exist_ok=True)
+        if not mkdir_cb2 and not output_path_obj.exists():
+            yield f"{output_path_obj}\ndoes not exist", True
+            return
+        elif mkdir_cb2:
+            output_path_obj.mkdir(parents=True, exist_ok=True)
+
+        if not cmd_opts.enable_insecure_extension_access:
+            for path in [input_path_obj, output_path_obj]:
+                allowed, err = SDHubPaths.SDHubCheckPaths(path)
+                if not allowed:
+                    yield err, True
+                    return
 
     select_ext = {'.zip': 'zip', '.tar.gz': 'tar.gz', '.tar.lz4': 'tar.lz4'}
     input_ext = ''.join(input_path_obj.suffixes)
