@@ -1,7 +1,8 @@
+
+
 import gradio as gr
 from modules.ui_components import FormRow, FormColumn
 from modules.script_callbacks import on_ui_tabs
-from modules.shared import cmd_opts
 
 from sd_hub.tokenizer import load_token, save_token
 from sd_hub.downloader import downloader, read_txt
@@ -211,7 +212,7 @@ def onSDHUBloaded():
             with gr.Accordion("ReadMe", open=False):
                 gr.HTML(arc_info)
 
-            if cmd_opts.enable_insecure_extension_access:
+            if SDHubPaths.getENV():
                 ZipOutputs()
 
             gr.HTML("""<h3 style='font-size: 17px;'>Archive</h3>""")
