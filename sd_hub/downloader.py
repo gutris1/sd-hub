@@ -306,6 +306,31 @@ def input_process(url_line, current_path):
 
     return target_path, url, fn, None
 
+def git_clown(url, target_path, subfolder=None):
+    clone_path = target_path
+
+    if subfolder:
+        clone_path = Path(target_path, subfolder)
+
+    process = subprocess.Popen(
+        ['git', 'clone', url],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        cwd=str(clone_path)
+    )
+
+    while True:
+        output = process.stdout.readline()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            yield output.strip(), True
+
+    if process.returncode != 0:
+        error = process.stderr.read()
+        yield f"{error}", True
+
 def surface(command, token2=None, token3=None):
     if not command.strip():
         yield "Nothing To See Here.", True
@@ -318,6 +343,9 @@ def surface(command, token2=None, token3=None):
         yield "Missing URL.", True
         return
 
+    ext_tag = urls[0].startswith('$ext')
+    github_repo = any('github.com' in url_line and not Path(urlparse(url_line).path).suffix for url_line in urls)
+
     for url_line in urls:
         target_path, url, fn, error = input_process(url_line, current_path)
 
@@ -329,9 +357,14 @@ def surface(command, token2=None, token3=None):
             current_path = target_path
             continue
 
+        if github_repo and ext_tag:
+            for msg, err in git_clown(url, target_path):
+                yield msg, err
+            continue
+
         if "drive.google" in url:
-            for message, isError in gdrown(url, target_path, fn):
-                yield message, isError
+            for msg, err in gdrown(url, target_path, fn):
+                yield msg, err
             continue
 
         for output in ariari(
@@ -342,6 +375,7 @@ def surface(command, token2=None, token3=None):
             token3
         ):
             yield output
+
 
 def downloader(command, token2, token3, box_state=gr.State()):
     output_box = box_state if box_state else []
@@ -371,8 +405,8 @@ def downloader(command, token2, token3, box_state=gr.State()):
             output_box.append(_text)
 
     catcher = [
-        "exist", "Invalid", "Tag", "Output", "Nothing", "URL",
-        "filename", "Supported Domain:", "500 Server Error"
+        'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL',
+        'filename', 'Supported Domain:', '500 Server Error', 'fatal'
     ]
 
     if any(k in w for k in catcher for w in output_box):
