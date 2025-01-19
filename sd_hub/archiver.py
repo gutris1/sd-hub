@@ -18,7 +18,7 @@ def tar_win_process(inputs, paths, formats, outputs):
 
     with tarfile.open(tar_out, 'w') as tar:
         for file in inputs:
-            tar.add(paths / file, arcname=file.name)
+            tar.add(paths / file, arcname=str(paths.name / file.name))
 
     if formats == 'lz4':
         lz4_out = str(outputs) + '.tar.lz4'
@@ -58,12 +58,10 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
             split = all_files[start:end]
 
             output = output_path_obj / f"{file_name}{'_' + str(i + 1) if split_by > 0 else ''}"
-
             yield from tar_win_process(split, input_path_obj, format_type, output)
 
     else:
         output = output_path_obj / f"{file_name}"
-
         yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
 
 
@@ -129,10 +127,12 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
         comp_type = "lz4"
 
     if input_type == "folder":
-        cwd = str(input_path_obj)
+        cwd = str(input_path_obj.parent)
+
         all_files = [
-            f for f in input_path_obj.iterdir() 
-            if (f.is_file() or (f.is_dir() and any(f.iterdir())))
+            f.relative_to(input_path_obj.parent)
+            for f in input_path_obj.rglob('*')
+            if f.is_file() or (f.is_dir() and any(f.iterdir()))
         ]
 
         count = 0
@@ -146,7 +146,7 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
 
             count += 1
             _output = output_path_obj / f"{file_name}{'_' + str(count) if split_by > 0 else ''}.tar.{format_type}"
-            _tar = ['tar', 'cfh', '-'] + [f.name for f in _split]
+            _tar = ['tar', 'cfh', '-'] + [str(f) for f in _split]
             _pv = ['pv']
             _format = [comp_type]
 
