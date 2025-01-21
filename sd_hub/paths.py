@@ -32,13 +32,12 @@ class SDPathsSDHub:
             ),
 
             "$hn": Path(cmd_opts.hypernetwork_dir or models_path / "hypernetwork").resolve(),
+            "$cf": Path(cmd_opts.codeformer_models_path or models_path / "Codeformer").resolve(),
 
             **({
                 "$ad": (models_path / "adetailer").resolve()
                 } if hasattr(cmd_opts, "ad_no_huggingface") else {}
             ),
-
-            "$cf": Path(cmd_opts.codeformer_models_path or models_path / "Codeformer").resolve(),
         }
 
         if INSECURE_ACCESS:
