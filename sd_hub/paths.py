@@ -14,7 +14,7 @@ MODELS_PATH = Path(models_path).resolve()
 
 INSECURE_ACCESS = cmd_opts.enable_insecure_extension_access
 
-class SDPaths:
+class SDPathsSDHub:
     def __init__(self, root_path=None, models_path=None):
         root_path = Path(root_path or ROOT_PATH).resolve()
         models_path = Path(models_path or MODELS_PATH).resolve()
@@ -25,15 +25,19 @@ class SDPaths:
             "$vae": Path(cmd_opts.vae_dir or models_path / "VAE").resolve(),
             "$emb": Path(cmd_opts.embeddings_dir or root_path / "embeddings").resolve(),
             "$ups": Path(cmd_opts.esrgan_models_path or models_path / "ESRGAN").resolve(),
+
             **({
                 "$cn": Path(cmd_opts.controlnet_dir or models_path / "ControlNet").resolve()
                 } if hasattr(cmd_opts, "controlnet_dir") else {}
             ),
+
             "$hn": Path(cmd_opts.hypernetwork_dir or models_path / "hypernetwork").resolve(),
+
             **({
                 "$ad": (models_path / "adetailer").resolve()
                 } if hasattr(cmd_opts, "ad_no_huggingface") else {}
             ),
+
             "$cf": Path(cmd_opts.codeformer_models_path or models_path / "Codeformer").resolve(),
         }
 
@@ -41,9 +45,7 @@ class SDPaths:
             self.SDHubTagsList["$ext"] = Path(extensions_dir).resolve()
             self.SDHubTagsList["$root"] = root_path
 
-            home = self.getENV()
-            if home:
-                self.SDHubTagsList["$home"] = home
+        if (home := self.getENV()): self.SDHubTagsList["$home"] = home
 
     def SDHubCheckPaths(self, paths):
         paths = Path(paths).resolve()
@@ -72,4 +74,4 @@ class SDPaths:
                 return path.resolve()
         return None
 
-SDHubPaths = SDPaths(ROOT_PATH, MODELS_PATH)
+SDHubPaths = SDPathsSDHub(ROOT_PATH, MODELS_PATH)
