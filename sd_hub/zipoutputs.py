@@ -1,7 +1,8 @@
-from pathlib import Path
-from tqdm import tqdm
 from modules.ui_components import FormRow, FormColumn
 from modules.paths_internal import data_path
+from modules.shared import opts
+from pathlib import Path
+from tqdm import tqdm
 import gradio as gr
 import zipfile
 
@@ -40,7 +41,7 @@ def zipping(file_name, output_path, mkdir_zip):
     else:
         out.mkdir(parents=True, exist_ok=True)
 
-    zip_in = Path(data_path) / 'outputs'
+    zip_in = opts.outdir_samples or Path(data_path) / 'outputs'
     zip_out = out / f"{fn}.zip"
     counter = 1
     while zip_out.exists():
