@@ -1,3 +1,20 @@
+import importlib
+
+try:
+    import sd_hub
+
+    miso = [
+        'tokenizer', 'downloader', 'archiver', 'uploader', 
+        'paths', 'scraper', 'version', 'infotext', 
+        'zipoutputs', 'shelly'
+    ]
+
+    for soop in miso:
+        __import__(f'sd_hub.{soop}')
+        importlib.reload(getattr(sd_hub, soop))
+
+except (AttributeError, ImportError):
+    pass
 
 
 import gradio as gr
@@ -12,8 +29,9 @@ from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
 from sd_hub.zipoutputs import ZipOutputs
+from sd_hub.shelly import Shelly
 
-def onSDHUBloaded():
+def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
 
     with gr.Blocks(analytics_enabled=False) as sdhub, gr.Tabs():
@@ -312,6 +330,9 @@ def onSDHUBloaded():
                 outputs=[arc_output1, arc_output2]
             )
 
+        if SDHubPaths.getENV():
+            Shelly()
+
         with gr.Accordion("Tag List", open=False, visible=True):
             gr.DataFrame(
                 [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
@@ -325,4 +346,4 @@ def onSDHUBloaded():
 
     return (sdhub, "HUB", "sdhub"),
 
-on_ui_tabs(onSDHUBloaded)
+on_ui_tabs(onSDHUBTab)
