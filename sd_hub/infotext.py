@@ -1,5 +1,8 @@
-import urllib.request, shutil, re
 from pathlib import Path
+import urllib.request
+import shutil
+import re
+
 from sd_hub.version import version
 
 blt = "<strong>•</strong>"
@@ -37,13 +40,16 @@ dl_info = f"""
 </p>
 """
 
-def getsvg(u, f):
-    if f.exists():
-        svg = f.read_text()
+def getUploaderSVG():
+    url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
+    fp = Path(__file__).parent / 'hf-logo.svg'
+
+    if fp.exists():
+        svg = fp.read_text()
     else:
-        with urllib.request.urlopen(u) as r, open(f, 'wb') as o:
+        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
             shutil.copyfileobj(r, o)
-        svg = f.read_text()
+        svg = fp.read_text()
 
     svg = re.sub(r'width="\d+"', 'width="40"', svg)
     svg = re.sub(r'height="\d+"', 'height="40"', svg)
@@ -52,9 +58,7 @@ def getsvg(u, f):
 
     return svg
 
-url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
-fp = Path(__file__).parent / 'hf-logo.svg'
-SVG = getsvg(url, fp)
+uploaderSVG = getUploaderSVG()
 
 upl_title = f"""
 <h3 id="sdhub-tab-title" style="
@@ -64,7 +68,7 @@ upl_title = f"""
     justify-content: center; 
     margin-bottom: 3px;
     margin-top: -5px;">
-  {SVG} Upload To Huggingface
+  {uploaderSVG} Upload To Huggingface
 </h3>
 """
 
@@ -96,6 +100,38 @@ arc_info = """
   <a class="sdhub-nonlink">Create Directory</a> To automatically creates a new folder at the Output Path if not already existing<br>
   <br>
 </p>
+"""
+
+def getShellSVG():
+    url = 'https://www.svgrepo.com/show/235482/radiation.svg'
+    fp = Path(__file__).parent / 'radiation.svg'
+
+    if fp.exists():
+        svg = fp.read_text()
+    else:
+        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
+            shutil.copyfileobj(r, o)
+        svg = fp.read_text()
+
+    #svg = re.sub(r'width="\d+"', 'width="40"', svg)
+    #svg = re.sub(r'height="\d+"', 'height="40"', svg)
+    #svg = re.sub(r'<svg([^>]+)>', r'<svg\1 style="margin-right: 8px;">', svg)
+    #svg = re.sub(r'fill="white"', 'fill="transparent"', svg)
+
+    return svg
+
+shellSVG = getShellSVG()
+
+shell_title = f"""
+<h3 id="sdhub-tab-title" style="
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 3px;
+    margin-top: -5px;">
+  {shellSVG} Shell Command Center
+</h3>
 """
 
 sdhub_repo = f"""
