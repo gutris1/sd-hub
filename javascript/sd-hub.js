@@ -19,6 +19,17 @@ function CopyTextFromUselessDataFrame() {
   });
 }
 
+function ShellShiftEnter() {
+  const tab = document.querySelector('#sdhub-shell-tab');
+  const button = document.querySelector('#sdhub-shell-button');
+
+  document.addEventListener('keydown', function(e) {
+    if (e.shiftKey && e.key === 'Enter' && tab && window.getComputedStyle(tab).display === 'block') {
+      button.click();
+    }
+  });
+}
+
 onUiLoaded(function () {
   window.getRunningScript = () => () => new Error().stack.match(/(?:[a-z]+:\/\/)?[^ \n]*\.js/)[0];
   var FilePath = getRunningScript()().match(/file=([^\/]+\/[^\/]+)\//);
@@ -60,4 +71,5 @@ onUiLoaded(function () {
   }
 
   CopyTextFromUselessDataFrame();
+  ShellShiftEnter();
 });
