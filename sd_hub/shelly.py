@@ -1,67 +1,80 @@
-from modules.ui_components import FormRow, FormColumn
-from pathlib import Path
+from modules.ui_components import FormRow
 import gradio as gr
 import subprocess
+import select
+import os
 
+from sd_hub.infotext import shell_title
 from sd_hub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
-def is_that_tag(output_path):
-    if output_path.startswith('$'):
-        parts = output_path[1:].strip().split('/', 1)
-        tags_key = f"${parts[0].lower()}"
-        subfolder = parts[1] if len(parts) > 1 else None
-        path = tag_tag.get(tags_key)
-
-        if path is not None:
-            fp = Path(path, subfolder) if subfolder else Path(path)
-            return fp, None
-        else:
-            return None, f"Invalid tag: {tags_key}"
-    else:
-        return Path(output_path), None
-
 def ShellRun(inputs):
+    import pty
+
+    for tag, path in tag_tag.items():
+        inputs = inputs.replace(tag, path)
+
+    ayu, rika = pty.openpty()
+
     p = subprocess.Popen(
         inputs,
         shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
+        stdout=ayu,
+        stderr=ayu,
         text=True
     )
 
     while True:
-        line = p.stdout.readline()
-        if not line and p.poll() is not None:
-            break
-        if line:
-            yield line.strip()
+        try:
+            temenan, _, _ = select.select([ayu], [], [])
+            if temenan:
+                ketemuan = os.read(ayu, 8192)
+                if not ketemuan:
+                    break
 
-    p.wait()
+                yield ketemuan.decode('utf-8').strip()
+
+            if p.poll() is not None:
+                break
+
+        except OSError:
+            break
+
+    if p.stdout:
+        p.stdout.close()
+    if p.stderr:
+        p.stderr.close()
+
+    _ = p.wait()
+
+    yield ' '
 
 def ShellLobby(inputs, box_state=gr.State()):
     output_box = box_state if box_state else []
 
-    for outputs in ShellRun(inputs):
-        if outputs:
-            yield outputs, "\n".join(output_box)
+    for output in ShellRun(inputs):
+        if output:
+            output_box.append(output)
+            yield "\n".join(output_box)
 
-    return gr.update(), gr.State(output_box)
+    return gr.update()
 
 def Shelly():
     with gr.TabItem("Shell", elem_id="sdhub-shell-tab"):
+        gr.HTML(shell_title)
+
         with FormRow():
             inputs = gr.Textbox(
                 lines=5,
-                placeholder="whatever",
+                placeholder="press Shift + Enter to run command",
                 show_label=False,
                 elem_id="sdhub-archiver-arc-inputname"
             )
 
         with FormRow():
-            button = gr.Button("Enter", variant="primary")
-            gr.Button("hantu", variant="primary", elem_classes="hide-this", scale=4)
+            button = gr.Button("Run", variant="primary", elem_id="sdhub-shell-button")
+            gr.Button("hantu", variant="primary", elem_classes="hide-this", scale=5)
 
         with FormRow():
             output = gr.Textbox(show_label=False, interactive=False, lines=5)
