@@ -71,6 +71,7 @@
 #sdhub-archiver-arc-outputpath input,
 #sdhub-archiver-extr-inputpath input,
 #sdhub-archiver-extr-outputpath input,
+#sdhub-texteditor-inputs input,
 #sdhub-shell-inputs textarea {
   transition: 0.4s ease;
 }
@@ -88,6 +89,7 @@
 #sdhub-archiver-arc-outputpath input:focus,
 #sdhub-archiver-extr-inputpath input:focus,
 #sdhub-archiver-extr-outputpath input:focus,
+#sdhub-texteditor-inputs input:focus,
 #sdhub-shell-inputs textarea:focus {
   box-shadow: 0 0 0 1.5px var(--color-accent);
 }
@@ -186,6 +188,96 @@
   100% {
     box-shadow: inset 0 0 0 1px var(--ring-color);
   }
+}
+
+#sdhub-texteditor-row {
+  gap: inherit;
+}
+
+#sdhub-texteditor-inputs input {
+  text-align: center;
+}
+
+#sdhub-texteditor-info {
+  padding-right: 2rem !important;
+  z-index: 9999;
+  top: 3.2rem;
+  right: 0;
+  position: absolute;
+}
+
+#sdhub-texteditor-info > .wrap {
+  display: none;
+}
+
+#sdhub-texteditor-info input {
+  text-align: right;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: transparent;
+}
+
+#sdhub-texteditor-load-button, #sdhub-texteditor-save-button {
+  transition: 0.3s ease;
+}
+
+#sdhub-texteditor-load-button:hover, #sdhub-texteditor-save-button:hover {
+  box-shadow: 0 0 10px 2px var(--primary-400);
+}
+
+#sdhub-texteditor-editor {
+  background: #1f1f1f;
+  font-family: Consolas, 'Courier New', monospace;
+  max-height: 1000px;
+  overflow: auto !important;
+}
+
+#sdhub-texteditor-editor > div[data-testid="block-label"] {
+  border: 1px solid #3a3a3a;
+}
+
+#sdhub-texteditor-editor .cm-content, #sdhub-texteditor-editor .cm-gutters {
+  line-height: 1.4;
+  font-size: 13px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+#sdhub-texteditor-editor .cm-gutters {
+  border-right: 1px solid #3a3a3a;
+}
+
+#sdhub-texteditor-editor span.\ͼ2c {
+  color: #5e8a36;
+  font-style: normal;
+}
+
+#sdhub-texteditor-editor span.\ͼ1q {
+  color: #e89bdf;
+}
+
+#sdhub-texteditor-editor span.\ͼ1s {
+  color: #31ffd5;
+}
+
+#sdhub-texteditor-editor span.\ͼ1t {
+  color: #fffca4;
+}
+
+#sdhub-texteditor-editor span.\ͼ1x {
+  color: #1c8fff;
+}
+
+#sdhub-texteditor-editor span.\ͼ1z {
+  color: #fff;
+}
+
+#sdhub-texteditor-editor span.\ͼ21 {
+  color: #fff;
+}
+
+#sdhub-texteditor-editor span.\ͼ23 {
+  color: #cf6db9;
 }
 
 #sdhub-shell-button, #sdhub-shell-ghost-button {
