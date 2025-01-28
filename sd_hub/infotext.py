@@ -102,38 +102,6 @@ arc_info = """
 </p>
 """
 
-def getShellSVG():
-    url = 'https://www.svgrepo.com/show/235482/radiation.svg'
-    fp = Path(__file__).parent / 'radiation.svg'
-
-    if fp.exists():
-        svg = fp.read_text()
-    else:
-        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
-            shutil.copyfileobj(r, o)
-        svg = fp.read_text()
-
-    #svg = re.sub(r'width="\d+"', 'width="40"', svg)
-    #svg = re.sub(r'height="\d+"', 'height="40"', svg)
-    #svg = re.sub(r'<svg([^>]+)>', r'<svg\1 style="margin-right: 8px;">', svg)
-    #svg = re.sub(r'fill="white"', 'fill="transparent"', svg)
-
-    return svg
-
-shellSVG = getShellSVG()
-
-shell_title = f"""
-<h3 id="sdhub-tab-title" style="
-    display: flex; 
-    flex-wrap: wrap; 
-    align-items: center; 
-    justify-content: center; 
-    margin-bottom: 3px;
-    margin-top: -5px;">
-  {shellSVG} Shell Command Center
-</h3>
-"""
-
 sdhub_repo = f"""
 <h4 id="sdhub-repo">
   <a href="https://github.com/gutris1/sd-hub">
