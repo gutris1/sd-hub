@@ -1,37 +1,13 @@
 from modules.ui_components import FormRow
-from pathlib import Path
-import urllib.request
 import gradio as gr
 import subprocess
 import select
-import shutil
 import pty
 import os
 
 from sd_hub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
-
-def getShellSVG():
-    url = 'https://huggingface.co/pantat88/ui/resolve/main/nuke.svg'
-    fp = Path(__file__).parent / 'nuke.svg'
-
-    if fp.exists():
-        svg = fp.read_text()
-    else:
-        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
-            shutil.copyfileobj(r, o)
-        svg = fp.read_text()
-
-    return svg
-
-shellSVG = getShellSVG()
-
-shell_title = f"""
-<h3 id="sdhub-shell-tab-title">
-  {shellSVG} Shell Command Center
-</h3>
-"""
 
 def ShellRun(inputs):
     for tag, path in tag_tag.items():
@@ -87,8 +63,6 @@ def ShellLobby(inputs, box_state=gr.State()):
 
 def Shelly():
     with gr.TabItem("Shell", elem_id="sdhub-shell-tab"):
-        gr.HTML(shell_title)
-
         with FormRow():
             button = gr.Button(
                 "▶",
