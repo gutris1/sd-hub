@@ -188,20 +188,6 @@
   }
 }
 
-#sdhub-shell-tab-title {
-  display: flex; 
-  flex-wrap: wrap; 
-  align-items: center; 
-  justify-content: center; 
-  margin-bottom: 0;
-}
-
-#sdhub-shell-tab-title svg {
-  width: 36px;
-  height: 36px;
-  margin-right: 8px;
-}
-
 #sdhub-shell-button, #sdhub-shell-ghost-button {
   border: 0;
   padding-bottom: 0;
