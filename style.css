@@ -70,7 +70,8 @@
 #sdhub-archiver-arc-inputpath input,
 #sdhub-archiver-arc-outputpath input,
 #sdhub-archiver-extr-inputpath input,
-#sdhub-archiver-extr-outputpath input {
+#sdhub-archiver-extr-outputpath input,
+#sdhub-shell-inputs textarea {
   transition: 0.4s ease;
 }
 
@@ -86,7 +87,8 @@
 #sdhub-archiver-arc-inputpath input:focus,
 #sdhub-archiver-arc-outputpath input:focus,
 #sdhub-archiver-extr-inputpath input:focus,
-#sdhub-archiver-extr-outputpath input:focus {
+#sdhub-archiver-extr-outputpath input:focus,
+#sdhub-shell-inputs textarea:focus {
   box-shadow: 0 0 0 1.5px var(--color-accent);
 }
 
@@ -184,4 +186,37 @@
   100% {
     box-shadow: inset 0 0 0 1px var(--ring-color);
   }
+}
+
+#sdhub-shell-tab-title {
+  display: flex; 
+  flex-wrap: wrap; 
+  align-items: center; 
+  justify-content: center; 
+  margin-bottom: 0;
+}
+
+#sdhub-shell-tab-title svg {
+  width: 36px;
+  height: 36px;
+  margin-right: 8px;
+}
+
+#sdhub-shell-button, #sdhub-shell-ghost-button {
+  border: 0;
+  padding-bottom: 0;
+  padding-top: 0;
+  padding-left: 0.5rem;
+  padding-right: 0;
+  line-height: 0;
+  flex-grow: 0.1;
+  min-width: min(3rem, 100%);
+  font-size: 40px;
+  height: 3rem;
+  border-radius: 50%;
+  transition: 0.3s ease;
+}
+
+#sdhub-shell-button:hover {
+  box-shadow: 0 0 10px 2px var(--primary-400);
 }
