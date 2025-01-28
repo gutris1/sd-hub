@@ -1,3 +1,17 @@
+import importlib
+try:
+    import sd_hub
+    miso = [
+        'tokenizer', 'downloader', 'archiver', 'uploader', 
+        'paths', 'scraper', 'version', 'infotext', 
+        'zipoutputs', 'shelly', 'texteditor'
+    ]
+    for soop in miso:
+        __import__(f'sd_hub.{soop}')
+        importlib.reload(getattr(sd_hub, soop))
+except (AttributeError, ImportError):
+    pass
+
 from modules.ui_components import FormRow, FormColumn
 from modules.script_callbacks import on_ui_tabs
 import gradio as gr
@@ -313,7 +327,9 @@ def onSDHUBTab():
             )
 
         if insecureENV:
+            from sd_hub.texteditor import TextEditor
             from sd_hub.shelly import Shelly
+            TextEditor()
             Shelly()
 
         with gr.Accordion("Tag List", open=False, visible=True):
