@@ -1,17 +1,39 @@
 from modules.ui_components import FormRow
+from pathlib import Path
+import urllib.request
 import gradio as gr
 import subprocess
 import select
+import shutil
+import pty
 import os
 
-from sd_hub.infotext import shell_title
 from sd_hub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
-def ShellRun(inputs):
-    import pty
+def getShellSVG():
+    url = 'https://huggingface.co/pantat88/ui/resolve/main/nuke.svg'
+    fp = Path(__file__).parent / 'nuke.svg'
 
+    if fp.exists():
+        svg = fp.read_text()
+    else:
+        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
+            shutil.copyfileobj(r, o)
+        svg = fp.read_text()
+
+    return svg
+
+shellSVG = getShellSVG()
+
+shell_title = f"""
+<h3 id="sdhub-shell-tab-title">
+  {shellSVG} Shell Command Center
+</h3>
+"""
+
+def ShellRun(inputs):
     for tag, path in tag_tag.items():
         inputs = inputs.replace(tag, path)
 
@@ -25,32 +47,35 @@ def ShellRun(inputs):
         text=True
     )
 
-    while True:
-        try:
-            temenan, _, _ = select.select([ayu], [], [])
-            if temenan:
-                ketemuan = os.read(ayu, 8192)
-                if not ketemuan:
+    try:
+        while True:
+            try:
+                temenan, _, _ = select.select([ayu], [], [], 0.1)
+                if temenan:
+                    ketemuan = os.read(ayu, 8192)
+                    if ketemuan:
+                        yield ketemuan.decode('utf-8').strip()
+                    else:
+                        break
+                if p.poll() is not None:
                     break
-
-                yield ketemuan.decode('utf-8').strip()
-
-            if p.poll() is not None:
+            except OSError:
                 break
+    finally:
+        os.close(ayu)
+        os.close(rika)
 
-        except OSError:
-            break
+        if p.stdout:
+            p.stdout.close()
+        if p.stderr:
+            p.stderr.close()
 
-    if p.stdout:
-        p.stdout.close()
-    if p.stderr:
-        p.stderr.close()
-
-    _ = p.wait()
-
-    yield ' '
+        p.wait()
 
 def ShellLobby(inputs, box_state=gr.State()):
+    if not inputs.strip():
+        return
+
     output_box = box_state if box_state else []
 
     for output in ShellRun(inputs):
@@ -65,18 +90,38 @@ def Shelly():
         gr.HTML(shell_title)
 
         with FormRow():
+            button = gr.Button(
+                "▶",
+                variant="primary",
+                elem_id="sdhub-shell-button"
+            )
+
             inputs = gr.Textbox(
                 lines=5,
                 placeholder="press Shift + Enter to run command",
                 show_label=False,
-                elem_id="sdhub-archiver-arc-inputname"
+                elem_id="sdhub-shell-inputs",
+                scale=9
             )
 
         with FormRow():
-            button = gr.Button("Run", variant="primary", elem_id="sdhub-shell-button")
-            gr.Button("hantu", variant="primary", elem_classes="hide-this", scale=5)
+            gr.Button(
+                "hantu",
+                variant="primary",
+                elem_id="sdhub-shell-ghost-button",
+                elem_classes="hide-this"
+            )
 
-        with FormRow():
-            output = gr.Textbox(show_label=False, interactive=False, lines=5)
+            output = gr.Textbox(
+                show_label=False,
+                interactive=False,
+                max_lines=21,
+                scale=9,
+                elem_id="sdhub-shell-output"
+            )
 
-        button.click(fn=ShellLobby, inputs=[inputs, gr.State()], outputs=[output])
+        button.click(
+            fn=ShellLobby,
+            inputs=[inputs, gr.State()],
+            outputs=[output]
+        )
