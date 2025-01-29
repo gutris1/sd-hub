@@ -4,7 +4,7 @@ try:
     miso = [
         'tokenizer', 'downloader', 'archiver', 'uploader', 
         'paths', 'scraper', 'version', 'infotext', 
-        'zipoutputs', 'shelly', 'texteditor'
+        'zipoutputs', 'shelly', 'texteditor', 'galleryTab'
     ]
     for soop in miso:
         __import__(f'sd_hub.{soop}')
@@ -13,7 +13,7 @@ except (AttributeError, ImportError):
     pass
 
 from modules.ui_components import FormRow, FormColumn
-from modules.script_callbacks import on_ui_tabs
+from modules.script_callbacks import on_ui_tabs, on_app_started
 import gradio as gr
 
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
@@ -23,13 +23,14 @@ from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
 from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
+from sd_hub.galleryTab import SDHubGallery
 
 insecureENV = SDHubPaths.getENV()
 
 def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
 
-    with gr.Blocks(analytics_enabled=False) as sdhub, gr.Tabs():
+    with gr.Blocks(analytics_enabled=False) as sdhub, gr.Tabs(elem_id="sdhub-tab"):
         with gr.TabItem("Downloader", elem_id="sdhub-downloader"):
             gr.HTML(dl_title)
 
@@ -332,7 +333,9 @@ def onSDHUBTab():
             TextEditor()
             Shelly()
 
-        with gr.Accordion("Tag List", open=False, visible=True):
+        SDHubGallery()
+
+        with gr.Accordion("Tag List", open=False, visible=True, elem_id="sdhub-dataframe-accordion"):
             gr.DataFrame(
                 [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
                 headers=["SD-Hub Tag", "WebUI Path"],
@@ -346,3 +349,4 @@ def onSDHUBTab():
     return (sdhub, "HUB", "sdhub"),
 
 on_ui_tabs(onSDHUBTab)
+#on_app_started(SDHubGallery)
