@@ -142,20 +142,23 @@ onUiLoaded(function () {
 
 onUiUpdate(function() {
   var Id = 'sdHUBHidingScrollBar';
-  let BS = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
+  let Tab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
+  let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
 
-  if (BS && BS.textContent.trim() === 'HUB') {
+  if (Tab && (Tab.textContent.trim() === 'Text Editor' || Tab.textContent.trim() === 'Gallery')) {
+    Accordion.style.display = 'none';
     if (!document.getElementById(Id)) {
-      const SB = document.createElement('style');
-      SB.id = Id;
-      SB.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
-      document.head.appendChild(SB);
+      const Scrollbar = document.createElement('style');
+      Scrollbar.id = Id;
+      Scrollbar.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
+      document.head.appendChild(Scrollbar);
     }
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
-  } else if (BS && BS.textContent.trim() !== 'HUB') {
-    const SB = document.getElementById(Id);
-    if (SB) document.head.removeChild(SB);
+  } else if (Tab && (Tab.textContent.trim() !== 'Text Editor' || Tab.textContent.trim() !== 'Gallery')) {
+    Accordion.style.display = 'block';
+    const Scrollbar = document.getElementById(Id);
+    if (Scrollbar) document.head.removeChild(Scrollbar);
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
   }
 });
