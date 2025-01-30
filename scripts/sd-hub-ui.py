@@ -12,8 +12,9 @@ try:
 except (AttributeError, ImportError):
     pass
 
-from modules.ui_components import FormRow, FormColumn
 from modules.script_callbacks import on_ui_tabs, on_app_started
+from modules.ui_components import FormRow, FormColumn
+from fastapi import FastAPI
 import gradio as gr
 
 from sd_hub.infotext import dl_title, dl_info, upl_title, upl_info, arc_info, sdhub_repo
@@ -23,9 +24,12 @@ from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
 from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
-from sd_hub.galleryTab import SDHubGallery
+from sd_hub.galleryTab import SDHubGallery, hook
 
 insecureENV = SDHubPaths.getENV()
+
+def GalleryGallery(app: FastAPI):
+    hook(app)
 
 def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
@@ -349,4 +353,4 @@ def onSDHUBTab():
     return (sdhub, "HUB", "sdhub"),
 
 on_ui_tabs(onSDHUBTab)
-#on_app_started(SDHubGallery)
+on_app_started(GalleryGallery)
