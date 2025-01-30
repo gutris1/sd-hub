@@ -300,24 +300,31 @@
 }
 
 #sdhub-gallery-tab-button-row {
-  height: 30px;
   gap: 20px;
   display: flex;
+  justify-content: center;
 }
 
 #sdhub-gallery-tab-button-row button {
   display: none;
-  border-top-right-radius: 1rem;
+  outline: none;
+  top: 2px;
+  position: relative;
   border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  background: var(--input-background-fill-focus);
+  background: transparent;
   color: var(--body-text-color-subdued);
-  width: 12%;
+  transition: 0.4s ease;
+  border: 2px solid transparent;
 }
 
 #sdhub-gallery-tab-button-row button.selected {
   color: var(--primary-400);
+  border-color: #6a6a6a;
+  background: var(--input-background-fill-focus);
+  border-bottom: 2px solid transparent;
 }
 
 #sdhub-gallery-tab-button-row button:not(.selected):hover {
@@ -325,6 +332,7 @@
 }
 
 .sdhub-gallery-tab-div {
+  max-height: calc(3* 15rem);
   width: 100%;
   display: none;
   align-items: start;
@@ -334,9 +342,8 @@
   background: var(--input-background-fill-focus);
   padding: 20px !important;
   flex-wrap: wrap;
-  border-bottom-left-radius: 1rem;
-  border-bottom-right-radius: 1rem;
-  border-top-right-radius: 1rem;
+  border: 2px solid #6a6a6a;
+  border-radius: 25px;
 }
 
 .sdhub-gallery-img-div {
@@ -364,4 +371,8 @@
 
 .sdhub-gallery-img:hover {
   box-shadow: 0 0 10px 0.4em var(--primary-400);
+}
+
+#sdhub-imgdiv-0 {
+  display: none;
 }
