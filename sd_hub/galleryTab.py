@@ -7,9 +7,11 @@ import gradio as gr
 from fastapi import FastAPI, Request, Response
 from fastapi.staticfiles import StaticFiles
 from urllib.parse import unquote, quote
+import sys
 
 image_extensions = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 outputs_dir = opts.outdir_samples or Path(data_path) / 'outputs'
+root_dir = str(Path(outputs_dir).anchor) if sys.platform == 'win32' else "/"
 
 def getimg():
     if not outputs_dir.exists():
@@ -23,32 +25,13 @@ def getimg():
 
 BASE = "/sd-hub-gallery"
 def hook(app: FastAPI):
-    app.mount(BASE, StaticFiles(directory=outputs_dir, html=True), name="sd-hub-gallery")
-
-    @app.middleware("http")
-    async def img_outputs(req: Request, call_next):
-        endpoint = '/' + req.scope.get('path', 'err').strip('/')
-
-        if endpoint.startswith('/file='):
-            file_path = Path(unquote(endpoint[6:])).resolve()
-
-            if outputs_dir not in file_path.parents and outputs_dir != file_path.parent:
-                return await call_next(req)
-
-            ext = file_path.suffix.lower().split('?')[0]
-
-            if ext in image_extensions:
-                img = f"{BASE}/{file_path.as_posix().replace(str(outputs_dir), '').lstrip('/')}"
-                thumb = f"{BASE}/thumbnail/{file_path.as_posix().replace(str(outputs_dir), '').lstrip('/')}"
-
-                return Response(content=f"{img}", media_type="text/plain")
-        return await call_next(req)
+    app.mount(BASE, StaticFiles(directory=root_dir, html=True), name="sd-hub-gallery")
 
     @app.get("/sd-hub-gallery-initial")
     async def initialLoad():
         image_paths = getimg()
         return {"image_paths": [
-            f"{BASE}/{quote(str(path).replace(str(outputs_dir), '').lstrip('/'))}"
+            f"{BASE}/{quote(str(path).lstrip('/'))}" if sys.platform == 'win32' else f"{BASE}{quote(str(path))}"
             for path in image_paths
         ]}
 
