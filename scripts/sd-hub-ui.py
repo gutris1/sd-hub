@@ -28,7 +28,7 @@ from sd_hub.galleryTab import SDHubGallery, hook
 
 insecureENV = SDHubPaths.getENV()
 
-def GalleryGallery(app: FastAPI):
+def GalleryGallery(_: gr.Blocks, app: FastAPI):
     hook(app)
 
 def onSDHUBTab():
