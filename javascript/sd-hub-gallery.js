@@ -1,62 +1,4 @@
-function GalleryInitialLoad() {
-  let imgPathList = document.querySelector('#sdhub-gallery-imginitial textarea');
-
-  if (imgPathList && imgPathList.value.trim() !== '') {
-    const PathList = imgPathList.value.split(',').map(path => path.trim());
-    let DivIndex = 1;
-    let imgDiv = document.querySelector('#sdhub-imgdiv-0');
-
-    PathList.forEach((imgPathValue) => {
-      let imgPath = imgPathValue.replace(/[\[\]']+/g, '').trim();
-      let encodedPath = encodeURIComponent(imgPath);
-
-      let whichTab = Tabname.find(whichTab => imgPath.includes(whichTab));
-
-      if (whichTab) {
-        let TabDiv = document.getElementById(`sdhub-gallery-${whichTab}-tab-div`);
-        let TabBtn = document.getElementById(`sdhub-gallery-${whichTab}-tab-button`);
-
-        if (imgDiv && TabDiv) {
-          let newImgDiv = imgDiv.cloneNode(true);
-          newImgDiv.classList.add('sdhub-gallery-img-div');
-
-          let newId = `sdhub-imgdiv-${DivIndex}`;
-          while (document.getElementById(newId)) {
-            DivIndex++;
-            newId = `sdhub-imgdiv-${DivIndex}`;
-          }
-
-          newImgDiv.id = newId;
-
-          let img = newImgDiv.querySelector('img');
-          if (img) {
-            img.classList.add('sdhub-gallery-img');
-            img.src = '/file=' + encodedPath;
-          }
-
-          TabDiv.appendChild(newImgDiv);
-
-          if (TabBtn) {
-            TabBtn.style.display = 'flex';
-          }
-
-          DivIndex++;
-        }
-      }
-    });
-
-    for (let i = 0; i < Tabname.length; i++) {
-      let TabBtn = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-button`);
-      let TabDiv = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-div`);
-
-      if (TabBtn && TabDiv) {
-        TabBtn.classList.add('selected');
-        TabDiv.style.display = 'flex';
-        break;
-      }
-    }
-  }
-}
+var BASE = "/sd-hub-gallery"
 
 function LoadGallery() {
   fetch('/sd-hub-gallery-initial')
@@ -68,7 +10,7 @@ function LoadGallery() {
 
       PathList.forEach((imgPathValue) => {
         let imgPath = imgPathValue.replace(/[\[\]']+/g, '').trim();
-        let whichTab = Tabname.find(whichTab => imgPath.includes(whichTab));
+        let whichTab = Tabname.find(whichTab => imgPath.includes(`/${whichTab}/`));
 
         if (whichTab) {
           let TabDiv = document.getElementById(`sdhub-gallery-${whichTab}-tab-div`);
@@ -89,7 +31,21 @@ function LoadGallery() {
             let img = newImgDiv.querySelector('img');
             if (img) {
               img.classList.add('sdhub-gallery-img');
-              img.src = imgPath;
+              img.setAttribute('data-path', imgPath);
+
+              const thumbnail = new Image();
+
+              thumbnail.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = thumbnail.width;
+                canvas.height = thumbnail.height;
+                ctx.drawImage(thumbnail, 0, 0);
+                const base64 = canvas.toDataURL(); 
+                img.src = base64;
+              };
+
+              thumbnail.src = imgPath;
             }
 
             TabDiv.appendChild(newImgDiv);
@@ -126,15 +82,44 @@ const Tabname = [
   'img2img-grids'
 ];
 
+function ZoomZoom(imgEL) {
+  let LightBox = document.createElement("div");
+  LightBox.id = 'sdhub-gallery-lightbox';
+  LightBox.style.position = "fixed";
+  LightBox.style.top = "0";
+  LightBox.style.left = "0";
+  LightBox.style.width = "100%";
+  LightBox.style.height = "100%";
+  LightBox.style.backgroundColor = "rgba(0,0,0,0.8)";
+  LightBox.style.display = "flex";
+  LightBox.style.alignItems = "center";
+  LightBox.style.justifyContent = "center";
+  LightBox.style.zIndex = "1000";
+
+  let imgControls = document.createElement('div');
+  imgControls.id = 'sdhub-gallery-lightbox-controls';
+
+  let img = document.createElement('img');
+  img.id = 'sdhub-gallery-lightbox-img';
+  img.src = imgEL.src;
+  img.style.maxWidth = "100%";
+  img.style.maxHeight = "100%";
+
+  LightBox.append(imgControls, img);
+  LightBox.onclick = function () {
+    LightBox.remove();
+  };
+
+  document.body.appendChild(LightBox);
+}
+
 onUiLoaded(function () {
   let Gallery = document.querySelector('#sdhub-gallery-tab');
 
   if (Gallery) {
     Gallery.addEventListener('click', function(event) {
-      const clickedImg = event.target.closest('img');
-      if (clickedImg) {
-        console.log(clickedImg.src);
-      }
+      const img = event.target.closest('img');
+      if (img) ZoomZoom(img);
     });
 
     const TabRow = document.createElement('div');
