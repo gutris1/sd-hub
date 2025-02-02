@@ -24,12 +24,9 @@ from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
 from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
-from sd_hub.galleryTab import SDHubGallery, hook
+from sd_hub.galleryTab import SDHubGallery, GalleryGallery
 
 insecureENV = SDHubPaths.getENV()
-
-def GalleryGallery(_: gr.Blocks, app: FastAPI):
-    hook(app)
 
 def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
