@@ -140,8 +140,19 @@ onUiLoaded(function () {
   SDHubShellShiftEnter();
 });
 
+var Id = 'sdHUBHidingScrollBar';
+
+onUiTabChange(function() {
+  let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
+  if (MainTab && (MainTab.textContent.trim() !== 'HUB')) {
+    const Scrollbar = document.getElementById(Id);
+    if (Scrollbar) document.head.removeChild(Scrollbar);
+    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+    document.body.classList.remove('no-scroll');
+  }
+});
+
 onUiUpdate(function() {
-  var Id = 'sdHUBHidingScrollBar';
   let Tab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
   let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
 
@@ -160,5 +171,6 @@ onUiUpdate(function() {
     const Scrollbar = document.getElementById(Id);
     if (Scrollbar) document.head.removeChild(Scrollbar);
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+    document.body.classList.remove('no-scroll');
   }
 });
