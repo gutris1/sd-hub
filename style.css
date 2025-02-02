@@ -376,3 +376,325 @@
 #sdhub-imgdiv-0 {
   display: none;
 }
+
+.loading-blurry {
+  transition: 0.5s ease;
+  backdrop-filter: blur(5px);
+}
+body.no-scroll {
+  overflow: hidden;
+}
+
+#sdhub-gallery-image-info {
+  position: fixed;
+  display: none;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 10px;
+  height: 100%;
+  width: 100%;
+  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 5000;
+  overflow: auto;
+}
+
+#sdhub-gallery-image-info-img {
+  height: auto;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 0.7rem;
+}
+
+#sdhub-gallery-image-info-row {
+  display: none;
+  height: 100%;
+  padding: 10px;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 99999;
+  position: fixed;
+  overflow: auto;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* ############################################################################################################ */
+/* ############################################################################################################ */
+/* ############################################################################################################ */
+
+#SDHubimgInfoImage {
+  background: transparent;
+  border-radius: 0.8rem !important;
+  transition: 0.5s ease;
+  box-shadow: inset 0 0 10px 0.2em var(--primary-400) !important;
+}
+
+#SDHubimgInfoImage img {
+  cursor: auto;
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  border-top-right-radius: 1rem;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"],
+#SDHubimgInfoImage button[aria-label="Clear"] {
+  transform: scale(2);
+  margin: 0;
+  padding: 2px;
+  gap: 0;
+  border-radius: 0;
+  border-bottom-left-radius: 7px;
+  box-sizing: border-box;
+  border: 0;
+  color: var(--primary-400) !important;
+  background: var(--input-background-fill);
+  box-shadow: 0 0 5px 1px #000;
+  transition: 0.3s ease;
+  display: none;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"] > div,
+#SDHubimgInfoImage button[aria-label="Clear"] > div {
+  position: relative;
+  padding: 1px;
+  border: 0;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"] path,
+#SDHubimgInfoImage button[aria-label="Clear"] path {
+  stroke-width: 5px !important;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"]:hover,
+#SDHubimgInfoImage button[aria-label="Clear"]:hover {
+  color: var(--primary-500) !important;
+}
+
+#SDHubimgInfoHTML {
+  margin-left: 0.1rem !important;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  margin-bottom: -0.5rem !important;
+}
+
+#SDHubimgInfoOutputPanel {
+  opacity: 0;
+}
+
+#SDHubimgInfoOutputPanel.show {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.gradio-container-4-40-0 #SDHubimgInfoOutputPanel {
+  margin-left: -10px;
+}
+
+#SDHubimgInfoModelOutput {
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.SDHubimgInfoOutputSection {
+  padding-top: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-bottom: 0px;
+  background: var(--input-background-fill);
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.SDHubimgInfoOutputSection:hover {
+  background: var(--input-background-fill-hover);
+}
+
+.SDHubimgInfoOutputSection.modelBox {
+  border: 0;
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: 0;
+  transition: none;
+}
+
+.SDHubimgInfoOutputSection.modelBox:hover {
+  background-color: transparent;
+}
+
+.SDHubimgInfoModelOutputReveal {
+  animation: undressBox 1s forwards ease-out;
+}
+
+#SDHubimgInfoModelOutput .output-line {
+  display: flex;
+  padding: 0px;
+  margin-bottom: 5px;
+  border-radius: 5em;
+}
+
+#SDHubimgInfoModelOutput .label, #SDHubimgInfoModelOutput .hashes {
+  display: flex;
+  flex-wrap: wrap;
+  word-wrap: break-word;
+  white-space: normal;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 5px 1px var(--primary-400);
+}
+
+#SDHubimgInfoModelOutput .label {
+  width: 17%;
+  background-color: var(--input-background-fill);
+  font-size: 15px;
+  border-top-left-radius: 5em;
+  border-bottom-left-radius: 5em;
+  align-items: center;
+  justify-content: center;
+}
+
+#SDHubimgInfoModelOutput .hashes {
+  width: 83%;
+  overflow-wrap: break-word;
+  column-gap: 7px;
+  row-gap: 0px;
+  border-left: 5px solid transparent;
+  border-top-right-radius: 5em;
+  border-bottom-right-radius: 5em;
+  padding-left: 10px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  align-items: flex-start;
+}
+
+.SDHubimgInfoModelOutputNonLink {
+  font-size: 14px;
+  border: 1px solid transparent;
+  padding: 2px 3px;
+  margin: 3px 0;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+.SDHubimgInfoModelOutputLink {
+  font-size: 13px;
+  text-decoration: none;
+  border: 1px solid var(--primary-600);
+  transition: color 0.2s ease !important;
+  padding: 2px 3px;
+  margin: 3px 0;
+  background-color: var(--panel-background-fill);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50ch;
+}
+
+.SDHubimgInfoModelOutputLink:hover {
+  color: var(--primary-400) !important;
+  border: 1px solid var(--link-text-color-hover);
+}
+
+#SDHubimgInfoModelOutput a {
+  white-space: nowrap;
+  font-weight: normal;
+}
+
+.SDHubimgInfoBorderPulse {
+  animation: pulseBorder2 2s infinite alternate forwards;
+}
+
+@keyframes pulseBorder2 {
+  0% {
+    box-shadow: inset 0 0 0px 0em transparent;
+  }
+  25% {
+    box-shadow: inset 0 0 10px 0.2em var(--primary-400);
+  }
+  50% {
+    box-shadow: inset 0 0 5px 0.1em var(--primary-400);
+  }
+  75% {
+    box-shadow: inset 0 0 10px 0.2em var(--primary-400);
+  }
+  100% {
+    box-shadow: inset 0 0 0px 0em transparent;
+  }
+}
+
+#SDHubimgInfoSendButton {
+  display: none;
+  margin-top: 0.2rem !important;
+  grid-template-columns: 1fr 1fr !important;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 0 !important;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev {
+  transition: 0.2s ease;
+  padding: 0.4rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:hover {
+  box-shadow: inset 0 0 5px 0.1em var(--primary-400);
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(1) {
+  border-top-left-radius: 0.8rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(2) {
+  border-top-right-radius: 0.8rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(3) {
+  border-bottom-left-radius: 0.8rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(4) {
+  border-bottom-right-radius: 0.8rem;
+}
+
+.SDHubimgInfoButtons {
+  transition: color 0.3s ease;
+}
+
+.SDHubimgInfoButtons:hover {
+  color: var(--primary-600) !important;
+}
+
+#refresh-spinner {
+  margin: 0 auto;
+  animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes undressBox {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
