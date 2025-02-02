@@ -5,59 +5,79 @@ function LoadGallery() {
     .then(response => response.json())
     .then(data => {
       const PathList = data.image_paths;
+
+      if (!Array.isArray(PathList) || PathList.length === 0) {
+        return;
+      }
+
       let DivIndex = 1;
       let imgDiv = document.querySelector('#sdhub-imgdiv-0');
 
-      PathList.forEach((imgPathValue) => {
-        let imgPath = imgPathValue.replace(/[\[\]']+/g, '').trim();
-        let whichTab = Tabname.find(whichTab => imgPath.includes(`/${whichTab}/`));
+      let loadedImages = 0;
 
-        if (whichTab) {
-          let TabDiv = document.getElementById(`sdhub-gallery-${whichTab}-tab-div`);
-          let TabBtn = document.getElementById(`sdhub-gallery-${whichTab}-tab-button`);
+      try {
+        PathList.forEach((imgPathValue) => {
+          let imgPath = imgPathValue.replace(/[\[\]']+/g, '').trim();
+          let whichTab = Tabname.find(whichTab => imgPath.includes(`/${whichTab}/`));
 
-          if (imgDiv && TabDiv) {
-            let newImgDiv = imgDiv.cloneNode(true);
-            newImgDiv.classList.add('sdhub-gallery-img-div');
+          if (whichTab) {
+            let TabDiv = document.getElementById(`sdhub-gallery-${whichTab}-tab-div`);
+            let TabBtn = document.getElementById(`sdhub-gallery-${whichTab}-tab-button`);
 
-            let newId = `sdhub-imgdiv-${DivIndex}`;
-            while (document.getElementById(newId)) {
+            if (imgDiv && TabDiv) {
+              let newImgDiv = imgDiv.cloneNode(true);
+              newImgDiv.classList.add('sdhub-gallery-img-div');
+
+              let newId = `sdhub-imgdiv-${DivIndex}`;
+              while (document.getElementById(newId)) {
+                DivIndex++;
+                newId = `sdhub-imgdiv-${DivIndex}`;
+              }
+
+              newImgDiv.id = newId;
+
+              let img = newImgDiv.querySelector('img');
+              if (img) {
+                img.classList.add('sdhub-gallery-img');
+
+                fetch(imgPath)
+                  .then(response => response.blob())
+                  .then(blob => {
+                    const objectURL = URL.createObjectURL(blob);
+                    img.src = objectURL;
+
+                    const file = new File([blob], 'image.png', { type: blob.type });
+                    img.fileObject = file;
+
+                    img.onload = function() {
+                      URL.revokeObjectURL(objectURL);
+                      loadedImages++;
+
+                      if (loadedImages === PathList.length) {
+                        setTimeout(() => {
+                          console.log("Gallery loaded");
+                        }, 1000);
+                      }
+                    };
+                  })
+                  .catch(error => {
+                    console.error('Error fetching image:', error);
+                  });
+              }
+
+              TabDiv.prepend(newImgDiv);
+
+              if (TabBtn) {
+                TabBtn.style.display = 'flex';
+              }
+
               DivIndex++;
-              newId = `sdhub-imgdiv-${DivIndex}`;
             }
-
-            newImgDiv.id = newId;
-
-            let img = newImgDiv.querySelector('img');
-            if (img) {
-              img.classList.add('sdhub-gallery-img');
-              img.setAttribute('data-path', imgPath);
-
-              const thumbnail = new Image();
-
-              thumbnail.onload = function() {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.width = thumbnail.width;
-                canvas.height = thumbnail.height;
-                ctx.drawImage(thumbnail, 0, 0);
-                const base64 = canvas.toDataURL(); 
-                img.src = base64;
-              };
-
-              thumbnail.src = imgPath;
-            }
-
-            TabDiv.appendChild(newImgDiv);
-
-            if (TabBtn) {
-              TabBtn.style.display = 'flex';
-            }
-
-            DivIndex++;
           }
-        }
-      });
+        });
+      } catch (error) {
+        console.error('Error:', error);
+      }
 
       for (let i = 0; i < Tabname.length; i++) {
         let TabBtn = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-button`);
@@ -71,7 +91,9 @@ function LoadGallery() {
         }
       }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+      console.error('Error:', error);
+    });
 }
 
 const Tabname = [
@@ -82,35 +104,79 @@ const Tabname = [
   'img2img-grids'
 ];
 
-function ZoomZoom(imgEL) {
-  let LightBox = document.createElement("div");
-  LightBox.id = 'sdhub-gallery-lightbox';
-  LightBox.style.position = "fixed";
-  LightBox.style.top = "0";
-  LightBox.style.left = "0";
-  LightBox.style.width = "100%";
-  LightBox.style.height = "100%";
-  LightBox.style.backgroundColor = "rgba(0,0,0,0.8)";
-  LightBox.style.display = "flex";
-  LightBox.style.alignItems = "center";
-  LightBox.style.justifyContent = "center";
-  LightBox.style.zIndex = "1000";
+let dataTransferCache = new DataTransfer();
 
-  let imgControls = document.createElement('div');
-  imgControls.id = 'sdhub-gallery-lightbox-controls';
+function SDHubImageInfo(imgEL) {
+  document.body.classList.add('no-scroll');
+  const Div = document.querySelector('#sdhub-gallery-image-info-row');
+  const imgInput = document.querySelector('#SDHubimgInfoImage input');
+  const img = document.querySelector('#SDHubimgInfoImage img');
+  const file = imgEL.fileObject;
+  if (file) {
+    dataTransferCache.items.clear();
+    dataTransferCache.items.add(file);
+    imgInput.files = dataTransferCache.files;
+    imgInput.dispatchEvent(new Event('change', { bubbles: true }));
+    Div.style.display = 'flex';
+    setTimeout(() => (Div.style.opacity = '1'), 100);
+  }
+}
 
-  let img = document.createElement('img');
-  img.id = 'sdhub-gallery-lightbox-img';
-  img.src = imgEL.src;
-  img.style.maxWidth = "100%";
-  img.style.maxHeight = "100%";
+function ClearButtonClearButton() {
+  let Row = document.querySelector("#sdhub-gallery-image-info-row");
+  let SendButton = document.querySelector('#SDHubimgInfoSendButton');
+  let Cloned = document.querySelector('#sd-hub-gallery-image-info-clear-button');
+  let ClearButton = document.querySelector('#SDHubimgInfoImage button[aria-label="Clear"]') ||
+                    document.querySelector('#SDHubimgInfoImage button[aria-label="Remove Image"]');
 
-  LightBox.append(imgControls, img);
-  LightBox.onclick = function () {
-    LightBox.remove();
-  };
+  if (ClearButton && !Cloned) {
+    let parent = ClearButton.parentElement;
 
-  document.body.appendChild(LightBox);
+    let btn = ClearButton.cloneNode(true);
+    btn.id = 'sd-hub-gallery-image-info-clear-button';
+    btn.title = 'Close Image Info';
+    btn.style.display = 'flex';
+
+    parent.prepend(btn);
+
+    const closeRow = () => {
+      Row.style.opacity = '0';
+      document.body.classList.remove('no-scroll');
+      setTimeout(() => {
+        ClearButton.click();
+        Row.style.display = 'none';
+        document.removeEventListener('keydown', RowKeydown);
+        document.removeEventListener('click', SendButtonClick);
+      }, 200);
+    };
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeRow();
+    });
+
+    const RowKeydown = (e) => {
+      if (e.key === 'Escape' && Row && window.getComputedStyle(Row).display === 'flex') {
+        e.stopPropagation();
+        e.preventDefault();
+        closeRow();
+      }
+    };
+
+    const SendButtonClick = (e) => {
+      if (SendButton && SendButton.contains(e.target)) {
+        e.stopPropagation();
+        e.preventDefault();
+        let btn = e.target.closest('button');
+        if (btn) {
+          closeRow();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', RowKeydown);
+    document.addEventListener('click', SendButtonClick);
+  }
 }
 
 onUiLoaded(function () {
@@ -119,7 +185,7 @@ onUiLoaded(function () {
   if (Gallery) {
     Gallery.addEventListener('click', function(event) {
       const img = event.target.closest('img');
-      if (img) ZoomZoom(img);
+      if (img) SDHubImageInfo(img);
     });
 
     const TabRow = document.createElement('div');
@@ -151,18 +217,11 @@ onUiLoaded(function () {
 
     const img = document.createElement('img');
     const textarea = document.createElement('textarea');
-    const sendbutton = document.createElement('div');
 
     textarea.style.display = 'none';
     textarea.classList.add('prose');
 
-    const btn1 = document.createElement('button');
-    const btn2 = document.createElement('button');
-    const btn3 = document.createElement('button');
-    const btn4 = document.createElement('button');
-
-    sendbutton.append(btn1, btn2, btn3, btn4);
-    imgDiv.append(img, textarea, sendbutton);
+    imgDiv.append(img, textarea);
     Gallery.prepend(TabRow, imgDiv);
 
     LoadGallery();
