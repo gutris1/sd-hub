@@ -27,10 +27,10 @@ def getimg():
 
 def GalleryAPI(app: FastAPI):
     app.mount(BASE, StaticFiles(directory=root_dir, html=True), name="sd-hub-gallery")
-    endpoint = '/' + req.scope.get('path', 'err').strip('/')
 
     @app.middleware("http")
-    async def logimg(req: Request, call_next):
+    async def log_image_requests(req: Request, call_next):
+        endpoint = '/' + req.scope.get('path', 'err').strip('/')
         if endpoint.startswith('/file='):
             fp = Path(unquote(endpoint[6:]))
             if fp.suffix.lower() in image_extensions:
@@ -39,7 +39,8 @@ def GalleryAPI(app: FastAPI):
         return await call_next(req)
 
     @app.middleware("http")
-    async def loglog(req: Request, call_next):
+    async def log_image_requests(req: Request, call_next):
+        endpoint = '/' + req.scope.get('path', 'err').strip('/')
         method = req.method
         print(f"Request Method: {method}, Path: {endpoint}")
 
