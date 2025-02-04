@@ -2,7 +2,7 @@ onUiLoaded(function () {
   let imgInfoImage = document.getElementById("SDHubimgInfoImage");
   if (imgInfoImage) {
     imgInfoImage.style.removeProperty('height')
-    document.addEventListener("click", SDHubGalleryCopyButtonEvent);
+    document.addEventListener('click', SDHubGalleryCopyButtonEvent);
   }
 });
 
@@ -12,9 +12,9 @@ async function SDHubGalleryParser() {
   window.SDHubimgInfoNaiSource = '';
   window.SDHubimgInfoSoftware = '';
 
-  const SDHubimgInfoRawOutput = gradioApp().querySelector("#SDHubimgInfoGenInfo textarea");
-  const SDHubimgInfoHTML = gradioApp().querySelector("#SDHubimgInfoHTML");
-  const SDHubimgInfoImage = gradioApp().querySelector('#SDHubimgInfoImage');
+  const SDHubimgInfoRawOutput = gradioApp().querySelector('#SDHubimgInfoGenInfo textarea');
+  const SDHubimgInfoHTML = gradioApp().getElementById('SDHubimgInfoHTML');
+  const SDHubimgInfoImage = gradioApp().getElementById('SDHubimgInfoImage');
   const img = gradioApp().querySelector('#SDHubimgInfoImage img');
 
   if (!img) {
@@ -27,7 +27,7 @@ async function SDHubGalleryParser() {
   SDHubimgInfoImage.style.cssText += 'box-shadow: inset 0 0 0 0 !important;';
 
   img.onload = function() {
-    ClearButtonClearButton();
+    SDHubImageInfoClearButton();
   };
 
   let response = await fetch(img.src);
@@ -48,7 +48,7 @@ async function SDHubGalleryParser() {
 
   let arrayBuffer = await img_blob.arrayBuffer();
   let tags = ExifReader.load(arrayBuffer);
-  let output = "";
+  let output = '';
 
   if (tags) {
     console.log(tags);
@@ -56,9 +56,9 @@ async function SDHubGalleryParser() {
     window.SDHubimgInfoSha256 = tags.EncryptPwdSha ? tags.EncryptPwdSha.description : '';
 
     if (tags.parameters && tags.parameters.description) {
-      if (tags.parameters.description.includes("sui_image_params")) {
+      if (tags.parameters.description.includes('sui_image_params')) {
         const parSing = JSON.parse(tags.parameters.description);
-        const Sui = parSing["sui_image_params"];
+        const Sui = parSing['sui_image_params'];
         output = SDHubGalleryConvertSwarmUI(Sui, {});
       } else {
         output = tags.parameters.description;
@@ -67,23 +67,23 @@ async function SDHubGalleryParser() {
     } else if (tags.UserComment && tags.UserComment.value) {
       const array = tags.UserComment.value;
       const UserComments = SDHubGalleryDecodeUserComment(array);
-      if (UserComments.includes("sui_image_params")) {
+      if (UserComments.includes('sui_image_params')) {
         const rippin = UserComments.trim().replace(/[\x00-\x1F\x7F]/g, '');
         const parSing = JSON.parse(rippin);
-        if (parSing["sui_image_params"]) {
-          const Sui = parSing["sui_image_params"];
-          const SuiExtra = parSing["sui_extra_data"] || {};
+        if (parSing['sui_image_params']) {
+          const Sui = parSing['sui_image_params'];
+          const SuiExtra = parSing['sui_extra_data'] || {};
           output = SDHubGalleryConvertSwarmUI(Sui, SuiExtra);
         }
       } else {
         output = UserComments;
       }
 
-    } else if (tags["Software"] && tags["Software"].description === "NovelAI" &&
+    } else if (tags['Software'] && tags['Software'].description === "NovelAI" &&
                tags.Comment && tags.Comment.description) {
 
-      window.SDHubimgInfoSoftware = tags["Software"] ? tags["Software"].description : '';
-      window.SDHubimgInfoNaiSource = tags["Source"] ? tags["Source"].description : '';
+      window.SDHubimgInfoSoftware = tags['Software'] ? tags['Software'].description : '';
+      window.SDHubimgInfoNaiSource = tags['Source'] ? tags['Source'].description : '';
 
       const nai = JSON.parse(tags.Comment.description);
       nai.sampler = "Euler";
@@ -301,8 +301,8 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
   const buttonColor = 'var(--primary-400)';
 
-  const SDHubimgInfoSendButton = document.querySelector("#SDHubimgInfoSendButton");
-  var SDHubimgInfoOutputPanel = document.querySelector("#SDHubimgInfoOutputPanel");
+  const SDHubimgInfoSendButton = document.getElementById("SDHubimgInfoSendButton");
+  var SDHubimgInfoOutputPanel = document.getElementById("SDHubimgInfoOutputPanel");
   var sty = `display: block; margin-bottom: 2px; color: ${buttonColor};`;
 
   var buttonStyle = `
@@ -443,7 +443,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
         `;
 
         setTimeout(() => {
-          const SDHubimgInfoModelOutput = document.querySelector("#SDHubimgInfoModelOutput");
+          const SDHubimgInfoModelOutput = document.getElementById("SDHubimgInfoModelOutput");
           if (SDHubimgInfoModelOutput) {
             const SDHubimgInfoModelBox = SDHubimgInfoModelOutput.closest(".SDHubimgInfoOutputSection");
             if (SDHubimgInfoModelBox) {
@@ -465,7 +465,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
               fetchTimeout
             ]);
 
-            const SDHubimgInfoModelOutput = document.querySelector("#SDHubimgInfoModelOutput");
+            const SDHubimgInfoModelOutput = document.getElementById("SDHubimgInfoModelOutput");
             if (SDHubimgInfoModelOutput) {
               SDHubimgInfoModelOutput.classList.add("SDHubimgInfoModelOutputReveal");
               SDHubimgInfoModelOutput.innerHTML = ModelOutputFetched;
@@ -475,7 +475,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
             }
           } catch (error) {
             if (error.message === 'Timeout') {
-              const SDHubimgInfoModelOutput = document.querySelector("#SDHubimgInfoModelOutput");
+              const SDHubimgInfoModelOutput = document.getElementById("SDHubimgInfoModelOutput");
               if (SDHubimgInfoModelOutput) {
                 SDHubimgInfoModelOutput.innerHTML = 'Failed to fetch...';
               }
@@ -674,7 +674,7 @@ function SDHubGalleryImageViewer(img) {
       left: '0',
       width: '100%',
       height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      backgroundColor: '#000',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
@@ -794,8 +794,8 @@ function SDHubGalleryImageViewer(img) {
     };
 
     LightBox.addEventListener('keydown', (e) => {
-      const LightBox = document.getElementById('SDHubimgInfoZoom');
-      if (LightBox && window.getComputedStyle(LightBox).display === 'flex' && e.key === 'Escape') {
+      let LightBox = document.getElementById('SDHubimgInfoZoom');
+      if (e.key === 'Escape' && LightBox && window.getComputedStyle(LightBox).display === 'flex') {
         e.preventDefault();
         imgState.SDHubGalleryImageViewerCloseZoom();
       }
