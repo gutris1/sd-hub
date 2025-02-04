@@ -1,71 +1,101 @@
-import modules.generation_parameters_copypaste as tempe 
+import modules.generation_parameters_copypaste as tempe
 from modules.ui_components import FormRow, FormColumn
 from modules.paths_internal import data_path
+from fastapi import FastAPI, staticfiles
 from modules.shared import opts
+from urllib.parse import quote
+from datetime import datetime
 from pathlib import Path
 import gradio as gr
-from fastapi import FastAPI, Request, Response
-from fastapi.staticfiles import StaticFiles
-from urllib.parse import unquote, quote
+import tempfile
 import sys
-from fastapi.responses import FileResponse
+import os
 
-image_extensions = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
-outputs_dir = opts.outdir_samples or Path(data_path) / 'outputs'
-root_dir = str(Path(outputs_dir).anchor) if sys.platform == 'win32' else "/"
+imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
+out_dir = opts.outdir_samples or Path(data_path) / 'outputs'
+root_dir = str(Path(out_dir).anchor) if sys.platform == 'win32' else "/"
+imgLog = Path(tempfile.gettempdir()) / "sd-hub-gallery-initial-load.txt"
 BASE = "/sd-hub-gallery"
 
-def getimg():
-    if not outputs_dir.exists():
+def getTimeStamp():
+    return datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
+
+def getInitial():
+    if not out_dir.exists() or not any(out_dir.iterdir()):
         return []
 
-    return [
+    if imgLog.exists():
+        with open(imgLog, "r", encoding="utf-8") as file:
+            return [line.strip() for line in file.readlines()]
+
+    img_paths = [
         path.resolve()
-        for path in Path(outputs_dir).rglob("*")
-        if path.suffix.lower() in image_extensions
+        for path in Path(out_dir).rglob("*")
+        if path.suffix.lower() in imgEXT
     ]
 
-def GalleryAPI(app: FastAPI):
-    app.mount(BASE, StaticFiles(directory=root_dir, html=True), name="sd-hub-gallery")
+    if not img_paths:
+        return []
 
-    @app.middleware("http")
-    async def log_image_requests(req: Request, call_next):
-        endpoint = '/' + req.scope.get('path', 'err').strip('/')
-        if endpoint.startswith('/file='):
-            fp = Path(unquote(endpoint[6:]))
-            if fp.suffix.lower() in image_extensions:
-                print(f"img : {fp}")
+    sorted_img = sorted(img_paths, key=lambda p: os.path.getctime(p))
+    formatted_img = [str(path) for path in sorted_img]
 
-        return await call_next(req)
+    with open(imgLog, "w", encoding="utf-8") as file:
+        file.write("\n".join(formatted_img) + "\n")
 
-    @app.middleware("http")
-    async def log_image_requests(req: Request, call_next):
-        endpoint = '/' + req.scope.get('path', 'err').strip('/')
-        method = req.method
-        print(f"Request Method: {method}, Path: {endpoint}")
+    return formatted_img
 
-        fp = Path(endpoint)
-        if fp.suffix.lower() in image_extensions:
-            print(f"Image request: {fp}")
+class GalleryState:
+    def __init__(self):
+        self.path_list = []
+        self.initial_list = []
 
-        return await call_next(req)
+Gallery = GalleryState()
+
+def GalleryGallery(app: FastAPI):
+    app.mount(BASE, staticfiles.StaticFiles(directory=root_dir, html=True), name="sd-hub-gallery")
 
     @app.get("/sd-hub-gallery-initial")
     async def initialLoad():
-        image_paths = getimg()
-        return {"image_paths": [
-            f"{BASE}{quote(str(path).lstrip('/'))}" if sys.platform == 'win32' else f"{BASE}{quote(str(path))}"
-            for path in image_paths
-        ]}
+        Gallery.initial_list = getInitial()
 
-def GalleryGallery(_: gr.Blocks, app: FastAPI):
-    GalleryAPI(app)
+        return {"images": [{"path": f"/sd-hub-gallery{quote(str(path))}"} for path in Gallery.initial_list]}
 
-def SDHubGallery():
+    @app.get("/sd-hub-gallery-list")
+    async def getImage():
+        img_paths = [
+            path.resolve()
+            for path in Path(out_dir).rglob("*")
+            if path.suffix.lower() in imgEXT
+        ]
+
+        newest = []
+        for path in img_paths:
+            if str(path) not in Gallery.initial_list:
+                when = os.path.getctime(path)
+                newest.append((when, path))
+
+        if newest:
+            newest.sort(key=lambda x: x[0], reverse=True)
+            sorted_paths = [str(path) for _, path in newest]
+
+            Gallery.initial_list.extend(sorted_paths)
+            Gallery.path_list = sorted_paths + Gallery.path_list
+
+            return {"images": [{"path": f"/sd-hub-gallery{quote(path)}"} for path in sorted_paths]}
+
+        return {"images": []}
+
+    @app.post("/clear-gallery-list")
+    async def clearList():
+        Gallery.path_list = []
+        return {}
+
+def GalleryAPI(_: gr.Blocks, app: FastAPI):
+    GalleryGallery(app)
+
+def GalleryTab():
     with gr.TabItem("Gallery", elem_id="sdhub-gallery-tab"):
-        gr.Textbox(elem_id="sdhub-gallery-imginitial", visible=False)
-        imgpath = gr.Textbox(elem_id="sdhub-gallery-imgpath", visible=False)
-
         with FormRow(equal_height=False, elem_id="sdhub-gallery-image-info-row"):
             with FormColumn(variant="compact"):
                 image = gr.Image(
@@ -81,11 +111,7 @@ def SDHubGallery():
                     )
 
             with FormColumn(variant="compact", scale=7, elem_id="SDHubimgInfoOutputPanel"):
-                geninfo = gr.Textbox(
-                    elem_id="SDHubimgInfoGenInfo",
-                    visible=False
-                )
-
+                geninfo = gr.Textbox(elem_id="SDHubimgInfoGenInfo", visible=False)
                 gr.HTML(elem_id="SDHubimgInfoHTML")
 
             for tabname, button in buttons.items():
