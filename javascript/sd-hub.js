@@ -60,34 +60,65 @@ async function SDHubTextEditorInfo() {
   }
 }
 
-function SDHubTextEditorScrollBar() {
+function SDHubTextEditorGalleryScrollBar() {
   const isFirefox = /firefox/i.test(navigator.userAgent);
 
   const ScrollBAR = document.createElement('style');
   document.body.appendChild(ScrollBAR);
 
   const SBforFirefox = `
-    #sdhub-texteditor-editor {
+    #sdhub-texteditor-editor,
+    #sdhub-gallery-txt2img-images-tab-div,
+    #sdhub-gallery-img2img-images-tab-div,
+    #sdhub-gallery-extras-images-tab-div,
+    #sdhub-gallery-txt2img-grids-tab-div,
+    #sdhub-gallery-img2img-grids-tab-div {
       scrollbar-width: thin !important;
       scrollbar-color: var(--primary-400) transparent !important;
     }
   `;
 
   const SBwebkit = `
-    #sdhub-texteditor-editor::-webkit-scrollbar {
+    #sdhub-texteditor-editor::-webkit-scrollbar,
+    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar,
+    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar,
+    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar,
+    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar,
+    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar {
       width: 0.4rem !important;
-      height: auto !important;
+      position: absolute !important;
+      right: 4px !important;
     }
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb {
+
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb,
+    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-thumb,
+    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-thumb,
+    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-thumb,
+    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar-thumb,
+    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-thumb {
       background: var(--primary-400) !important;
       border-radius: 30px !important;
+      background-clip: padding-box !important;
     }
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover {
+
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover,
+    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-thumb:hover,
+    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-thumb:hover,
+    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-thumb:hover,
+    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar-thumb:hover,
+    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-thumb:hover {
       background: var(--primary-600) !important;
     }
-    #sdhub-texteditor-editor::-webkit-scrollbar-track {
+
+    #sdhub-texteditor-editor::-webkit-scrollbar-track,
+    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-track,
+    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-track,
+    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-track,
+    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar-track,
+    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-track {
       background: transparent !important;
       border-radius: 0px !important;
+      margin: 20px 0 !important;
     }
   `;
 
@@ -135,24 +166,15 @@ onUiLoaded(function () {
   }
 
   SDHubCopyTextFromUselessDataFrame();
-  SDHubTextEditorScrollBar();
+  SDHubTextEditorGalleryScrollBar();
   SDHubTextEditorCTRLS();
   SDHubShellShiftEnter();
 });
 
 var Id = 'sdHUBHidingScrollBar';
 
-onUiTabChange(function() {
-  let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
-  if (MainTab && (MainTab.textContent.trim() !== 'HUB')) {
-    const Scrollbar = document.getElementById(Id);
-    if (Scrollbar) document.head.removeChild(Scrollbar);
-    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
-  }
-});
-
 onUiUpdate(function() {
+  let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
   let Tab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
   let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
 
@@ -168,6 +190,13 @@ onUiUpdate(function() {
 
   } else if (Tab && (Tab.textContent.trim() !== 'Text Editor' || Tab.textContent.trim() !== 'Gallery')) {
     Accordion.style.display = 'block';
+    const Scrollbar = document.getElementById(Id);
+    if (Scrollbar) document.head.removeChild(Scrollbar);
+    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+    document.body.classList.remove('no-scroll');
+  }
+
+  if (MainTab && (MainTab.textContent.trim() !== 'HUB')) {
     const Scrollbar = document.getElementById(Id);
     if (Scrollbar) document.head.removeChild(Scrollbar);
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
