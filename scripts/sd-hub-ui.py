@@ -24,7 +24,7 @@ from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
 from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
-from sd_hub.galleryTab import SDHubGallery, GalleryGallery
+from sd_hub.galleryTab import GalleryTab, GalleryAPI
 
 insecureENV = SDHubPaths.getENV()
 
@@ -334,7 +334,7 @@ def onSDHUBTab():
             TextEditor()
             Shelly()
 
-        SDHubGallery()
+        GalleryTab()
 
         with gr.Accordion("Tag List", open=False, visible=True, elem_id="sdhub-dataframe-accordion"):
             gr.DataFrame(
@@ -350,4 +350,4 @@ def onSDHUBTab():
     return (sdhub, "HUB", "sdhub"),
 
 on_ui_tabs(onSDHUBTab)
-on_app_started(GalleryGallery)
+on_app_started(GalleryAPI)
