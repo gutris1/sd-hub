@@ -357,9 +357,7 @@
 }
 
 .sdhub-gallery-img-div {
-  justify-content: center;
-  display: flex;
-  align-items: center;
+  display: block;
   align-self: center;
   border-radius: 0.8rem;
   border: 1px solid transparent;
@@ -367,8 +365,8 @@
   z-index: 1000;
   width: 13rem;
   box-sizing: border-box;
-  max-width: calc(19% - 10px);
-  flex: 1 1 calc(19% - 10px);
+  max-width: calc(19% - -1px);
+  flex: 1 1 calc(19% - 1px);
 }
 
 @media (max-width: 768px) {
@@ -385,8 +383,8 @@
 
 @media (min-width: 1920px) {
   .sdhub-gallery-img-div {
-    max-width: calc(13% - 10px);
-    flex: 1 1 calc(13% - 10px);
+    max-width: calc(13% - -1px);
+    flex: 1 1 calc(13% - 1px);
   }
 }
 
@@ -403,6 +401,32 @@
 
 .sdhub-gallery-img:hover {
   box-shadow: 0 0 10px 0.4em var(--primary-400);
+}
+
+#sdhub-gallery-img-button-div {
+  position: relative;
+  display: none;
+}
+
+#sdhub-gallery-img-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  z-index: var(--layer-1);
+  border: 0;
+  border-radius: 0;
+  color: var(--block-label-text-color);
+  right: 0;
+  top: 0;
+  position: absolute;
+  transition: 0.3s ease;
+  transform: scale(1);
+  background-color: var(--input-background-fill-focus);
+  height: 30px;
+  width: 30px;
+  padding: 2px !important;
+  box-shadow: 0 0 5px 2px #000;
+  border-bottom-left-radius: 0.8rem;
 }
 
 #sdhub-imgdiv-0 {
