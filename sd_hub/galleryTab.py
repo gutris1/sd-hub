@@ -38,7 +38,7 @@ def getThumb(src: Path):
 
 def getImage():
     img = [p for p in Path(out_dir).rglob("*") if p.suffix.lower() in imgEXT]
-    img.sort(key=lambda p: p.stat().st_ctime, reverse=True)
+    img.sort(key=lambda p: p.stat().st_ctime)
     results = []
     for path in img:
         thumb_path = getThumb(path)
