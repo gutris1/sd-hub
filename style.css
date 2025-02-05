@@ -366,12 +366,12 @@
   width: 13rem;
   box-sizing: border-box;
   max-width: calc(19% - -1px);
-  flex: 1 1 calc(19% - 1px);
+  flex: 1 1 calc(19% - 10px);
 }
 
 @media (max-width: 768px) {
   .sdhub-gallery-img-div {
-    max-width: calc(50% - 10px);
+    max-width: calc(50% - -1px);
     flex: 1 1 calc(50% - 10px);
   }
 
@@ -384,7 +384,7 @@
 @media (min-width: 1920px) {
   .sdhub-gallery-img-div {
     max-width: calc(13% - -1px);
-    flex: 1 1 calc(13% - 1px);
+    flex: 1 1 calc(13% - 10px);
   }
 }
 
