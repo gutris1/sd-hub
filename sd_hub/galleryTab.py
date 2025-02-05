@@ -1,49 +1,52 @@
 import modules.generation_parameters_copypaste as tempe
 from modules.ui_components import FormRow, FormColumn
+from fastapi import FastAPI, HTTPException, responses
 from modules.paths_internal import data_path
-from fastapi import FastAPI, staticfiles
 from modules.shared import opts
 from urllib.parse import quote
 from datetime import datetime
 from pathlib import Path
+from PIL import Image
 import gradio as gr
 import tempfile
+import hashlib
 import sys
-import os
 
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 out_dir = opts.outdir_samples or Path(data_path) / 'outputs'
 root_dir = str(Path(out_dir).anchor) if sys.platform == 'win32' else "/"
-imgLog = Path(tempfile.gettempdir()) / "sd-hub-gallery-initial-load.txt"
+thumb_dir = Path(tempfile.gettempdir()) / "sd-hub-gallery-thumb"
+thumb_dir.mkdir(exist_ok=True, parents=True)
 BASE = "/sd-hub-gallery"
 
 def getTimeStamp():
     return datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
 
-def getInitial():
-    if not out_dir.exists() or not any(out_dir.iterdir()):
-        return []
+def getThumb(src: Path):
+    ctime = src.stat().st_ctime
+    hash = f"{src.name}{ctime}".encode('utf-8')
+    sha = hashlib.sha256(hash).hexdigest()
+    folder = thumb_dir / sha
+    folder.mkdir(parents=True, exist_ok=True)
+    thumb_name = f"thumb-{src.stem}.jpg"
+    thumb_path = folder / thumb_name
+    if not thumb_path.exists():
+        with Image.open(src) as img:
+            img.thumbnail((512, 512))
+            img.convert("RGB").save(thumb_path, "JPEG", quality=85)
+    return thumb_path
 
-    if imgLog.exists():
-        with open(imgLog, "r", encoding="utf-8") as file:
-            return [line.strip() for line in file.readlines()]
-
-    img_paths = [
-        path.resolve()
-        for path in Path(out_dir).rglob("*")
-        if path.suffix.lower() in imgEXT
-    ]
-
-    if not img_paths:
-        return []
-
-    sorted_img = sorted(img_paths, key=lambda p: os.path.getctime(p))
-    formatted_img = [str(path) for path in sorted_img]
-
-    with open(imgLog, "w", encoding="utf-8") as file:
-        file.write("\n".join(formatted_img) + "\n")
-
-    return formatted_img
+def getImage():
+    img = [p for p in Path(out_dir).rglob("*") if p.suffix.lower() in imgEXT]
+    img.sort(key=lambda p: p.stat().st_ctime, reverse=True)
+    results = []
+    for path in img:
+        thumb_path = getThumb(path)
+        results.append({
+            "path": f"{BASE}/image{quote(str(path))}",
+            "thumb": f"{BASE}/thumb/{quote(thumb_path.name)}"
+        })
+    return results
 
 class GalleryState:
     def __init__(self):
@@ -53,43 +56,39 @@ class GalleryState:
 Gallery = GalleryState()
 
 def GalleryGallery(app: FastAPI):
-    app.mount(BASE, staticfiles.StaticFiles(directory=root_dir, html=True), name="sd-hub-gallery")
+    headers = {"Cache-Control": "public, max-age=31536000"}
 
     @app.get("/sd-hub-gallery-initial")
-    async def initialLoad():
-        Gallery.initial_list = getInitial()
-
-        return {"images": [{"path": f"/sd-hub-gallery{quote(str(path))}"} for path in Gallery.initial_list]}
+    async def initial():
+        imgs = getImage()
+        Gallery.initial_list = [img["path"] for img in imgs]
+        return {"images": imgs}
 
     @app.get("/sd-hub-gallery-list")
-    async def getImage():
-        img_paths = [
-            path.resolve()
-            for path in Path(out_dir).rglob("*")
-            if path.suffix.lower() in imgEXT
-        ]
-
-        newest = []
-        for path in img_paths:
-            if str(path) not in Gallery.initial_list:
-                when = os.path.getctime(path)
-                newest.append((when, path))
-
-        if newest:
-            newest.sort(key=lambda x: x[0], reverse=True)
-            sorted_paths = [str(path) for _, path in newest]
-
-            Gallery.initial_list.extend(sorted_paths)
-            Gallery.path_list = sorted_paths + Gallery.path_list
-
-            return {"images": [{"path": f"/sd-hub-gallery{quote(path)}"} for path in sorted_paths]}
-
+    async def new():
+        imgs = getImage()
+        new_imgs = [img for img in imgs if img["path"] not in Gallery.initial_list]
+        if new_imgs:
+            Gallery.initial_list.extend([img["path"] for img in new_imgs])
+            Gallery.path_list = [img["path"] for img in new_imgs] + Gallery.path_list
+            return {"images": new_imgs}
         return {"images": []}
 
-    @app.post("/clear-gallery-list")
-    async def clearList():
-        Gallery.path_list = []
-        return {}
+    @app.get("/sd-hub-gallery/image{img_path:path}")
+    async def img(img_path: str):
+        fp = Path(img_path)
+        if fp.exists():
+            return responses.FileResponse(fp, headers=headers)
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    @app.get("/sd-hub-gallery/thumb/{thumb_name}")
+    async def thumb(thumb_name: str):
+        for f in thumb_dir.iterdir():
+            if f.is_dir():
+                t = f / thumb_name
+                if t.exists():
+                    return responses.FileResponse(t, headers=headers)
+        raise HTTPException(status_code=404, detail="Thumbnail not found")
 
 def GalleryAPI(_: gr.Blocks, app: FastAPI):
     GalleryGallery(app)
