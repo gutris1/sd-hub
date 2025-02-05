@@ -30,7 +30,9 @@ function FetchImage(images) {
       if (imgDiv && TabDiv) {
         TabDiv.style.filter = 'brightness(0.8) blur(10px)';
         const newImgDiv = imgDiv.cloneNode(true);
+        const newBtnDiv = newImgDiv.querySelector('#sdhub-gallery-img-button-div');
         let newId = `sdhub-imgdiv-${DivIndex}`;
+
         while (document.getElementById(newId)) {
           DivIndex++;
           newId = `sdhub-imgdiv-${DivIndex}`;
@@ -38,18 +40,28 @@ function FetchImage(images) {
 
         newImgDiv.id = newId;
         const img = newImgDiv.querySelector('img');
-        let BtnDiv = document.getElementById('sdhub-gallery-img-button-div');
-        if (img) {
-          fetch(path)
-            .then(response => response.blob())
-            .then(blob => {
-              const mimeType = blob.type;
-              img.fileObject = new File([blob], `image.${mimeType.split('/')[1]}`, { type: mimeType });
-            });
 
+        if (img) {
           img.src = thumb;
           img.setAttribute('data-path', path);
-          BtnDiv.style.display = 'block';
+
+          const ImgDivHeight = setInterval(() => {
+            if (newImgDiv.clientHeight > 0) {
+              clearInterval(ImgDivHeight);
+              if (newBtnDiv) newBtnDiv.style.display = 'block';
+            }
+          }, 50);
+
+          setTimeout(async () => {
+            try {
+              const response = await fetch(path);
+              const blob = await response.blob();
+              const mimeType = blob.type;
+              img.fileObject = new File([blob], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+            } catch (error) {
+              console.error("Error fetching:", error);
+            }
+          }, 0);
         }
 
         TabDiv.prepend(newImgDiv);
@@ -59,6 +71,8 @@ function FetchImage(images) {
         TabDiv.style.filter = 'none';
       }
     }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
     processImage(index + 1);
   };
 
