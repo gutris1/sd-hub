@@ -1,5 +1,4 @@
 let DivIndex = 1;
-const imageCache = new Map();
 const Tabname = [
   'txt2img-images',
   'img2img-images',
@@ -8,63 +7,10 @@ const Tabname = [
   'img2img-grids'
 ];
 
-async function ProcessProcess(path) {
-  try {
-    const response = await fetch(path);
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const img = new Image();
-
-    return new Promise((resolve, reject) => {
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const MAX = 512;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX) {
-            height = height * (MAX / width);
-            width = MAX;
-          }
-        } else {
-          if (height > MAX) {
-            width = width * (MAX / height);
-            height = MAX;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((thumbBlob) => {
-          const Thumb = URL.createObjectURL(thumbBlob);
-
-          resolve({
-            url,
-            Thumb,
-            Blob: blob,
-            extension: path.match(/\.([^.]+)$/)?.[1]?.toLowerCase() || 'png'
-          });
-        }, 'image/jpeg', 0.85);
-      };
-
-      img.onerror = reject;
-      img.src = url;
-    });
-
-  } catch (error) {
-    console.error('Error processing image:', error);
-    return null;
-  }
-}
-
 function FetchImage(images) {
   let imgDiv = document.querySelector('#sdhub-imgdiv-0');
   let loadedImages = 0;
   const total = images.length;
-
   const processImage = async (index) => {
     if (index >= images.length) {
       if (loadedImages === total) {
@@ -74,72 +20,45 @@ function FetchImage(images) {
       return;
     }
 
-    const { path } = images[index];
-    const imgPath = path.replace(/[\[\]']+/g, '').trim();
-    const whichTab = Tabname.find(whichTab => imgPath.includes(`/${whichTab}/`));
+    const { path, thumb } = images[index];
+    const whichTab = Tabname.find(tab => path.includes(`/${tab}/`));
 
     if (whichTab) {
       const TabDiv = document.getElementById(`sdhub-gallery-${whichTab}-tab-div`);
       const TabBtn = document.getElementById(`sdhub-gallery-${whichTab}-tab-button`);
 
-      if (TabDiv) {
-        TabDiv.style.filter = 'brightness(0.8) blur(10px)';
-      }
-
       if (imgDiv && TabDiv) {
-        const imageData = await ProcessProcess(imgPath);
-
-        if (!imageData) {
-          if (TabDiv) TabDiv.style.filter = 'none';
-          processImage(index + 1);
-          return;
-        }
-
-        const { url, Thumb, Blob, extension } = imageData;
+        TabDiv.style.filter = 'brightness(0.8) blur(10px)';
         const newImgDiv = imgDiv.cloneNode(true);
         let newId = `sdhub-imgdiv-${DivIndex}`;
-
         while (document.getElementById(newId)) {
           DivIndex++;
           newId = `sdhub-imgdiv-${DivIndex}`;
         }
 
         newImgDiv.id = newId;
-
         const img = newImgDiv.querySelector('img');
+        let BtnDiv = document.getElementById('sdhub-gallery-img-button-div');
         if (img) {
-          img.setAttribute('data-path', imgPath);
-          img.src = Thumb;
-          imageCache.set(imgPath + '_thumb', Thumb);
-          imageCache.set(imgPath + '_original', url);
+          fetch(path)
+            .then(response => response.blob())
+            .then(blob => {
+              const mimeType = blob.type;
+              img.fileObject = new File([blob], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+            });
 
-          const mimeType = {
-            'png': 'image/png',
-            'jpg': 'image/jpeg',
-            'jpeg': 'image/jpeg',
-            'webp': 'image/webp',
-            'avif': 'image/avif'
-          }[extension] || 'image/png';
-
-          img.fileObject = new File(
-            [Blob],
-            `image.${extension}`,
-            { type: mimeType }
-          );
+          img.src = thumb;
+          img.setAttribute('data-path', path);
+          BtnDiv.style.display = 'block';
         }
 
         TabDiv.prepend(newImgDiv);
-
-        if (TabBtn) {
-          TabBtn.style.display = 'flex';
-        }
-
+        if (TabBtn) TabBtn.style.display = 'flex';
         DivIndex++;
         loadedImages++;
         TabDiv.style.filter = 'none';
       }
     }
-
     processImage(index + 1);
   };
 
@@ -148,7 +67,6 @@ function FetchImage(images) {
   for (let i = 0; i < Tabname.length; i++) {
     let TabBtn = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-button`);
     let TabDiv = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-div`);
-
     if (TabBtn && TabDiv) {
       TabBtn.classList.add('selected');
       TabDiv.classList.add('active');
@@ -157,7 +75,6 @@ function FetchImage(images) {
     }
   }
 }
-
 
 onUiTabChange(function() {
   let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
@@ -248,6 +165,23 @@ function SDHubImageInfoClearButton() {
   }
 }
 
+ContextSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+    width="100%" height="100%" viewBox="0 0 24 24" xml:space="preserve" stroke="currentColor" 
+    style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round;">
+    <g transform="matrix(1.14096,-0.140958,-0.140958,1.14096,-0.0559523,0.0559523)">
+      <path 
+        d="M18,6L6.087,17.913" 
+        style="fill: none; fill-rule: nonzero; stroke-width: 2px;">
+      </path>
+    </g>
+    <path 
+      d="M4.364,4.364L19.636,19.636" 
+      style="fill: none; fill-rule: nonzero; stroke-width: 2px;">
+    </path>
+  </svg>
+`;
+
 onUiLoaded(function () {
   let Gallery = document.querySelector('#sdhub-gallery-tab');
 
@@ -285,23 +219,21 @@ onUiLoaded(function () {
     imgDiv.id = 'sdhub-imgdiv-0';
     imgDiv.classList.add('sdhub-gallery-img-div');
 
-    const imgSib = document.createElement('div');
-    imgSib.id = 'sdhub-imgSib';
-    imgSib.classList.add('sdhub-gallery-img-sib');
+    const BtnDiv = document.createElement('div');
+    BtnDiv.id = 'sdhub-gallery-img-button-div';
+
+    const Btn = document.createElement('button');
+    Btn.id = 'sdhub-gallery-img-button';
+    Btn.innerHTML = ContextSVG;
 
     const img = document.createElement('img');
     img.classList.add('sdhub-gallery-img');
 
-    imgDiv.append(img, imgSib);
+    BtnDiv.append(Btn);
+    imgDiv.append(BtnDiv, img);
     Gallery.prepend(TabRow, imgDiv);
 
     FetchList('/sd-hub-gallery-initial');
-
-    window.addEventListener('beforeunload', () => {
-      imageCache.forEach(URL.revokeObjectURL);
-      imageCache.clear();
-      fetch('/clear-gallery-cache', { method: 'POST' });
-    });
   }
 });
 
