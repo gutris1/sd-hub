@@ -1,4 +1,8 @@
+let dataCache = new DataTransfer();
+let fetchTimeout = null;
+let lastFetch = 0;
 let DivIndex = 1;
+
 const Tabname = [
   'txt2img-images',
   'img2img-images',
@@ -8,29 +12,26 @@ const Tabname = [
 ];
 
 function FetchImage(images) {
-  let imgDiv = document.querySelector('#sdhub-imgdiv-0');
+  let imgDiv = document.querySelector("#sdhub-imgdiv-0");
   let loadedImages = 0;
-  const total = images.length;
+  let total = images.length;
+  let updatedTabs = new Set();
+
   const processImage = async (index) => {
-    if (index >= images.length) {
-      if (loadedImages === total) {
-        console.log("all-loaded");
-        fetch('/clear-gallery-list', { method: 'POST' });
-      }
-      return;
-    }
+    if (index >= total) return;
 
     const { path, thumb } = images[index];
-    const whichTab = Tabname.find(tab => path.includes(`/${tab}/`));
+    const whichTab = Tabname.find((tab) => path.includes(`/${tab}/`));
 
     if (whichTab) {
       const TabDiv = document.getElementById(`sdhub-gallery-${whichTab}-tab-div`);
       const TabBtn = document.getElementById(`sdhub-gallery-${whichTab}-tab-button`);
 
       if (imgDiv && TabDiv) {
-        TabDiv.style.filter = 'brightness(0.8) blur(10px)';
+        TabDiv.style.filter = "brightness(0.8) blur(10px)";
+        updatedTabs.add(TabDiv);
+
         const newImgDiv = imgDiv.cloneNode(true);
-        const newBtnDiv = newImgDiv.querySelector('#sdhub-gallery-img-button-div');
         let newId = `sdhub-imgdiv-${DivIndex}`;
 
         while (document.getElementById(newId)) {
@@ -39,25 +40,28 @@ function FetchImage(images) {
         }
 
         newImgDiv.id = newId;
-        const img = newImgDiv.querySelector('img');
+        const img = newImgDiv.querySelector("img");
 
         if (img) {
           img.src = thumb;
-          img.setAttribute('data-path', path);
+          img.setAttribute("data-path", path);
 
-          const ImgDivHeight = setInterval(() => {
-            if (newImgDiv.clientHeight > 0) {
-              clearInterval(ImgDivHeight);
-              if (newBtnDiv) newBtnDiv.style.display = 'block';
+          img.onload = () => {
+            loadedImages++;
+            if (loadedImages === total) {
+              console.log("all-loaded");
+              updatedTabs.forEach((tab) => (tab.style.filter = "none"));
             }
-          }, 50);
+          };
 
           setTimeout(async () => {
             try {
               const response = await fetch(path);
               const blob = await response.blob();
               const mimeType = blob.type;
-              img.fileObject = new File([blob], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+              img.fileObject = new File([blob], `image.${mimeType.split("/")[1]}`, {
+                type: mimeType,
+              });
             } catch (error) {
               console.error("Error fetching:", error);
             }
@@ -65,14 +69,12 @@ function FetchImage(images) {
         }
 
         TabDiv.prepend(newImgDiv);
-        if (TabBtn) TabBtn.style.display = 'flex';
+        if (TabBtn) TabBtn.style.display = "flex";
         DivIndex++;
-        loadedImages++;
-        TabDiv.style.filter = 'none';
       }
     }
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     processImage(index + 1);
   };
 
@@ -82,13 +84,39 @@ function FetchImage(images) {
     let TabBtn = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-button`);
     let TabDiv = document.getElementById(`sdhub-gallery-${Tabname[i]}-tab-div`);
     if (TabBtn && TabDiv) {
-      TabBtn.classList.add('selected');
-      TabDiv.classList.add('active');
-      TabDiv.style.display = 'flex';
+      TabBtn.classList.add("selected");
+      TabDiv.classList.add("active");
+      TabDiv.style.display = "flex";
       break;
     }
   }
 }
+
+function debouncingFetch() {
+  const now = Date.now();
+  const oneMnt = 60 * 1000;
+
+  if (fetchTimeout) {
+    return;
+  }
+
+  if (now - lastFetch < oneMnt) {
+    const remainingTime = oneMnt - (now - lastFetch);
+    fetchTimeout = setTimeout(() => {
+      FetchList('/sd-hub-gallery-list');
+      lastFetch = Date.now();
+      fetchTimeout = null;
+    }, remainingTime);
+    return;
+  }
+
+  FetchList('/sd-hub-gallery-list');
+  lastFetch = now;
+}
+
+onAfterUiUpdate(function() {
+  debouncingFetch();
+});
 
 onUiTabChange(function() {
   let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
@@ -103,8 +131,6 @@ function FetchList(r) {
     .then(data => data.images?.length && FetchImage(data.images))
     .catch(console.error);
 }
-
-let dataCache = new DataTransfer();
 
 function SDHubImageInfo(imgEL) {
   document.body.classList.add('no-scroll');
@@ -180,19 +206,10 @@ function SDHubImageInfoClearButton() {
 }
 
 ContextSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-    width="100%" height="100%" viewBox="0 0 24 24" xml:space="preserve" stroke="currentColor" 
-    style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round;">
-    <g transform="matrix(1.14096,-0.140958,-0.140958,1.14096,-0.0559523,0.0559523)">
-      <path 
-        d="M18,6L6.087,17.913" 
-        style="fill: none; fill-rule: nonzero; stroke-width: 2px;">
-      </path>
-    </g>
-    <path 
-      d="M4.364,4.364L19.636,19.636" 
-      style="fill: none; fill-rule: nonzero; stroke-width: 2px;">
-    </path>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+    width="30px" height="30px">
+    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 `;
 
@@ -233,18 +250,22 @@ onUiLoaded(function () {
     imgDiv.id = 'sdhub-imgdiv-0';
     imgDiv.classList.add('sdhub-gallery-img-div');
 
-    const BtnDiv = document.createElement('div');
-    BtnDiv.id = 'sdhub-gallery-img-button-div';
+    const BtnWrap = document.createElement('div');
+    BtnWrap.id = 'sdhub-gallery-img-button-wrapper';
 
     const Btn = document.createElement('button');
     Btn.id = 'sdhub-gallery-img-button';
     Btn.innerHTML = ContextSVG;
 
+    const imgWrap = document.createElement('div');
+    imgWrap.id = 'sdhub-gallery-img-wrapper';
+
     const img = document.createElement('img');
     img.classList.add('sdhub-gallery-img');
 
-    BtnDiv.append(Btn);
-    imgDiv.append(BtnDiv, img);
+    BtnWrap.append(Btn);
+    imgWrap.append(img);
+    imgDiv.append(BtnWrap, imgWrap);
     Gallery.prepend(TabRow, imgDiv);
 
     FetchList('/sd-hub-gallery-initial');
