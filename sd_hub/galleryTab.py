@@ -10,7 +10,6 @@ from PIL import Image
 import gradio as gr
 import tempfile
 import hashlib
-import json
 import sys
 
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
@@ -18,8 +17,14 @@ out_dir = opts.outdir_samples or Path(data_path) / 'outputs'
 root_dir = str(Path(out_dir).anchor) if sys.platform == 'win32' else "/"
 thumb_dir = Path(tempfile.gettempdir()) / "sd-hub-gallery-thumb"
 thumb_dir.mkdir(exist_ok=True, parents=True)
-img_list = thumb_dir / "img_list.json" 
 BASE = "/sd-hub-gallery"
+
+class GalleryState:
+    def __init__(self):
+        self.path_list = []
+        self.initial_list = []
+
+Gallery = GalleryState()
 
 def getTimeStamp():
     return datetime.utcnow().strftime("%Y-%m-%d_%H-%M-%S")
@@ -38,59 +43,35 @@ def getThumb(src: Path):
             img.convert("RGB").save(thumb_path, "JPEG", quality=85)
     return thumb_path
 
-def getImageList():
-    if img_list.exists() and img_list.stat().st_size > 0:
-        return json.loads(img_list.read_text(encoding="utf-8"))
-    return None
-
 def getImage():
-    img = [p for p in Path(out_dir).rglob("*") if p.suffix.lower() in imgEXT]
-    if not img:
-        return []
-
-    img.sort(key=lambda p: p.stat().st_mtime)
-
     results = []
+    img = [p for p in Path(out_dir).rglob("*") if p.suffix.lower() in imgEXT]
+    img.sort(key=lambda p: p.stat().st_mtime)
     for path in img:
         thumb_path = getThumb(path)
         results.append({
             "path": f"{BASE}/image{quote(str(path))}",
             "thumb": f"{BASE}/thumb/{quote(thumb_path.name)}"
         })
-
-    img_list.write_text(json.dumps(results, indent=4), encoding="utf-8")
     return results
-
-class GalleryState:
-    def __init__(self):
-        self.path_list = []
-        self.initial_list = []
-
-Gallery = GalleryState()
 
 def GalleryGallery(app: FastAPI):
     headers = {"Cache-Control": "public, max-age=31536000"}
 
     @app.get("/sd-hub-gallery-initial")
     async def initialLoad():
-        imgs = getImageList()
-        if imgs is None:
-            imgs = getImage()
-
+        imgs = getImage()
         Gallery.initial_list = [img["path"] for img in imgs]
         return {"images": imgs}
 
     @app.get("/sd-hub-gallery-list")
     async def newImage():
         imgs = getImage()
-        new = [img for img in imgs if img["path"] not in Gallery.initial_list]
-
-        if new:
-            Gallery.initial_list.extend([img["path"] for img in new])
-            Gallery.path_list = [img["path"] for img in new] + Gallery.path_list
-            img_list.write_text(json.dumps(imgs, indent=4), encoding="utf-8")
-
-            return {"images": new}
+        new_imgs = [img for img in imgs if img["path"] not in Gallery.initial_list]
+        if new_imgs:
+            Gallery.initial_list.extend([img["path"] for img in new_imgs])
+            Gallery.path_list = [img["path"] for img in new_imgs] + Gallery.path_list
+            return {"images": new_imgs}
         return {"images": []}
 
     @app.get("/sd-hub-gallery/image{img_path:path}")
