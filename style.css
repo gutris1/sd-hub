@@ -388,6 +388,16 @@
   }
 }
 
+#sdhub-gallery-img-wrapper {
+  transition: 0.3s ease;
+  background: transparent;
+  z-index: 1001;
+}
+
+#sdhub-gallery-img-wrapper:hover {
+  box-shadow: inset 0 0 10px 0.4em var(--primary-400);
+}
+
 .sdhub-gallery-img {
   transition: 0.3s ease;
   max-width: 100% !important;
@@ -403,9 +413,17 @@
   box-shadow: 0 0 10px 0.4em var(--primary-400);
 }
 
-#sdhub-gallery-img-button-div {
+.sdhub-gallery-img-div:hover #sdhub-gallery-img-button-wrapper {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#sdhub-gallery-img-button-wrapper {
   position: relative;
-  display: none;
+  display: block;
+  opacity: 0;
+  pointer-events: none;
+  transition: 0.3s ease;
 }
 
 #sdhub-gallery-img-button {
