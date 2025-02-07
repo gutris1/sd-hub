@@ -250,12 +250,8 @@ onUiLoaded(function () {
     imgDiv.id = 'sdhub-imgdiv-0';
     imgDiv.classList.add('sdhub-gallery-img-div');
 
-    const BtnWrap = document.createElement('div');
-    BtnWrap.id = 'sdhub-gallery-img-button-wrapper';
-
-    const Btn = document.createElement('button');
-    Btn.id = 'sdhub-gallery-img-button';
-    Btn.innerHTML = ContextSVG;
+    const imgCOn = document.createElement('div');
+    imgCOn.id = 'sdhub-imgCon';
 
     const imgWrap = document.createElement('div');
     imgWrap.id = 'sdhub-gallery-img-wrapper';
@@ -263,9 +259,20 @@ onUiLoaded(function () {
     const img = document.createElement('img');
     img.classList.add('sdhub-gallery-img');
 
-    BtnWrap.append(Btn);
-    imgWrap.append(img);
-    imgDiv.append(BtnWrap, imgWrap);
+    const BtnWap = document.createElement('div');
+    BtnWap.id = 'sdhub-gallery-img-button-wrapper';
+
+    const Btn = document.createElement('button');
+    Btn.id = 'sdhub-gallery-img-button';
+    Btn.innerHTML = ContextSVG;
+
+    const eFrame = document.createElement('div');
+    eFrame.id = 'sdhub-gallery-empty-frame';
+
+    BtnWap.append(Btn);
+    imgWrap.append(img, BtnWap, eFrame);
+    imgCOn.append(imgWrap);
+    imgDiv.append(imgCOn);
     Gallery.prepend(TabRow, imgDiv);
 
     FetchList('/sd-hub-gallery-initial');
