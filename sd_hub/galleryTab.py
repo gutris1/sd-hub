@@ -1,7 +1,6 @@
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
 from fastapi import FastAPI, HTTPException, responses
-from modules.paths_internal import data_path
 from modules.shared import opts
 from urllib.parse import quote
 from datetime import datetime
@@ -10,14 +9,19 @@ from PIL import Image
 import gradio as gr
 import tempfile
 import hashlib
-import sys
 
+BASE = "/sd-hub-gallery"
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
-out_dir = opts.outdir_samples or Path(data_path) / 'outputs'
-root_dir = str(Path(out_dir).anchor) if sys.platform == 'win32' else "/"
 thumb_dir = Path(tempfile.gettempdir()) / "sd-hub-gallery-thumb"
 thumb_dir.mkdir(exist_ok=True, parents=True)
-BASE = "/sd-hub-gallery"
+
+outpath = [
+    opts.outdir_samples or opts.outdir_txt2img_samples,
+    opts.outdir_samples or opts.outdir_img2img_samples,
+    opts.outdir_extras_samples,
+    opts.outdir_grids or opts.outdir_txt2img_grids,
+    opts.outdir_grids or opts.outdir_img2img_grids,
+]
 
 class GalleryState:
     def __init__(self):
@@ -44,15 +48,18 @@ def getThumb(src: Path):
     return thumb_path
 
 def getImage():
-    results = []
-    img = [p for p in Path(out_dir).rglob("*") if p.suffix.lower() in imgEXT]
+    dirs = [Path(d) for d in outpath if d]
+    img = [p for d in dirs if d for p in Path(d).rglob("*") if p.suffix.lower() in imgEXT]
     img.sort(key=lambda p: p.stat().st_mtime)
+
+    results = []
     for path in img:
         thumb_path = getThumb(path)
         results.append({
-            "path": f"{BASE}/image{quote(str(path))}",
+            "path": f"{BASE}/image{quote(str(path.resolve()))}",
             "thumb": f"{BASE}/thumb/{quote(thumb_path.name)}"
         })
+
     return results
 
 def GalleryGallery(app: FastAPI):
