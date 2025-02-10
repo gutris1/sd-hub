@@ -21,7 +21,7 @@ def _sub(inputs: List[str]) -> bool:
         )
 
         return True
-        
+
     except subprocess.CalledProcessError:
         return False
 
@@ -34,7 +34,7 @@ def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL
         )
-        
+
     except FileNotFoundError:
         pkg_list.append(pkg)
         _sub(cmd.split())
@@ -47,7 +47,7 @@ def _install_req_1() -> None:
     with open(req_) as file:
         for pkg in file:
             pkg = pkg.strip()
-            
+
             if '==' in pkg:
                 pkg_name, pkg_version = pkg.split('==')
                 try:
@@ -55,16 +55,16 @@ def _install_req_1() -> None:
                     if version.parse(_version) < version.parse(pkg_version):
                         reqs.append(pkg)
                         names.append(pkg_name)
-                        
+
                 except metadata.PackageNotFoundError:
                     reqs.append(pkg)
                     names.append(pkg_name)
-                    
+
             else:
                 if not launch.is_installed(pkg):
                     reqs.append(pkg)
                     names.append(pkg)
-        
+
         if not sys.platform == 'win32':
             if not launch.is_installed('aria2'):
                 reqs.append('aria2')
@@ -118,13 +118,13 @@ def _install_req_2() -> None:
 
     else:
         env_list: Dict[str, str] = {
-            'Colab': 'COLAB_JUPYTER_TRANSPORT',
+            'Colab': 'COLAB_JUPYTER_TOKEN',
             'SageMaker Studio Lab': 'SAGEMAKER_INTERNAL_IMAGE_URI',
             'Kaggle': 'KAGGLE_DATA_PROXY_TOKEN'
         }
 
         env = 'Unknown'
-        
+
         for envs, var in env_list.items():
             if var in os.environ:
                 env = envs
@@ -139,12 +139,12 @@ def _install_req_2() -> None:
             'pv': '-V',
             'lz4': '-V'
         }
-        
+
         if env in ['Colab', 'Kaggle']:
             if _sub(['apt', pkg_cmds['apt']]):
                 for pkg, args in pv_lz4.items():
                     _check_req(pkg, args, f"apt -y install {pkg}", pkg_list)
-                
+
         elif env == 'SageMaker Studio Lab':
             if _sub(['conda', pkg_cmds['conda']]):
                 for pkg, args in pv_lz4.items():
