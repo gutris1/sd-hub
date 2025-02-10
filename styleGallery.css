@@ -1,0 +1,633 @@
+#sdhub-gallery-tab {
+  padding-right: 0;
+  padding-left: 0;
+  border: 0;
+}
+
+#sdhub-gallery-tab-button-row {
+  z-index: 5;
+  position: relative;
+  top: 0;
+  gap: 20px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  max-width: 100%;
+}
+
+#sdhub-gallery-tab-button-row button {
+  display: none;
+  position: relative;
+  background: transparent;
+  color: var(--body-text-color-subdued);
+  transition: 0.4s ease;
+  border: 2px solid transparent;
+  border-radius: 0.7rem;
+  text-align: center;
+  font-weight: normal;
+  font-size: 18px;
+  padding: 5px calc(2* 5px);
+  max-width: 100%;
+}
+
+#sdhub-gallery-tab-button-row button.selected {
+  color: var(--primary-400);
+  border-color: #6a6a6a;
+  background: var(--input-background-fill-focus);
+}
+
+#sdhub-gallery-tab-button-row button:not(.selected):hover {
+  color: var(--primary-600);
+}
+
+.sdhub-gallery-tab-div {
+  max-height: calc(3* 15rem);
+  width: 100%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  overflow: auto !important;
+  background: var(--input-background-fill-focus);
+  padding: 20px !important;
+  flex-wrap: wrap;
+  border: 2px solid #6a6a6a;
+  border-radius: 25px;
+  transition: 0.5s ease-in-out;
+}
+
+.sdhub-gallery-img-div {
+  display: flex;
+  height: 240px;
+  width: 240px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  position: relative;
+}
+
+#sdhub-imgCon {
+  display: flex;
+  border: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.5rem;
+}
+
+#sdhub-gallery-img-wrapper {
+  display: flex;
+  align-self: center;
+  justify-content: center;
+  align-items: center;
+  min-height: 1rem;
+  min-width: 1rem;
+  border: 0;
+}
+
+#sdhub-gallery-img {
+  transition: 0.3s ease;
+  max-width: 240px;
+  max-height: 240px;
+  object-fit: contain;
+  border-radius: 0.6rem;
+}
+
+.sdhub-gallery-img-loading {
+  filter: blur(2px) brightness(0.5);
+}
+
+#sdhub-gallery-img-button {
+  transform-origin: top right;
+  display: flex;
+  transform: scale(0);
+  padding: 2px;
+  border-radius: 0;
+  border-bottom-left-radius: 15px;
+  color: var(--primary-400);
+  background: var(--input-background-fill);
+  box-shadow: 0 0 3px 1px #000;
+  cursor: pointer;
+  opacity: 0;
+  z-index: 100;
+  transition: 0.3s ease-in-out;
+  top: 0;
+  right: 0;
+  position: absolute;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+#sdhub-gallery-img-button svg {
+  left: 1px;
+  bottom: 1px;
+  position: relative;
+}
+
+#sdhub-imgCon:hover #sdhub-gallery-img-button {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+#sdhub-gallery-empty-frame {
+  display: block;
+  position: absolute;
+  width: 105%;
+  height: 105%;
+  border: 0;
+  opacity: 1;
+  pointer-events: none;
+  overflow: hidden;
+  transition: 0.4s ease;
+}
+
+#sdhub-gallery-empty-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#sdhub-imgCon:hover #sdhub-gallery-empty-frame {
+  box-shadow: inset 0 0 30px 20px #000;
+}
+
+#sdhub-imgdiv-0 {
+  display: none;
+}
+
+.loading-blurry {
+  transition: 0.5s ease;
+  backdrop-filter: blur(5px);
+}
+body.no-scroll {
+  overflow: hidden;
+}
+
+#sdhub-gallery-image-info {
+  position: fixed;
+  display: none;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 10px;
+  height: 100%;
+  width: 100%;
+  backdrop-filter: blur(3px);
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 5000;
+  overflow: auto;
+}
+
+#sdhub-gallery-image-info-img {
+  height: auto;
+  width: 100%;
+  object-fit: contain;
+  border-radius: 0.7rem;
+}
+
+#sdhub-gallery-image-info-row {
+  display: none;
+  height: 100%;
+  padding: 10px;
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+  background: var(--background-fill-primary);
+  backdrop-filter: blur(5px);
+  z-index: 99;
+  position: fixed;
+  overflow: auto;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+@media (max-width: 600px) {
+  .sdhub-gallery-img-div {
+    height: 150px;
+    width: 150px;
+  }
+
+  #sdhub-gallery-img {
+    max-width: 150px;
+    max-height: 150px;
+  }
+
+  .sdhub-gallery-tab-div {
+    gap: 10px;
+  }
+
+  #sdhub-gallery-tab-button-row {
+    gap: 10px;
+    justify-content: space-evenly;
+    overflow-x: auto;
+  }
+
+  #sdhub-gallery-tab-button-row button {
+    font-size: unset;
+    padding: 4px 10px;
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 1920px) {
+  .sdhub-gallery-img-div {
+    height: 310px;
+    width: 310px;
+  }
+
+  #sdhub-gallery-img {
+    max-width: 310px;
+    max-height: 310px;
+  }
+
+  #sdhub-imgCon:hover #sdhub-gallery-img-button {
+    opacity: 1;
+    transform: scale(1.5);
+    pointer-events: auto;
+  }
+}
+
+#SDHub-Gallery-ContextMenu {
+  margin: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 3px;
+  padding-right: 3px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.sdhub-gallery-contextmenu {
+  position: absolute;
+  background: var(--background-fill-secondary);
+  color: var(--body-text-color-subdued);
+  border-radius: 0.8rem;
+  box-shadow: 0 0 6px 1px #000;
+  z-index: 1000;
+  border: 0.15rem solid #6a6a6a;
+  transition: opacity 0.3s ease;
+}
+
+#SDHub-Gallery-ContextMenu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  font-size: var(--body-text-size);
+}
+
+#SDHub-Gallery-ContextMenu li {
+  transition: 0.2s ease;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 0.3rem;
+  display: block;
+}
+
+#SDHub-Gallery-ContextMenu li:hover {
+  background: #6a6a6a;
+}
+
+.sdhub-cm-sendto {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.ARRSVG {
+  position: absolute;
+  right: -5px;
+  margin-right: 0 !important;
+  transition: transform 0.3s ease;
+}
+
+.sdhub-cm-sendto:hover .ARRSVG {
+  transform: rotate(90deg);
+}
+
+#sdhub-cm-sendto-menu {
+  position: absolute;
+  top: 0;
+  height: auto;
+  opacity: 0;
+  padding: 0;
+  pointer-events: none;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: unset;
+  transform: scale(0);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#sdhub-cm-sendto-menu ul {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 3px;
+  padding-right: 3px;
+  background: var(--background-fill-secondary);
+  border: 0.15rem solid #6a6a6a;
+  border-radius: 0.8rem;
+  box-shadow: 0 0 6px 1px #000;
+}
+
+.sdhub-cm-sendto:hover #sdhub-cm-sendto-menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.sdhub-cm-OpenImageInNewTab {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  text-align: center;
+  align-items: center;
+}
+.sdhub-cm-OpenImageInNewTab svg {
+  margin-right: 10px;
+  width: 20px;
+  height: 20px;
+}
+
+/* ############################################################################################################ */
+
+#SDHubimgInfoImage {
+  background: transparent;
+  border-radius: 0.8rem !important;
+  transition: 0.5s ease;
+  box-shadow: inset 0 0 10px 0.2em var(--primary-400) !important;
+}
+
+#SDHubimgInfoImage img {
+  cursor: auto;
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+  border-top-right-radius: 1rem;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"],
+#SDHubimgInfoImage button[aria-label="Clear"] {
+  transform: scale(2);
+  margin: 0;
+  padding: 2px;
+  gap: 0;
+  border-radius: 0;
+  border-bottom-left-radius: 7px;
+  box-sizing: border-box;
+  border: 0;
+  color: var(--primary-400) !important;
+  background: var(--input-background-fill);
+  box-shadow: 0 0 5px 1px #000;
+  transition: 0.3s ease;
+  display: none;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"] > div,
+#SDHubimgInfoImage button[aria-label="Clear"] > div {
+  position: relative;
+  padding: 1px;
+  border: 0;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"] path,
+#SDHubimgInfoImage button[aria-label="Clear"] path {
+  stroke-width: 5px !important;
+}
+
+#SDHubimgInfoImage button[aria-label="Remove Image"]:hover,
+#SDHubimgInfoImage button[aria-label="Clear"]:hover {
+  color: var(--primary-500) !important;
+}
+
+#SDHubimgInfoHTML {
+  margin-left: 0.1rem !important;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  margin-bottom: -0.5rem !important;
+}
+
+#SDHubimgInfoOutputPanel {
+  opacity: 0;
+}
+
+#SDHubimgInfoOutputPanel.show {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.gradio-container-4-40-0 #SDHubimgInfoOutputPanel {
+  margin-left: -10px;
+}
+
+#SDHubimgInfoModelOutput {
+  width: auto;
+  height: auto;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.SDHubimgInfoOutputSection {
+  padding-top: 5px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-bottom: 0px;
+  background: var(--input-background-fill);
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.SDHubimgInfoOutputSection:hover {
+  background: var(--input-background-fill-hover);
+}
+
+.SDHubimgInfoOutputSection.modelBox {
+  border: 0;
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+  background: 0;
+  transition: none;
+}
+
+.SDHubimgInfoOutputSection.modelBox:hover {
+  background-color: transparent;
+}
+
+.SDHubimgInfoModelOutputReveal {
+  animation: undressBox 1s forwards ease-out;
+}
+
+#SDHubimgInfoModelOutput .output-line {
+  display: flex;
+  padding: 0px;
+  margin-bottom: 5px;
+  border-radius: 5em;
+}
+
+#SDHubimgInfoModelOutput .label, #SDHubimgInfoModelOutput .hashes {
+  display: flex;
+  flex-wrap: wrap;
+  word-wrap: break-word;
+  white-space: normal;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 5px 1px var(--primary-400);
+}
+
+#SDHubimgInfoModelOutput .label {
+  width: 17%;
+  background-color: var(--input-background-fill);
+  font-size: 15px;
+  border-top-left-radius: 5em;
+  border-bottom-left-radius: 5em;
+  align-items: center;
+  justify-content: center;
+}
+
+#SDHubimgInfoModelOutput .hashes {
+  width: 83%;
+  overflow-wrap: break-word;
+  column-gap: 7px;
+  row-gap: 0px;
+  border-left: 5px solid transparent;
+  border-top-right-radius: 5em;
+  border-bottom-right-radius: 5em;
+  padding-left: 10px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  align-items: flex-start;
+}
+
+.SDHubimgInfoModelOutputNonLink {
+  font-size: 14px;
+  border: 1px solid transparent;
+  padding: 2px 3px;
+  margin: 3px 0;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+
+.SDHubimgInfoModelOutputLink {
+  font-size: 13px;
+  text-decoration: none;
+  border: 1px solid var(--primary-600);
+  transition: color 0.2s ease !important;
+  padding: 2px 3px;
+  margin: 3px 0;
+  background-color: var(--panel-background-fill);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 50ch;
+}
+
+.SDHubimgInfoModelOutputLink:hover {
+  color: var(--primary-400) !important;
+  border: 1px solid var(--link-text-color-hover);
+}
+
+#SDHubimgInfoModelOutput a {
+  white-space: nowrap;
+  font-weight: normal;
+}
+
+.SDHubimgInfoBorderPulse {
+  animation: pulseBorder2 2s infinite alternate forwards;
+}
+
+@keyframes pulseBorder2 {
+  0% {
+    box-shadow: inset 0 0 0px 0em transparent;
+  }
+  25% {
+    box-shadow: inset 0 0 10px 0.2em var(--primary-400);
+  }
+  50% {
+    box-shadow: inset 0 0 5px 0.1em var(--primary-400);
+  }
+  75% {
+    box-shadow: inset 0 0 10px 0.2em var(--primary-400);
+  }
+  100% {
+    box-shadow: inset 0 0 0px 0em transparent;
+  }
+}
+
+#SDHubimgInfoSendButton {
+  display: none;
+  margin-top: 0.2rem !important;
+  grid-template-columns: 1fr 1fr !important;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 0 !important;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev {
+  transition: 0.2s ease;
+  padding: 0.4rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:hover {
+  box-shadow: inset 0 0 5px 0.1em var(--primary-400);
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(1) {
+  border-top-left-radius: 0.8rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(2) {
+  border-top-right-radius: 0.8rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(3) {
+  border-bottom-left-radius: 0.8rem;
+}
+
+#SDHubimgInfoSendButton button.svelte-cmf5ev:nth-child(4) {
+  border-bottom-right-radius: 0.8rem;
+}
+
+.SDHubimgInfoButtons {
+  transition: color 0.3s ease;
+}
+
+.SDHubimgInfoButtons:hover {
+  color: var(--primary-600) !important;
+}
+
+#refresh-spinner {
+  margin: 0 auto;
+  animation: spinner 1s linear infinite;
+}
+
+@keyframes spinner {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes undressBox {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
