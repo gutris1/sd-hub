@@ -2,6 +2,11 @@
   color: var(--color-accent);
 }
 
+#tab_sdhub {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .hide-this {
   visibility: hidden !important;
 }
