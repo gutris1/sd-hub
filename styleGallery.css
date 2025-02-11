@@ -1,7 +1,7 @@
 #sdhub-gallery-tab {
-  padding-right: 0;
-  padding-left: 0;
+  padding-bottom: 0;
   border: 0;
+  margin: 0;
 }
 
 #sdhub-gallery-tab-button-row {
@@ -11,8 +11,11 @@
   gap: 20px;
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   max-width: 100%;
+  border-radius: 1rem;
+  background: transparent;
+  padding: 5px;
 }
 
 #sdhub-gallery-tab-button-row button {
@@ -20,24 +23,27 @@
   position: relative;
   background: transparent;
   color: var(--body-text-color-subdued);
-  transition: 0.4s ease;
-  border: 2px solid transparent;
-  border-radius: 0.7rem;
+  transition: 0.4s ease-in-out;
+  border: 0;
+  border-radius: 5px;
   text-align: center;
   font-weight: normal;
   font-size: 18px;
-  padding: 5px calc(2* 5px);
+  padding: 2px 10px;
   max-width: 100%;
+  justify-content: center;
+  align-items: center;
+  line-height: 1.3;
 }
 
 #sdhub-gallery-tab-button-row button.selected {
   color: var(--primary-400);
-  border-color: #6a6a6a;
-  background: var(--input-background-fill-focus);
+  background: var(--background-fill-primary);
+  box-shadow: 0 0 10px 2px var(--button-primary-border-color);
 }
 
 #sdhub-gallery-tab-button-row button:not(.selected):hover {
-  color: var(--primary-600);
+  box-shadow: 0 0 10px 2px var(--primary-400);
 }
 
 .sdhub-gallery-tab-div {
@@ -48,12 +54,13 @@
   justify-content: center;
   gap: 1rem;
   overflow: auto !important;
-  background: var(--input-background-fill-focus);
-  padding: 20px !important;
+  background: var(--background-fill-secondary);
   flex-wrap: wrap;
-  border: 2px solid #6a6a6a;
-  border-radius: 25px;
   transition: 0.5s ease-in-out;
+  border: 0;
+  margin: 0;
+  border-radius: 1rem;
+  padding: 20px 10px;
 }
 
 .sdhub-gallery-img-div {
@@ -109,7 +116,7 @@
   box-shadow: 0 0 3px 1px #000;
   cursor: pointer;
   opacity: 0;
-  z-index: 100;
+  z-index: 50;
   transition: 0.3s ease-in-out;
   top: 0;
   right: 0;
@@ -203,7 +210,7 @@ body.no-scroll {
   position: fixed;
   overflow: auto;
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease, transform 0.2s ease;
 }
 
 @media (max-width: 600px) {
@@ -260,7 +267,6 @@ body.no-scroll {
   padding-right: 3px;
   pointer-events: none;
   opacity: 0;
-  visibility: hidden;
 }
 
 .sdhub-gallery-contextmenu {
@@ -271,7 +277,8 @@ body.no-scroll {
   box-shadow: 0 0 6px 1px #000;
   z-index: 1000;
   border: 0.15rem solid #6a6a6a;
-  transition: opacity 0.3s ease;
+  transform: scale(0);
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 #SDHub-Gallery-ContextMenu ul {
