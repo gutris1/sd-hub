@@ -79,7 +79,12 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   const SBwebkit = `
-    #sdhub-texteditor-editor::-webkit-scrollbar,
+    #sdhub-texteditor-editor::-webkit-scrollbar {
+      width: 0.6rem !important;
+      position: absolute !important;
+      right: 4px !important;
+    }
+
     #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar,
     #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar,
     #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar,
@@ -110,7 +115,12 @@ function SDHubTextEditorGalleryScrollBar() {
       background: var(--primary-600) !important;
     }
 
-    #sdhub-texteditor-editor::-webkit-scrollbar-track,
+    #sdhub-texteditor-editor::-webkit-scrollbar-track {
+      background: transparent !important;
+      border-radius: 0px !important;
+      margin: 2px 0 !important;
+    }
+
     #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-track,
     #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-track,
     #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-track,
@@ -118,7 +128,7 @@ function SDHubTextEditorGalleryScrollBar() {
     #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-track {
       background: transparent !important;
       border-radius: 0px !important;
-      margin: 20px 0 !important;
+      margin: 12px 0 !important;
     }
   `;
 
