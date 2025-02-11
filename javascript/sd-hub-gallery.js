@@ -2,7 +2,7 @@ let dataCache = new DataTransfer();
 let fetchTimeout = null;
 let lastFetch = 0;
 let DivIndex = 1;
-let Hover;
+let Hover = null;
 let RightClick = false;
 
 const Tabname = [
@@ -132,7 +132,7 @@ onUiLoaded(function () {
   if (GalleryTab) SDHubCreateGallery(GalleryTab);
 });
 
-DLSVG = `
+var DLSVG = `
   <svg xmlns='http://www.w3.org/2000/svg'
     width='32' height='32' viewBox='0 0 32 32'>
     <path fill='currentColor' stroke='currentColor' stroke-width='1.8'
@@ -141,7 +141,7 @@ DLSVG = `
   </svg>
 `;
 
-ARRSVG = `
+var ARRSVG = `
   <svg class='ARRSVG' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
     width='32px' height='32px' viewBox='0 0 24 24'>
     <path
@@ -150,7 +150,7 @@ ARRSVG = `
   </svg>
 `;
 
-ContextSVG = `
+var ContextSVG = `
   <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'
     width='30px' height='30px'>
     <path d='M4 6H20M4 12H20M4 18H20' stroke='currentColor' stroke-width='2'
@@ -158,33 +158,17 @@ ContextSVG = `
   </svg>
 `;
 
-function SDHubCreateGallery(GalleryTab) {
-  const GalleryCM = document.createElement('div');
-  GalleryCM.id = 'SDHub-Gallery-ContextMenu';
-  GalleryCM.classList.add('sdhub-gallery-contextmenu');
-  GalleryCM.innerHTML = `
-    <ul>
-      <li onclick='SDHubGalleryOpenImageInNewTab()'>
-        <span class='sdhub-cm-OpenImageInNewTab'>${ContextSVG} Open image in new tab</span>
-      </li>
-      <li onclick='SDHubGalleryDownloadImage()'>
-        <span class='sdhub-cm-OpenImageInNewTab'>${DLSVG} Download</span>
-      </li>
-      <li class='sdhub-cm-sendto'>
-        <span class='sdhub-cm-OpenImageInNewTab'>${ContextSVG} Send To... ${ARRSVG}</span>
-        <div id='sdhub-cm-sendto-menu' class='sdhub-cm-submenu sdhub-gallery-contextmenu'>
-          <ul>
-            <li onclick="SDHubGallerySendImage('txt')">txt2img</li>
-            <li onclick="SDHubGallerySendImage('img')">img2img</li>
-            <li onclick="SDHubGallerySendImage('extras')">extras</li>
-            <li onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
-          </ul>
-        </div>
-      </li>
-      <li onclick='SDHubGalleryDeleteImage()'>Delete</li>
-    </ul>
-  `;
+var StaticImg = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"
+    fill="transparent" stroke="currentColor" stroke-width="1.5"
+    stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0.802" y="0.846" width="22.352" height="22.352" rx="2" ry="2" style=""/>
+    <circle cx="7.632" cy="7.676" r="1.862" style=""/>
+    <polyline points="23.154 15.747 16.946 9.539 3.285 23.198" style=""/>
+  </svg>
+`;
 
+function SDHubCreateGallery(GalleryTab) {
   const TabRow = document.createElement('div');
   TabRow.id = 'sdhub-gallery-tab-button-row';
 
@@ -207,6 +191,7 @@ function SDHubCreateGallery(GalleryTab) {
 
     TabRow.append(TabBtn);
     GalleryTab.append(TabDiv);
+    SDHubGalleryEventListener(TabDiv);
   });
 
   const imgDiv = document.createElement('div');
@@ -233,19 +218,17 @@ function SDHubCreateGallery(GalleryTab) {
   imgCOn.append(imgWrap);
   imgDiv.append(imgCOn);
   GalleryTab.prepend(TabRow, imgDiv);
-  document.body.appendChild(GalleryCM);
 
   SDHubGalleryFetchList('/sd-hub-gallery-initial');
-  SDHubGalleryEventListener(GalleryTab, GalleryCM);
 }
 
-function SDHubGalleryEventListener(GalleryTab, GalleryCM) {
-  GalleryTab.addEventListener('click', (e) => {
+function SDHubGalleryEventListener(TabDiv) {
+  TabDiv.addEventListener('click', (e) => {
     const imgEL = e.target.closest('img');
     imgEL && SDHubGalleryImageInfo(imgEL, e);
   });
 
-  GalleryTab.addEventListener('mouseenter', (e) => {
+  TabDiv.addEventListener('mouseenter', (e) => {
     const Btn = e.target.closest('#sdhub-gallery-img-button');
     if (!Btn) return;
 
@@ -261,17 +244,17 @@ function SDHubGalleryEventListener(GalleryTab, GalleryCM) {
           SDHubGalleryContextMenu(e, imgEL);
         }
       }
-    }, 200);
+    }, 300);
   }, true);
 
-  GalleryTab.addEventListener('mouseleave', (e) => {
+  TabDiv.addEventListener('mouseleave', (e) => {
     clearTimeout(Hover);
-    if (!document.querySelector('#SDHub-Gallery-ContextMenu:hover')) {
-      SDHubGalleryKillContextMenu();
-    }
+    const BtnHover = document.querySelector("#sdhub-gallery-img-button:hover");
+    const CMHover = document.querySelector("#SDHub-Gallery-ContextMenu:hover");
+    if (!BtnHover && !CMHover && !RightClick) SDHubGalleryKillContextMenu();
   }, true);
 
-  GalleryTab.addEventListener('contextmenu', (e) => {
+  TabDiv.addEventListener('contextmenu', (e) => {
     const imgEL = e.target.closest('img');
     imgEL
       ? (e.preventDefault(), RightClick = true, SDHubGalleryContextMenu(e, imgEL))
@@ -286,15 +269,16 @@ function SDHubGalleryEventListener(GalleryTab, GalleryCM) {
     if (CMVisible && ClickOutsideEL && !Btn) RightClick = false; SDHubGalleryKillContextMenu();
   });
 
-  GalleryCM.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
+  document.addEventListener('contextmenu', (e) => {
+    const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
+    if (GalleryCM && GalleryCM.contains(e.target)) e.preventDefault();
   });
 }
 
 function SDHubGalleryContextMenu(e, imgEL) {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
+  window.SDHubImagePath = imgEL.getAttribute('data-path');
 
-  GalleryCM.dataset.targetImagePath = imgEL.getAttribute('data-path');
   GalleryCM.targetFile = imgEL.fileObject;
 
   GalleryCM.style.transition = 'none';
@@ -302,7 +286,7 @@ function SDHubGalleryContextMenu(e, imgEL) {
   GalleryCM.style.right = '';
   GalleryCM.style.opacity = '';
   GalleryCM.style.pointerEvents = 'none';
-  GalleryCM.style.transform = '';
+  GalleryCM.style.transform = 'scale(0)';
 
   const menuWidth = GalleryCM.offsetWidth;
   const menuHeight = GalleryCM.offsetHeight;
@@ -335,7 +319,7 @@ function SDHubGalleryContextMenu(e, imgEL) {
   GalleryCM.style.top = `${top}px`;
   GalleryCM.style.pointerEvents = 'auto';
   GalleryCM.style.transformOrigin = `${Y} ${X}`;
-  
+
   requestAnimationFrame(() => {
     GalleryCM.style.transition = '';
     GalleryCM.style.transform = 'scale(1)';
@@ -399,7 +383,7 @@ function SDHubGalleryKillContextMenu() {
 }
 
 function SDHubGalleryDownloadImage() {
-  const imagePath = document.getElementById('SDHub-Gallery-ContextMenu').dataset.targetImagePath;
+  const imagePath = window.SDHubImagePath;
   const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1) || 'image.png';
   const link = document.createElement('a');
   link.href = imagePath;
@@ -411,14 +395,20 @@ function SDHubGalleryDownloadImage() {
 }
 
 function SDHubGalleryOpenImageInNewTab() {
-  const imagePath = document.getElementById('SDHub-Gallery-ContextMenu').dataset.targetImagePath;
+  const imagePath = window.SDHubImagePath;
   window.open(imagePath, '_blank');
   SDHubGalleryKillContextMenu();
 }
 
 function SDHubGalleryDeleteImage() {
-  const imagePath = document.getElementById('SDHub-Gallery-ContextMenu').dataset.targetImagePath;
-  console.log('Deleted...', imagePath);
+  const imagePath = window.SDHubImagePath;
+  console.log('removed...', imagePath);
+  SDHubGalleryKillContextMenu();
+}
+
+function SDHubGalleryViewerImage() {
+  const imagePath = window.SDHubImagePath;
+  SDHubGalleryImageViewer(imagePath);
   SDHubGalleryKillContextMenu();
 }
 
@@ -460,6 +450,7 @@ function SDHubGalleryImageInfo(imgEL, e) {
   const row = document.querySelector('#sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
   const file = imgEL.fileObject;
+  window.SDHubImagePath = imgEL.getAttribute('data-path');
 
   if (file) {
     row.style.display = 'flex';
@@ -467,10 +458,7 @@ function SDHubGalleryImageInfo(imgEL, e) {
     dataCache.items.add(file);
     input.files = dataCache.files;
     input.dispatchEvent(new Event('change', { bubbles: true }));
-
-    setTimeout(() => {
-      row.style.opacity = '1';
-    }, 100);
+    setTimeout(() => (row.style.opacity = '1'), 100);
   }
 }
 
@@ -509,7 +497,7 @@ function SDHubImageInfoClearButton() {
 
     const RowKeydown = (e) => {
       if (e.key === 'Escape' && row && window.getComputedStyle(row).display === 'flex') {
-        const LightBox = document.querySelector('#SDHubimgInfoZoom');
+        const LightBox = document.querySelector('#SDHub-Gallery-Image-Viewer');
         if (LightBox && window.getComputedStyle(LightBox).display === 'flex') return;
         else e.stopPropagation(); e.preventDefault(); closeRow();
       }
@@ -544,6 +532,47 @@ document.addEventListener('DOMContentLoaded', () => {
   link.href = file;
 
   document.body.insertBefore(link, document.body.querySelector('style'));
+
+  const GalleryCM = document.createElement('div');
+  GalleryCM.id = 'SDHub-Gallery-ContextMenu';
+  GalleryCM.classList.add('sdhub-gallery-contextmenu');
+  GalleryCM.innerHTML = `
+    <ul>
+      <li onclick='SDHubGalleryOpenImageInNewTab()'>
+        <span class='sdhub-cm-OpenImageInNewTab'>${ContextSVG} Open image in new tab</span>
+      </li>
+      <li onclick='SDHubGalleryDownloadImage()'>
+        <span class='sdhub-cm-OpenImageInNewTab'>${DLSVG} Download</span>
+      </li>
+      <li class='sdhub-cm-sendto'>
+        <span class='sdhub-cm-OpenImageInNewTab'>${ContextSVG} Send To... ${ARRSVG}</span>
+        <div id='sdhub-cm-sendto-menu' class='sdhub-cm-submenu sdhub-gallery-contextmenu'>
+          <ul>
+            <li onclick="SDHubGallerySendImage('txt')">txt2img</li>
+            <li onclick="SDHubGallerySendImage('img')">img2img</li>
+            <li onclick="SDHubGallerySendImage('extras')">extras</li>
+            <li onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
+          </ul>
+        </div>
+      </li>
+      <li onclick='SDHubGalleryViewerImage()'>
+        <span class='sdhub-cm-OpenImageInNewTab'>${StaticImg} Image Viewer</span>
+      </li>
+      <li onclick='SDHubGalleryDeleteImage()'>
+        <span class='sdhub-cm-OpenImageInNewTab'>${DLSVG} Delete</span>
+      </li>
+    </ul>
+  `;
+
+  const LightBox = document.createElement('div');
+  LightBox.id = 'SDHub-Gallery-Image-Viewer';
+  LightBox.setAttribute('tabindex', '0');
+
+  const Control = document.createElement('div');
+  Control.id = 'SDHub-Gallery-Image-Viewer-control';
+
+  LightBox.append(Control);
+  document.body.append(LightBox, GalleryCM);
 });
 
 function SDHubGallerySwitchTab(whichTab) {
