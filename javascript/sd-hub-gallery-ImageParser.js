@@ -16,7 +16,6 @@ async function SDHubGalleryParser() {
   const SDHubimgInfoHTML = gradioApp().getElementById('SDHubimgInfoHTML');
   const SDHubimgInfoImage = gradioApp().getElementById('SDHubimgInfoImage');
   const img = gradioApp().querySelector('#SDHubimgInfoImage img');
-  const imagePath = window.SDHubImagePath;
 
   if (!img) {
     SDHubimgInfoHTML.innerHTML = await SDHubGalleryPlainTextToHTML('');
@@ -26,8 +25,8 @@ async function SDHubGalleryParser() {
 
   SDHubimgInfoImage.style.cssText += 'box-shadow: inset 0 0 0 0 !important;';
 
-  img.onload = SDHubImageInfoClearButton;  
-  img.onclick = () => SDHubGalleryImageViewer(imagePath);  
+  img.onload = SDHubImageInfoClearButton;
+  img.onclick = () => SDHubGalleryImageViewer('s');
 
   let response = await fetch(img.src);
   let img_blob = await response.blob();
