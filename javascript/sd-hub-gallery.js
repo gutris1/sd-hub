@@ -184,6 +184,7 @@ function SDHubCreateGallery(GalleryTab) {
   GalleryTab.prepend(TabRow, imgDiv);
 
   SDHubGalleryFetchList('/sd-hub-gallery-initial');
+  document.getElementById('SDHub-Gallery-ContextMenu').style.display = 'block';
 }
 
 function SDHubGalleryEventListener(TabDiv) {
@@ -428,6 +429,15 @@ function SDHubGallerySendImage(v) {
   SDHubGalleryKillContextMenu();
 }
 
+function SDHubGallerySendToUploader() {
+  const area = document.querySelector('#sdhub-uploader-inputs textarea');
+  const base = '/sd-hub-gallery/image';
+  const path = window.SDHubImagePath.slice(base.length);
+
+  area.value += area.value ? `\n${path}` : path;
+  updateInput(area);
+}
+
 function SDHubGalleryImageInfo(imgEL, e) {
   document.body.classList.add('no-scroll');
   const row = document.querySelector('#sdhub-gallery-image-info-row');
@@ -441,7 +451,7 @@ function SDHubGalleryImageInfo(imgEL, e) {
     SDHubGalleryImageDataCache.items.add(file);
     input.files = SDHubGalleryImageDataCache.files;
     input.dispatchEvent(new Event('change', { bubbles: true }));
-    setTimeout(() => (row.style.opacity = '1'), 100);
+    setTimeout(() => (row.style.opacity = '1'), 500);
   }
 }
 
@@ -519,33 +529,35 @@ document.addEventListener('DOMContentLoaded', () => {
   const GalleryCM = document.createElement('div');
   GalleryCM.id = 'SDHub-Gallery-ContextMenu';
   GalleryCM.classList.add('sdhub-gallery-contextmenu');
+  GalleryCM.style.display = 'none';
   GalleryCM.innerHTML = `
     <ul>
-      <li onclick="SDHubGalleryContextButton('open')">
-        <span class="sdhub-cm-OpenImageInNewTab">${SDHubGalleryOpenNewTabSVG} Open image in new tab</span>
+      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('open')">
+        <span>${SDHubGalleryOpenNewTabSVG} Open image in new tab</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('download')">
-        <span class="sdhub-cm-OpenImageInNewTab">${SDHubGalleryDLSVG} Download</span>
+      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('download')">
+        <span>${SDHubGalleryDLSVG} Download</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('info')">
-        <span class="sdhub-cm-OpenImageInNewTab">${SDHubGalleryImageInfoSVG} Image Info</span>
+      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('info')">
+        <span>${SDHubGalleryImageInfoSVG} Image Info</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('viewer')">
-        <span class="sdhub-cm-OpenImageInNewTab">${SDHubGalleryImageSVG} Image Viewer</span>
+      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('viewer')">
+        <span>${SDHubGalleryImageSVG} Image Viewer</span>
       </li>
-      <li class="sdhub-cm-sendto">
-        <span class="sdhub-cm-OpenImageInNewTab">${SDHubGalleryImageButtonSVG} Send To... ${SDHubGalleryARRSVG}</span>
+      <li class='sdhub-cm-li sdhub-cm-sendto'>
+        <span>${SDHubGallerySendToSVG} Send To... ${SDHubGalleryARRSVG}</span>
         <div id="sdhub-cm-sendto-menu" class="sdhub-cm-submenu sdhub-gallery-contextmenu">
           <ul>
-            <li onclick="SDHubGallerySendImage('txt')">txt2img</li>
-            <li onclick="SDHubGallerySendImage('img')">img2img</li>
-            <li onclick="SDHubGallerySendImage('extras')">extras</li>
-            <li onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('txt')">txt2img</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('img')">img2img</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('extras')">extras</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendToUploader()">uploader</li>
           </ul>
         </div>
       </li>
-      <li onclick="SDHubGalleryContextButton('delete')">
-        <span class="sdhub-cm-OpenImageInNewTab">${SDHubGalleryDeleteSVG} Delete</span>
+      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('delete')">
+        <span>${SDHubGalleryDeleteSVG} Delete</span>
       </li>
     </ul>
   `;
@@ -553,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const LightBox = document.createElement('div');
   LightBox.id = 'SDHub-Gallery-Image-Viewer';
   LightBox.setAttribute('tabindex', '0');
+  LightBox.style.display = 'none';
 
   const Control = document.createElement('div');
   Control.id = 'SDHub-Gallery-Image-Viewer-control';
@@ -660,24 +673,6 @@ function SDHubGallerySwitchTab(whichTab) {
   }
 }
 
-var SDHubGalleryDLSVG = `
-  <svg xmlns='http://www.w3.org/2000/svg'
-    width='32' height='32' viewBox='0 0 32 32'>
-    <path fill='currentColor' stroke='currentColor' stroke-width='1.8'
-      d='M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10
-      l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z'/>
-  </svg>
-`;
-
-var SDHubGalleryARRSVG = `
-  <svg class='ARRSVG' xmlns='http://www.w3.org/2000/svg' fill='currentColor'
-    width='32px' height='32px' viewBox='0 0 24 24'>
-    <path
-      d='M5.536 21.886a1.004 1.004 0 0 0 1.033-.064l13-9a1
-      1 0 0 0 0-1.644l-13-9A1 1 0 0 0 5 3v18a1 1 0 0 0 .536.886z'/>
-  </svg>
-`;
-
 var SDHubGalleryImageButtonSVG = `
   <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'
     width='30px' height='30px'>
@@ -686,9 +681,25 @@ var SDHubGalleryImageButtonSVG = `
   </svg>
 `;
 
+var SDHubGalleryDLSVG = `
+  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg'
+    width='32' height='32' viewBox='0 0 32 32'>
+    <path fill='currentColor' stroke='currentColor' stroke-width='1.8'
+      d='M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10
+      l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z'/>
+  </svg>
+`;
+
+var SDHubGalleryARRSVG = `
+  <svg class='sdhub-gallery-cm-svg submenu-arrow' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs">
+    <path d="M9 18l6-6-6-6"/>
+  </svg>
+`;
+
 var SDHubGalleryImageSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="transparent"
-    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(0.9)">
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="transparent"
+    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(0.85)">
     <rect x="0.802" y="0.846" width="22.352" height="22.352" rx="2" ry="2"/>
     <circle cx="7.632" cy="7.676" r="1.862"/>
     <polyline points="23.154 15.747 16.946 9.539 3.285 23.198"/>
@@ -696,7 +707,7 @@ var SDHubGalleryImageSVG = `
 `;
 
 var SDHubGalleryImageInfoSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none" >
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none">
     <path d="M7 9H17M7 13H17M21 20L17.6757 18.3378C17.4237 18.2118 17.2977 18.1488 17.1656 18.1044C17.0484
       18.065 16.9277 18.0365 16.8052 18.0193C16.6672 18 16.5263 18 16.2446 18H6.2C5.07989 18 4.51984 18 4.09202
       17.782C3.71569 17.5903 3.40973 17.2843 3.21799 16.908C3 16.4802 3 15.9201 3 14.8V7.2C3 6.07989 3 5.51984
@@ -707,25 +718,27 @@ var SDHubGalleryImageInfoSVG = `
 `;
 
 var SDHubGalleryOpenNewTabSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="32px" height="32px" viewBox="0 0 64 64"
-    fill="currentColor" transform="scale(1.2)">
-    <path d="M 40 10 C 38.896 10 38 10.896 38 12 C 38 13.104 38.896 14 40 14 L 47.171875 14 L 30.585938 30.585938
-      C 29.804938 31.366938 29.804938 32.633063 30.585938 33.414062 C 30.976938 33.805063 31.488 34 32 34 C 32.512 34
-      33.023063 33.805062 33.414062 33.414062 L 50 16.828125 L 50 24 C 50 25.104 50.896 26 52 26 C 53.104 26 54 25.104
-      54 24 L 54 12 C 54 10.896 53.104 10 52 10 L 40 10 z M 18 12 C 14.691 12 12 14.691 12 18 L 12 46 C 12 49.309 14.691
-      52 18 52 L 46 52 C 49.309 52 52 49.309 52 46 L 52 34 C 52 32.896 51.104 32 50 32 C 48.896 32 48 32.896 48 34 L 48
-      46 C 48 47.103 47.103 48 46 48 L 18 48 C 16.897 48 16 47.103 16 46 L 16 18 C 16 16.897 16.897 16 18 16 L 30 16 C
-      31.104 16 32 15.104 32 14 C 32 12.896 31.104 12 30 12 L 18 12 z"/>
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none" >
+    <path d="M20 4L12 12M20 4V8.5M20 4H15.5M19 12.5V16.8C19 17.9201 19 18.4802 18.782 18.908C18.5903 19.2843 18.2843 19.5903
+      17.908 19.782C17.4802 20 16.9201 20 15.8 20H7.2C6.0799 20 5.51984 20 5.09202 19.782C4.71569 19.5903 4.40973 19.2843 4.21799
+      18.908C4 18.4802 4 17.9201 4 16.8V8.2C4 7.0799 4 6.51984 4.21799 6.09202C4.40973 5.71569 4.71569 5.40973 5.09202 5.21799C5.51984
+      5 6.07989 5 7.2 5H11.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+`;
+
+var SDHubGallerySendToSVG = `
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="32px" height="32px" viewBox="0 0 16 16" transform="scale(0.8)">
+    <path d="M0 0h4v4H0V0zm0 6h4v4H0V6zm0 6h4v4H0v-4zM6 0h4v4H6V0zm0 6h4v4H6V6zm0 6h4v4H6v-4zm6-12h4v4h-4V0zm0 6h4v4h-4V6zm0 6h4v4h-4v-4z" fill-rule="evenodd"/>
   </svg>
 `;
 
 var SDHubGalleryDeleteSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none">
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none">
     <path d="M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132
-    14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013
-    8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854
-    19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354
-    20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17" stroke="currentColor" stroke-width="2"
-    stroke-linecap="round" stroke-linejoin="round"/>
+      14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013
+      8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854
+      19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354
+      20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 `;
