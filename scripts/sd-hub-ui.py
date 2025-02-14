@@ -4,7 +4,7 @@ try:
     miso = [
         'tokenizer', 'downloader', 'archiver', 'uploader', 
         'paths', 'scraper', 'version', 'infotext', 
-        'zipoutputs', 'shelly', 'texteditor', 'galleryTab'
+        'zipoutputs', 'shellTab', 'texteditorTab', 'galleryTab'
     ]
     for soop in miso:
         __import__(f'sd_hub.{soop}')
@@ -24,7 +24,7 @@ from sd_hub.archiver import archive, extract
 from sd_hub.uploader import uploader
 from sd_hub.paths import SDHubPaths
 from sd_hub.scraper import scraper
-from sd_hub.galleryTab import GalleryTab, GalleryAPI
+from sd_hub.galleryTab import GalleryTab, GalleryApp
 
 insecureENV = SDHubPaths.getENV()
 
@@ -329,10 +329,10 @@ def onSDHUBTab():
             )
 
         if insecureENV:
-            from sd_hub.texteditor import TextEditor
-            from sd_hub.shelly import Shelly
-            TextEditor()
-            Shelly()
+            from sd_hub.texteditorTab import TextEditorTab
+            from sd_hub.shellTab import ShellTab
+            TextEditorTab()
+            ShellTab()
 
         GalleryTab()
 
@@ -350,4 +350,4 @@ def onSDHUBTab():
     return (sdhub, "HUB", "sdhub"),
 
 on_ui_tabs(onSDHUBTab)
-on_app_started(GalleryAPI)
+on_app_started(GalleryApp)
