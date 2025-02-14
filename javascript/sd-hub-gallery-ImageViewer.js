@@ -1,6 +1,6 @@
 function SDHubGalleryImageViewer(mode) {
   SDHubGalleryToggleNextPrev(mode);
-  const LightBox = document.querySelector('#SDHub-Gallery-Image-Viewer');
+  const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
 
   const imgEL = document.createElement('img');
   imgEL.id = 'SDHub-Gallery-Image-Viewer-img';
@@ -107,7 +107,7 @@ function SDHubGalleryImageViewer(mode) {
 
       setTimeout(() => {
         LightBox.style.display = 'none';
-        imgEL.remove();
+        document.getElementById('SDHub-Gallery-Image-Viewer-img').remove();
       }, 200);
     }
   };
