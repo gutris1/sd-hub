@@ -53,7 +53,7 @@ def LoadInitial():
     else:
         return '', '', '', None
 
-def TextEditor():
+def TextEditorTab():
     TextPath, TextContent, TextLabel, TextLang = LoadInitial()
 
     with gr.TabItem("Text Editor", elem_id="sdhub-texteditor-tab"):
