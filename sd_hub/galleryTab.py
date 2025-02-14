@@ -1,6 +1,6 @@
+from fastapi import FastAPI, HTTPException, responses, Request
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
-from fastapi import FastAPI, HTTPException, responses
 from modules.scripts import basedir
 from modules.shared import opts
 from urllib.parse import quote
@@ -10,6 +10,9 @@ from PIL import Image
 import gradio as gr
 import tempfile
 import hashlib
+import shutil
+import sys
+import os
 
 BASE = '/sd-hub-gallery'
 CSS = Path(basedir()) / 'styleGallery.css'
@@ -17,13 +20,25 @@ imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 thumb_dir = Path(tempfile.gettempdir()) / 'sd-hub-gallery-thumb'
 thumb_dir.mkdir(exist_ok=True, parents=True)
 
-outpath = [
-    opts.outdir_samples or opts.outdir_txt2img_samples,
-    opts.outdir_samples or opts.outdir_img2img_samples,
-    opts.outdir_extras_samples,
-    opts.outdir_grids or opts.outdir_txt2img_grids,
-    opts.outdir_grids or opts.outdir_img2img_grids,
-]
+sample_dir = (
+    opts.outdir_samples 
+    or [
+        opts.outdir_txt2img_samples, 
+        opts.outdir_img2img_samples, 
+        opts.outdir_extras_samples
+    ]
+)
+
+grid_dir = (
+    opts.outdir_grids 
+    or [
+        opts.outdir_txt2img_grids, 
+        opts.outdir_img2img_grids
+    ]
+)
+
+outpath = (sample_dir if isinstance(sample_dir, list) else [sample_dir]) + \
+          (grid_dir if isinstance(grid_dir, list) else [grid_dir])
 
 class GalleryState:
     def __init__(self):
@@ -32,11 +47,14 @@ class GalleryState:
 
 Gallery = GalleryState()
 
-def getTimeStamp():
-    return datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S')
+def getCTimes(path: Path):
+    return (
+        path.stat().st_ctime_ns if sys.platform == "win32"
+        else os.stat(path, follow_symlinks=True).st_ctime_ns
+    )
 
 def getThumb(src: Path):
-    ctime = src.stat().st_ctime
+    ctime = getCTimes(src)
     hash = f'{src.name}{ctime}'.encode('utf-8')
     sha = hashlib.sha256(hash).hexdigest()
     folder = thumb_dir / sha
@@ -52,7 +70,7 @@ def getThumb(src: Path):
 def getImage():
     dirs = [Path(d) for d in outpath if d]
     img = [p for d in dirs if d for p in Path(d).rglob('*') if p.suffix.lower() in imgEXT]
-    img.sort(key=lambda p: p.stat().st_mtime)
+    img.sort(key=getCTimes)
 
     results = []
     for path in img:
@@ -105,6 +123,32 @@ def GalleryGallery(app: FastAPI):
             url = f'file={CSS}'
             return responses.RedirectResponse(url=url)
         raise HTTPException(status_code=404, detail='CSS file not found')
+
+    @app.post('/sd-hub-gallery-delete')
+    async def deleteImage(req: Request):
+        try:
+            d = await req.json()
+            fp = Path(d['path'])
+            t = d.get('thumb')
+
+            if fp.exists():
+                for thumb in thumb_dir.rglob(t):
+                    if thumb.exists():
+                      f = thumb.parent
+                      shutil.rmtree(f, ignore_errors=True)
+                      break  
+
+                fp.unlink()
+
+                if str(fp) in Gallery.initial_list:
+                    Gallery.initial_list.remove(str(fp))
+                if str(fp) in Gallery.path_list:
+                    Gallery.path_list.remove(str(fp))
+
+            return {'status': 'deleted'}
+
+        except Exception as e:
+            print("Error :", e)
 
 def GalleryAPI(_: gr.Blocks, app: FastAPI):
     GalleryGallery(app)
