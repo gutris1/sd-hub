@@ -255,52 +255,84 @@ function SDHubGalleryContextMenu(e, imgEL) {
 
   GalleryCM.targetFile = imgEL.fileObject;
 
-  GalleryCM.style.transition = 'none';
-  GalleryCM.style.left = '';
-  GalleryCM.style.right = '';
-  GalleryCM.style.opacity = '';
-  GalleryCM.style.pointerEvents = 'none';
-  GalleryCM.style.transform = 'scale(0)';
+  Object.assign(GalleryCM.style, {
+    transition: 'none',
+    left: '',
+    right: '',
+    top: '',
+    bottom: '',
+    opacity: '',
+    pointerEvents: 'none',
+    transform: 'scale(0)',
+    visibility: 'hidden',
+  });
+
+  GalleryCM.style.position = 'fixed';
+  GalleryCM.style.visibility = 'visible';
 
   const menuWidth = GalleryCM.offsetWidth;
   const menuHeight = GalleryCM.offsetHeight;
-  const windowWidth = window.innerWidth;
-  const windowHeight = window.innerHeight;
-  const spaceOnRight = windowWidth - e.pageX;
-  const spaceBelow = windowHeight - e.pageY;
 
-  let X, Y;
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  const scrollY = window.scrollY || document.documentElement.scrollTop;
 
-  if (spaceOnRight >= menuWidth) {
-    GalleryCM.style.left = `${e.pageX}px`;
-    X = 'left';
+  const cursorX = e.clientX;
+  const cursorY = e.clientY;
+
+  const spaceRight = viewportWidth - cursorX;
+  const spaceBelow = viewportHeight - cursorY;
+
+  let posX;
+  let originX;
+  if (spaceRight >= menuWidth) {
+    posX = cursorX;
+    originX = 'left';
   } else {
-    GalleryCM.style.right = `${spaceOnRight}px`;
-    X = 'right';
+    posX = cursorX - menuWidth;
+    originX = 'right';
   }
 
-  const top =
-    e.pageY + menuHeight > windowHeight 
-      ? e.pageY - menuHeight
-      : e.pageY;
-
-  if (top < e.pageY) {
-    Y = 'bottom';
+  let posY;
+  let originY;
+  if (spaceBelow >= menuHeight) {
+    posY = cursorY;
+    originY = 'top';
   } else {
-    Y = 'top';
+    posY = cursorY - menuHeight;
+    originY = 'bottom';
   }
 
-  GalleryCM.style.top = `${top}px`;
+  GalleryCM.style.position = 'fixed';
+  GalleryCM.style.left = `${posX}px`;
+  GalleryCM.style.top = `${posY}px`;
+
+  const bounds = GalleryCM.getBoundingClientRect();
+  
+  if (bounds.right > viewportWidth) {
+    GalleryCM.style.left = `${viewportWidth - menuWidth - 5}px`;
+  }
+  if (bounds.left < 0) {
+    GalleryCM.style.left = '5px';
+  }
+  if (bounds.bottom > viewportHeight) {
+    GalleryCM.style.top = `${viewportHeight - menuHeight - 5}px`;
+  }
+  if (bounds.top < 0) {
+    GalleryCM.style.top = '5px';
+  }
+
   GalleryCM.style.pointerEvents = 'auto';
-  GalleryCM.style.transformOrigin = `${Y} ${X}`;
+  GalleryCM.style.transformOrigin = `${originY} ${originX}`;
 
   requestAnimationFrame(() => {
-    GalleryCM.style.transition = '';
-    GalleryCM.style.transform = 'scale(1)';
-    GalleryCM.style.opacity = '1';
-    setTimeout(() => {
-      SDHubGallerySubmenu();
-    }, 200);
+    Object.assign(GalleryCM.style, {
+      transition: '',
+      transform: 'scale(1)',
+      opacity: '1',
+    });
+
+    setTimeout(() => SDHubGallerySubmenu(), 200);
   });
 }
 
@@ -350,15 +382,17 @@ function SDHubGallerySubmenu() {
 
 function SDHubGalleryKillContextMenu() {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
-  GalleryCM.style.transition = 'none';
-  GalleryCM.style.transform = '';
-  GalleryCM.style.opacity = '';
-  GalleryCM.style.pointerEvents = '';
+
+  Object.assign(GalleryCM.style, {
+    transition: 'none',
+    opacity: '',
+    pointerEvents: '',
+    transform: '',
+  });
 }
 
 function SDHubGalleryContextButton(v) {
   const imagePath = window.SDHubImagePath;
-  if (!imagePath) return;
 
   switch (v) {
     case 'open':
@@ -366,10 +400,10 @@ function SDHubGalleryContextButton(v) {
       break;
 
     case 'download': {
-      const filename = imagePath.substring(imagePath.lastIndexOf('/') + 1) || 'image.png';
+      const name = decodeURIComponent(imagePath.split('/').pop());
       const link = document.createElement('a');
       link.href = imagePath;
-      link.download = filename;
+      link.download = name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -387,11 +421,70 @@ function SDHubGalleryContextButton(v) {
       break;
 
     case 'delete':
-      console.log('Removed...', imagePath);
+      SDHubGalleryDeletion();
       break;
   }
 
   SDHubGalleryKillContextMenu();
+}
+
+function SDHubGalleryDeletion() {
+  const imgEL = document.querySelector(`img[data-path="${window.SDHubImagePath}"]`);
+  const path = decodeURIComponent(window.SDHubImagePath).replace(/^\/sd-hub-gallery\/image/, '');
+  const thumb = decodeURIComponent(imgEL.src).replace(/^.*\/sd-hub-gallery\/thumb/, '').replace(/^\//, '');
+  const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
+
+  const Con = document.getElementById('SDHub-Gallery-Delete-Container');
+  Con.style.display = 'flex';
+  const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
+  const Box = document.getElementById('SDHub-Gallery-Delete-Box');
+  const Text = document.getElementById('SDHub-Gallery-Delete-Text');
+  Text.textContent = `Delete ${name}?`;
+
+  const Yes = document.getElementById('SDHub-Gallery-Delete-Yes');
+  const No = document.getElementById('SDHub-Gallery-Delete-No');
+
+  Yes.onclick = () => {
+    Box.style.transform = '';
+    Spinner.style.opacity = '1';
+
+    fetch('/sd-hub-gallery-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, thumb }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(err => { throw new Error(err); });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === 'deleted') {
+          const parentDiv = imgEL.closest('.sdhub-gallery-img-div');
+          if (parentDiv) parentDiv.remove();
+        } else {
+          console.error("Deletion failed:", data);
+        }
+      })
+      .catch(error => console.error('Error deleting image:', error))
+      .finally(() => {
+        setTimeout(() => {
+          Con.style.opacity = '';
+          Spinner.style.opacity = '';
+        }, 1000);
+        setTimeout(() => Con.style.display = '', 1100);
+      });
+  };
+
+  No.onclick = () => {
+    Box.style.transform = '';
+    Con.style.opacity = '';
+    setTimeout(() => Con.style.display = '', 200);
+  };
+
+  setTimeout(() => Con.style.opacity = '1', 100);
+  setTimeout(() => Box.style.transform = 'scale(1)', 200);
 }
 
 function SDHubGallerySendImage(v) {
@@ -432,7 +525,7 @@ function SDHubGallerySendImage(v) {
 function SDHubGallerySendToUploader() {
   const area = document.querySelector('#sdhub-uploader-inputs textarea');
   const base = '/sd-hub-gallery/image';
-  const path = window.SDHubImagePath.slice(base.length);
+  const path = decodeURIComponent(window.SDHubImagePath.slice(base.length));
 
   area.value += area.value ? `\n${path}` : path;
   updateInput(area);
@@ -526,6 +619,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.body.insertBefore(link, document.body.querySelector('style'));
 
+  const SDHubGallery = document.createElement('div');
+  SDHubGallery.id = 'SDHubGallery';
+
+  SDHubGallery.append(
+    SDHubGalleryCreateContextMenu(),
+    SDHubGalleryCreateLightBox(),
+    SDHubGalleryCreateDeleteBox()
+  );
+
+  document.body.append(SDHubGallery);
+});
+
+function SDHubGalleryCreateContextMenu() {
   const GalleryCM = document.createElement('div');
   GalleryCM.id = 'SDHub-Gallery-ContextMenu';
   GalleryCM.classList.add('sdhub-gallery-contextmenu');
@@ -562,6 +668,17 @@ document.addEventListener('DOMContentLoaded', () => {
     </ul>
   `;
 
+  document.addEventListener('wheel', (e) => {
+    if (GalleryCM.style.opacity === '1' && !GalleryCM.contains(e.target)) {
+      SDHubGalleryCMRightClick = false;
+      SDHubGalleryKillContextMenu();
+    }
+  }, { passive: false });
+
+  return GalleryCM;
+}
+
+function SDHubGalleryCreateLightBox() {
   const LightBox = document.createElement('div');
   LightBox.id = 'SDHub-Gallery-Image-Viewer';
   LightBox.setAttribute('tabindex', '0');
@@ -648,8 +765,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
   Control.append(NextBtn, PrevBtn, CloseBtn);
   LightBox.append(Control);
-  document.body.append(LightBox, GalleryCM);
-});
+
+  return LightBox;
+}
+
+function SDHubGalleryCreateDeleteBox() {
+  const Con = document.createElement('div');
+  Con.id = 'SDHub-Gallery-Delete-Container';
+  Con.style.display = 'none';
+
+  const Spinner = document.createElement('div');
+  Spinner.id = 'SDHub-Gallery-Delete-Spinner';
+  Spinner.innerHTML = SDHubGallerySpinnerSVG;
+
+  const Box = document.createElement('div');
+  Box.id = 'SDHub-Gallery-Delete-Box';
+
+  const Text = document.createElement('p');
+  Text.id = 'SDHub-Gallery-Delete-Text';
+  Text.textContent = '';
+
+  const ButtonRow = document.createElement('div');
+  ButtonRow.id = 'SDHub-Gallery-Delete-ButtonRow';
+
+  const Yes = document.createElement('button');
+  Yes.id = 'SDHub-Gallery-Delete-Yes';
+  Yes.classList.add('sdhub-gallery-delete-button');
+  Yes.textContent = 'Yes';
+
+  const No = document.createElement('button');
+  No.id = 'SDHub-Gallery-Delete-No';
+  No.classList.add('sdhub-gallery-delete-button');
+  No.textContent = 'No';
+
+  ButtonRow.append(Yes, No);
+  Box.append(Text, ButtonRow);
+  Con.append(Box, Spinner);
+
+  document.addEventListener('keydown', (e) => {
+    const Con = document.getElementById('SDHub-Gallery-Delete-Container');
+
+    if (Con && getComputedStyle(Con).display === 'flex') {
+      if (e.key.toLowerCase() === 'y') Yes.click();
+      if (e.key.toLowerCase() === 'n') No.click();
+    }
+  });
+
+  return Con;
+}
 
 function SDHubGallerySwitchTab(whichTab) {
   document.querySelectorAll('[id^="sdhub-gallery-"][id$="-tab-div"]').forEach(Tab => {
@@ -740,5 +903,27 @@ var SDHubGalleryDeleteSVG = `
       19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354
       20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17" stroke="currentColor" stroke-width="2"
       stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+`;
+
+var SDHubGallerySpinnerSVG = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
+    <g>
+      <animateTransform
+        attributeType="XML"
+        attributeName="transform"
+        type="rotate"
+        values="360 24 24;0 24 24"
+        dur="1s"
+        repeatCount="indefinite"/>
+      <path fill="currentColor"
+        d="M8,24c0-8.8,7.2-16,16-16c1,0,2,0.1,3,0.3l0.7-3.9C26.5,4.1,25.3,4,24,4C12.9,4,4,13,4,24
+        c0,4.8,1.7,9.5,4.8,13.1l3-2.6C9.5,31.6,8,28,8,24z"/>
+      <path fill="currentColor"
+        d="M39.5,11.3l-3.1,2.5C38.6,16.6,40,20.1,40,24c0,8.8-7.2,16-16,16c-1,0-2-0.1-3-0.3l-0.7,3.8
+        c1.3,0.2,2.5,0.3,3.7,0.3c11.1,0,20-8.9,20-20C44,19.4,42.4,14.8,39.5,11.3z"/>
+      <polygon fill="currentColor" points="31,7 44,8.7 33.3,19"/>
+      <polygon fill="currentColor" points="17,41 4,39.3 14.7,29"/>
+    </g>
   </svg>
 `;
