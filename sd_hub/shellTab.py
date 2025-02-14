@@ -61,7 +61,7 @@ def ShellLobby(inputs, box_state=gr.State()):
 
     return gr.update()
 
-def Shelly():
+def ShellTab():
     with gr.TabItem("Shell", elem_id="sdhub-shell-tab"):
         with FormRow():
             button = gr.Button(
