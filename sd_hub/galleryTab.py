@@ -82,7 +82,7 @@ def getImage():
 
     return results
 
-def GalleryGallery(app: FastAPI):
+def GalleryApi(app: FastAPI):
     headers = {'Cache-Control': 'public, max-age=31536000'}
 
     @app.get('/sd-hub-gallery-initial')
@@ -150,8 +150,8 @@ def GalleryGallery(app: FastAPI):
         except Exception as e:
             print("Error :", e)
 
-def GalleryAPI(_: gr.Blocks, app: FastAPI):
-    GalleryGallery(app)
+def GalleryApp(_: gr.Blocks, app: FastAPI):
+    GalleryApi(app)
 
 def GalleryTab():
     with gr.TabItem('Gallery', elem_id='sdhub-gallery-tab'):
