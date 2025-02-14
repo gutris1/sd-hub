@@ -10,12 +10,18 @@ Add <code>--enable-insecure-extension-access</code> command line argument to pro
 Support both Windows and Unix.
 
 # Changelog
-### 2024-12-30  v5.6.1
+### 2025-02-17  v7.0.0
+- Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
+- Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
+
+<details><summary>2024-12-30  v5.6.1</summary><br>
+
 - Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
 - Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/74802d39-fcee-4d12-ba9f-302b67eb6375", width=1000px>
 </p>
+</details>
 
 <details><summary>2024-12-25  v5.5.5</summary><br>
 
