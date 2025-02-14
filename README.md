@@ -2,8 +2,9 @@
 An extension for <code>Stable Diffusion WebUI</code>, designed to streamline your collection.<br>
 It lets you download files from sites like <code>Civitai</code>, <code>Hugging Face</code>, <code>GitHub</code>, and <code>Google Drive</code>, whether individually or in batch.<br>
 You can also upload files or entire folders to the <code>Hugging Face</code> model repository (with a WRITE token, of course), making sharing and access easier.<br>
-The extension also has functionality to archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
-<br>
+Archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
+And a simple Gallery for displaying your outputs with built-in image info and an image viewer.
+<br><br>
 Downloading/Uploading/compressing/extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 <br>
