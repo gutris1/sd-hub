@@ -101,6 +101,11 @@ body.no-scroll {
   min-height: 1rem;
   min-width: 1rem;
   border: 0;
+  border-radius: 0.75rem;
+  background-size: 99% 99%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url(https://huggingface.co/pantat88/ui/resolve/main/card-no-preview.png);
 }
 
 #sdhub-gallery-img {
@@ -122,7 +127,7 @@ body.no-scroll {
   padding: 2px;
   border-radius: 0;
   border-bottom-left-radius: 15px;
-  color: var(--primary-400);
+  color: var(--button-secondary-text-color);
   background: var(--input-background-fill);
   box-shadow: 0 0 3px 1px #000;
   cursor: pointer;
@@ -136,15 +141,49 @@ body.no-scroll {
   box-sizing: border-box;
 }
 
+#sdhub-gallery-img-viewerbutton {
+  transform-origin: bottom left;
+  display: flex;
+  transform: scale(0);
+  padding: 2px;
+  border-radius: 0;
+  border-top-right-radius: 15px;
+  color: var(--button-secondary-text-color);
+  background: var(--input-background-fill);
+  box-shadow: 0 0 3px 1px #000;
+  cursor: pointer;
+  opacity: 0;
+  z-index: 50;
+  transition: 0.3s ease-in-out;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
 #sdhub-gallery-img-button svg {
   left: 1px;
   bottom: 1px;
   position: relative;
 }
 
+#sdhub-gallery-img-viewerbutton svg {
+  transform: scale(0.75);
+  right: 1px;
+  top: 1px;
+  position: relative;
+}
+
 #sdhub-imgCon:hover #sdhub-gallery-img-button {
   opacity: 1;
   transform: scale(1);
+  pointer-events: auto;
+}
+
+#sdhub-imgCon:hover #sdhub-gallery-img-viewerbutton {
+  opacity: 1;
+  transform: scale(0.95);
   pointer-events: auto;
 }
 
@@ -243,6 +282,42 @@ body.no-scroll {
   }
 }
 
+@media (min-width: 1000px) {
+  .sdhub-gallery-img-div {
+    height: 190px;
+    width: 190px;
+  }
+
+  #sdhub-gallery-img {
+    max-width: 190px;
+    max-height: 190px;
+  }
+}
+
+@media (min-width: 1360px) {
+  .sdhub-gallery-img-div {
+    height: 240px;
+    width: 240px;
+  }
+
+  #sdhub-gallery-img {
+    max-width: 240px;
+    max-height: 240px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .sdhub-gallery-img-div {
+    height: 250px;
+    width: 250px;
+  }
+
+  #sdhub-gallery-img {
+    max-width: 250px;
+    max-height: 250px;
+  }
+}
+
 @media (min-width: 1920px) {
   .sdhub-gallery-img-div {
     height: 310px;
@@ -256,7 +331,7 @@ body.no-scroll {
 
   #sdhub-imgCon:hover #sdhub-gallery-img-button {
     opacity: 1;
-    transform: scale(1.5);
+    transform: scale(1.4);
     pointer-events: auto;
   }
 }
