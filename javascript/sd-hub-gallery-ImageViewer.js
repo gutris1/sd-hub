@@ -1,6 +1,7 @@
 function SDHubGalleryImageViewer(mode) {
   SDHubGalleryToggleNextPrev(mode);
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+  const Control = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-control');
 
   const imgEL = document.createElement('img');
   imgEL.id = 'SDHub-Gallery-Image-Viewer-img';
@@ -109,6 +110,8 @@ function SDHubGalleryImageViewer(mode) {
         LightBox.style.display = 'none';
         const imgEL = document.getElementById('SDHub-Gallery-Image-Viewer-img');
         if (imgEL) imgEL.remove();
+        document.removeEventListener('mouseleave', MouseLeave);
+        document.removeEventListener('mouseup', MouseUp);
       }, 200);
     }
   };
@@ -138,6 +141,7 @@ function SDHubGalleryImageViewer(mode) {
       imgEL.style.cursor = 'grab';
       imgState.lastX = e.clientX - imgState.offsetX;
       imgState.lastY = e.clientY - imgState.offsetY;
+      Control.style.opacity = '0';
     }, 100);
   });
 
@@ -199,6 +203,7 @@ function SDHubGalleryImageViewer(mode) {
     Groped = false;
     imgEL.style.cursor = 'auto';
     setTimeout(() => (imgEL.style.transition = 'transform 0s ease'), 100);
+    Control.style.opacity = '';
   };
 
   const MouseLeave = (e) => {
@@ -206,6 +211,7 @@ function SDHubGalleryImageViewer(mode) {
       imgState.SDHubGalleryImageViewerSnapBack(imgEL, LightBox);
       Groped = false;
       imgEL.style.cursor = 'auto';
+      Control.style.opacity = '';
     }
   };
 
@@ -298,6 +304,7 @@ function SDHubGalleryImageViewer(mode) {
   imgEL.addEventListener('touchstart', (e) => {
     e.stopPropagation();
     imgEL.style.transition = 'none';
+    Control.style.opacity = '0';
     if (e.targetTouches[1]) {
       MultiGrope = true;
       imgState.TouchGrass.touchScale = true;
@@ -427,6 +434,7 @@ function SDHubGalleryImageViewer(mode) {
   imgEL.addEventListener('touchcancel', (e) => {
     e.stopPropagation();
     e.preventDefault();
+    Control.style.opacity = '';
     imgEL.onclick = undefined;
     MultiGrope = false;
     imgState.TouchGrass.touchScale = false;
@@ -436,6 +444,7 @@ function SDHubGalleryImageViewer(mode) {
 
   imgEL.addEventListener('touchend', (e) => {
     e.stopPropagation();
+    Control.style.opacity = '';
     imgEL.onclick = undefined;
     imgEL.style.transition = 'none';
     if (e.targetTouches.length === 0) {
