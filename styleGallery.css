@@ -825,7 +825,7 @@ body.no-scroll {
   align-items: center;
   z-index: 10000;
   opacity: 0;
-  transition: 0.5s ease;
+  transition: opacity 0.4s ease;
 }
 
 #SDHub-Gallery-Delete-Spinner {
@@ -846,7 +846,8 @@ body.no-scroll {
   text-align: center;
   box-shadow: 0 0 10px 2px var(--button-secondary-text-color);
   transform: scale(0);
-  transition: 0.3s ease;
+  opacity: 1;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
 #SDHub-Gallery-Delete-Text {
