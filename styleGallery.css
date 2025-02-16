@@ -482,6 +482,8 @@ body.no-scroll {
   cursor: auto;
   transition: transform 0.3s ease;
   transform: translate(0px, 0px) scale(0);
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 #SDHub-Gallery-Image-Viewer-control {
@@ -492,6 +494,8 @@ body.no-scroll {
   top: 0;
   display: flex;
   position: absolute;
+  opacity: 1;
+  transition: opacity 0.2s ease;
 }
 
 .sdhub-gallery-image-viewer-button {
