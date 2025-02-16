@@ -67,6 +67,7 @@ function SDHubGalleryLoadInitial() {
 
         if (imgDiv && TabDiv) {
           const newImgDiv = imgDiv.cloneNode(true);
+          const fn = path.substring(path.lastIndexOf("/") + 1).split("?")[0];
           let newId = `sdhub-imgdiv-${SDHubGalleryTabImageIndex}`;
 
           while (document.getElementById(newId)) {
@@ -80,6 +81,7 @@ function SDHubGalleryLoadInitial() {
           if (img) {
             img.src = path;
             img.onload = () => {
+              img.title = fn;
               loaded++;
               if (loaded === total) {
                 console.log('all-loaded');
@@ -186,15 +188,15 @@ function SDHubGalleryGetNewImage(whichGallery) {
     let src = imgEL.getAttribute('src');
     if (!src || !src.includes('/file=')) return;
 
-    let path = src.split('/file=')[1].split('?')[0];
-    let imgSrc = `/sd-hub-gallery/image${path}`;
+    let imgSrc = src.split('/file=')[1].split('?')[0];
+    let path = `/sd-hub-gallery/image${imgSrc}`;
     let whichTab;
 
     if (whichGallery === 'extras_gallery') {
       whichTab = 'extras-images';
     } else {
       const base = whichGallery.split('_')[0];
-      whichTab = path.includes('grid') 
+      whichTab = imgSrc.includes('grid') 
         ? `${base}-grids` 
         : `${base}-images`;
     }
@@ -204,6 +206,7 @@ function SDHubGalleryGetNewImage(whichGallery) {
 
     if (imgDiv && TabDiv) {
       const newImgDiv = imgDiv.cloneNode(true);
+      const fn = path.substring(path.lastIndexOf("/") + 1).split("?")[0];
       let newId = `sdhub-imgdiv-${SDHubGalleryTabImageIndex}`;
 
       while (document.getElementById(newId)) {
@@ -215,14 +218,15 @@ function SDHubGalleryGetNewImage(whichGallery) {
       const newImg = newImgDiv.querySelector('img');
 
       if (newImg) {
-        newImg.src = imgSrc;
+        newImg.src = path;
         newImg.onload = () => {
+          img.title = fn;
           loaded++;
           if (loaded === img.length) {
             console.log('all-loaded.');
           }
 
-          fetch(imgSrc)
+          fetch(path)
             .then(response => response.blob())
             .then(blob => {
               const mimeType = blob.type;
@@ -437,17 +441,20 @@ function SDHubGalleryDeletion() {
   const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
 
   const Con = document.getElementById('SDHub-Gallery-Delete-Container');
-  Con.style.display = 'flex';
   const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
   const Box = document.getElementById('SDHub-Gallery-Delete-Box');
   const Text = document.getElementById('SDHub-Gallery-Delete-Text');
-  Text.textContent = `Delete ${name}?`;
-
   const Yes = document.getElementById('SDHub-Gallery-Delete-Yes');
   const No = document.getElementById('SDHub-Gallery-Delete-No');
 
+  Con.style.display = 'flex';
+  Con.focus();
+  Text.textContent = `Delete ${name}?`;
+  document.body.classList.add('no-scroll');
+
   Yes.onclick = () => {
-    Box.style.transform = '';
+    Box.style.opacity = '0';
+    Box.style.transform = 'scale(1.5)';
     Spinner.style.opacity = '1';
 
     fetch('/sd-hub-gallery-delete', {
@@ -474,15 +481,21 @@ function SDHubGalleryDeletion() {
         setTimeout(() => {
           Con.style.opacity = '';
           Spinner.style.opacity = '';
+          document.body.classList.remove('no-scroll');
         }, 1000);
-        setTimeout(() => Con.style.display = '', 1100);
+        setTimeout(() => {
+          Con.style.display = '';
+          Box.style.opacity = '';
+          Box.style.transform = '';
+        }, 1100);
       });
   };
 
   No.onclick = () => {
-    Box.style.transform = '';
     Con.style.opacity = '';
-    setTimeout(() => Con.style.display = '', 200);
+    Box.style.transform = 'scale(1.5)';
+    document.body.classList.remove('no-scroll');
+    setTimeout(() => (Con.style.display = '', Box.style.transform = ''), 200);
   };
 
   setTimeout(() => Con.style.opacity = '1', 100);
@@ -551,9 +564,9 @@ function SDHubGalleryImageInfo(imgEL, e) {
 }
 
 function SDHubImageInfoClearButton() {
-  let row = document.querySelector('#sdhub-gallery-image-info-row');
-  let SendButton = document.querySelector('#SDHubimgInfoSendButton');
-  let Cloned = document.querySelector('#sd-hub-gallery-image-info-clear-button');
+  let row = document.getElementById('sdhub-gallery-image-info-row');
+  let SendButton = document.getElementById('SDHubimgInfoSendButton');
+  let Cloned = document.getElementById('sd-hub-gallery-image-info-clear-button');
   let ClearButton = document.querySelector('#SDHubimgInfoImage button[aria-label="Clear"]') ||
                     document.querySelector('#SDHubimgInfoImage button[aria-label="Remove Image"]');
 
@@ -570,40 +583,11 @@ function SDHubImageInfoClearButton() {
     const closeRow = () => {
       row.style.opacity = '';
       document.body.classList.remove('no-scroll');
-      setTimeout(() => {
-        ClearButton.click();
-        row.style.display = 'none';
-        document.removeEventListener('keydown', RowKeydown);
-        document.removeEventListener('click', SendButtonClick);
-      }, 200);
+      setTimeout(() => (ClearButton.click(), (row.style.display = 'none')), 200);
     };
 
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeRow();
-    });
-
-    const RowKeydown = (e) => {
-      if (e.key === 'Escape' && row && window.getComputedStyle(row).display === 'flex') {
-        const LightBox = document.querySelector('#SDHub-Gallery-Image-Viewer');
-        if (LightBox && window.getComputedStyle(LightBox).display === 'flex') return;
-        else e.stopPropagation(); e.preventDefault(); closeRow();
-      }
-    };
-
-    const SendButtonClick = (e) => {
-      if (SendButton && SendButton.contains(e.target)) {
-        e.stopPropagation();
-        e.preventDefault();
-        let btn = e.target.closest('button');
-        if (btn) {
-          closeRow();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', RowKeydown);
-    document.addEventListener('click', SendButtonClick);
+    btn.onclick = (e) => (e.stopPropagation(), closeRow());
+    window.SDHubCloseImageInfoRow = closeRow;
   }
 }
 
@@ -646,12 +630,13 @@ function SDHubCreateGallery(GalleryTab) {
   const img = document.createElement('img');
   img.id = 'sdhub-gallery-img';
 
-  const ContextBtn = document.createElement('button');
+  const ContextBtn = document.createElement('span');
   ContextBtn.id = 'sdhub-gallery-img-button';
   ContextBtn.innerHTML = SDHubGalleryImageButtonSVG;
 
-  const ViewerBtn = document.createElement('button');
+  const ViewerBtn = document.createElement('span');
   ViewerBtn.id = 'sdhub-gallery-img-viewerbutton';
+  ViewerBtn.title = 'image viewer';
   ViewerBtn.innerHTML = SDHubGalleryImageSVG;
   const ViewerBtnSVG = ViewerBtn.querySelector('svg');
   if (ViewerBtnSVG) ViewerBtnSVG.classList.remove('sdhub-gallery-cm-svg');
@@ -720,6 +705,8 @@ function SDHubGalleryEventListener(TabDiv) {
 
   document.addEventListener('click', (e) => {
     const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
+    const SendButton = document.getElementById('SDHubimgInfoSendButton');
+
     if (GalleryCM) {
       const CMVisible = GalleryCM.style.opacity === '1';
       const ClickOutsideEL = !GalleryCM.contains(e.target);
@@ -729,11 +716,26 @@ function SDHubGalleryEventListener(TabDiv) {
         SDHubGalleryKillContextMenu();
       }
     }
+
+    if (SendButton && SendButton.contains(e.target)) {
+      e.stopPropagation(); e.preventDefault();
+      const btn = e.target.closest('button');
+      if (btn) window.SDHubCloseImageInfoRow();
+    }
   });
 
   document.addEventListener('contextmenu', (e) => {
     const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
     if (GalleryCM && GalleryCM.contains(e.target)) e.preventDefault();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const row = document.getElementById('sdhub-gallery-image-info-row');
+    if (e.key === 'Escape' && row && window.getComputedStyle(row).display === 'flex') {
+      const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+      if (LightBox && window.getComputedStyle(LightBox).display === 'flex') return;
+      else e.stopPropagation(); e.preventDefault(); window.SDHubCloseImageInfoRow();
+    }
   });
 }
 
@@ -819,7 +821,7 @@ function SDHubGalleryCreateLightBox() {
   const Control = document.createElement('div');
   Control.id = 'SDHub-Gallery-Image-Viewer-control';
 
-  const NextBtn = document.createElement('button');
+  const NextBtn = document.createElement('span');
   NextBtn.id = 'SDHub-Gallery-Image-Viewer-Next-Button';
   NextBtn.classList.add('sdhub-gallery-image-viewer-button');
   NextBtn.innerHTML = SDHubGalleryNextButtonSVG;
@@ -828,7 +830,7 @@ function SDHubGalleryCreateLightBox() {
     SDHubGalleryNextImage();
   };
 
-  const PrevBtn = document.createElement('button');
+  const PrevBtn = document.createElement('span');
   PrevBtn.id = 'SDHub-Gallery-Image-Viewer-Prev-Button';
   PrevBtn.classList.add('sdhub-gallery-image-viewer-button');
   PrevBtn.innerHTML = SDHubGalleryPrevButtonSVG;
@@ -861,7 +863,7 @@ function SDHubGalleryCreateLightBox() {
     }
   });
 
-  const CloseBtn = document.createElement('button');
+  const CloseBtn = document.createElement('span');
   CloseBtn.id = 'SDHub-Gallery-Image-Viewer-Close-Button';
   CloseBtn.classList.add('sdhub-gallery-image-viewer-button');
   CloseBtn.innerHTML = SDHubGalleryCloseButtonSVG;
@@ -880,6 +882,7 @@ function SDHubGalleryCreateLightBox() {
 function SDHubGalleryCreateDeleteBox() {
   const Con = document.createElement('div');
   Con.id = 'SDHub-Gallery-Delete-Container';
+  Con.setAttribute('tabindex', '0');
   Con.style.display = 'none';
 
   const Spinner = document.createElement('div');
@@ -896,12 +899,12 @@ function SDHubGalleryCreateDeleteBox() {
   const ButtonRow = document.createElement('div');
   ButtonRow.id = 'SDHub-Gallery-Delete-ButtonRow';
 
-  const Yes = document.createElement('button');
+  const Yes = document.createElement('span');
   Yes.id = 'SDHub-Gallery-Delete-Yes';
   Yes.classList.add('sdhub-gallery-delete-button');
   Yes.textContent = 'Yes';
 
-  const No = document.createElement('button');
+  const No = document.createElement('span');
   No.id = 'SDHub-Gallery-Delete-No';
   No.classList.add('sdhub-gallery-delete-button');
   No.textContent = 'No';
