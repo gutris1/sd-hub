@@ -220,7 +220,7 @@ function SDHubGalleryGetNewImage(whichGallery) {
       if (newImg) {
         newImg.src = path;
         newImg.onload = () => {
-          img.title = fn;
+          newImg.title = fn;
           loaded++;
           if (loaded === img.length) {
             console.log('all-loaded.');
