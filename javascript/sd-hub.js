@@ -68,11 +68,7 @@ function SDHubTextEditorGalleryScrollBar() {
 
   const SBforFirefox = `
     #sdhub-texteditor-editor,
-    #sdhub-gallery-txt2img-images-tab-div,
-    #sdhub-gallery-img2img-images-tab-div,
-    #sdhub-gallery-extras-images-tab-div,
-    #sdhub-gallery-txt2img-grids-tab-div,
-    #sdhub-gallery-img2img-grids-tab-div {
+    .sdhub-gallery-tab-container {
       scrollbar-width: thin !important;
       scrollbar-color: var(--primary-400) transparent !important;
     }
@@ -85,33 +81,21 @@ function SDHubTextEditorGalleryScrollBar() {
       right: 4px !important;
     }
 
-    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar,
-    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar,
-    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar,
-    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar,
-    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar {
+    .sdhub-gallery-tab-container::-webkit-scrollbar {
       width: 0.4rem !important;
       position: absolute !important;
       right: 4px !important;
     }
 
     #sdhub-texteditor-editor::-webkit-scrollbar-thumb,
-    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-thumb,
-    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-thumb,
-    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-thumb,
-    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar-thumb,
-    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-thumb {
+    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb {
       background: var(--primary-400) !important;
       border-radius: 30px !important;
       background-clip: padding-box !important;
     }
 
     #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover,
-    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-thumb:hover,
-    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-thumb:hover,
-    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-thumb:hover,
-    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar-thumb:hover,
-    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-thumb:hover {
+    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb:hover {
       background: var(--primary-600) !important;
     }
 
@@ -121,14 +105,10 @@ function SDHubTextEditorGalleryScrollBar() {
       margin: 2px 0 !important;
     }
 
-    #sdhub-gallery-txt2img-images-tab-div::-webkit-scrollbar-track,
-    #sdhub-gallery-img2img-images-tab-div::-webkit-scrollbar-track,
-    #sdhub-gallery-extras-images-tab-div::-webkit-scrollbar-track,
-    #sdhub-gallery-txt2img-grids-tab-div::-webkit-scrollbar-track,
-    #sdhub-gallery-img2img-grids-tab-div::-webkit-scrollbar-track {
+    .sdhub-gallery-tab-container::-webkit-scrollbar-track {
       background: transparent !important;
       border-radius: 0px !important;
-      margin: 12px 0 !important;
+      margin: 0 !important;
     }
   `;
 
