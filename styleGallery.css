@@ -13,7 +13,7 @@ body.no-scroll {
   margin: 0;
 }
 
-#sdhub-gallery-tab-button-row {
+#SDHub-Gallery-Tab-Button-Row {
   z-index: 5;
   position: relative;
   top: 0;
@@ -27,7 +27,7 @@ body.no-scroll {
   padding: 5px;
 }
 
-#sdhub-gallery-tab-button-row button {
+#SDHub-Gallery-Tab-Button-Row button {
   display: none;
   position: relative;
   background: transparent;
@@ -46,34 +46,62 @@ body.no-scroll {
   height: 35px;
 }
 
-#sdhub-gallery-tab-button-row button.selected {
+#SDHub-Gallery-Tab-Button-Row button.selected {
   color: var(--button-secondary-text-color);
   background: var(--background-fill-secondary);
   box-shadow: 0 0 10px 2px var(--button-secondary-text-color);
 }
 
-#sdhub-gallery-tab-button-row button:not(.selected):hover {
+#SDHub-Gallery-Tab-Button-Row button:not(.selected):hover {
   box-shadow: 0 0 10px 2px var(--primary-400);
 }
 
-.sdhub-gallery-tab-div {
-  max-height: calc(3* 15rem);
+#SDHub-Gallery-Tab-Wrapper {
+  margin: 0;
+  display: block;
+  overflow: hidden;
+  padding: 20px 0;
+  border-radius: 1rem;
+  background: var(--background-fill-secondary);
+}
+
+.sdhub-gallery-tab-image-counter {
+  display: none;
+  position: absolute;
+  top: 60px;
+  max-width: max-content;
+  margin: 0;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--background-fill-primary);
+  border-right: 1px solid var(--background-fill-primary);
+  border-top-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  background: var(--input-background-fill-hover);
+  pointer-events: none;
+  z-index: 10;
+  color: var(--body-text-color-subdued);
+  font-size: var(--block-info-text-size);
+}
+
+.sdhub-gallery-tab-container {
+  max-height: calc(3* 16rem);
   width: 100%;
   display: none;
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  overflow: auto !important;
-  background: var(--background-fill-secondary);
+  overflow-y: auto !important;
+  background: transparent;
   flex-wrap: wrap;
   transition: 0.5s ease-in-out;
   border: 0;
   margin: 0;
-  border-radius: 1rem;
-  padding: 20px 10px;
+  border-radius: 0;
+  padding: 5px 10px;
+  position: relative;
 }
 
-.sdhub-gallery-img-div {
+.sdhub-gallery-image-box {
   display: flex;
   height: 240px;
   width: 240px;
@@ -83,7 +111,7 @@ body.no-scroll {
   position: relative;
 }
 
-#sdhub-imgCon {
+#SDHub-Gallery-Image-Container {
   display: flex;
   border: 0;
   position: relative;
@@ -93,7 +121,7 @@ body.no-scroll {
   transition: 0.3s ease;
 }
 
-#sdhub-gallery-img-wrapper {
+#SDHub-Gallery-Image-Wrapper {
   display: flex;
   align-self: center;
   justify-content: center;
@@ -102,31 +130,30 @@ body.no-scroll {
   min-width: 1rem;
   border: 0;
   border-radius: 0.75rem;
-  background-size: 99% 99%;
-  background-repeat: no-repeat;
+  background-size: contain;
   background-position: center;
   background-image: url(https://huggingface.co/pantat88/ui/resolve/main/card-no-preview.png);
 }
 
-#sdhub-gallery-img {
+#SDHub-Gallery-Image {
   transition: 0.3s ease;
   max-width: 240px;
   max-height: 240px;
   object-fit: contain;
   border-radius: 0.6rem;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.sdhub-gallery-img-loading {
+.sdhub-gallery-image-loading {
   filter: blur(2px) brightness(0.5);
 }
 
-#sdhub-gallery-img-button {
-  transform-origin: top right;
+.sdhub-gallery-image-button {
   display: flex;
   transform: scale(0);
   padding: 2px;
   border-radius: 0;
-  border-bottom-left-radius: 15px;
   color: var(--button-secondary-text-color);
   background: var(--input-background-fill);
   box-shadow: 0 0 3px 1px #000;
@@ -134,60 +161,46 @@ body.no-scroll {
   opacity: 0;
   z-index: 50;
   transition: 0.3s ease-in-out;
+  position: absolute;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+#SDHub-Gallery-Image-Context-Button {
+  transform-origin: top right;
+  border-bottom-left-radius: 15px;
   top: 0;
   right: 0;
-  position: absolute;
-  justify-content: flex-end;
-  box-sizing: border-box;
 }
 
-#sdhub-gallery-img-viewerbutton {
+#SDHub-Gallery-Image-Viewer-Button {
   transform-origin: bottom left;
-  display: flex;
-  transform: scale(0);
-  padding: 2px;
-  border-radius: 0;
   border-top-right-radius: 15px;
-  color: var(--button-secondary-text-color);
-  background: var(--input-background-fill);
-  box-shadow: 0 0 3px 1px #000;
-  cursor: pointer;
-  opacity: 0;
-  z-index: 50;
-  transition: 0.3s ease-in-out;
   bottom: 0;
   left: 0;
-  position: absolute;
-  justify-content: flex-end;
-  box-sizing: border-box;
 }
 
-#sdhub-gallery-img-button svg {
+#SDHub-Gallery-Image-Context-Button svg {
   left: 1px;
   bottom: 1px;
   position: relative;
 }
 
-#sdhub-gallery-img-viewerbutton svg {
-  transform: scale(0.75);
+#SDHub-Gallery-Image-Viewer-Button svg {
+  transform: scale(0.7);
   right: 1px;
   top: 1px;
   position: relative;
 }
 
-#sdhub-imgCon:hover #sdhub-gallery-img-button {
+#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button,
+#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Viewer-Button {
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;
 }
 
-#sdhub-imgCon:hover #sdhub-gallery-img-viewerbutton {
-  opacity: 1;
-  transform: scale(0.95);
-  pointer-events: auto;
-}
-
-#sdhub-gallery-empty-frame {
+#SDHub-Gallery-Empty-Frame {
   display: block;
   position: absolute;
   width: 105%;
@@ -199,7 +212,7 @@ body.no-scroll {
   transition: 0.4s ease;
 }
 
-#sdhub-gallery-empty-frame::before {
+#SDHub-Gallery-Empty-Frame::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -209,11 +222,11 @@ body.no-scroll {
   pointer-events: none;
 }
 
-#sdhub-imgCon:hover #sdhub-gallery-empty-frame {
+#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Empty-Frame {
   box-shadow: inset 0 0 30px 20px #000;
 }
 
-#sdhub-imgdiv-0 {
+#SDHub-Gallery-Image-Box-0 {
   display: none;
 }
 
@@ -255,27 +268,27 @@ body.no-scroll {
 }
 
 @media (max-width: 600px) {
-  .sdhub-gallery-img-div {
+  .sdhub-gallery-image-box {
     height: 150px;
     width: 150px;
   }
 
-  #sdhub-gallery-img {
+  #SDHub-Gallery-Image {
     max-width: 150px;
     max-height: 150px;
   }
 
-  .sdhub-gallery-tab-div {
+  .sdhub-gallery-tab-container {
     gap: 10px;
   }
 
-  #sdhub-gallery-tab-button-row {
+  #SDHub-Gallery-Tab-Button-Row {
     gap: 10px;
     justify-content: space-evenly;
     overflow-x: auto;
   }
 
-  #sdhub-gallery-tab-button-row button {
+  #SDHub-Gallery-Tab-Button-Row button {
     font-size: unset;
     padding: 4px 10px;
     flex-shrink: 0;
@@ -283,53 +296,53 @@ body.no-scroll {
 }
 
 @media (min-width: 1000px) {
-  .sdhub-gallery-img-div {
+  .sdhub-gallery-image-box {
     height: 190px;
     width: 190px;
   }
 
-  #sdhub-gallery-img {
+  #SDHub-Gallery-Image {
     max-width: 190px;
     max-height: 190px;
   }
 }
 
 @media (min-width: 1360px) {
-  .sdhub-gallery-img-div {
+  .sdhub-gallery-image-box {
     height: 240px;
     width: 240px;
   }
 
-  #sdhub-gallery-img {
+  #SDHub-Gallery-Image {
     max-width: 240px;
     max-height: 240px;
   }
 }
 
 @media (min-width: 1600px) {
-  .sdhub-gallery-img-div {
+  .sdhub-gallery-image-box {
     height: 250px;
     width: 250px;
   }
 
-  #sdhub-gallery-img {
+  #SDHub-Gallery-Image {
     max-width: 250px;
     max-height: 250px;
   }
 }
 
 @media (min-width: 1920px) {
-  .sdhub-gallery-img-div {
+  .sdhub-gallery-image-box {
     height: 310px;
     width: 310px;
   }
 
-  #sdhub-gallery-img {
+  #SDHub-Gallery-Image {
     max-width: 310px;
     max-height: 310px;
   }
 
-  #sdhub-imgCon:hover #sdhub-gallery-img-button {
+  #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button {
     opacity: 1;
     transform: scale(1.4);
     pointer-events: auto;
@@ -355,7 +368,7 @@ body.no-scroll {
   border-radius: 0.5rem;
   box-shadow: 0 0 10px 2px #000;
   z-index: 1000;
-  border: 1px solid #6a6a6a;
+  border: 1px solid #8c8c8c;
   transform: scale(0);
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
@@ -370,7 +383,6 @@ body.no-scroll {
 
 #SDHub-Gallery-ContextMenu li {
   display: flex;
-  transition: 0.2s ease;
   height: auto;
   position: relative;
   justify-content: left;
@@ -422,7 +434,7 @@ body.no-scroll {
   padding-left: 0;
   padding-right: 0;
   background: var(--background-fill-secondary);
-  border: 1px solid #6a6a6a;
+  border: 1px solid #8c8c8c;
   border-radius: 0.5rem;
   box-shadow: 0 0 10px 2px #000;
 }
@@ -441,7 +453,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-ContextMenu li:hover {
-  background: #6a6a6a;
+  background: #8c8c8c;
   color: var(--background-fill-primary);
   cursor: pointer;
 }
@@ -486,7 +498,7 @@ body.no-scroll {
   -webkit-user-select: none;
 }
 
-#SDHub-Gallery-Image-Viewer-control {
+#SDHub-Gallery-Image-Viewer-Control {
   z-index: 1;
   height: 100%;
   width: 100%;
@@ -836,8 +848,13 @@ body.no-scroll {
   z-index: 5;
   color: var(--button-secondary-text-color);
   pointer-events: none;
-  opacity: 0;
+  visibility: hidden;
   transition: 0.3s ease;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.6));
+}
+
+#SDHub-Gallery-Delete-Spinner svg {
+  filter: drop-shadow(0 0 5px #000);
 }
 
 #SDHub-Gallery-Delete-Box {
@@ -870,20 +887,20 @@ body.no-scroll {
 
 .sdhub-gallery-delete-button {
   display: flex;
-  width: 70px;
-  height: 35px;
+  width: 4.2rem;
+  height: 2.2rem;
   padding: 0;
   border: 0;
   border-radius: 10px;
   background: var(--body-text-color-subdued);
   cursor: pointer;
   pointer-events: auto;
-  font-size: 19px;
+  font-size: 1.5rem;
   text-align: center;
   justify-content: center;
   align-items: center;
   box-shadow: 0 0 10px 2px #000;
-  transition: 0.5s ease;
+  transition: 0.4s ease;
 }
 
 .sdhub-gallery-delete-button:hover {
