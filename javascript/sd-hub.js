@@ -159,37 +159,52 @@ onUiLoaded(function () {
   SDHubTextEditorGalleryScrollBar();
   SDHubTextEditorCTRLS();
   SDHubShellShiftEnter();
+  onSDHubTabChanges();
 });
 
-var Id = 'sdHUBHidingScrollBar';
+function onSDHubTabChanges() {
+  const TargetTabs = [document.getElementById('tabs'), document.getElementById('sdhub-tab')];
+  const config = { childList: true, subtree: true };
 
-onUiUpdate(function() {
-  let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
-  let Tab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
-  let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
+  TargetTabs.forEach(Target => {
+    if (Target) {
+      const obs = new MutationObserver((mutationsList, observer) => {
+        mutationsList.forEach(mutation => {
+          if (mutation.type === 'childList') {
+            let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
+            let Tab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
+            let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
+            const Id = 'sdHUBHidingScrollBar';
 
-  if (Tab && (Tab.textContent.trim() === 'Text Editor' || Tab.textContent.trim() === 'Gallery')) {
-    Accordion.style.display = 'none';
-    if (!document.getElementById(Id)) {
-      const Scrollbar = document.createElement('style');
-      Scrollbar.id = Id;
-      Scrollbar.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
-      document.head.appendChild(Scrollbar);
+            if (Tab && (Tab.textContent.trim() === 'Text Editor' || Tab.textContent.trim() === 'Gallery')) {
+              Accordion.style.display = 'none';
+              if (!document.getElementById(Id)) {
+                const Scrollbar = document.createElement('style');
+                Scrollbar.id = Id;
+                Scrollbar.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
+                document.head.appendChild(Scrollbar);
+              }
+              Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
+
+            } else if (Tab && (Tab.textContent.trim() !== 'Text Editor' || Tab.textContent.trim() !== 'Gallery')) {
+              Accordion.style.display = 'block';
+              const Scrollbar = document.getElementById(Id);
+              if (Scrollbar) document.head.removeChild(Scrollbar);
+              Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+              document.body.classList.remove('no-scroll');
+            }
+
+            if (MainTab && (MainTab.textContent.trim() !== 'HUB')) {
+              const Scrollbar = document.getElementById(Id);
+              if (Scrollbar) document.head.removeChild(Scrollbar);
+              Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+              document.body.classList.remove('no-scroll');
+            }
+          }
+        });
+      });
+
+      obs.observe(Target, config);
     }
-    Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
-
-  } else if (Tab && (Tab.textContent.trim() !== 'Text Editor' || Tab.textContent.trim() !== 'Gallery')) {
-    Accordion.style.display = 'block';
-    const Scrollbar = document.getElementById(Id);
-    if (Scrollbar) document.head.removeChild(Scrollbar);
-    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
-  }
-
-  if (MainTab && (MainTab.textContent.trim() !== 'HUB')) {
-    const Scrollbar = document.getElementById(Id);
-    if (Scrollbar) document.head.removeChild(Scrollbar);
-    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
-  }
-});
+  });
+}
