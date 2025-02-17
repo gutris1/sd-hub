@@ -564,6 +564,7 @@ function SDHubGallerySendToUploader() {
 
   area.value += area.value ? `\n${path}` : path;
   updateInput(area);
+  SDHubGalleryKillContextMenu();
 }
 
 function SDHubGalleryImageInfo(imgEL, e) {
