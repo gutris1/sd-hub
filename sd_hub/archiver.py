@@ -1,8 +1,12 @@
+from modules.shared import cmd_opts
 from pathlib import Path
 from tqdm import tqdm
-from modules.shared import cmd_opts
 import gradio as gr
-import subprocess, zipfile, select, sys, os
+import subprocess
+import zipfile
+import select
+import sys
+import os
 
 if sys.platform == 'win32':
     import tarfile, gzip, lz4.frame
@@ -11,14 +15,14 @@ else:
 
 from sd_hub.paths import SDHubPaths, BLOCK
 
-tag_tag = SDHubPaths().SDHubTagsAndPaths()
+tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
 def tar_win_process(inputs, paths, formats, outputs):
     tar_out = str(outputs) + '.tar'
 
     with tarfile.open(tar_out, 'w') as tar:
         for file in inputs:
-            tar.add(paths / file, arcname=file.name)
+            tar.add(paths / file, arcname=str(paths.name / file.name))
 
     if formats == 'lz4':
         lz4_out = str(outputs) + '.tar.lz4'
@@ -58,21 +62,18 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
             split = all_files[start:end]
 
             output = output_path_obj / f"{file_name}{'_' + str(i + 1) if split_by > 0 else ''}"
-
             yield from tar_win_process(split, input_path_obj, format_type, output)
 
     else:
         output = output_path_obj / f"{file_name}"
-
         yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
 
 
-def tar_process(_tar, cwd, _pv, _format, _output):
+def tar_process(_tar, _pv, _format, _output):
     ayu, rika = pty.openpty() # type: ignore
 
     p_tar = subprocess.Popen(
         _tar,
-        cwd=cwd,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True
@@ -123,16 +124,23 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
 
+    parent_dir = str(input_path_obj.parent)
+
     if format_type == "gz":
         comp_type = "gzip"
     elif format_type == "lz4":
         comp_type = "lz4"
 
+    _pv = ['pv']
+    _format = [comp_type]
+
+    cmd = ['tar', 'cf', '-', '-C', parent_dir, input_path_obj.name]
+
     if input_type == "folder":
-        cwd = str(input_path_obj)
         all_files = [
-            f for f in input_path_obj.iterdir() 
-            if (f.is_file() or (f.is_dir() and any(f.iterdir())))
+            f.relative_to(input_path_obj.parent)
+            for f in input_path_obj.rglob('*')
+            if f.is_file() or (f.is_dir() and any(f.iterdir()))
         ]
 
         count = 0
@@ -143,23 +151,15 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
             start = i * (total_parts // files_split)
             end = start + (total_parts // files_split) if i < files_split - 1 else None
             _split = all_files[start:end]
-
             count += 1
             _output = output_path_obj / f"{file_name}{'_' + str(count) if split_by > 0 else ''}.tar.{format_type}"
-            _tar = ['tar', 'cfh', '-'] + [f.name for f in _split]
-            _pv = ['pv']
-            _format = [comp_type]
-
-            yield from tar_process(_tar, cwd, _pv, _format, _output)
+            cmds = ['tar', 'cfh', '-', '-C', parent_dir] + [str(f) for f in _split]
+            params = (cmds if files_split > 1 else cmd, _pv, _format, _output)
+            yield from tar_process(*params)
 
     else:
-        _tar = ['tar', 'cf', '-', input_path_obj.name]
-        cwd = str(input_path_obj.parent)
         _output = output_path_obj / f"{file_name}.tar.{format_type}"
-        _pv = ['pv']
-        _format = [comp_type]
-
-        yield from tar_process(_tar, cwd, _pv, _format, _output)
+        yield from tar_process(cmd, _pv, _format, _output)
 
 
 def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
@@ -273,28 +273,31 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        for path_obj in [input_path_obj, output_path_obj]:
-            if path_obj and path_obj.exists():
-                if not cmd_opts.enable_insecure_extension_access:
-                    allowed, err = SDHubPaths().SDHubCheckPaths(path_obj)
-                    if not allowed:
-                        yield err, True
-                        return
-            else:
-                yield f"{path_obj}\ndoes not exist", True
-                return
+        if not input_path_obj.exists():
+            yield f"{input_path_obj}\ndoes not exist", True
+            return
 
-    if output_path_obj.suffix:
-        yield f"{output_path}\nOutput Path is not a directory.", True
-        return
+        if output_path_obj.suffix:
+            yield f"{output_path}\nOutput Path is not a directory.", True
+            return
+
+        if not mkdir_cb1 and not output_path_obj.exists():
+            yield f"{output_path_obj}\ndoes not exist", True
+            return
+        elif mkdir_cb1:
+            output_path_obj.mkdir(parents=True, exist_ok=True)
+
+        if not cmd_opts.enable_insecure_extension_access:
+            for path in [input_path_obj, output_path_obj]:
+                allowed, err = SDHubPaths.SDHubCheckPaths(path)
+                if not allowed:
+                    yield err, True
+                    return
 
     if input_path_obj.is_file():
         input_type = 'file'
     elif input_path_obj.is_dir():
         input_type = 'folder'
-
-    if mkdir_cb1:
-        output_path_obj.mkdir(parents=True, exist_ok=True)
 
     if sys.platform == 'win32':
         select_arc = {'zip': _zip, 'tar.gz': tar_win, 'tar.lz4': tar_win}
@@ -515,23 +518,26 @@ def path_extract(input_path, output_path, mkdir_cb2):
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        for path_obj in [input_path_obj, output_path_obj]:
-            if path_obj and path_obj.exists():
-                if not cmd_opts.enable_insecure_extension_access:
-                    allowed, err = SDHubPaths().SDHubCheckPaths(path_obj)
-                    if not allowed:
-                        yield err, True
-                        return
-            else:
-                yield f"{path_obj}\ndoes not exist", True
-                return
+        if not input_path_obj.exists():
+            yield f"{input_path_obj}\ndoes not exist", True
+            return
 
-    if output_path_obj.suffix:
-        yield f"{output_path}\nOutput Path is not a directory.", True
-        return
+        if output_path_obj.suffix:
+            yield f"{output_path}\nOutput Path is not a directory.", True
+            return
 
-    if mkdir_cb2:
-        output_path_obj.mkdir(parents=True, exist_ok=True)
+        if not mkdir_cb2 and not output_path_obj.exists():
+            yield f"{output_path_obj}\ndoes not exist", True
+            return
+        elif mkdir_cb2:
+            output_path_obj.mkdir(parents=True, exist_ok=True)
+
+        if not cmd_opts.enable_insecure_extension_access:
+            for path in [input_path_obj, output_path_obj]:
+                allowed, err = SDHubPaths.SDHubCheckPaths(path)
+                if not allowed:
+                    yield err, True
+                    return
 
     select_ext = {'.zip': 'zip', '.tar.gz': 'tar.gz', '.tar.lz4': 'tar.lz4'}
     input_ext = ''.join(input_path_obj.suffixes)

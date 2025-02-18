@@ -1,7 +1,6 @@
-version = "5.6.5"
-
-import os, sys
 from pathlib import Path
+import sys
+import os
 
 def xyz(y):
     if 'COLAB_JUPYTER_TOKEN' in os.environ:
@@ -12,3 +11,5 @@ def xyz(y):
         x = Path(sys.executable).parent / y
 
     return [str(x)]
+
+version = "7.0.0"

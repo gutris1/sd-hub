@@ -2,20 +2,27 @@
 An extension for <code>Stable Diffusion WebUI</code>, designed to streamline your collection.<br>
 It lets you download files from sites like <code>Civitai</code>, <code>Hugging Face</code>, <code>GitHub</code>, and <code>Google Drive</code>, whether individually or in batch.<br>
 You can also upload files or entire folders to the <code>Hugging Face</code> model repository (with a WRITE token, of course), making sharing and access easier.<br>
-The extension also has functionality to archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
-<br>
+Archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
+And a simple Gallery for displaying your outputs with built-in image info and an image viewer.
+<br><br>
 Downloading/Uploading/compressing/extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 <br>
 Support both Windows and Unix.
 
 # Changelog
-### 2024-12-30  v5.6.1
+### 2025-02-17  v7.0.0
+- Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
+- Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
+
+<details><summary>2024-12-30  v5.6.1</summary><br>
+
 - Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
 - Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/74802d39-fcee-4d12-ba9f-302b67eb6375", width=1000px>
 </p>
+</details>
 
 <details><summary>2024-12-25  v5.5.5</summary><br>
 
@@ -68,7 +75,7 @@ $ext/sd-hub -- json txt py
 </details>
 
 # Usage
-<h3>Downloader</h3>
+<details><summary> <h2>Downloader</h2> </summary><br>
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/59e3ffc6-a63a-4a4b-a29d-e6787aa946ac", width=1000px>
@@ -159,7 +166,10 @@ To upload a TXT file from your device, simply select it and upload it into the i
 
 <code>Supported Domains for Downloader: Civitai Huggingface Github Drive.Google</code>
 
-<h3>Uploader</h3>
+</details>
+
+<details><summary> <h2>Uploader</h2> </summary><br>
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/a2f0b341-8743-43da-b857-2e925f3eb7fb", width=1000px>
 </p>
@@ -197,7 +207,10 @@ $ckpt/animagineXLV31_v31.safetensors
 # to rename the uploaded file
 $ckpt/animagineXLV31_v31.safetensors - XL-imagine-animeV31.txt
 ```
-<h3>Archiver</h3>
+</details>
+
+<details><summary> <h2>Archiver</h2> </summary><br>
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/81bdcde3-8043-4339-af30-d1305379f7f4", width=1000px>
 </p>
@@ -232,9 +245,35 @@ $ckpt/animagineXLV31_v31.safetensors
 # with Tag if input as a folder
 $ckpt
 ```
+</details>
+
+<details><summary> <h2>Gallery</h2> </summary><br>
+
+![Screenshot_1](https://github.com/user-attachments/assets/e4442af7-45a9-41e6-9db7-fefc190691ef)<br>
+
+
+inspired by [IIB](https://github.com/zanllp/sd-webui-infinite-image-browsing)<br>
+a simple gallery to display your outputs.<br>
+it's not as advanced as IIB, you can't add folders and browse images in here.<br>
+oh no anyway,<br>
+Left-click on an image to show an image info.<br>
+![Screenshot_4](https://github.com/user-attachments/assets/55772568-4b0d-48d2-906b-b906610a59b2)<br>
+
+Right-click on an image to open a context menu.<br>
+![Screenshot_2](https://github.com/user-attachments/assets/57f957e4-3b5c-4f1f-a1aa-f2a363737f32)<br>
+
+Hover over an image to reveal an image viewer button in the bottom left and a context menu button on the top right.<br>
+![Screenshot_1](https://github.com/user-attachments/assets/aa69c5c9-3fb8-498f-905f-7a9ffc24e34e)<br>
+
+Left-click on the bottom left button to open an image viewer.<br>
+![Screenshot_3](https://github.com/user-attachments/assets/b3bd8e45-21f5-4c9a-9aa6-a98fd51abe3b)<br>
+
+</details>
 
 # Credits
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
 [etherealxx](https://github.com/etherealxx) Thanks for the [inspiration](https://github.com/etherealxx/batchlinks-webui)<br>
 Thanks to my Discord friends [DEX-1101](https://github.com/DEX-1101), [VeonN4](https://github.com/VeonN4), [kokomif](https://github.com/kokomif), for always being there in the middle of the night.<br>
-Especially to [cupang-afk](https://github.com/cupang-afk), who helped me a lot with Python, thank you.
+Especially to [cupang-afk](https://github.com/cupang-afk), who helped me a lot with Python, thank you.<br>
+Thanks to [zanllp](https://github.com/zanllp) for the inspiration.<br>
+Thanks to [viyiviyi](https://github.com/viyiviyi) for the zooming scripts in the image viewer which were taken from [here](https://github.com/gutris1/sd-image-viewer), a modified version of the scripts from [here](https://github.com/viyiviyi/stable-diffusion-webui-zoomimage)

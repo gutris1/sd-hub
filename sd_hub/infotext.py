@@ -1,5 +1,8 @@
-import urllib.request, shutil, re
 from pathlib import Path
+import urllib.request
+import shutil
+import re
+
 from sd_hub.version import version
 
 blt = "<strong>•</strong>"
@@ -37,13 +40,16 @@ dl_info = f"""
 </p>
 """
 
-def getsvg(u, f):
-    if f.exists():
-        svg = f.read_text()
+def getUploaderSVG():
+    url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
+    fp = Path(__file__).parent / 'hf-logo.svg'
+
+    if fp.exists():
+        svg = fp.read_text()
     else:
-        with urllib.request.urlopen(u) as r, open(f, 'wb') as o:
+        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
             shutil.copyfileobj(r, o)
-        svg = f.read_text()
+        svg = fp.read_text()
 
     svg = re.sub(r'width="\d+"', 'width="40"', svg)
     svg = re.sub(r'height="\d+"', 'height="40"', svg)
@@ -52,9 +58,7 @@ def getsvg(u, f):
 
     return svg
 
-url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
-fp = Path(__file__).parent / 'hf-logo.svg'
-SVG = getsvg(url, fp)
+uploaderSVG = getUploaderSVG()
 
 upl_title = f"""
 <h3 id="sdhub-tab-title" style="
@@ -64,7 +68,7 @@ upl_title = f"""
     justify-content: center; 
     margin-bottom: 3px;
     margin-top: -5px;">
-  {SVG} Upload To Huggingface
+  {uploaderSVG} Upload To Huggingface
 </h3>
 """
 
