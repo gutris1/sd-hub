@@ -740,7 +740,7 @@ function SDHubGalleryTabEventListener(TabCon) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const css = 'file=extensions/sd-hub/styleGallery.css';
+  const css = '/sd-hub-gallery/styleGallery.css';
   const time = (Date.now() / 1000).toFixed(6);
   const file = `${css}?${time}`;
 
