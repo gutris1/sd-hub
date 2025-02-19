@@ -81,12 +81,11 @@ def GalleryApi(app: FastAPI):
             return responses.FileResponse(fp, headers=headers)
         raise HTTPException(status_code=404, detail='Image not found')
 
-    @app.get('/styleGallery.css')
+    @app.get('/sd-hub-gallery/styleGallery.css')
     async def sendCSS():
         if CSS.exists():
-            url = f'file={CSS}'
-            return responses.RedirectResponse(url=url)
-        raise HTTPException(status_code=404, detail='CSS file not found')
+            return responses.FileResponse(CSS, media_type="text/css")
+        raise HTTPException(status_code=404, detail="CSS file not found")
 
     @app.post('/sd-hub-gallery-delete')
     async def deleteImage(req: Request):
