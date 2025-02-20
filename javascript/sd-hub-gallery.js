@@ -94,7 +94,7 @@ function SDHubGalleryLoadInitial() {
               .then(response => response.blob())
               .then(blob => {
                 const mimeType = blob.type;
-                img.fileObject = new File([blob], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+                img.fileObject = new File([blob], fn, { type: mimeType });
               })
               .catch(error => console.error('Error fetching:', error));
           }
@@ -186,35 +186,38 @@ function SDHubGalleryWatchNewImage() {
 }
 
 function SDHubGalleryGetNewImage(whichGallery) {
-  let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0');
+  let imgBox = document.getElementById("SDHub-Gallery-Image-Box-0");
   let loaded = 0;
   let selectedTab = false;
+  let files = [];
 
-  document.querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]').forEach(tab => {
-    if (tab.classList.contains('active') && tab.style.display === 'flex') selectedTab = true;
-  });
+  document
+    .querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]')
+    .forEach((tab) => {
+      if (tab.classList.contains("active") && tab.style.display === "flex")
+        selectedTab = true;
+    });
 
   let img = document.querySelectorAll(`#${whichGallery} > .preview > .thumbnails img`);
-  if (img.length === 0) return;
+  let total = img.length;
+  if (total === 0) return;
 
   const processImage = async (index) => {
-    if (index >= img.length) return;
+    if (index >= total) return;
 
     const imgEL = img[index];
-    let src = imgEL.getAttribute('src');
-    if (!src || !src.includes('/file=')) return;
+    let src = imgEL.getAttribute("src");
+    if (!src || !src.includes("/file=")) return;
 
-    let imgSrc = src.split('/file=')[1].split('?')[0];
+    let imgSrc = src.split("/file=")[1].split("?")[0];
     let path = `/sd-hub-gallery/image${imgSrc}`;
     let whichTab;
 
-    if (whichGallery === 'extras_gallery') {
-      whichTab = 'extras-images';
+    if (whichGallery === "extras_gallery") {
+      whichTab = "extras-images";
     } else {
-      const base = whichGallery.split('_')[0];
-      whichTab = imgSrc.includes('grid') 
-        ? `${base}-grids` 
-        : `${base}-images`;
+      const base = whichGallery.split("_")[0];
+      whichTab = imgSrc.includes("grid") ? `${base}-grids` : `${base}-images`;
     }
 
     const TabCon = document.getElementById(`SDHub-Gallery-${whichTab}-Tab-Container`);
@@ -232,37 +235,39 @@ function SDHubGalleryGetNewImage(whichGallery) {
       }
 
       newimgBox.id = newId;
-      const newImg = newimgBox.querySelector('img');
+      const newImg = newimgBox.querySelector("img");
 
       if (newImg) {
         newImg.src = path;
-        newImg.onload = () => {
+        newImg.onload = async () => {
           newImg.title = fn;
-          loaded++;
-          if (loaded === img.length) {
-            console.log('all-loaded.');
-            SDHubGalleryTabImageCounters();
+          try {
+            const response = await fetch(path);
+            const blob = await response.blob();
+            const mimeType = blob.type;
+            newImg.fileObject = new File([blob], fn, { type: mimeType });
+            files.push(newImg.fileObject);
+          } catch (error) {
+            console.error("Error fetching:", error);
           }
 
-          fetch(path)
-            .then(response => response.blob())
-            .then(blob => {
-              const mimeType = blob.type;
-              newImg.fileObject = new File([blob], `image.${mimeType.split('/')[1]}`, { type: mimeType });
-            })
-            .catch(error => console.error('Error fetching:', error));
+          loaded++;
+          if (loaded === total) {
+            SDHubGalleryImgChest(files, [fn]);
+            files = [];
+          }
         };
       }
 
       TabCon.prepend(newimgBox);
-      if (TabBtn) TabBtn.style.display = 'flex';
+      if (TabBtn) TabBtn.style.display = "flex";
       SDHubGalleryTabImageIndex++;
 
       if (!selectedTab) {
-        TabCon.classList.add('active');
-        TabCon.style.display = 'flex';
-        counter.style.display = 'flex';
-        TabBtn.classList.add('selected');
+        TabCon.classList.add("active");
+        TabCon.style.display = "flex";
+        counter.style.display = "flex";
+        TabBtn.classList.add("selected");
         selectedTab = true;
       }
     }
@@ -684,21 +689,19 @@ function SDHubCreateGallery(GalleryTab) {
   TabWrap.prepend(TabCounterCon);
   GalleryTab.prepend(TabRow, TabWrap, imgBox);
 
-  SDHubGalleryLoadInitial()
-  document.getElementById('SDHub-Gallery-ContextMenu').style.display = 'block';
-
   const imgchestColumn = document.getElementById('SDHub-Gallery-imgchest-Column');
   if (imgchestColumn) {
-    const chest = document.createElement('div');
-    chest.id = 'SDHub-Gallery-imgchest-Button';
-    chest.style.display = 'flex';
-    chest.innerHTML = SDHubGalleryImageButtonSVG;
-    chest.append(imgchestColumn);
-    GalleryTab.prepend(chest);
-    document.querySelectorAll('.sdhub-gallery-tab-image-counter').forEach(el => {
-      el.style.top = '90px';
-    });
+    const chestButton = document.createElement('div');
+    chestButton.id = 'SDHub-Gallery-imgchest-Button';
+    chestButton.style.display = 'flex';
+    chestButton.innerHTML = SDHubGalleryImageButtonSVG;
+    chestButton.prepend(imgchestColumn);
+    GalleryTab.prepend(chestButton);
+    TabRow.style.marginLeft = '40px';
   }
+
+  SDHubGalleryLoadInitial()
+  document.getElementById('SDHub-Gallery-ContextMenu').style.display = 'block';
 }
 
 function SDHubGalleryTabEventListener(TabCon) {
@@ -830,11 +833,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.addEventListener('change', () => {
-    const checkboxinput = document.querySelector('#SDHub-Gallery-imgchest-Checkbox input');
-    const checkboxspan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
+    const checkboxInput = document.querySelector('#SDHub-Gallery-imgchest-Checkbox input');
+    const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
 
-    if (checkboxinput && checkboxspan) {
-      checkboxspan.style.color = checkboxinput.checked ? 'var(--background-fill-primary)' : '';
+    if (checkboxInput && checkboxSpan) {
+      checkboxSpan.style.color = checkboxInput.checked ? 'var(--background-fill-primary)' : '';
+      checkboxSpan.textContent = checkboxInput.checked ? 'Enabled' : 'Click To Enable';
     }
   });
 });
@@ -1024,5 +1028,48 @@ function SDHubGallerySwitchTab(whichTab) {
   const Btn = document.getElementById(`SDHub-Gallery-${whichTab}-Tab-Button`);
   if (Btn) {
     Btn.classList.add('selected');
+  }
+}
+
+async function SDHubGalleryImgChest(files, names) {
+  const url = 'https://api.imgchest.com/v1/post';
+  const fn = names.length > 0 ? names[names.length - 1] : 'image';
+
+  const checkbox = gradioApp().querySelector('#SDHub-Gallery-imgchest-Checkbox input');
+  if (checkbox && !checkbox.checked) {
+    return;
+  }
+
+  const apikey = gradioApp().querySelector('#SDHub-Gallery-imgchest-API input');
+  if (apikey && !apikey.value.trim()) {
+    return;
+  }
+
+  function getSettings(id) {
+    const selected = gradioApp().querySelector(`${id} > div > label.selected`);
+    return selected ? selected.getAttribute('data-testid').replace('-radio-label', '').toLowerCase() : '';
+  }
+
+  const privacy = getSettings('#SDHub-Gallery-imgchest-Privacy') || 'hidden';
+  const nsfw = getSettings('#SDHub-Gallery-imgchest-NSFW') || 'true';
+
+  const data = new FormData();
+  files.forEach(img => data.append('images[]', img));
+  data.append('title', fn);
+  data.append('privacy', privacy);
+  data.append('nsfw', nsfw);
+
+  try {
+    const upload = await fetch(url, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apikey.value.trim()}` },
+      body: data
+    });
+
+    const result = await upload.json();
+    console.log('Uploaded:', result);
+    return result;
+  } catch (error) {
+    console.error('Upload failed:', error);
   }
 }
