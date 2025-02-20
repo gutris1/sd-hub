@@ -10,6 +10,10 @@ import gradio as gr
 import sys
 import os
 
+from sd_hub.paths import SDHubPaths
+
+insecureENV = SDHubPaths.getENV()
+
 BASE = '/sd-hub-gallery'
 CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
@@ -25,7 +29,6 @@ outpath = outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in samp
 
 class GalleryState:
     def __init__(self):
-        self.path_list = []
         self.initial_list = []
 
 Gallery = GalleryState()
@@ -64,16 +67,6 @@ def GalleryApi(app: FastAPI):
         Gallery.initial_list = [img['path'] for img in imgs]
         return {'images': imgs}
 
-    @app.get('/sd-hub-gallery-list')
-    async def newImage():
-        imgs = getImage()
-        new_imgs = [img for img in imgs if img['path'] not in Gallery.initial_list]
-        if new_imgs:
-            Gallery.initial_list.extend([img['path'] for img in new_imgs])
-            Gallery.path_list = [img['path'] for img in new_imgs] + Gallery.path_list
-            return {'images': new_imgs}
-        return {'images': []}
-
     @app.get('/sd-hub-gallery/image{img_path:path}')
     async def sendImage(img_path: str):
         fp = Path(img_path)
@@ -91,21 +84,48 @@ def GalleryApi(app: FastAPI):
     async def deleteImage(req: Request):
         d = await req.json()
         fp = Path(d['path'])
-
         if fp.exists():
             fp.unlink()
-
             if str(fp) in Gallery.initial_list:
                 Gallery.initial_list.remove(str(fp))
-            if str(fp) in Gallery.path_list:
-                Gallery.path_list.remove(str(fp))
-
         return {'status': 'deleted'}
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     GalleryApi(app)
 
 def GalleryTab():
+    if insecureENV:
+        with gr.Column(elem_id='SDHub-Gallery-imgchest-Column'):
+            gr.Checkbox(label='Auto Upload to imgchest.com', elem_id='SDHub-Gallery-imgchest-Checkbox')
+
+            with FormRow():
+                privacyset = gr.Radio(
+                    ['Hidden', 'Public'],
+                    value='Hidden',
+                    label='Privacy',
+                    interactive=True,
+                    elem_id='SDHub-Gallery-imgchest-Privacy'
+                )
+
+                nsfwset = gr.Radio(
+                    ['True', 'False'],
+                    value='True',
+                    label='NSFW',
+                    interactive=True,
+                    elem_id='SDHub-Gallery-imgchest-NSFW'
+                )
+
+            apibox = gr.Textbox(
+                show_label=False,
+                placeholder='imgchest API key',
+                max_lines=1,
+                elem_id='SDHub-Gallery-imgchest-API'
+            )
+
+            with FormRow():
+                savebtn = gr.Button('Save', variant='primary', elem_id='SDHub-Gallery-imgchest-Save-Button')
+                loadbtn = gr.Button('Load', variant='primary', elem_id='SDHub-Gallery-imgchest-Load-Button')
+
     with gr.TabItem('Gallery', elem_id='sdhub-gallery-tab'):
         with FormRow(equal_height=False, elem_id='sdhub-gallery-image-info-row'):
             with FormColumn(variant='compact', scale=3):
