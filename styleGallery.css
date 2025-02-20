@@ -27,7 +27,7 @@ body.no-scroll {
   padding: 5px;
 }
 
-#SDHub-Gallery-Tab-Button-Row button {
+#SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button {
   display: none;
   position: relative;
   background: transparent;
@@ -46,13 +46,13 @@ body.no-scroll {
   height: 35px;
 }
 
-#SDHub-Gallery-Tab-Button-Row button.selected {
+#SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button.selected {
   color: var(--button-secondary-text-color);
   background: var(--background-fill-secondary);
   box-shadow: 0 0 10px 2px var(--button-secondary-text-color);
 }
 
-#SDHub-Gallery-Tab-Button-Row button:not(.selected):hover {
+#SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
   box-shadow: 0 0 10px 2px var(--primary-400);
 }
 
@@ -78,7 +78,6 @@ body.no-scroll {
   border-bottom-right-radius: 1rem;
   background: var(--input-background-fill-hover);
   pointer-events: none;
-  z-index: 10;
   color: var(--body-text-color-subdued);
   font-size: var(--block-info-text-size);
 }
@@ -288,7 +287,7 @@ body.no-scroll {
     overflow-x: auto;
   }
 
-  #SDHub-Gallery-Tab-Button-Row button {
+  #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button {
     font-size: unset;
     padding: 4px 10px;
     flex-shrink: 0;
@@ -911,6 +910,7 @@ body.no-scroll {
 /* ############################################################################################################ */
 
 #SDHub-Gallery-imgchest-Button {
+  position: absolute;
   width: max-content;
   display: flex;
   background: var(--background-fill-secondary);
@@ -920,11 +920,20 @@ body.no-scroll {
   pointer-events: auto;
   border: 0;
   margin: 0;
+  margin-top: 3px;
+  z-index: 50;
+  transition: 0.4s ease;
 }
 
 #SDHub-Gallery-imgchest-Button svg {
-  height: 28px;
-  width: 28px;
+  height: 38px;
+  width: 38px;
+  border-radius: 0.5em;
+  transition: 0.4s ease;
+}
+
+#SDHub-Gallery-imgchest-Button svg:hover {
+  box-shadow: inset 0 0 5px 1px var(--button-secondary-text-color);
 }
 
 #SDHub-Gallery-imgchest-Column {
@@ -933,16 +942,31 @@ body.no-scroll {
   opacity: 0;
   display: none;
   position: absolute;
-  width: auto;
+  width: max-content;
   padding: 10px;
   border-radius: 1rem;
-  z-index: 900;
+  z-index: 50;
   max-width: 500px;
   flex-grow: 1;
   min-width: min(320px, 100%);
   border: 2px solid var(--background-fill-secondary);
   background: var(--background-fill-primary);
   transition: transform 0.3s ease, opacity 0.3s ease;
+  gap: 5px;
+}
+
+#SDHub-Gallery-imgchest-Info {
+  cursor: default;
+  text-align: center;
+  color: var(--body-text-color-subdued);
+}
+
+.sdhub-gallery-imgchest-info {
+  transition: 0.6s ease;
+}
+
+.sdhub-gallery-imgchest-info:hover {
+  color: var(--button-secondary-text-color) !important;
 }
 
 #SDHub-Gallery-imgchest-Checkbox {
@@ -950,7 +974,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Checkbox input {
-  transition: 0.4s ease;
+  transition: 0.7s ease;
   cursor: pointer;
   height: 30px;
   padding: 5px;
@@ -960,8 +984,16 @@ body.no-scroll {
   border-radius: var(--button-large-radius);
 }
 
-#SDHub-Gallery-imgchest-Checkbox input:hover {
+#SDHub-Gallery-imgchest-Checkbox span {
+  transition: 0.7s ease;
+}
+
+#SDHub-Gallery-imgchest-Checkbox input:not(:checked):hover {
   box-shadow: inset 0 0 10px 3px var(--checkbox-border-color-focus);
+}
+
+#SDHub-Gallery-imgchest-Checkbox input:checked:hover {
+  background-color: var(--button-primary-background-fill-hover);
 }
 
 #SDHub-Gallery-imgchest-Checkbox span {
@@ -977,6 +1009,18 @@ body.no-scroll {
 #SDHub-Gallery-imgchest-Privacy, 
 #SDHub-Gallery-imgchest-NSFW {
   cursor: auto;
+}
+
+#SDHub-Gallery-imgchest-Privacy label,
+#SDHub-Gallery-imgchest-Privacy input,
+#SDHub-Gallery-imgchest-NSFW label,
+#SDHub-Gallery-imgchest-NSFW input {
+  transition: 0.5s ease;
+}
+
+#SDHub-Gallery-imgchest-Privacy label:hover, 
+#SDHub-Gallery-imgchest-NSFW label:hover {
+  box-shadow: inset 0 0 5px 1px var(--button-secondary-text-color);
 }
 
 #SDHub-Gallery-imgchest-Privacy input, 
@@ -1001,4 +1045,17 @@ body.no-scroll {
 #SDHub-Gallery-imgchest-Save-Button,
 #SDHub-Gallery-imgchest-Load-Button {
   min-width: 185px;
+  padding: 4px 0;
+  font-size: 20px;
+  transition: 0.7s ease;
+}
+
+@media (max-width: 600px) {
+  #SDHub-Gallery-imgchest-Save-Button,
+  #SDHub-Gallery-imgchest-Load-Button {
+    min-width: 100px;
+    padding: 4px 0;
+    font-size: 20px;
+    transition: 0.7s ease;
+  }
 }
