@@ -1,3 +1,17 @@
+import importlib
+try:
+    import sd_hub
+    miso = [
+        'tokenizer', 'downloader', 'archiver', 'uploader', 
+        'paths', 'scraper', 'version', 'infotext', 
+        'zipoutputs', 'shellTab', 'texteditorTab', 'galleryTab'
+    ]
+    for soop in miso:
+        __import__(f'sd_hub.{soop}')
+        importlib.reload(getattr(sd_hub, soop))
+except (AttributeError, ImportError):
+    pass
+
 from modules.script_callbacks import on_ui_tabs, on_app_started
 from modules.ui_components import FormRow, FormColumn
 from fastapi import FastAPI
