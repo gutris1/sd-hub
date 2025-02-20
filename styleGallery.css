@@ -907,3 +907,98 @@ body.no-scroll {
   transform: scale(1.3);
   background: var(--button-secondary-text-color-hover);
 }
+
+/* ############################################################################################################ */
+
+#SDHub-Gallery-imgchest-Button {
+  width: max-content;
+  display: flex;
+  background: var(--background-fill-secondary);
+  border-radius: 0.5em;
+  padding: 1px;
+  cursor: pointer;
+  pointer-events: auto;
+  border: 0;
+  margin: 0;
+}
+
+#SDHub-Gallery-imgchest-Button svg {
+  height: 28px;
+  width: 28px;
+}
+
+#SDHub-Gallery-imgchest-Column {
+  transform-origin: top left;
+  transform: scale(0);
+  opacity: 0;
+  display: none;
+  position: absolute;
+  width: auto;
+  padding: 10px;
+  border-radius: 1rem;
+  z-index: 900;
+  max-width: 500px;
+  flex-grow: 1;
+  min-width: min(320px, 100%);
+  border: 2px solid var(--background-fill-secondary);
+  background: var(--background-fill-primary);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#SDHub-Gallery-imgchest-Checkbox {
+  margin: 0;
+}
+
+#SDHub-Gallery-imgchest-Checkbox input {
+  transition: 0.4s ease;
+  cursor: pointer;
+  height: 30px;
+  padding: 5px;
+  border: 0;
+  width: 100%;
+  background-image: none;
+  border-radius: var(--button-large-radius);
+}
+
+#SDHub-Gallery-imgchest-Checkbox input:hover {
+  box-shadow: inset 0 0 10px 3px var(--checkbox-border-color-focus);
+}
+
+#SDHub-Gallery-imgchest-Checkbox span {
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  position: absolute;
+  font-weight: bold;
+}
+
+#SDHub-Gallery-imgchest-Privacy, 
+#SDHub-Gallery-imgchest-NSFW {
+  cursor: auto;
+}
+
+#SDHub-Gallery-imgchest-Privacy input, 
+#SDHub-Gallery-imgchest-NSFW input {
+  cursor: pointer;
+}
+
+#SDHub-Gallery-imgchest-Privacy > span, 
+#SDHub-Gallery-imgchest-NSFW > span {
+  cursor: default;
+  margin: 0;
+}
+
+#SDHub-Gallery-imgchest-API input {
+  transition: 0.4s ease;
+}
+
+#SDHub-Gallery-imgchest-API input:focus {
+  box-shadow: 0 0 0 1.5px var(--color-accent);
+}
+
+#SDHub-Gallery-imgchest-Save-Button,
+#SDHub-Gallery-imgchest-Load-Button {
+  min-width: 185px;
+}
