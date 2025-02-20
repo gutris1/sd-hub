@@ -686,6 +686,19 @@ function SDHubCreateGallery(GalleryTab) {
 
   SDHubGalleryLoadInitial()
   document.getElementById('SDHub-Gallery-ContextMenu').style.display = 'block';
+
+  const imgchestColumn = document.getElementById('SDHub-Gallery-imgchest-Column');
+  if (imgchestColumn) {
+    const chest = document.createElement('div');
+    chest.id = 'SDHub-Gallery-imgchest-Button';
+    chest.style.display = 'flex';
+    chest.innerHTML = SDHubGalleryImageButtonSVG;
+    chest.append(imgchestColumn);
+    GalleryTab.prepend(chest);
+    document.querySelectorAll('.sdhub-gallery-tab-image-counter').forEach(el => {
+      el.style.top = '90px';
+    });
+  }
 }
 
 function SDHubGalleryTabEventListener(TabCon) {
@@ -767,6 +780,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', (e) => {
     const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
     const SendButton = document.getElementById('SDHubimgInfoSendButton');
+    const imgchestButton = document.getElementById('SDHub-Gallery-imgchest-Button');
+    const imgchestColumn = document.getElementById('SDHub-Gallery-imgchest-Column');
 
     if (GalleryCM) {
       const CMVisible = GalleryCM.style.opacity === '1';
@@ -779,11 +794,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (SendButton && SendButton.contains(e.target)) {
-      e.stopPropagation(); e.preventDefault();
+      e.stopPropagation();
+      e.preventDefault();
       const btn = e.target.closest('button');
       if (btn) window.SDHubCloseImageInfoRow();
     }
-  });
+
+    if (imgchestButton && imgchestColumn) {
+      if (imgchestButton.contains(e.target)) {
+        imgchestColumn.style.display = 'flex';
+        requestAnimationFrame(() => {
+          imgchestColumn.style.opacity = '1';
+          imgchestColumn.style.transform = 'scale(1)';
+        });
+      } else if (!imgchestColumn.contains(e.target)) {
+        imgchestColumn.style.display = 'none';
+        imgchestColumn.style.opacity = '';
+        imgchestColumn.style.transform = '';
+      }
+    }
+  });  
 
   document.addEventListener('contextmenu', (e) => {
     const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
@@ -796,6 +826,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
       if (LightBox && window.getComputedStyle(LightBox).display === 'flex') return;
       else e.stopPropagation(); e.preventDefault(); window.SDHubCloseImageInfoRow();
+    }
+  });
+
+  document.addEventListener('change', () => {
+    const checkboxinput = document.querySelector('#SDHub-Gallery-imgchest-Checkbox input');
+    const checkboxspan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
+
+    if (checkboxinput && checkboxspan) {
+      checkboxspan.style.color = checkboxinput.checked ? 'var(--background-fill-primary)' : '';
     }
   });
 });
