@@ -15,6 +15,7 @@ body.no-scroll {
 
 #SDHub-Gallery-Tab-Button-Row {
   z-index: 5;
+  height: 45px;
   position: relative;
   top: 0;
   gap: 20px;
@@ -933,7 +934,9 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Button svg:hover {
-  box-shadow: inset 0 0 5px 1px var(--button-secondary-text-color);
+  filter: drop-shadow(0 0 10px var(--button-secondary-text-color));
+  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
+  background: var(--button-secondary-text-color);
 }
 
 #SDHub-Gallery-imgchest-Column {
@@ -949,7 +952,8 @@ body.no-scroll {
   max-width: 500px;
   flex-grow: 1;
   min-width: min(320px, 100%);
-  border: 2px solid var(--background-fill-secondary);
+  border: 0;
+  box-shadow: 0 0 6px 2px var(--button-primary-background-fill);
   background: var(--background-fill-primary);
   transition: transform 0.3s ease, opacity 0.3s ease;
   gap: 5px;
@@ -1047,15 +1051,17 @@ body.no-scroll {
   min-width: 185px;
   padding: 4px 0;
   font-size: 20px;
-  transition: 0.7s ease;
+  transition: 0.4s ease;
+}
+
+#SDHub-Gallery-imgchest-Save-Button:hover,
+#SDHub-Gallery-imgchest-Load-Button:hover {
+  box-shadow: 0 0 10px 2px var(--button-primary-background-fill);
 }
 
 @media (max-width: 600px) {
   #SDHub-Gallery-imgchest-Save-Button,
   #SDHub-Gallery-imgchest-Load-Button {
     min-width: 100px;
-    padding: 4px 0;
-    font-size: 20px;
-    transition: 0.7s ease;
   }
 }
