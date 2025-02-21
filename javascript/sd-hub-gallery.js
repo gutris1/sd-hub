@@ -81,8 +81,9 @@ function SDHubGalleryLoadInitial() {
 
           if (img) {
             img.src = path;
+            img.title = fn;
+
             img.onload = () => {
-              img.title = fn;
               loaded++;
               if (loaded === total) {
                 console.log('all-loaded');
@@ -190,6 +191,7 @@ function SDHubGalleryGetNewImage(whichGallery) {
   let loaded = 0;
   let selectedTab = false;
   let files = [];
+  let fileNames = [];
 
   document
     .querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]')
@@ -207,7 +209,10 @@ function SDHubGalleryGetNewImage(whichGallery) {
 
     const imgEL = img[index];
     let src = imgEL.getAttribute("src");
-    if (!src || !src.includes("/file=")) return;
+    if (!src || !src.includes("/file=")) {
+      requestAnimationFrame(() => processImage(index + 1));
+      return;
+    }
 
     let imgSrc = src.split("/file=")[1].split("?")[0];
     let path = `/sd-hub-gallery/image${imgSrc}`;
@@ -239,24 +244,30 @@ function SDHubGalleryGetNewImage(whichGallery) {
 
       if (newImg) {
         newImg.src = path;
-        newImg.onload = async () => {
-          newImg.title = fn;
-          try {
-            const response = await fetch(path);
-            const blob = await response.blob();
+        newImg.title = fn;
+        fileNames.push(fn);
+
+        newImg.onload = () => {
+          loaded++;
+          if (loaded === total) {
+            console.log('all-loaded');
+          }
+        };
+
+        fetch(path)
+          .then(response => response.blob())
+          .then(blob => {
             const mimeType = blob.type;
             newImg.fileObject = new File([blob], fn, { type: mimeType });
             files.push(newImg.fileObject);
-          } catch (error) {
-            console.error("Error fetching:", error);
-          }
 
-          loaded++;
-          if (loaded === total) {
-            SDHubGalleryImgChest(files, [fn]);
-            files = [];
-          }
-        };
+            if (files.length === total) {
+              SDHubGalleryImgChest(files, fileNames);
+              files = [];
+              fileNames = [];
+            }
+          })
+          .catch(error => console.error("Error fetching:", error));
       }
 
       TabCon.prepend(newimgBox);
@@ -694,7 +705,7 @@ function SDHubCreateGallery(GalleryTab) {
     const chestButton = document.createElement('div');
     chestButton.id = 'SDHub-Gallery-imgchest-Button';
     chestButton.style.display = 'flex';
-    chestButton.innerHTML = SDHubGalleryImageButtonSVG;
+    chestButton.innerHTML = SDHubGalleryimgchestSVG;
     chestButton.prepend(imgchestColumn);
     GalleryTab.prepend(chestButton);
     TabRow.style.marginLeft = '40px';
