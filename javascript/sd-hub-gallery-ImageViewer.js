@@ -110,10 +110,11 @@ function SDHubGalleryImageViewer(mode) {
 
       setTimeout(() => {
         LightBox.style.display = 'none';
-        if (imgEL) imgEL.remove();
         Wrapper.style.transform = '';
         document.removeEventListener('mouseleave', MouseLeave);
         document.removeEventListener('mouseup', MouseUp);
+        const imgEL = document.getElementById('SDHub-Gallery-Image-Viewer-img');
+        if (imgEL) imgEL.remove();
       }, 200);
     }
   };
