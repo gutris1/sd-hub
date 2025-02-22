@@ -945,6 +945,9 @@ function SDHubGalleryCreateLightBox() {
     SDHubGalleryPrevImage();
   };
 
+  const Wrapper = document.createElement('div');
+  Wrapper.id = 'SDHub-Gallery-Image-Viewer-Wrapper';
+
   document.addEventListener('keydown', (e) => {
     const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
     const NextBtn = document.getElementById('SDHub-Gallery-Image-Viewer-Next-Button');
@@ -980,7 +983,7 @@ function SDHubGalleryCreateLightBox() {
   };
 
   Control.append(NextBtn, PrevBtn, CloseBtn);
-  LightBox.append(Control);
+  LightBox.append(Control, Wrapper);
 
   return LightBox;
 }
