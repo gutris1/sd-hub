@@ -24,7 +24,7 @@ onAfterUiUpdate(function() {
 });
 
 function SDHubGalleryLoadInitial() {
-  fetch('/sd-hub-gallery-initial')
+  fetch('/sd-hub-gallery/initial')
     .then(response => response.json())
     .then(data => {
       if (!data.images?.length) return;
@@ -494,7 +494,7 @@ function SDHubGalleryDeletion() {
     Box.style.opacity = '0';
     Box.style.transform = 'scale(1.5)';
 
-    fetch('/sd-hub-gallery-delete', {
+    fetch('/sd-hub-gallery/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ path }),
