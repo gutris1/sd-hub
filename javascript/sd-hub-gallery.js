@@ -85,6 +85,7 @@ function SDHubGalleryLoadInitial() {
 
             img.onload = () => {
               loaded++;
+              img.parentElement.style.backgroundImage = 'none';
               if (loaded === total) {
                 console.log('all-loaded');
                 SDHubGalleryTabImageCounters();
@@ -249,6 +250,7 @@ function SDHubGalleryGetNewImage(whichGallery) {
 
         newImg.onload = () => {
           loaded++;
+          newImg.parentElement.style.backgroundImage = 'none';
           if (loaded === total) {
             console.log('all-loaded');
           }
