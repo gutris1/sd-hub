@@ -23,11 +23,16 @@ chest = Path(basedir()) / '.imgchest.json'
 
 sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
 grid_dirs = [opts.outdir_txt2img_grids, opts.outdir_img2img_grids]
+etc_dirs = [opts.outdir_save, opts.outdir_init_images]
+
 outdir_samples = [Path(opts.outdir_samples) / today] if opts.outdir_samples else []
 outdir_grids = [Path(opts.outdir_grids) / today] if opts.outdir_grids else []
 outdir_extras = [Path(opts.outdir_samples)] if opts.outdir_samples else []
 
-outpath = outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in sample_dirs + grid_dirs if d]
+outpath = (
+    outdir_samples + outdir_grids + outdir_extras +
+    [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d]
+)
 
 def Saveimgchest(privacy, nsfw, api):
     chest.write_text(json.dumps({'privacy': privacy, 'nsfw': nsfw, 'api': api}, indent=4))
@@ -39,12 +44,6 @@ def Loadimgchest():
         d = json.loads(chest.read_text())
         return tuple(d.get(k, v) for k, v in zip(['privacy', 'nsfw', 'api'], default))
     return default
-
-class GalleryState:
-    def __init__(self):
-        self.initial_list = []
-
-Gallery = GalleryState()
 
 def getCTimes(path: Path):
     return (
@@ -66,45 +65,47 @@ def getImage():
 
     results = []
     for path in img:
-        query_suffix = '?extras' if path.parent in outdir_extras else ''
-        results.append({'path': f'{BASE}/image{quote(str(path.resolve()))}{query_suffix}'})
+        src = str(path.parent)
+
+        if src == opts.outdir_save: query = '?save'
+        elif src == opts.outdir_init_images: query = '?init'
+        elif path.parent in outdir_extras: query = '?extras'
+        else: query = ''
+
+        results.append({'path': f'{BASE}/image{quote(str(path.resolve()))}{query}'})
 
     return results
 
-def GalleryApi(app: FastAPI):
+def Gallery(app: FastAPI):
     headers = {'Cache-Control': 'public, max-age=31536000'}
 
-    @app.get('/sd-hub-gallery-initial')
+    @app.get(BASE + '/initial')
     async def initialLoad():
         imgs = getImage()
-        Gallery.initial_list = [img['path'] for img in imgs]
         return {'images': imgs}
 
-    @app.get('/sd-hub-gallery/image{img_path:path}')
-    async def sendImage(img_path: str):
-        fp = Path(img_path)
+    @app.get(BASE + '/image{img:path}')
+    async def sendImage(img: str):
+        fp = Path(img)
         if fp.exists():
             return responses.FileResponse(fp, headers=headers)
         raise HTTPException(status_code=404, detail='Image not found')
 
-    @app.get('/sd-hub-gallery/styleGallery.css')
+    @app.get(BASE + '/styleGallery.css')
     async def sendCSS():
         if CSS.exists():
             return responses.FileResponse(CSS, media_type='text/css')
         raise HTTPException(status_code=404, detail='CSS file not found')
 
-    @app.post('/sd-hub-gallery-delete')
+    @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
         d = await req.json()
         fp = Path(d['path'])
-        if fp.exists():
-            fp.unlink()
-            if str(fp) in Gallery.initial_list:
-                Gallery.initial_list.remove(str(fp))
+        if fp.exists(): fp.unlink()
         return {'status': 'deleted'}
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
-    GalleryApi(app)
+    Gallery(app)
 
 def GalleryTab():
     if insecureENV:

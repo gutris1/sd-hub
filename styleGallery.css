@@ -117,32 +117,33 @@ body.no-scroll {
   position: relative;
   overflow: hidden;
   border-radius: 0.5rem;
-  box-shadow: 0 0 5px 1px #000;
+  box-shadow: 0 0 3px 2px #000;
   transition: 0.3s ease;
 }
 
 #SDHub-Gallery-Image-Wrapper {
   display: flex;
+  overflow: hidden;
   align-self: center;
   justify-content: center;
   align-items: center;
   min-height: 1rem;
   min-width: 1rem;
   border: 0;
-  border-radius: 0.75rem;
+  border-radius: 0.6rem;
   background-size: contain;
   background-position: center;
   background-image: url(https://huggingface.co/pantat88/ui/resolve/main/card-no-preview.png);
 }
 
 #SDHub-Gallery-Image {
-  transition: 0.3s ease;
   max-width: 240px;
   max-height: 240px;
   object-fit: contain;
   border-radius: 0.6rem;
   user-select: none;
   -webkit-user-select: none;
+  transition: 0.5s ease;
 }
 
 .sdhub-gallery-image-loading {
@@ -224,6 +225,10 @@ body.no-scroll {
 
 #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Empty-Frame {
   box-shadow: inset 0 0 30px 20px #000;
+}
+
+#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image {
+  transform: scale(1.15);
 }
 
 #SDHub-Gallery-Image-Box-0 {
@@ -952,8 +957,6 @@ body.no-scroll {
 
 #SDHub-Gallery-imgchest-Column {
   transform-origin: top left;
-  transform: scale(0);
-  opacity: 0;
   display: none;
   position: absolute;
   width: max-content;
@@ -966,8 +969,11 @@ body.no-scroll {
   border: 0;
   box-shadow: 0 0 6px 2px var(--button-primary-background-fill);
   background: var(--background-fill-primary);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.4s ease, opacity 0.3s ease;
   gap: 5px;
+  overflow: hidden;
 }
 
 #SDHub-Gallery-imgchest-Info {
@@ -1059,7 +1065,8 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-API input:focus {
-  box-shadow: 0 0 0 1.5px var(--color-accent);
+  filter: drop-shadow(0 0 1px var(--button-secondary-text-color));
+  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
 }
 
 #SDHub-Gallery-imgchest-Save-Button,
