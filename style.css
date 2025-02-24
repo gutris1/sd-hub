@@ -96,7 +96,8 @@
 #sdhub-archiver-extr-outputpath input:focus,
 #sdhub-texteditor-inputs input:focus,
 #sdhub-shell-inputs textarea:focus {
-  box-shadow: 0 0 0 1.5px var(--color-accent);
+  filter: drop-shadow(0 0 1px var(--button-secondary-text-color));
+  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
 }
 
 .gradio-container-4-40-0 #sdhub-downloader-button-row,
