@@ -228,7 +228,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image {
-  transform: scale(1.2);
+  transform: scale(1.15);
 }
 
 #SDHub-Gallery-Image-Box-0 {
@@ -957,8 +957,6 @@ body.no-scroll {
 
 #SDHub-Gallery-imgchest-Column {
   transform-origin: top left;
-  transform: scale(0);
-  opacity: 0;
   display: none;
   position: absolute;
   width: max-content;
@@ -971,8 +969,11 @@ body.no-scroll {
   border: 0;
   box-shadow: 0 0 6px 2px var(--button-primary-background-fill);
   background: var(--background-fill-primary);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.4s ease, opacity 0.3s ease;
   gap: 5px;
+  overflow: hidden;
 }
 
 #SDHub-Gallery-imgchest-Info {
@@ -1064,7 +1065,8 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-API input:focus {
-  box-shadow: 0 0 0 1.5px var(--color-accent);
+  filter: drop-shadow(0 0 1px var(--button-secondary-text-color));
+  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
 }
 
 #SDHub-Gallery-imgchest-Save-Button,
