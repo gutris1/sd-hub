@@ -91,12 +91,6 @@ def Gallery(app: FastAPI):
             return responses.FileResponse(fp, headers=headers)
         raise HTTPException(status_code=404, detail='Image not found')
 
-    @app.get(BASE + '/styleGallery.css')
-    async def sendCSS():
-        if CSS.exists():
-            return responses.FileResponse(CSS, media_type='text/css')
-        raise HTTPException(status_code=404, detail='CSS file not found')
-
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
         d = await req.json()
