@@ -161,8 +161,19 @@ def onSDHUBTab():
                     )
 
                     with FormRow():
-                        upl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
-                        upl_load = gr.Button(value="LOAD", variant="primary", min_width=0)                               
+                        upl_save = gr.Button(
+                            value="SAVE",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-uploader-save-button"
+                        )
+
+                        upl_load = gr.Button(
+                            value="LOAD",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-uploader-load-button"
+                        )                               
 
             with FormRow():
                 user_box = gr.Textbox(
@@ -211,7 +222,11 @@ def onSDHUBTab():
 
             with FormRow(elem_id="sdhub-uploader-button-row"):
                 with FormColumn(scale=1):
-                    upl_btn = gr.Button("UPLOAD", variant="primary")
+                    upl_btn = gr.Button(
+                        "UPLOAD",
+                        variant="primary",
+                        elem_id="sdhub-uploader-upload-button"
+                    )
 
                 with FormColumn(scale=1):
                     gr.Button("hantu", variant="primary", elem_classes="hide-this")
