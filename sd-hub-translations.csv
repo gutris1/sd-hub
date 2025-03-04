@@ -1,0 +1,39 @@
+﻿Key;en;ja;zh-CN;zh-TW;es;ko;ru
+// gallery imgchest;;;;;;;
+auto_upload_to;Auto Upload to;自動アップロード先;自动上传到;自動上傳到;Carga automática a;자동 업로드 대상;Авто загрузка на
+enabled;Enabled;有効;已启用;已啟用;Habilitado;사용함;Включено
+click_to_enable;Click to Enable;クリックして有効にする;点击启用;點擊啟用;Haz clic para habilitar;클릭하여 활성화;Нажмите для включения
+hidden;Hidden;非表示;隐藏;隱藏;Oculto;숨김;Скрыто
+public;Public;公共;公开;公開;Público;공개;Общественный
+true;True;真;真;真;Verdadero;참;Правда
+false;False;偽;假;假;Falso;거짓;Ложь
+imgchest_api_key;imgchest API key;imgchest API キー;imgchest API 密钥;imgchest API 金鑰;clave API de imgchest;imgchest API 키;Ключ API imgchest
+// gallery tab counter;;;;;;;
+item;item;個;项;項;artículo;개;предмет
+items;items;個;项;項;artículos;개;предметы
+// gallery context menu;;;;;;;
+image_viewer;Image Viewer;画像ビューア;图片查看器;圖片檢視器;Visor de imágenes;이미지 뷰어;Просмотр изображений
+uploader;Uploader;アップローダー;上传器;上傳器;Cargador;업로더;Загрузчик
+open_new_tab;Open image in new tab;新しいタブで画像を開く;在新标签页打开图片;在新分頁開啟圖片;'Abrir imagen en nueva pestaña;새 탭에서 이미지 열기;Открыть изображение в новой вкладке
+download;Download;ダウンロード;下载;下載;Descargar;다운로드;Скачать
+image_info;Image Info;画像情報;图片信息;圖片訊息;Información de la imagen;이미지 정보;Информация о изображении
+send_to;Send To...;送信先...;发送到...;發送到...;Enviar a...;보내기...;Отправить в...
+delete;Delete;削除;删除;刪除;Eliminar;삭제;Удалить
+yes;Yes;はい;是;是;Sí;예;Да
+no;No;いいえ;否;否;No;아니요;Нет
+// gradio image clear button;;;;;;;
+clear;Clear;クリア;清除;Clear;Borrar;지우기;Очистить
+remove_image;Remove Image;画像を削除;删除图片;Remove Image;Eliminar imagen;이미지 삭제;Удалить изображение
+// load and save button;;;;;;;
+load;Load;ロード;加载;載入;Cargar;불러오기;Загрузить
+save;Save;セーブ;保存;儲存;Guardar;저장;Сохранить
+// tab title;;;;;;;
+download_command_center;Download Command Center;ダウンロードコマンドセンター;下载命令中心;下載命令中心;Centro de comandos de descarga;다운로드 명령 센터;Центр команд загрузки
+upload_to_huggingface;Upload to Huggingface;Huggingfaceにアップロード;上传到Huggingface;上傳到Huggingface;Subir a Huggingface;Huggingface에 업로드;Загрузить на Huggingface
+// token box;;;;;;;
+huggingface_token_read;Huggingface Token (READ);Huggingface トークン (読み取り);Huggingface Token（读取）;Huggingface Token（讀取）;Token de Huggingface (LECTURA);Huggingface Token (읽기);Huggingface Token (ЧТЕНИЕ)
+huggingface_token_placeholder_read;Your Huggingface Token here (role = READ);ここにHuggingfaceトークン（読み取り）を入力;您的Huggingface Token（角色 = 读取）;您的Huggingface Token（角色 = 讀取）;Tu Token de Huggingface aquí (rol = LECTURA);여기에서 Huggingface 토큰 (역할 = 읽기);Ваш Huggingface Token здесь (роль = ЧТЕНИЕ)
+civitai_api_key;Civitai API Key;Civitai API キー;Civitai API 密钥;Civitai API 金鑰;Clave API de Civitai;Civitai API 키;API ключ Civitai
+civitai_api_key_placeholder;Your Civitai API Key here;Civitai APIキーを入力;在此输入Civitai API密钥;在此輸入Civitai API金鑰;Tu Clave API de Civitai aquí;여기에 Civitai API 키를 입력하세요;Введите свой Civitai API ключ здесь
+huggingface_token_write;Huggingface Token (WRITE);Huggingface トークン (書き込み);Huggingface Token（写入）;Huggingface Token（寫入）;Token de Huggingface (ESCRITURA);Huggingface Token (쓰기);Huggingface Token (ЗАПИСЬ)
+huggingface_token_placeholder_write;Your Huggingface Token here (role = WRITE);ここにHuggingfaceトークン（書き込み）を入力;您的Huggingface Token（角色 = 写入）;您的Huggingface Token（角色 = 寫入）;Tu Token de Huggingface aquí (rol = ESCRITURA);여기에서 Huggingface 토큰 (역할 = 쓰기);Ваш Huggingface Token здесь (роль = ЗАПИСЬ)
