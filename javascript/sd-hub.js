@@ -159,6 +159,7 @@ onUiLoaded(function () {
   SDHubTextEditorGalleryScrollBar();
   SDHubTextEditorCTRLS();
   SDHubShellShiftEnter();
+  SDHubTabTranslation();
   onSDHubTabChanges();
 });
 
@@ -209,50 +210,116 @@ function onSDHubTabChanges() {
   });
 }
 
-function SDHubTranslateUI(text, count = 1) {
-  const lang = navigator.language || navigator.languages[0] || 'en';
+let SDHubTranslations = {};
 
-  const translations = {
-    auto_upload_to: ['Auto Upload to', '自動アップロード先', '自动上传到', '自动上传到', 'Carga automática a', 'Unggah otomatis ke', '자동 업로드 대상'],
-    enabled: ['Enabled', '有効', '已启用', '已启用', 'Habilitado', 'Diaktifkan', '사용함'],
-    click_to_enable: ['Click to Enable', 'クリックして有効にする', '点击启用', '点击启用', 'Haz clic para habilitar', 'Klik untuk mengaktifkan', '클릭하여 활성화'],
-    hidden: ['Hidden', '非表示', '隐藏', '隐藏', 'Oculto', 'Tersembunyi', '숨김'],
-    public: ['Public', '公開', '公开', '公开', 'Público', 'Publik', '공개'],
-    true: ['True', '真', '真', '真', 'Verdadero', 'True', '참'],
-    false: ['False', '偽', '假', '假', 'Falso', 'False', '거짓'],
-    imgchest_api_key: ['imgchest API key', 'imgchest API キー', 'imgchest API 密钥', 'imgchest API 密钥', 'clave API de imgchest', 'kunci API imgchest', 'imgchest API 키'],
-    item: ['item', '個', '项', '项', 'artículo', 'item', '개'],
-    items: ['items', '個', '项', '项', 'artículos', 'item', '개'],
-    image_viewer: ['Image Viewer', '画像ビューア', '图片查看器', '图片查看器', 'Visor de imágenes', 'Penampil Gambar', '이미지 뷰어'],
-    uploader: ['Uploader', 'アップローダー', '上传器', '上传器', 'Cargador', 'Pengunggah', '업로더'],
-    open_new_tab: ['Open image in new tab', '新しいタブで画像を開く', '在新标签页打开图片', '在新标签页打开图片', 'Abrir imagen en nueva pestaña', 'Buka gambar di tab baru', '새 탭에서 이미지 열기'],
-    download: ['Download', 'ダウンロード', '下载', '下载', 'Descargar', 'Unduh', '다운로드'],
-    image_info: ['Image Info', '画像情報', '图片信息', '图片信息', 'Información de la imagen', 'Info Gambar', '이미지 정보'],
-    send_to: ['Send To...', '送信先...', '发送到...', '发送到...', 'Enviar a...', 'Kirim ke...', '보내기...'],
-    delete: ['Delete', '削除', '删除', '删除', 'Eliminar', 'Hapus', '삭제'],
-    yes: ['Yes', 'はい', '是', '是', 'Sí', 'Ya', '예'],
-    no: ['No', 'いいえ', '否', '否', 'No', 'Tidak', '아니요'],
-    clear: ['Clear', 'クリア', '清除', '清除', 'Borrar', 'Hapus', '지우기'],
-    remove_image: ['Remove Image', '画像を削除', '删除图片', '删除图片', 'Eliminar imagen', 'Hapus Gambar', '이미지 삭제'],
-    load: ['Load', 'ロード', '加载', '加载', 'Cargar', 'Muat', '불러오기'],
-    save: ['Save', 'セーブ', '保存', '保存', 'Guardar', 'Simpan', '저장']
-  };
+const SDHubLangIndex = {
+  en: 1,
+  ja: 2,
+  'zh-CN': 3,
+  'zh-TW': 4,
+  es: 5,
+  ko: 6,
+  ru: 7
+};
 
-  const languageIndex = {
-    en: 0,
-    ja: 1,
-    zh: 2,
-    'zh-CN': 3,
-    es: 4,
-    id: 5,
-    ko: 6
-  };
+function SDHubParseCSV(csvText) {
+  const rows = csvText.split('\n').map(row => row.split(';'));
+  const headers = rows[0];
 
-  const selectedLangIndex = languageIndex[lang] || languageIndex['en'];
+  SDHubTranslations = {};
 
-  if (text === 'item' || text === 'items') {
-    return translations[text][selectedLangIndex] || (count === 1 ? 'item' : 'items');
+  Object.keys(SDHubLangIndex).forEach(lang => {
+    SDHubTranslations[lang] = {};
+  });
+
+  const relevantRows = rows.slice(1).filter(row => row[0] && !row[0].startsWith("//"));
+
+  relevantRows.forEach(row => {
+    const key = row[0].trim();
+    if (!key) return;
+
+    Object.keys(SDHubLangIndex).forEach(lang => {
+      const langIndex = SDHubLangIndex[lang];
+      if (langIndex < row.length) {
+        const translation = row[langIndex]?.trim();
+        if (translation && translation !== '') {
+          SDHubTranslations[lang][key] = translation;
+        } else {
+          SDHubTranslations[lang][key] = key;
+        }
+      } else {
+        SDHubTranslations[lang][key] = key;
+      }
+    });
+  });
+}
+
+function getSDHubTranslation(key, count = 1) {
+  let lang = navigator.language || navigator.languages[0] || 'en';
+
+  if (key === 'item' || key === 'items') {
+    if (SDHubTranslations[lang] && SDHubTranslations[lang][key]) return SDHubTranslations[lang][key];
+    if (SDHubTranslations['en'] && SDHubTranslations['en'][key]) return SDHubTranslations['en'][key];
+    return count === 1 ? 'item' : 'items';
   }
 
-  return translations[text.toLowerCase()] ? translations[text.toLowerCase()][selectedLangIndex] : text;
+  if (SDHubTranslations[lang] && SDHubTranslations[lang][key]) return SDHubTranslations[lang][key];
+  if (SDHubTranslations['en'] && SDHubTranslations['en'][key]) return SDHubTranslations['en'][key];
+  return key;
 }
+
+function SDHubTabTranslation() {
+  ['.sdhub-downloader-tab-title', '.sdhub-uploader-tab-title'].forEach(tab => {
+    let title = document.querySelector(tab);
+    if (title) {
+      let key = tab === '.sdhub-downloader-tab-title' ? 'download_command_center' : 'upload_to_huggingface';
+      if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = getSDHubTranslation(key);
+    }
+  });
+
+  const tokens = [
+    { selector: '#sdhub-downloader-token1 > label > span', key: 'huggingface_token_read' },
+    { selector: '#sdhub-downloader-token2 > label > span', key: 'civitai_api_key' },
+    { selector: '#sdhub-uploader-token > label > span', key: 'huggingface_token_write' },
+    { selector: '#sdhub-downloader-token1 > label > input', key: 'huggingface_token_placeholder_read' },
+    { selector: '#sdhub-downloader-token2 > label > input', key: 'civitai_api_key_placeholder' },
+    { selector: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder_write' }
+  ];
+
+  tokens.forEach(({ selector, key }) => {
+    let el = document.querySelector(selector);
+    if (el) {
+      if (el.tagName === 'INPUT') {
+        el.placeholder = getSDHubTranslation(key);
+      } else {
+        el.textContent = getSDHubTranslation(key);
+      }
+    }
+  });
+
+  ['load', 'save'].forEach((key) => {
+    const button = document.querySelector(`#sdhub-downloader-${key}-button`);
+    if (button) button.textContent = getSDHubTranslation(key.toLowerCase());
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
+  const path = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
+  const file = `${path}sd-hub-translations.csv`;
+  const csv = document.createElement('script');
+  csv.type = 'text/csv';
+  csv.id = 'SDHub-Translation-CSV';
+
+  fetch(file)
+    .then(response => response.text())
+    .then(csvText => {
+      csv.textContent = csvText;
+      document.body.appendChild(csv);
+      SDHubParseCSV(csvText);
+      SDHubGalleryDOMLoaded(path);
+    })
+    .catch(err => {
+      console.error('Error loading CSV:', err);
+    });
+});
