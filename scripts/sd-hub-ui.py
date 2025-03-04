@@ -1,3 +1,17 @@
+import importlib
+try:
+    import sd_hub
+    miso = [
+        'tokenizer', 'downloader', 'archiver', 'uploader', 
+        'paths', 'scraper', 'version', 'infotext', 
+        'zipoutputs', 'shellTab', 'texteditorTab', 'galleryTab'
+    ]
+    for soop in miso:
+        __import__(f'sd_hub.{soop}')
+        importlib.reload(getattr(sd_hub, soop))
+except (AttributeError, ImportError):
+    pass
+
 from modules.script_callbacks import on_ui_tabs, on_app_started
 from modules.ui_components import FormRow, FormColumn
 from fastapi import FastAPI
@@ -43,12 +57,23 @@ def onSDHUBTab():
                         max_lines=1,
                         placeholder="Your Civitai API Key here",
                         interactive=True,
-                        elem_id="sdhub-downloader-token1"
+                        elem_id="sdhub-downloader-token2"
                     )
 
                     with FormRow():
-                        dl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
-                        dl_load = gr.Button(value="LOAD", variant="primary", min_width=0)
+                        dl_save = gr.Button(
+                            value="SAVE",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-downloader-save-button"
+                        )
+
+                        dl_load = gr.Button(
+                            value="LOAD",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-downloader-load-button"
+                        )
 
             dl_input = gr.Textbox(
                 show_label=False,
@@ -59,14 +84,18 @@ def onSDHUBTab():
 
             with FormRow(elem_id="sdhub-downloader-button-row"):
                 with FormColumn(scale=1):
-                    dl_dl = gr.Button("DOWNLOAD", variant="primary")
+                    dl_dl = gr.Button(
+                        "DOWNLOAD",
+                        variant="primary",
+                        elem_id="sdhub-downloader-download-button"
+                    )
 
                 with FormColumn(scale=1), FormRow(variant="compact"):
                     dl_scrape = gr.Button(
                         "Scrape",
                         variant="secondary",
                         min_width=0,
-                        elem_id="sdhub-downloader-scrape"
+                        elem_id="sdhub-downloader-scrape-button"
                     )
 
                     dl_txt = gr.UploadButton(
@@ -75,7 +104,7 @@ def onSDHUBTab():
                         file_count="single",
                         file_types=[".txt"],
                         min_width=0,
-                        elem_id="sdhub-downloader-txt"
+                        elem_id="sdhub-downloader-txt-button"
                     )
 
                 with FormColumn(scale=2, variant="compact"):
