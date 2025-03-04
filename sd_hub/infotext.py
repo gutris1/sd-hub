@@ -8,7 +8,7 @@ from sd_hub.version import version
 blt = "<strong>•</strong>"
 
 dl_title = """
-<h3 id="sdhub-tab-title" style="
+<h3 id='sdhub-tab-title' class='sdhub-downloader-tab-title' style="
     display: flex;
     align-items: center;
     justify-content: center;">
@@ -61,7 +61,7 @@ def getUploaderSVG():
 uploaderSVG = getUploaderSVG()
 
 upl_title = f"""
-<h3 id="sdhub-tab-title" style="
+<h3 id='sdhub-tab-title' class='sdhub-uploader-tab-title' style="
     display: flex; 
     flex-wrap: wrap; 
     align-items: center; 
