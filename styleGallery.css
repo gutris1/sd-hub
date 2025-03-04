@@ -48,9 +48,9 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button.selected {
-  color: var(--button-secondary-text-color);
+  color: var(--primary-400);
   background: var(--background-fill-secondary);
-  box-shadow: 0 0 10px 2px var(--button-secondary-text-color);
+  box-shadow: 0 0 10px 2px var(--primary-400);
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
@@ -155,7 +155,7 @@ body.no-scroll {
   transform: scale(0);
   padding: 2px;
   border-radius: 0;
-  color: var(--button-secondary-text-color);
+  color: var(--primary-400);
   background: var(--input-background-fill);
   box-shadow: 0 0 3px 1px #000;
   cursor: pointer;
@@ -416,7 +416,7 @@ body.no-scroll {
   right: 0;
   margin-right: 0 !important;
   transition: transform 0.3s ease;
-  color: var(--button-secondary-text-color) !important;
+  color: var(--primary-400) !important;
 }
 
 #sdhub-cm-sendto-menu {
@@ -470,7 +470,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-ContextMenu li:hover .sdhub-gallery-cm-svg {
-  color: var(--button-secondary-text-color-hover);
+  color: var(--primary-400);
 }
 
 /* ############################################################################################################ */
@@ -535,7 +535,7 @@ body.no-scroll {
   pointer-events: auto;
   cursor: pointer;
   border: 0;
-  color: var(--button-secondary-text-color);
+  color: var(--primary-400);
   background: transparent;
   position: absolute;
   filter: drop-shadow(0 0 3px #000);
@@ -548,7 +548,7 @@ body.no-scroll {
 
 .sdhub-gallery-image-viewer-button:hover {
   transform: scale(1.3);
-  color: var(--button-secondary-text-color-hover);
+  color: var(--primary-400);
 }
 
 #SDHub-Gallery-Image-Viewer-Next-Button {
@@ -860,7 +860,7 @@ body.no-scroll {
 
 #SDHub-Gallery-Delete-Spinner {
   z-index: 5;
-  color: var(--button-secondary-text-color);
+  color: var(--primary-400);
   pointer-events: none;
   visibility: hidden;
   transition: 0.3s ease;
@@ -879,7 +879,7 @@ body.no-scroll {
   padding: 20px;
   border-radius: 0.5rem;
   text-align: center;
-  box-shadow: 0 0 10px 2px var(--button-secondary-text-color);
+  box-shadow: 0 0 10px 2px var(--primary-400);
   transform: scale(0);
   opacity: 1;
   transition: transform 0.4s ease, opacity 0.4s ease;
@@ -920,7 +920,9 @@ body.no-scroll {
 
 .sdhub-gallery-delete-button:hover {
   transform: scale(1.3);
-  background: var(--button-secondary-text-color-hover);
+  filter: drop-shadow(0 0 5px var(--primary-400));
+  box-shadow: 0 0 10px 1px var(--primary-400);
+  background: var(--primary-400);
 }
 
 /* ############################################################################################################ */
@@ -949,9 +951,9 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Button svg:hover {
-  filter: drop-shadow(0 0 10px var(--button-secondary-text-color));
-  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
-  background: var(--button-secondary-text-color);
+  filter: drop-shadow(0 0 10px var(--primary-400));
+  box-shadow: 0 0 10px 1px var(--primary-400);
+  background: var(--primary-400);
 }
 
 #SDHub-Gallery-imgchest-Column {
@@ -966,7 +968,7 @@ body.no-scroll {
   flex-grow: 1;
   min-width: min(320px, 100%);
   border: 0;
-  box-shadow: 0 0 6px 2px var(--button-primary-background-fill);
+  box-shadow: 0 0 6px 2px var(--primary-400);
   background: var(--background-fill-primary);
   opacity: 0;
   transform: scale(0);
@@ -986,7 +988,7 @@ body.no-scroll {
 }
 
 .sdhub-gallery-imgchest-info:hover {
-  color: var(--button-secondary-text-color) !important;
+  color: var(--primary-400) !important;
 }
 
 #SDHub-Gallery-imgchest-Checkbox {
@@ -1017,8 +1019,8 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:checked:hover {
-  background-color: var(--button-primary-background-fill-hover);
-  box-shadow: 0 0 10px 2px var(--button-primary-background-fill);
+  background-color: var(--primary-400);
+  box-shadow: 0 0 10px 2px var(--primary-400);
 }
 
 #SDHub-Gallery-imgchest-Checkbox span {
@@ -1045,7 +1047,7 @@ body.no-scroll {
 
 #SDHub-Gallery-imgchest-Privacy label:hover, 
 #SDHub-Gallery-imgchest-NSFW label:hover {
-  box-shadow: inset 0 0 5px 1px var(--button-secondary-text-color);
+  box-shadow: inset 0 0 5px 1px var(--primary-400);
 }
 
 #SDHub-Gallery-imgchest-Privacy input, 
@@ -1064,8 +1066,8 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-API input:focus {
-  filter: drop-shadow(0 0 1px var(--button-secondary-text-color));
-  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
+  filter: drop-shadow(0 0 1px var(--primary-400));
+  box-shadow: 0 0 10px 1px var(--primary-400);
 }
 
 #SDHub-Gallery-imgchest-Save-Button,
@@ -1078,7 +1080,9 @@ body.no-scroll {
 
 #SDHub-Gallery-imgchest-Save-Button:hover,
 #SDHub-Gallery-imgchest-Load-Button:hover {
-  box-shadow: 0 0 10px 2px var(--button-primary-background-fill);
+  filter: drop-shadow(0 0 5px var(--primary-500));
+  box-shadow: 0 0 10px 1px var(--primary-500);
+  background: var(--primary-500);
 }
 
 @media (max-width: 600px) {
