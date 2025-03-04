@@ -173,11 +173,20 @@ function onSDHubTabChanges() {
         mutationsList.forEach(mutation => {
           if (mutation.type === 'childList') {
             let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
-            let Tab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
+            let TabList = gradioApp().querySelectorAll('#sdhub-tab > .tab-nav > button');
+            let SelectedTab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
             let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
             const Id = 'sdHUBHidingScrollBar';
 
-            if (Tab && (Tab.textContent.trim() === 'Text Editor' || Tab.textContent.trim() === 'Gallery')) {
+            TabList.forEach(button => {
+              let t = button.textContent.trim();
+              let c = getSDHubTranslation(t.toLowerCase());
+              if (c) button.textContent = c;
+            });
+
+            let Tab = Array.from(TabList).indexOf(SelectedTab);
+
+            if (Tab === 3 || Tab === 5) { 
               Accordion.style.display = 'none';
               if (!document.getElementById(Id)) {
                 const Scrollbar = document.createElement('style');
@@ -187,7 +196,7 @@ function onSDHubTabChanges() {
               }
               Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
-            } else if (Tab && (Tab.textContent.trim() !== 'Text Editor' || Tab.textContent.trim() !== 'Gallery')) {
+            } else if (Tab !== 3 && Tab !== 5) { 
               Accordion.style.display = 'block';
               const Scrollbar = document.getElementById(Id);
               if (Scrollbar) document.head.removeChild(Scrollbar);
@@ -195,7 +204,7 @@ function onSDHubTabChanges() {
               document.body.classList.remove('no-scroll');
             }
 
-            if (MainTab && (MainTab.textContent.trim() !== 'HUB')) {
+            if (MainTab && MainTab.textContent.trim() !== 'HUB') {
               const Scrollbar = document.getElementById(Id);
               if (Scrollbar) document.head.removeChild(Scrollbar);
               Object.assign(document.documentElement.style, { scrollbarWidth: '' });
@@ -222,38 +231,6 @@ const SDHubLangIndex = {
   ru: 7
 };
 
-function SDHubParseCSV(csvText) {
-  const rows = csvText.split('\n').map(row => row.split(';'));
-  const headers = rows[0];
-
-  SDHubTranslations = {};
-
-  Object.keys(SDHubLangIndex).forEach(lang => {
-    SDHubTranslations[lang] = {};
-  });
-
-  const relevantRows = rows.slice(1).filter(row => row[0] && !row[0].startsWith("//"));
-
-  relevantRows.forEach(row => {
-    const key = row[0].trim();
-    if (!key) return;
-
-    Object.keys(SDHubLangIndex).forEach(lang => {
-      const langIndex = SDHubLangIndex[lang];
-      if (langIndex < row.length) {
-        const translation = row[langIndex]?.trim();
-        if (translation && translation !== '') {
-          SDHubTranslations[lang][key] = translation;
-        } else {
-          SDHubTranslations[lang][key] = key;
-        }
-      } else {
-        SDHubTranslations[lang][key] = key;
-      }
-    });
-  });
-}
-
 function getSDHubTranslation(key, count = 1) {
   let lang = navigator.language || navigator.languages[0] || 'en';
 
@@ -269,6 +246,14 @@ function getSDHubTranslation(key, count = 1) {
 }
 
 function SDHubTabTranslation() {
+  let TabList = gradioApp().querySelectorAll('#sdhub-tab > .tab-nav > button');
+
+  TabList.forEach(button => {
+    let t = button.textContent.trim();
+    let c = getSDHubTranslation(t.toLowerCase());
+    if (c) button.textContent = c;
+  });
+
   ['.sdhub-downloader-tab-title', '.sdhub-uploader-tab-title'].forEach(tab => {
     let title = document.querySelector(tab);
     if (title) {
@@ -277,49 +262,67 @@ function SDHubTabTranslation() {
     }
   });
 
-  const tokens = [
-    { selector: '#sdhub-downloader-token1 > label > span', key: 'huggingface_token_read' },
-    { selector: '#sdhub-downloader-token2 > label > span', key: 'civitai_api_key' },
-    { selector: '#sdhub-uploader-token > label > span', key: 'huggingface_token_write' },
-    { selector: '#sdhub-downloader-token1 > label > input', key: 'huggingface_token_placeholder_read' },
-    { selector: '#sdhub-downloader-token2 > label > input', key: 'civitai_api_key_placeholder' },
-    { selector: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder_write' }
+  const EL = [
+    { element: '#sdhub-downloader-token1 > label > span', key: 'huggingface_token_read' },
+    { element: '#sdhub-downloader-token1 > label > input', key: 'huggingface_token_placeholder_read' },
+    { element: '#sdhub-downloader-token2 > label > span', key: 'civitai_api_key' },
+    { element: '#sdhub-downloader-token2 > label > input', key: 'civitai_api_key_placeholder' },
+    { element: '#sdhub-uploader-token > label > span', key: 'huggingface_token_write' },
+    { element: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder_write' },
+    { element: '#sdhub-downloader-download-button', key: 'download' },
+    { element: '#sdhub-downloader-scrape-button', key: 'scrape' },
+    { element: '#sdhub-downloader-txt-button', key: 'insert_txt' },
+    { element: '#sdhub-downloader-load-button', key: 'load' },
+    { element: '#sdhub-downloader-save-button', key: 'save' },
+    { element: '#sdhub-uploader-upload-button', key: 'upload' },
+    { element: '#sdhub-uploader-load-button', key: 'load' },
+    { element: '#sdhub-uploader-save-button', key: 'save' }
   ];
 
-  tokens.forEach(({ selector, key }) => {
-    let el = document.querySelector(selector);
+  EL.forEach(({ element, key }) => {
+    let el = document.querySelector(element);
     if (el) {
-      if (el.tagName === 'INPUT') {
-        el.placeholder = getSDHubTranslation(key);
-      } else {
-        el.textContent = getSDHubTranslation(key);
-      }
+      if (el.tagName === 'INPUT') el.placeholder = getSDHubTranslation(key);
+      else if (el.tagName === 'BUTTON') el.textContent = getSDHubTranslation(key.toLowerCase());
+      else el.textContent = getSDHubTranslation(key);
     }
-  });
-
-  ['load', 'save'].forEach((key) => {
-    const button = document.querySelector(`#sdhub-downloader-${key}-button`);
-    if (button) button.textContent = getSDHubTranslation(key.toLowerCase());
   });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
-  const path = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
-  const file = `${path}sd-hub-translations.csv`;
-  const csv = document.createElement('script');
-  csv.type = 'text/csv';
-  csv.id = 'SDHub-Translation-CSV';
+function SDHubParseXLSX(data) {
+  SDHubTranslations = Object.fromEntries(Object.keys(SDHubLangIndex).map(lang => [lang, {}]));
 
-  fetch(file)
-    .then(response => response.text())
-    .then(csvText => {
-      csv.textContent = csvText;
-      document.body.appendChild(csv);
-      SDHubParseCSV(csvText);
-      SDHubGalleryDOMLoaded(path);
-    })
-    .catch(err => {
-      console.error('Error loading CSV:', err);
+  data.slice(1).filter(row => row[0] && !row[0].startsWith("//")).forEach(row => {
+    const key = row[0]?.trim();
+    if (!key) return;
+
+    Object.entries(SDHubLangIndex).forEach(([lang, index]) => {
+      SDHubTranslations[lang][key] = row[index]?.trim() || key;
     });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const reader = document.createElement('script');
+  reader.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  reader.onload = () => {
+    window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
+    const path = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
+    const file = `${path}sd-hub-translations.xlsx`;
+
+    fetch(file)
+      .then(response => response.arrayBuffer())
+      .then(arrayBuffer => {
+        const book = XLSX.read(arrayBuffer, { type: 'array' });
+        const name = book.SheetNames[0];
+        const sheet = book.Sheets[name];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        SDHubParseXLSX(data);
+        SDHubGalleryDOMLoaded(path);
+      })
+      .catch(err => console.error("XLSX Error :", err));
+  };
+
+  document.head.appendChild(reader);
 });
