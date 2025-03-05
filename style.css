@@ -42,18 +42,30 @@
   margin-top: 10px;
 }
 
-#tab_sdhub .tabs > .tab-nav > button.selected {
-  color: var(--primary-400);
-  cursor: default;
-  font-weight: bold;
+#sdhub-tab > .tab-nav > button {
+  margin: 0 10px 10px 10px;
 }
 
-#sdhub-tab > .tab-nav > button:not(.selected):hover {
-  color: var(--background-fill-primary);
+#sdhub-tab > .tab-nav > button.selected {
+  cursor: default;
   font-weight: bold;
+  color: var(--background-fill-primary);
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--button-primary-background-fill);
+  border-color: var(--primary-500);
+  border-radius: 100px;
+}
+
+#sdhub-tab > .tab-nav > button:not(.selected) {
+  transition: 0.3s ease;
+}
+
+#sdhub-tab > .tab-nav > button:not(.selected):hover {
+  color: var(--primary-400);
+  filter: drop-shadow(0 0 10px var(--body-text-color-subdued));
+  box-shadow: 0 0 10px 1px var(--primary-400);
+  border-radius: 100px;
 }
 
 #sdhub-downloader-scrape-button {
@@ -89,17 +101,24 @@
 #sdhub-shell-button:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
-  background: var(--button-primary-background-fill);
+  color: var(--body-text-color-subdued);
+  background: var(--button-primary-background-fill-hover);
 }
 
 #sdhub-downloader-inputs textarea,
 #sdhub-downloader-token1 input,
 #sdhub-downloader-token2 input,
+#sdhub-uploader-token input,
 #sdhub-uploader-inputs textarea,
 #sdhub-uploader-username-box input,
 #sdhub-uploader-repo-box input,
 #sdhub-uploader-branch-box input,
-#sdhub-uploader-token input,
+#sdhub-uploader-radio-box label,
+#sdhub-uploader-radio-box input,
+#sdhub-archiver-radio-format label,
+#sdhub-archiver-radio-format input,
+#sdhub-archiver-radio-split label,
+#sdhub-archiver-radio-split input,
 #sdhub-archiver-arc-inputname input,
 #sdhub-archiver-arc-inputpath input,
 #sdhub-archiver-arc-outputpath input,
@@ -109,7 +128,6 @@
 #sdhub-archiver-zipoutputs-outputpath input,
 #sdhub-texteditor-inputs input,
 #sdhub-shell-inputs textarea,
-
 #sdhub-downloader-save-button,
 #sdhub-downloader-load-button,
 #sdhub-downloader-download-button,
@@ -156,8 +174,8 @@
 #SDHub-Gallery-imgchest-NSFW input:checked:focus,
 #SDHub-Gallery-imgchest-Privacy input:checked,
 #SDHub-Gallery-imgchest-Privacy input:checked:focus {
-  border-color: var(--button-primary-border-color);
-  background-color: var(--button-primary-border-color);
+  border-color: var(--primary-500);
+  background-color: var(--primary-500);
 }
 
 #sdhub-uploader-radio-box label:hover, 
@@ -177,9 +195,12 @@
   margin-top: -10px;
 }
 
-#sdhub-uploader-radio-box .svelte-1kzox3m,
-#sdhub-uploader-radio-box .svelte-1p9xokt {
-  margin-top: -1px;
+.gradio-container-4-40-0 #sdhub-tag-dataframe table.table {
+  overflow: hidden;
+}
+
+.gradio-container-4-40-0 #sdhub-uploader-radio-box .svelte-1kzox3m {
+  margin-top: -4px;
 }
 
 #sdhub-repo {
