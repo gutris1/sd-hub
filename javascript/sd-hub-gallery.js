@@ -29,7 +29,7 @@ function SDHubGalleryTranslation() {
   if (imgchest) {
     document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
       if (el.textContent.includes('Auto Upload to')) {
-        el.innerHTML = `${getSDHubTranslation('auto_upload_to')}
+        el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
           <a class="sdhub-gallery-imgchest-info" href="https://imgchest.com" target="_blank">
             imgchest.com
           </a>`;
@@ -37,20 +37,20 @@ function SDHubGalleryTranslation() {
     });
 
     const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
-    if (checkboxSpan) checkboxSpan.textContent = getSDHubTranslation('click_to_enable');
+    if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
 
     document.querySelectorAll('#SDHub-Gallery-imgchest-Privacy label > span')
-      .forEach(span => span.textContent = getSDHubTranslation(span.textContent.toLowerCase()));
+      .forEach(span => span.textContent = SDHubGetTranslation(span.textContent.toLowerCase()));
 
     document.querySelectorAll('#SDHub-Gallery-imgchest-NSFW label > span')
-      .forEach(span => span.textContent = getSDHubTranslation(span.textContent.toLowerCase()));
+      .forEach(span => span.textContent = SDHubGetTranslation(span.textContent.toLowerCase()));
 
     const inputElement = document.querySelector('#SDHub-Gallery-imgchest-API input[placeholder="imgchest API key"]');
-    if (inputElement) inputElement.setAttribute('placeholder', getSDHubTranslation('imgchest_api_key'));
+    if (inputElement) inputElement.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
 
     ['Load', 'Save'].forEach((key) => {
       const button = document.querySelector(`#SDHub-Gallery-imgchest-${key}-Button`);
-      if (button) button.textContent = getSDHubTranslation(key.toLowerCase());
+      if (button) button.textContent = SDHubGetTranslation(key.toLowerCase());
     });
   }
 }
@@ -192,7 +192,7 @@ function SDHubGalleryTabImageCounters() {
     const counter = document.getElementById(tab.id.replace('-Tab-Container', '-Tab-Image-Counter'));
 
     if (counter) {
-      counter.textContent = img > 0 ? `${img} ${getSDHubTranslation('item', img)}` : '';
+      counter.textContent = img > 0 ? `${img} ${SDHubGetTranslation('item', img)}` : '';
       counter.style.visibility = img > 0 ? 'visible' : 'hidden';
     }
   });
@@ -494,7 +494,7 @@ function SDHubGalleryDeletion() {
 
   Con.style.display = 'flex';
   Con.focus();
-  Text.textContent = `${getSDHubTranslation('delete')} ${name}?`;
+  Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
   document.body.classList.add('no-scroll');
 
   Yes.onclick = () => {
@@ -613,7 +613,8 @@ function SDHubGalleryImageInfo(imgEL, e) {
 function SDHubImageInfoClearButton() {
   let row = document.getElementById('sdhub-gallery-image-info-row');
   let Cloned = document.getElementById('sd-hub-gallery-image-info-clear-button');
-  let ClearButton = document.querySelector(`#SDHubimgInfoImage > div > div > div > button:nth-child(2)`);
+  let ClearButton = document.querySelector('#SDHubimgInfoImage > div > div > div > button:nth-child(2)') || 
+                    document.querySelector('.gradio-container-4-40-0 #SDHubimgInfoImage > div > div > button');
 
   if (ClearButton && !Cloned) {
     let parent = ClearButton.parentElement;
@@ -694,7 +695,7 @@ function SDHubCreateGallery(GalleryTab) {
   const ViewerBtn = document.createElement('span');
   ViewerBtn.id = 'SDHub-Gallery-Image-Viewer-Button';
   ViewerBtn.classList.add('sdhub-gallery-image-button');
-  ViewerBtn.title = getSDHubTranslation('image_viewer');
+  ViewerBtn.title = SDHubGetTranslation('image_viewer');
   ViewerBtn.innerHTML = SDHubGalleryImageSVG;
   const ViewerBtnSVG = ViewerBtn.querySelector('svg');
   if (ViewerBtnSVG) ViewerBtnSVG.classList.remove('sdhub-gallery-cm-svg');
@@ -808,8 +809,8 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   });
 }
 
-function SDHubGalleryDOMLoaded(path) {
-  const css = `${path}styleGallery.css`;
+function SDHubGalleryDOMLoaded() {
+  const css = `${window.SDHubFilePath}styleGallery.css`;
   const time = (Date.now() / 1000).toFixed(6);
   const file = `${css}?${time}`;
   const link = document.createElement('link');
@@ -870,7 +871,7 @@ function SDHubGalleryDOMLoaded(path) {
 
     if (checkboxInput && checkboxSpan) {
       checkboxSpan.style.color = checkboxInput.checked ? 'var(--background-fill-primary)' : '';
-      checkboxSpan.textContent = getSDHubTranslation(checkboxInput.checked ? 'enabled' : 'click_to_enable');
+      checkboxSpan.textContent = SDHubGetTranslation(checkboxInput.checked ? 'enabled' : 'click_to_enable');
     }
   });
 }
@@ -883,31 +884,31 @@ function SDHubGalleryCreateContextMenu() {
   GalleryCM.innerHTML = `
     <ul>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('open')">
-        <span>${SDHubGalleryOpenNewTabSVG} ${getSDHubTranslation('open_new_tab')}</span>
+        <span>${SDHubGalleryOpenNewTabSVG} ${SDHubGetTranslation('open_new_tab')}</span>
       </li>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('download')">
-        <span>${SDHubGalleryDLSVG} ${getSDHubTranslation('download')}</span>
+        <span>${SDHubGalleryDLSVG} ${SDHubGetTranslation('download')}</span>
       </li>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('info')">
-        <span>${SDHubGalleryImageInfoSVG} ${getSDHubTranslation('image_info')}</span>
+        <span>${SDHubGalleryImageInfoSVG} ${SDHubGetTranslation('image_info')}</span>
       </li>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('viewer')">
-        <span>${SDHubGalleryImageSVG} ${getSDHubTranslation('image_viewer')}</span>
+        <span>${SDHubGalleryImageSVG} ${SDHubGetTranslation('image_viewer')}</span>
       </li>
       <li class='sdhub-cm-li sdhub-cm-sendto'>
-        <span>${SDHubGallerySendToSVG} ${getSDHubTranslation('send_to')} ${SDHubGalleryARRSVG}</span>
+        <span>${SDHubGallerySendToSVG} ${SDHubGetTranslation('send_to')} ${SDHubGalleryARRSVG}</span>
         <div id="sdhub-cm-sendto-menu" class="sdhub-cm-submenu sdhub-gallery-contextmenu">
           <ul>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('txt')">txt2img</li>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('img')">img2img</li>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('extras')">extras</li>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendToUploader()">${getSDHubTranslation('uploader')}</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendToUploader()">${SDHubGetTranslation('uploader')}</li>
           </ul>
         </div>
       </li>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('delete')">
-        <span>${SDHubGalleryDeleteSVG} ${getSDHubTranslation('delete')}</span>
+        <span>${SDHubGalleryDeleteSVG} ${SDHubGetTranslation('delete')}</span>
       </li>
     </ul>
   `;
@@ -1003,12 +1004,12 @@ function SDHubGalleryCreateDeleteBox() {
   const Yes = document.createElement('span');
   Yes.id = 'SDHub-Gallery-Delete-Yes';
   Yes.classList.add('sdhub-gallery-delete-button');
-  Yes.textContent = getSDHubTranslation('yes');
+  Yes.textContent = SDHubGetTranslation('yes');
 
   const No = document.createElement('span');
   No.id = 'SDHub-Gallery-Delete-No';
   No.classList.add('sdhub-gallery-delete-button');
-  No.textContent = getSDHubTranslation('no');
+  No.textContent = SDHubGetTranslation('no');
 
   const lang = navigator.language || navigator.languages[0] || 'en';
   ButtonRow.append(...(lang.startsWith('ja') || lang.startsWith('zh') ? [No, Yes] : [Yes, No]));
