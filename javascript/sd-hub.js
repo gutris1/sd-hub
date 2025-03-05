@@ -1,43 +1,35 @@
 function SDHubCopyTextFromUselessDataFrame() {
-  document.addEventListener("click", (e) => {
-    const table = gradioApp().querySelector("#sdhub-tag-dataframe");
-
-    if (table && table.contains(e.target)) {
-      const td = e.target.closest("td");
-      const span = td.querySelector("span");
-      const text = span ? span.textContent : null;
-
-      if (text) {
-        navigator.clipboard.writeText(text);
-
-        td.classList.add("pulse-td");
-        setTimeout(() => {
-          td.classList.remove("pulse-td");
-        }, 2000);
-      }
+  document.addEventListener('click', (e) => {
+    const td = e.target.closest('#sdhub-tag-dataframe td');
+    const text = td?.querySelector('span')?.textContent;
+    
+    if (text) {
+      navigator.clipboard.writeText(text);
+      td.classList.add('pulse-td');
+      setTimeout(() => td.classList.remove('pulse-td'), 2000);
     }
   });
 }
 
-function SDHubShellShiftEnter() {
-  const tab = document.querySelector('#sdhub-shell-tab');
-  const button = document.querySelector('#sdhub-shell-button');
+function SDHubKeyBindings() {
+  const Tab = {
+    shell: document.querySelector('#sdhub-shell-tab'),
+    textEditor: document.querySelector('#sdhub-texteditor-tab')
+  };
 
-  document.addEventListener('keydown', function(e) {
-    if (e.shiftKey && e.key === 'Enter' && tab && window.getComputedStyle(tab).display === 'block') {
-      button.click();
+  const Button = {
+    shell: document.querySelector('#sdhub-shell-button'),
+    textEditor: document.querySelector('#sdhub-texteditor-save-button')
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (Tab.shell?.style.display === 'block' && e.shiftKey && e.key === 'Enter') {
+      Button.shell?.click();
     }
-  });
-}
 
-function SDHubTextEditorCTRLS() {
-  const tab = document.querySelector('#sdhub-texteditor-tab');
-  const button = document.querySelector('#sdhub-texteditor-save-button');
-
-  document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 's' && tab && window.getComputedStyle(tab).display === 'block') {
+    if (Tab.textEditor?.style.display === 'block' && e.ctrlKey && e.key === 's') {
       e.preventDefault();
-      button.click();
+      Button.textEditor?.click();
     }
   });
 }
@@ -116,50 +108,40 @@ function SDHubTextEditorGalleryScrollBar() {
 }
 
 onUiLoaded(function () {
-  window.getRunningScript = () => () => new Error().stack.match(/(?:[a-z]+:\/\/)?[^ \n]*\.js/)[0];
-  var FilePath = getRunningScript()().match(/file=([^\/]+\/[^\/]+)\//);
+  const file = `${window.SDHubFilePath}uploader-info.json`;
 
-  if (FilePath) {
-    var Path = `file=${FilePath[1]}/`;
-    var NameFile = 'uploader-info.json';
+  fetch(file, { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) return;
+      return response.json();
+    })
+    .then(data => {
+      if (data) {
+        const { username, repository, branch } = data;
 
-    fetch(Path + NameFile, { cache: "no-store" })
-      .then(response => {
-        if (!response.ok) return;
-        return response.json();
-      })
-      .then(data => {
-        if (data) {
-          const { username, repository, branch } = data;
+        const UsernameBox = gradioApp().querySelector('#sdhub-uploader-username-box input');
+        const RepoBox = gradioApp().querySelector('#sdhub-uploader-repo-box input');
+        const BranchBox = gradioApp().querySelector('#sdhub-uploader-branch-box input');
 
-          const UsernameBox = gradioApp().querySelector('#sdhub-uploader-username-box input');
-          const RepoBox = gradioApp().querySelector('#sdhub-uploader-repo-box input');
-          const BranchBox = gradioApp().querySelector('#sdhub-uploader-branch-box input');
+        const info = [
+          { value: username, box: UsernameBox },
+          { value: repository, box: RepoBox },
+          { value: branch, box: BranchBox }
+        ];
 
-          const info = [
-            { value: username, box: UsernameBox },
-            { value: repository, box: RepoBox },
-            { value: branch, box: BranchBox }
-          ];
-
-          info.forEach(i => {
-            if (i.value) {
-              i.box.value = i.value;
-              updateInput(i.box);
-            }
-          });
-        }
-      })
-      .catch(error => {
-        console.log("Error:", error);
-      });
-  }
+        info.forEach(i => {
+          if (i.value) {
+            i.box.value = i.value;
+            updateInput(i.box);
+          }
+        });
+      }
+    })
+    .catch(err => console.error("Error :", err));
 
   SDHubCopyTextFromUselessDataFrame();
-  SDHubTextEditorGalleryScrollBar();
-  SDHubTextEditorCTRLS();
-  SDHubShellShiftEnter();
-  SDHubTabTranslation();
+  SDHubKeyBindings();
+  SDHubUITranslation();
   onSDHubTabChanges();
 });
 
@@ -181,13 +163,13 @@ function onSDHubTabChanges() {
             TabList.forEach(button => {
               let t = button.textContent.trim();
               if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
-              let c = getSDHubTranslation(t.toLowerCase());
+              let c = SDHubGetTranslation(t.toLowerCase());
               if (c) button.textContent = c;
             });
 
-            let Tab = Array.from(TabList).indexOf(SelectedTab);
+            let Tab = SelectedTab?.id;
 
-            if (Tab === 3 || Tab === 5) { 
+            if (Tab === 'sdhub-tab-button-texteditor' || Tab === 'sdhub-tab-button-gallery') {
               Accordion.style.display = 'none';
               if (!document.getElementById(Id)) {
                 const Scrollbar = document.createElement('style');
@@ -197,7 +179,7 @@ function onSDHubTabChanges() {
               }
               Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
-            } else if (Tab !== 3 && Tab !== 5) { 
+            } else if (Tab !== 'sdhub-tab-button-texteditor' && Tab !== 'sdhub-tab-button-gallery') {
               Accordion.style.display = 'block';
               const Scrollbar = document.getElementById(Id);
               if (Scrollbar) document.head.removeChild(Scrollbar);
@@ -241,7 +223,7 @@ let SDHubTabButtons = {
   'Gallery': 'sdhub-tab-button-gallery'
 };
 
-function getSDHubTranslation(key, count = 1) {
+function SDHubGetTranslation(key, count = 1) {
   let lang = navigator.language || navigator.languages[0] || 'en';
 
   if (key === 'item' || key === 'items') {
@@ -255,13 +237,14 @@ function getSDHubTranslation(key, count = 1) {
   return key;
 }
 
-function SDHubTabTranslation() {
+function SDHubUITranslation() {
+  let ForgeCheck = document.querySelector('.gradio-container-4-40-0') !== null;
   let TabList = gradioApp().querySelectorAll('#sdhub-tab > .tab-nav > button');
 
   TabList.forEach(button => {
     let t = button.textContent.trim();
     if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
-    let c = getSDHubTranslation(t.toLowerCase());
+    let c = SDHubGetTranslation(t.toLowerCase());
     if (c) button.textContent = c;
   });
 
@@ -269,16 +252,27 @@ function SDHubTabTranslation() {
     let title = document.querySelector(tab);
     if (title) {
       let key = tab === '.sdhub-downloader-tab-title' ? 'download_command_center' : 'upload_to_huggingface';
-      if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = getSDHubTranslation(key);
+      if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = SDHubGetTranslation(key);
     }
   });
 
-  const EL = [
+  const isThatForge = ForgeCheck ? [
+    { element: '#sdhub-dataframe-accordion > button > span:nth-child(1)', key: 'tag_list' },
+    { element: '#sdhub-tag-dataframe > div > div > button > svelte-virtual-table-viewport > table > thead > tr > th:nth-child(1) > div > span', key: 'sdhub_tags' },
+    { element: '#sdhub-tag-dataframe > div > div > button > svelte-virtual-table-viewport > table > thead > tr > th:nth-child(2) > div > span', key: 'webui_paths' }
+  ] : [
     { element: '#sdhub-dataframe-accordion > div > span:nth-child(1)', key: 'tag_list' },
     { element: '#sdhub-tag-dataframe > div > div > div > table > thead > tr > th:nth-child(1) > div > span', key: 'sdhub_tags' },
-    { element: '#sdhub-tag-dataframe > div > div > div > table > thead > tr > th:nth-child(2) > div > span', key: 'webui_paths' },
+    { element: '#sdhub-tag-dataframe > div > div > div > table > thead > tr > th:nth-child(2) > div > span', key: 'webui_paths' }
+  ];
+
+  const EL = [
+    ...isThatForge,
+    { element: '.sdhub-downloader-tab-info', key: 'downloader_tab_info', inner: true },
+    { element: '.sdhub-uploader-tab-info', key: 'uploader_tab_info', inner: true },
+    { element: '.sdhub-archiver-tab-info', key: 'archiver_tab_info', inner: true },
     { element: '#sdhub-downloader-token1 > label > span', key: 'huggingface_token_read' },
-    { element: '#sdhub-downloader-token1 > label > input', key: 'huggingface_token_placeholder_read' },
+    { element: '#sdhub-downloader-token1 > label > input', key: 'huggingface_token_placeholder' },
     { element: '#sdhub-downloader-token2 > label > span', key: 'civitai_api_key' },
     { element: '#sdhub-downloader-token2 > label > input', key: 'civitai_api_key_placeholder' },
     { element: '#sdhub-downloader-download-button', key: 'download' },
@@ -287,7 +281,7 @@ function SDHubTabTranslation() {
     { element: '#sdhub-downloader-load-button', key: 'load' },
     { element: '#sdhub-downloader-save-button', key: 'save' },
     { element: '#sdhub-uploader-token > label > span', key: 'huggingface_token_write' },
-    { element: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder_write' },
+    { element: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder' },
     { element: '#sdhub-uploader-inputs > label > textarea', key: 'input_path' },
     { element: '#sdhub-uploader-upload-button', key: 'upload' },
     { element: '#sdhub-uploader-load-button', key: 'load' },
@@ -325,13 +319,15 @@ function SDHubTabTranslation() {
     { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd' }
   ];
 
-  EL.forEach(({ element, key }) => {
+  EL.forEach(({ element, key, inner }) => {
+    let translate = SDHubGetTranslation(key);
     let el = document.querySelector(element);
-    if (el) {
-      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = getSDHubTranslation(key);
-      else if (el.tagName === 'BUTTON') el.textContent = getSDHubTranslation(key.toLowerCase());
-      else el.textContent = getSDHubTranslation(key);
-    }
+    if (!el) return;
+
+    inner ? el.innerHTML = translate
+          : el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ? el.placeholder = translate
+          : el.tagName === 'BUTTON' ? el.textContent = translate.toLowerCase()
+          : el.textContent = translate;
   });
 }
 
@@ -353,8 +349,8 @@ document.addEventListener('DOMContentLoaded', function () {
   reader.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
   reader.onload = () => {
     window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
-    const path = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
-    const file = `${path}sd-hub-translations.xlsx`;
+    window.SDHubFilePath = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
+    const file = `${window.SDHubFilePath}sd-hub-translations.xlsx`;
 
     fetch(file)
       .then(response => response.arrayBuffer())
@@ -365,7 +361,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
         SDHubParseXLSX(data);
-        SDHubGalleryDOMLoaded(path);
+        SDHubTextEditorGalleryScrollBar();
+        SDHubGalleryDOMLoaded();
       })
       .catch(err => console.error("XLSX Error :", err));
   };
