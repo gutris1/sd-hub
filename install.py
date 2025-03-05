@@ -12,18 +12,18 @@ import sys
 import os
 
 base = Path(__file__).parent
-req_ = base / "requirements.txt"
+req_ = base / 'requirements.txt'
 
 orange_ = '\033[38;5;208m'
 blue_ = '\033[38;5;39m'
 reset_ = '\033[0m'
 
 def _exifReader():
-    req1 = Path(__file__).parent / "javascript/exif-reader.js"
-    req2 = Path(__file__).parent / "javascript/exif-reader-LICENSE"
+    req1 = base / 'javascript/exif-reader.js'
+    req2 = base / 'javascript/exif-reader-LICENSE'
     
-    url1 = "https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js"
-    url2 = "https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE"
+    url1 = 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js'
+    url2 = 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
     
     if not req1.exists():
         with urllib.request.urlopen(url1) as r, open(req1, 'wb') as o:
