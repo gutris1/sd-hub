@@ -48,16 +48,12 @@
   font-weight: bold;
 }
 
-#sdhub-tab > .tab-nav > button:not(.selected) {
-  transition: 0.1s ease-in-out;
-}
-
 #sdhub-tab > .tab-nav > button:not(.selected):hover {
   color: var(--background-fill-primary);
   font-weight: bold;
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
-  background: var(--primary-400);
+  background: var(--button-primary-background-fill);
 }
 
 #sdhub-downloader-scrape-button {
@@ -85,12 +81,15 @@
 #sdhub-uploader-save-button:hover,
 #sdhub-uploader-load-button:hover,
 #sdhub-uploader-upload-button:hover,
+#sdhub-archiver-arc-button:hover,
+#sdhub-archiver-extr-button:hover,
+#sdhub-archiver-zipoutputs-button:hover,
 #sdhub-texteditor-load-button:hover,
 #sdhub-texteditor-save-button:hover,
 #sdhub-shell-button:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
-  background: var(--primary-500);
+  background: var(--button-primary-background-fill);
 }
 
 #sdhub-downloader-inputs textarea,
@@ -106,6 +105,8 @@
 #sdhub-archiver-arc-outputpath input,
 #sdhub-archiver-extr-inputpath input,
 #sdhub-archiver-extr-outputpath input,
+#sdhub-archiver-zipoutputs-inputname input,
+#sdhub-archiver-zipoutputs-outputpath input,
 #sdhub-texteditor-inputs input,
 #sdhub-shell-inputs textarea,
 
@@ -115,6 +116,9 @@
 #sdhub-uploader-save-button,
 #sdhub-uploader-load-button,
 #sdhub-uploader-upload-button,
+#sdhub-archiver-arc-button,
+#sdhub-archiver-extr-button,
+#sdhub-archiver-zipoutputs-button,
 #sdhub-texteditor-load-button,
 #sdhub-texteditor-save-button,
 #sdhub-shell-button {
@@ -134,10 +138,37 @@
 #sdhub-archiver-arc-outputpath input:focus,
 #sdhub-archiver-extr-inputpath input:focus,
 #sdhub-archiver-extr-outputpath input:focus,
+#sdhub-archiver-zipoutputs-inputname input:focus,
+#sdhub-archiver-zipoutputs-outputpath input:focus,
 #sdhub-texteditor-inputs input:focus,
 #sdhub-shell-inputs textarea:focus {
   filter: drop-shadow(0 0 1px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
+}
+
+#sdhub-uploader-radio-box input:checked,
+#sdhub-uploader-radio-box input:checked:focus,
+#sdhub-archiver-radio-format input:checked,
+#sdhub-archiver-radio-format input:checked:focus,
+#sdhub-archiver-radio-split input:checked,
+#sdhub-archiver-radio-split input:checked:focus,
+#SDHub-Gallery-imgchest-NSFW input:checked,
+#SDHub-Gallery-imgchest-NSFW input:checked:focus,
+#SDHub-Gallery-imgchest-Privacy input:checked,
+#SDHub-Gallery-imgchest-Privacy input:checked:focus {
+  border-color: var(--button-primary-border-color);
+  background-color: var(--button-primary-border-color);
+}
+
+#sdhub-uploader-radio-box label:hover, 
+#sdhub-archiver-radio-format label:hover,
+#sdhub-archiver-radio-split label:hover, 
+#SDHub-Gallery-imgchest-Privacy label:hover, 
+#SDHub-Gallery-imgchest-NSFW label:hover {
+  box-shadow:
+    inset 0 0 5px 1px var(--primary-400),
+    inset 0 0 5px 1px var(--primary-400),
+    inset 0 0 5px 1px var(--primary-400);
 }
 
 .gradio-container-4-40-0 #sdhub-downloader-button-row,
@@ -156,12 +187,15 @@
   margin-top: 10px;
   text-align: center;
   font-size: 13px;
-  transition: 0.4s ease;
   font-weight: normal;
 }
 
-#sdhub-repo:hover {
-  color: var(--color-accent);
+#sdhub-repo > a {
+  transition: 0.4s ease;
+}
+
+#sdhub-repo > a:hover {
+  color: var(--primary-400);
 }
 
 #sdhub-tab-title {
