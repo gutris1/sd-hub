@@ -2,7 +2,14 @@ from importlib import metadata
 from packaging import version
 from typing import List, Dict
 from pathlib import Path
-import subprocess, requests, zipfile, launch, sys, os
+import urllib.request
+import subprocess
+import requests
+import zipfile
+import launch
+import shutil
+import sys
+import os
 
 base = Path(__file__).parent
 req_ = base / "requirements.txt"
@@ -11,6 +18,20 @@ orange_ = '\033[38;5;208m'
 blue_ = '\033[38;5;39m'
 reset_ = '\033[0m'
 
+def _exifReader():
+    req1 = Path(__file__).parent / "javascript/exif-reader.js"
+    req2 = Path(__file__).parent / "javascript/exif-reader-LICENSE"
+    
+    url1 = "https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js"
+    url2 = "https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE"
+    
+    if not req1.exists():
+        with urllib.request.urlopen(url1) as r, open(req1, 'wb') as o:
+            shutil.copyfileobj(r, o)
+    
+    if not req2.exists():
+        with urllib.request.urlopen(url2) as r, open(req2, 'wb') as o:
+            shutil.copyfileobj(r, o)
 
 def _sub(inputs: List[str]) -> bool:
     try:
@@ -25,7 +46,6 @@ def _sub(inputs: List[str]) -> bool:
     except subprocess.CalledProcessError:
         return False
 
-
 def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
     try:
         subprocess.run(
@@ -38,7 +58,6 @@ def _check_req(pkg: str, args: str, cmd: str, pkg_list: List[str]) -> None:
     except FileNotFoundError:
         pkg_list.append(pkg)
         _sub(cmd.split())
-
 
 def _install_req_1() -> None:
     reqs = []
@@ -81,18 +100,14 @@ def _install_req_1() -> None:
                     [sys.executable, '-m', 'pip', 'install', '-q', pkg]
                 )
 
-
 def _install_req_2() -> None:
     pkg_list: List[str] = []
 
     if sys.platform == 'win32':
         aria2_exe = base / 'aria2c.exe'
 
-        if not launch.is_installed('lz4'):
-            pkg_list.append('lz4')
-
-        if not aria2_exe.exists():
-            pkg_list.append('aria2')
+        if not launch.is_installed('lz4'): pkg_list.append('lz4')
+        if not aria2_exe.exists(): pkg_list.append('aria2')
 
         for pkg_name in pkg_list:
             if pkg_name == 'lz4':
@@ -166,6 +181,6 @@ def _install_req_2() -> None:
             f"{' '.join(f'{blue_}{pkg}{reset_}' for pkg in pkg_list)}"
         )
 
-
+_exifReader()
 _install_req_1()
 _install_req_2()
