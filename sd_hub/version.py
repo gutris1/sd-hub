@@ -12,4 +12,4 @@ def xyz(y):
 
     return [str(x)]
 
-version = '7.7.7'
+version = '8.0.0'
