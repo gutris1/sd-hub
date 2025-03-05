@@ -96,25 +96,34 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     return gr.update(), gr.State(output_box)
 
 def ZipOutputs():
-    with gr.Accordion("Zip Outputs", open=False), FormRow():
+    with gr.Accordion("Zip Outputs", open=False, elem_id="sdhub-archiver-accordion-zipoutputs"), FormRow():
         with FormColumn():
             zip_name = gr.Textbox(
                 max_lines=1,
                 placeholder="ZIP Name (default to ZipOutputs if empty)",
                 show_label=False,
-                elem_id="sdhub-archiver-arc-inputname"
+                elem_id="sdhub-archiver-zipoutputs-inputname"
             )
 
             zip_out = gr.Textbox(
                 max_lines=1,
                 placeholder="ZIP Output Path (default to WebUI root if empty)",
                 show_label=False,
-                elem_id="sdhub-archiver-arc-outputpath"
+                elem_id="sdhub-archiver-zipoutputs-outputpath"
             )
 
             with FormRow():
-                zip_run = gr.Button("Zip Zip", variant="primary")
-                mkdir_zip = gr.Checkbox(label="Create Directory", elem_classes="cb")
+                zip_run = gr.Button(
+                    "Zip Zip",
+                    variant="primary",
+                    elem_id="sdhub-archiver-zipoutputs-button"
+                )
+
+                mkdir_zip = gr.Checkbox(
+                    label="Create Directory",
+                    elem_classes="cb",
+                    elem_id="sdhub-archiver-zipoutputs-checkbox"
+                )
 
         with FormColumn():
             zip_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
