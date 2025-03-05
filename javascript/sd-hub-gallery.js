@@ -613,12 +613,7 @@ function SDHubGalleryImageInfo(imgEL, e) {
 function SDHubImageInfoClearButton() {
   let row = document.getElementById('sdhub-gallery-image-info-row');
   let Cloned = document.getElementById('sd-hub-gallery-image-info-clear-button');
-
-  const clearButtonText = getSDHubTranslation('clear');
-  const removeImageText = getSDHubTranslation('remove_image');
-
-  let ClearButton = document.querySelector(`#SDHubimgInfoImage button[aria-label="${clearButtonText}"]`) ||
-                    document.querySelector(`#SDHubimgInfoImage button[aria-label="${removeImageText}"]`);
+  let ClearButton = document.querySelector(`#SDHubimgInfoImage > div > div > div > button:nth-child(2)`);
 
   if (ClearButton && !Cloned) {
     let parent = ClearButton.parentElement;
@@ -626,7 +621,6 @@ function SDHubImageInfoClearButton() {
 
     let btn = ClearButton.cloneNode(true);
     btn.id = 'sd-hub-gallery-image-info-clear-button';
-    btn.title = clearButtonText;
     btn.style.display = 'flex';
 
     parent.prepend(btn);
