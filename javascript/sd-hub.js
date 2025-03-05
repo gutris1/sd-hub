@@ -180,6 +180,7 @@ function onSDHubTabChanges() {
 
             TabList.forEach(button => {
               let t = button.textContent.trim();
+              if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
               let c = getSDHubTranslation(t.toLowerCase());
               if (c) button.textContent = c;
             });
@@ -231,6 +232,15 @@ const SDHubLangIndex = {
   ru: 7
 };
 
+let SDHubTabButtons = {
+  'Downloader': 'sdhub-tab-button-downloader',
+  'Uploader': 'sdhub-tab-button-uploader',
+  'Archiver': 'sdhub-tab-button-archiver',
+  'Text Editor': 'sdhub-tab-button-texteditor',
+  'Shell': 'sdhub-tab-button-shell',
+  'Gallery': 'sdhub-tab-button-gallery'
+};
+
 function getSDHubTranslation(key, count = 1) {
   let lang = navigator.language || navigator.languages[0] || 'en';
 
@@ -250,6 +260,7 @@ function SDHubTabTranslation() {
 
   TabList.forEach(button => {
     let t = button.textContent.trim();
+    if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
     let c = getSDHubTranslation(t.toLowerCase());
     if (c) button.textContent = c;
   });
@@ -263,26 +274,61 @@ function SDHubTabTranslation() {
   });
 
   const EL = [
+    { element: '#sdhub-dataframe-accordion > div > span:nth-child(1)', key: 'tag_list' },
+    { element: '#sdhub-tag-dataframe > div > div > div > table > thead > tr > th:nth-child(1) > div > span', key: 'sdhub_tags' },
+    { element: '#sdhub-tag-dataframe > div > div > div > table > thead > tr > th:nth-child(2) > div > span', key: 'webui_paths' },
     { element: '#sdhub-downloader-token1 > label > span', key: 'huggingface_token_read' },
     { element: '#sdhub-downloader-token1 > label > input', key: 'huggingface_token_placeholder_read' },
     { element: '#sdhub-downloader-token2 > label > span', key: 'civitai_api_key' },
     { element: '#sdhub-downloader-token2 > label > input', key: 'civitai_api_key_placeholder' },
-    { element: '#sdhub-uploader-token > label > span', key: 'huggingface_token_write' },
-    { element: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder_write' },
     { element: '#sdhub-downloader-download-button', key: 'download' },
     { element: '#sdhub-downloader-scrape-button', key: 'scrape' },
     { element: '#sdhub-downloader-txt-button', key: 'insert_txt' },
     { element: '#sdhub-downloader-load-button', key: 'load' },
     { element: '#sdhub-downloader-save-button', key: 'save' },
+    { element: '#sdhub-uploader-token > label > span', key: 'huggingface_token_write' },
+    { element: '#sdhub-uploader-token > label > input', key: 'huggingface_token_placeholder_write' },
+    { element: '#sdhub-uploader-inputs > label > textarea', key: 'input_path' },
     { element: '#sdhub-uploader-upload-button', key: 'upload' },
     { element: '#sdhub-uploader-load-button', key: 'load' },
-    { element: '#sdhub-uploader-save-button', key: 'save' }
+    { element: '#sdhub-uploader-save-button', key: 'save' },
+    { element: '#sdhub-uploader-username-box > label > span', key: 'username' },
+    { element: '#sdhub-uploader-username-box > label > input', key: 'username' },
+    { element: '#sdhub-uploader-repo-box > label > span', key: 'repository' },
+    { element: '#sdhub-uploader-repo-box > label > input', key: 'repository' },
+    { element: '#sdhub-uploader-branch-box > label > span', key: 'branch' },
+    { element: '#sdhub-uploader-branch-box > label > input', key: 'branch' },
+    { element: '#sdhub-uploader-radio-box > span', key: 'visibility' },
+    { element: '#sdhub-uploader-radio-box > div > label:nth-child(1) > span', key: 'public2' },
+    { element: '#sdhub-uploader-radio-box > div > label:nth-child(2) > span', key: 'private' },
+    { element: '#sdhub-archiver-accordion-zipoutputs > div > span:nth-child(1)', key: 'zip_outputs' },
+    { element: '#sdhub-archiver-zipoutputs-inputname > label > input', key: 'zipoutputs_input' },
+    { element: '#sdhub-archiver-zipoutputs-outputpath > label > input', key: 'zipoutputs_output' },
+    { element: '#sdhub-archiver-zipoutputs-checkbox > label > span', key: 'makedir' },
+    { element: '#sdhub-archiver-arc-title', key: 'arc_title' },
+    { element: '#sdhub-archiver-radio-format > span', key: 'radio_format' },
+    { element: '#sdhub-archiver-radio-split > span', key: 'radio_split' },
+    { element: '#sdhub-archiver-radio-split > div > label:nth-child(1) > span', key: 'none' },
+    { element: '#sdhub-archiver-arc-inputname > label > input', key: 'name' },
+    { element: '#sdhub-archiver-arc-inputpath > label > input', key: 'input_path' },
+    { element: '#sdhub-archiver-arc-outputpath > label > input', key: 'output_path' },
+    { element: '#sdhub-archiver-arc-button', key: 'arc_button' },
+    { element: '#sdhub-archiver-arc-checkbox > label > span', key: 'makedir' },
+    { element: '#sdhub-archiver-extr-title', key: 'extr_title' },
+    { element: '#sdhub-archiver-extr-inputpath > label > input', key: 'input_path' },
+    { element: '#sdhub-archiver-extr-outputpath > label > input', key: 'output_path' },
+    { element: '#sdhub-archiver-extr-button', key: 'extr_button' },
+    { element: '#sdhub-archiver-extr-checkbox > label > span', key: 'makedir' },
+    { element: '#sdhub-texteditor-load-button', key: 'load' },
+    { element: '#sdhub-texteditor-save-button', key: 'save' },
+    { element: '#sdhub-texteditor-inputs > label > input', key: 'file_path' },
+    { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd' }
   ];
 
   EL.forEach(({ element, key }) => {
     let el = document.querySelector(element);
     if (el) {
-      if (el.tagName === 'INPUT') el.placeholder = getSDHubTranslation(key);
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = getSDHubTranslation(key);
       else if (el.tagName === 'BUTTON') el.textContent = getSDHubTranslation(key.toLowerCase());
       else el.textContent = getSDHubTranslation(key);
     }
