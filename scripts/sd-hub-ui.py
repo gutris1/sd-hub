@@ -254,21 +254,22 @@ def onSDHUBTab():
             )
 
         with gr.TabItem("Archiver", elem_id="sdhub-archiver", elem_classes="tabs"):
-            with gr.Accordion("ReadMe", open=False):
+            with gr.Accordion("ReadMe", open=False, elem_id="sdhub-archiver-accordion-readme"):
                 gr.HTML(arc_info)
 
             if insecureENV:
                 from sd_hub.zipoutputs import ZipOutputs
                 ZipOutputs()
 
-            gr.HTML("""<h3 style='font-size: 17px;'>Archive</h3>""")
+            gr.HTML("""<h3 style='font-size: 17px;' id='sdhub-archiver-arc-title'>Archive</h3>""")
             with FormRow():
                 arc_format = gr.Radio(
                     ["tar.lz4", "tar.gz", "zip"],
                     value="tar.lz4",
                     label="Format",
                     scale=1,
-                    interactive=True
+                    interactive=True,
+                    elem_id="sdhub-archiver-radio-format"
                 )
 
                 arc_split = gr.Radio(
@@ -276,7 +277,8 @@ def onSDHUBTab():
                     value="None",
                     label="Split by",
                     scale=3,
-                    interactive=True
+                    interactive=True,
+                    elem_id="sdhub-archiver-radio-split"
                 )
 
             with FormRow():
@@ -305,14 +307,23 @@ def onSDHUBTab():
             with gr.Row(elem_classes="arc-row"):
                 with gr.Column():
                     with gr.Row():
-                        arc_run = gr.Button("Compress", variant="primary")
-                        mkdir_cb1 = gr.Checkbox(label="Create Directory", elem_classes="cb")
+                        arc_run = gr.Button(
+                            "Compress",
+                            variant="primary",
+                            elem_id="sdhub-archiver-arc-button"
+                        )
+
+                        mkdir_cb1 = gr.Checkbox(
+                            label="Create Directory",
+                            elem_classes="cb",
+                            elem_id="sdhub-archiver-arc-checkbox"
+                        )
 
                 with gr.Column():
                     arc_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
                     arc_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
 
-            gr.HTML("""<h3 style='font-size: 17px;'>Extract</h3>""")
+            gr.HTML("""<h3 style='font-size: 17px;' id='sdhub-archiver-extr-title'>Extract</h3>""")
             extr_in = gr.Textbox(
                 max_lines=1,
                 placeholder="Input Path",
@@ -333,10 +344,14 @@ def onSDHUBTab():
                         extr_btn = gr.Button(
                             "Decompress",
                             variant="primary",
-                            elem_classes="sdhub-archiver-extract-button"
+                            elem_id="sdhub-archiver-extr-button"
                         )
 
-                        mkdir_cb2 = gr.Checkbox(label="Create Directory", elem_classes="cb")
+                        mkdir_cb2 = gr.Checkbox(
+                            label="Create Directory",
+                            elem_classes="cb",
+                            elem_id="sdhub-archiver-extr-checkbox"
+                        )
 
                 with gr.Column():
                     gr.Textbox(
