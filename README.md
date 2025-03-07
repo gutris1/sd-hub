@@ -12,7 +12,7 @@ Support both Windows and Unix.
 
 # Changelog
 ### 2025-03-0.8  v8.0.0
-- .
+- UI translation based on browser language. Excel file for the translation [here](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx)
 
 <details><summary>2025-02-17  v7.0.0</summary><br>
 
