@@ -8,7 +8,7 @@ from sd_hub.version import version
 blt = "<strong>•</strong>"
 
 dl_title = """
-<h3 id="sdhub-tab-title" style="
+<h3 id='sdhub-tab-title' class='sdhub-downloader-tab-title' style="
     display: flex;
     align-items: center;
     justify-content: center;">
@@ -27,7 +27,7 @@ dl_title = """
 """
 
 dl_info = f"""
-<p id="sdhub-tab-info">
+<p id='sdhub-tab-info' class='sdhub-downloader-tab-info'>
   Enter your <strong>Huggingface Token</strong> with the role <strong>READ</strong> to download from your private repo. 
   Get one <a href="https://huggingface.co/settings/tokens" class="sdhub-link">Here</a><br>
   Enter your <strong>Civitai API Key</strong> if you encounter an Authorization failed error. Get your key 
@@ -61,7 +61,7 @@ def getUploaderSVG():
 uploaderSVG = getUploaderSVG()
 
 upl_title = f"""
-<h3 id="sdhub-tab-title" style="
+<h3 id='sdhub-tab-title' class='sdhub-uploader-tab-title' style="
     display: flex; 
     flex-wrap: wrap; 
     align-items: center; 
@@ -73,7 +73,7 @@ upl_title = f"""
 """
 
 upl_info = """
-<p id="sdhub-tab-info">
+<p id='sdhub-tab-info' class='sdhub-uploader-tab-info'>
   <strong>Colab</strong>: /content/stable-diffusion-webui/model.safetensors<br>
   <strong>Kaggle</strong>: /kaggle/working/stable-diffusion-webui/model.safetensors<br>
   <strong>Sagemaker Studio Lab</strong>: /home/studio-lab-user/stable-diffusion-webui/model.safetensors<br>
@@ -86,7 +86,7 @@ upl_info = """
 """
 
 arc_info = """
-<p id="sdhub-tab-info">
+<p id='sdhub-tab-info' class='sdhub-archiver-tab-info'>
   <strong>Archive</strong> :<br>
   <a class="sdhub-nonlink">Name</a> Name for the compressed file (excluding the file extension)<br>
   <a class="sdhub-nonlink">Input Path</a> Path pointing a single file or folder containing multiple files<br>

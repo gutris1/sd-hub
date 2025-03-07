@@ -18,7 +18,7 @@ def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
 
     with gr.Blocks(analytics_enabled=False) as sdhub, gr.Tabs(elem_id="sdhub-tab"):
-        with gr.TabItem("Downloader", elem_id="sdhub-downloader"):
+        with gr.TabItem("Downloader", elem_id="sdhub-downloader-tab"):
             gr.HTML(dl_title)
 
             with FormRow():
@@ -43,12 +43,23 @@ def onSDHUBTab():
                         max_lines=1,
                         placeholder="Your Civitai API Key here",
                         interactive=True,
-                        elem_id="sdhub-downloader-token1"
+                        elem_id="sdhub-downloader-token2"
                     )
 
                     with FormRow():
-                        dl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
-                        dl_load = gr.Button(value="LOAD", variant="primary", min_width=0)
+                        dl_save = gr.Button(
+                            value="SAVE",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-downloader-save-button"
+                        )
+
+                        dl_load = gr.Button(
+                            value="LOAD",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-downloader-load-button"
+                        )
 
             dl_input = gr.Textbox(
                 show_label=False,
@@ -59,14 +70,18 @@ def onSDHUBTab():
 
             with FormRow(elem_id="sdhub-downloader-button-row"):
                 with FormColumn(scale=1):
-                    dl_dl = gr.Button("DOWNLOAD", variant="primary")
+                    dl_dl = gr.Button(
+                        "DOWNLOAD",
+                        variant="primary",
+                        elem_id="sdhub-downloader-download-button"
+                    )
 
                 with FormColumn(scale=1), FormRow(variant="compact"):
                     dl_scrape = gr.Button(
                         "Scrape",
                         variant="secondary",
                         min_width=0,
-                        elem_id="sdhub-downloader-scrape"
+                        elem_id="sdhub-downloader-scrape-button"
                     )
 
                     dl_txt = gr.UploadButton(
@@ -75,7 +90,7 @@ def onSDHUBTab():
                         file_count="single",
                         file_types=[".txt"],
                         min_width=0,
-                        elem_id="sdhub-downloader-txt"
+                        elem_id="sdhub-downloader-txt-button"
                     )
 
                 with FormColumn(scale=2, variant="compact"):
@@ -112,7 +127,7 @@ def onSDHUBTab():
                 outputs=[dl_input, dl_out2]
             )
 
-        with gr.TabItem("Uploader", elem_id="sdhub-uploader"):
+        with gr.TabItem("Uploader", elem_id="sdhub-uploader-tab"):
             gr.HTML(upl_title)
 
             with FormRow():
@@ -132,8 +147,19 @@ def onSDHUBTab():
                     )
 
                     with FormRow():
-                        upl_save = gr.Button(value="SAVE", variant="primary", min_width=0)
-                        upl_load = gr.Button(value="LOAD", variant="primary", min_width=0)                               
+                        upl_save = gr.Button(
+                            value="SAVE",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-uploader-save-button"
+                        )
+
+                        upl_load = gr.Button(
+                            value="LOAD",
+                            variant="primary",
+                            min_width=0,
+                            elem_id="sdhub-uploader-load-button"
+                        )                               
 
             with FormRow():
                 user_box = gr.Textbox(
@@ -182,7 +208,11 @@ def onSDHUBTab():
 
             with FormRow(elem_id="sdhub-uploader-button-row"):
                 with FormColumn(scale=1):
-                    upl_btn = gr.Button("UPLOAD", variant="primary")
+                    upl_btn = gr.Button(
+                        "UPLOAD",
+                        variant="primary",
+                        elem_id="sdhub-uploader-upload-button"
+                    )
 
                 with FormColumn(scale=1):
                     gr.Button("hantu", variant="primary", elem_classes="hide-this")
@@ -209,22 +239,23 @@ def onSDHUBTab():
                 outputs=[upl_output1, upl_output2]
             )
 
-        with gr.TabItem("Archiver", elem_id="sdhub-archiver", elem_classes="tabs"):
-            with gr.Accordion("ReadMe", open=False):
+        with gr.TabItem("Archiver", elem_id="sdhub-archiver-tab"):
+            with gr.Accordion("ReadMe", open=False, elem_id="sdhub-archiver-accordion-readme"):
                 gr.HTML(arc_info)
 
             if insecureENV:
                 from sd_hub.zipoutputs import ZipOutputs
                 ZipOutputs()
 
-            gr.HTML("""<h3 style='font-size: 17px;'>Archive</h3>""")
+            gr.HTML("""<h3 style='font-size: 17px;' id='sdhub-archiver-arc-title'>Archive</h3>""")
             with FormRow():
                 arc_format = gr.Radio(
                     ["tar.lz4", "tar.gz", "zip"],
                     value="tar.lz4",
                     label="Format",
                     scale=1,
-                    interactive=True
+                    interactive=True,
+                    elem_id="sdhub-archiver-radio-format"
                 )
 
                 arc_split = gr.Radio(
@@ -232,7 +263,8 @@ def onSDHUBTab():
                     value="None",
                     label="Split by",
                     scale=3,
-                    interactive=True
+                    interactive=True,
+                    elem_id="sdhub-archiver-radio-split"
                 )
 
             with FormRow():
@@ -261,14 +293,23 @@ def onSDHUBTab():
             with gr.Row(elem_classes="arc-row"):
                 with gr.Column():
                     with gr.Row():
-                        arc_run = gr.Button("Compress", variant="primary")
-                        mkdir_cb1 = gr.Checkbox(label="Create Directory", elem_classes="cb")
+                        arc_run = gr.Button(
+                            "Compress",
+                            variant="primary",
+                            elem_id="sdhub-archiver-arc-button"
+                        )
+
+                        mkdir_cb1 = gr.Checkbox(
+                            label="Create Directory",
+                            elem_classes="cb",
+                            elem_id="sdhub-archiver-arc-checkbox"
+                        )
 
                 with gr.Column():
                     arc_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
                     arc_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
 
-            gr.HTML("""<h3 style='font-size: 17px;'>Extract</h3>""")
+            gr.HTML("""<h3 style='font-size: 17px;' id='sdhub-archiver-extr-title'>Extract</h3>""")
             extr_in = gr.Textbox(
                 max_lines=1,
                 placeholder="Input Path",
@@ -289,10 +330,14 @@ def onSDHUBTab():
                         extr_btn = gr.Button(
                             "Decompress",
                             variant="primary",
-                            elem_classes="sdhub-archiver-extract-button"
+                            elem_id="sdhub-archiver-extr-button"
                         )
 
-                        mkdir_cb2 = gr.Checkbox(label="Create Directory", elem_classes="cb")
+                        mkdir_cb2 = gr.Checkbox(
+                            label="Create Directory",
+                            elem_classes="cb",
+                            elem_id="sdhub-archiver-extr-checkbox"
+                        )
 
                 with gr.Column():
                     gr.Textbox(
