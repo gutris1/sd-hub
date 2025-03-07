@@ -11,9 +11,14 @@ Add <code>--enable-insecure-extension-access</code> command line argument to pro
 Support both Windows and Unix.
 
 # Changelog
-### 2025-02-17  v7.0.0
+### 2025-03-0.8  v8.0.0
+- .
+
+<details><summary>2025-02-17  v7.0.0</summary><br>
+
 - Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
 - Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
+</details>
 
 <details><summary>2024-12-30  v5.6.1</summary><br>
 
