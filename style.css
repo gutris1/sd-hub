@@ -1,49 +1,11 @@
-#tab_sdhub {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.hide-this {
-  visibility: hidden !important;
-}
-
-#sdhub-downloader .dl-btn {
-  width: 100px !important;
-}
-
-#sdhub-downloader .dl-row {
-  margin-top: -7px !important;
-}
-
-#sdhub-uploader .up-btn {
-  width: 100px !important;
-}
-#sdhub-uploader .up-input {
-  margin-top: -15px !important;
-}
-#sdhub-uploader .up-row {
-  margin-top: -14px !important;
-}
-
-#sdhub-archiver .arc-btn {
-  width: 100px !important;
-}
-#sdhub-archiver .arc-input {
-  margin-top: -15px !important;
-}
-#sdhub-archiver .arc-row {
-  margin-top: -9px !important;
-}
-#sdhub-archiver .cb {
-  margin-left: 60px !important;
-}
-
-#sdhub-downloader-inputs {
-  margin-top: 10px;
+#sdhub-tab > .tab-nav {
+  border: 0;
+  margin: 5px 0 5px 0;
+  gap: 15px;
 }
 
 #sdhub-tab > .tab-nav > button {
-  margin: 0 10px 10px 10px;
+  border-radius: 100px;
 }
 
 #sdhub-tab > .tab-nav > button.selected {
@@ -54,7 +16,6 @@
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--button-primary-background-fill);
   border-color: var(--primary-500);
-  border-radius: 100px;
 }
 
 #sdhub-tab > .tab-nav > button:not(.selected) {
@@ -65,7 +26,67 @@
   color: var(--primary-400);
   filter: drop-shadow(0 0 10px var(--body-text-color-subdued));
   box-shadow: 0 0 10px 1px var(--primary-400);
-  border-radius: 100px;
+}
+
+#sdhub-downloader-tab,
+#sdhub-uploader-tab,
+#sdhub-archiver-tab,
+#sdhub-texteditor-tab,
+#sdhub-shell-tab,
+#sdhub-gallery-tab {
+  border: 0;
+  margin: 0;
+}
+
+#sdhub-downloader-tab,
+#sdhub-uploader-tab,
+#sdhub-archiver-tab,
+#sdhub-shell-tab {
+  padding: 10px 0px;
+}
+
+#sdhub-texteditor-tab,
+#sdhub-gallery-tab {
+  padding: 10px 0px 0px;
+}
+
+.hide-this {
+  visibility: hidden !important;
+}
+
+#sdhub-downloader-tab .dl-btn {
+  width: 100px !important;
+}
+
+#sdhub-downloader-tab .dl-row {
+  margin-top: -7px !important;
+}
+
+#sdhub-uploader-tab .up-btn {
+  width: 100px !important;
+}
+#sdhub-uploader-tab .up-input {
+  margin-top: -15px !important;
+}
+#sdhub-uploader-tab .up-row {
+  margin-top: -14px !important;
+}
+
+#sdhub-archiver-tab .arc-btn {
+  width: 100px !important;
+}
+#sdhub-archiver-tab .arc-input {
+  margin-top: -15px !important;
+}
+#sdhub-archiver-tab .arc-row {
+  margin-top: -9px !important;
+}
+#sdhub-archiver-tab .cb {
+  margin-left: 60px !important;
+}
+
+#sdhub-downloader-inputs {
+  margin-top: 10px;
 }
 
 #sdhub-downloader-scrape-button {
@@ -139,7 +160,8 @@
 #sdhub-archiver-zipoutputs-button,
 #sdhub-texteditor-load-button,
 #sdhub-texteditor-save-button,
-#sdhub-shell-button {
+#sdhub-shell-button,
+#sdhub-dataframe-accordion {
   transition: 0.4s ease;
 }
 
@@ -250,6 +272,28 @@
   pointer-events: none;
 }
 
+:not(.gradio-container-4-40-0) #sdhub-tag-dataframe,
+:not(.gradio-container-4-40-0) #sdhub-tag-dataframe > div > div,
+:not(.gradio-container-4-40-0) #sdhub-tag-dataframe table {
+  overflow: visible !important;
+}
+
+#sdhub-dataframe-accordion:hover:not(:has(> .open)) {
+  border: 1px solid var(--primary-500) !important;
+  box-shadow: 0 0 10px 1px var(--primary-400);
+}
+
+#sdhub-tag-dataframe td {
+  border: 0;
+}
+
+#sdhub-tag-dataframe td:hover {
+  filter: drop-shadow(0 0 5px var(--primary-400));
+  box-shadow: 0 0 10px 1px var(--primary-400);
+  color: var(--background-fill-primary);
+  background: var(--button-primary-background-fill);
+}
+
 #sdhub-tag-dataframe table {
   border-collapse: separate;
   cursor: auto;
@@ -275,19 +319,34 @@
 
 @keyframes pulse-td-box {
   0% {
-    box-shadow: inset 0 0 0 1px var(--ring-color);
+    filter: drop-shadow(0 0 5px var(--primary-400));
+    box-shadow: 0 0 10px 1px var(--primary-400);
+    color: var(--background-fill-primary);
+    background: var(--button-primary-background-fill);
   }
   25% {
-    box-shadow: inset 0 0 0 1px transparent;
+    filter: drop-shadow(0 0 5px var(--primary-400));
+    box-shadow: 0 0 3px 1px var(--primary-400);
+    color: var(--body-text-color);
+    background: transparent;
   }
   50% {
-    box-shadow: inset 0 0 0 1px var(--ring-color);
+    filter: drop-shadow(0 0 5px var(--primary-400));
+    box-shadow: 0 0 10px 1px var(--primary-400);
+    color: var(--background-fill-primary);
+    background: var(--button-primary-background-fill);
   }
   75% {
-    box-shadow: inset 0 0 0 1px transparent;
+    filter: drop-shadow(0 0 5px var(--primary-400));
+    box-shadow: 0 0 3px 1px var(--primary-400);
+    color: var(--body-text-color);
+    background: transparent;
   }
   100% {
-    box-shadow: inset 0 0 0 1px var(--ring-color);
+    filter: drop-shadow(0 0 5px var(--primary-400));
+    box-shadow: 0 0 10px 1px var(--primary-400);
+    color: var(--background-fill-primary);
+    background: var(--button-primary-background-fill);
   }
 }
 
