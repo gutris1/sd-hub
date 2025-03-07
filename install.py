@@ -15,13 +15,14 @@ RST = '\033[0m'
 
 base = Path(__file__).parent
 
-def _exifReader():
+def _SDHubReq():
     req = {
+        'sd-hub-translations.xlsx': 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
         'javascript/exif-reader.js': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
         'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
     }
-    for path, url in req.items():
-        fp = base / path
+    for file, url in req.items():
+        fp = base / file
         if not fp.exists():
             fp.write_bytes(urllib.request.urlopen(url).read())
 
@@ -130,6 +131,6 @@ def _install_req_2():
     if pkg_list:
         print(f"Installing SD-Hub requirement: {' '.join(f'{BLU}{pkg}{RST}' for pkg in pkg_list)}")
 
-_exifReader()
+_SDHubReq()
 _install_req_1()
 _install_req_2()
