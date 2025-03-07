@@ -228,10 +228,13 @@ function SDHubOnTabChange() {
 
 function SDHubGetTranslation(key, count = 1) {
   let lang = navigator.language || navigator.languages[0] || 'en';
-  let translate = SDHubTranslations[lang] || SDHubTranslations['en'] || {};
+  let translate = SDHubTranslations[lang] ?? SDHubTranslations['en'] ?? {};
 
-  if ((key === 'item' || key === 'items') && count > 1) return translate['items'] || 'items';
-  return translate[key] || (count > 1 ? 'items' : 'item');
+  if (key === 'item' || key === 'items') {
+    return (count > 1 ? translate['items'] : translate['item']) ?? (count > 1 ? 'items' : 'item');
+  }
+
+  return translate[key] ?? key;
 }
 
 function SDHubUITranslation() {
