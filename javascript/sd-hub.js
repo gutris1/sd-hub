@@ -1,3 +1,32 @@
+let SDHubTabButtons = {
+  'Downloader': 'sdhub-tab-button-downloader',
+  'Uploader': 'sdhub-tab-button-uploader',
+  'Archiver': 'sdhub-tab-button-archiver',
+  'Text Editor': 'sdhub-tab-button-texteditor',
+  'Shell': 'sdhub-tab-button-shell',
+  'Gallery': 'sdhub-tab-button-gallery'
+};
+
+let SDHubLangIndex = {
+  en: 1,
+  ja: 2,
+  'zh-CN': 3,
+  'zh-TW': 4,
+  es: 5,
+  ko: 6,
+  ru: 7
+};
+
+let SDHubTranslations = {};
+
+onUiLoaded(function () {
+  SDHubInsertUploaderInfo();
+  SDHubCopyTextFromUselessDataFrame();
+  SDHubKeyBindings();
+  SDHubUITranslation();
+  SDHubOnTabChange();
+});
+
 function SDHubCopyTextFromUselessDataFrame() {
   document.addEventListener('click', (e) => {
     const td = e.target.closest('#sdhub-tag-dataframe td');
@@ -107,7 +136,7 @@ function SDHubTextEditorGalleryScrollBar() {
   ScrollBAR.innerHTML = isFirefox ? SBforFirefox : SBwebkit;
 }
 
-onUiLoaded(function () {
+function SDHubInsertUploaderInfo() {
   const file = `${window.SDHubFilePath}uploader-info.json`;
 
   fetch(file, { cache: "no-store" })
@@ -138,14 +167,9 @@ onUiLoaded(function () {
       }
     })
     .catch(err => console.error("Error :", err));
+}
 
-  SDHubCopyTextFromUselessDataFrame();
-  SDHubKeyBindings();
-  SDHubUITranslation();
-  onSDHubTabChanges();
-});
-
-function onSDHubTabChanges() {
+function SDHubOnTabChange() {
   const TargetTabs = [document.getElementById('tabs'), document.getElementById('sdhub-tab')];
   const config = { childList: true, subtree: true };
 
@@ -202,39 +226,12 @@ function onSDHubTabChanges() {
   });
 }
 
-let SDHubTranslations = {};
-
-const SDHubLangIndex = {
-  en: 1,
-  ja: 2,
-  'zh-CN': 3,
-  'zh-TW': 4,
-  es: 5,
-  ko: 6,
-  ru: 7
-};
-
-let SDHubTabButtons = {
-  'Downloader': 'sdhub-tab-button-downloader',
-  'Uploader': 'sdhub-tab-button-uploader',
-  'Archiver': 'sdhub-tab-button-archiver',
-  'Text Editor': 'sdhub-tab-button-texteditor',
-  'Shell': 'sdhub-tab-button-shell',
-  'Gallery': 'sdhub-tab-button-gallery'
-};
-
 function SDHubGetTranslation(key, count = 1) {
   let lang = navigator.language || navigator.languages[0] || 'en';
+  let translate = SDHubTranslations[lang] || SDHubTranslations['en'] || {};
 
-  if (key === 'item' || key === 'items') {
-    if (SDHubTranslations[lang] && SDHubTranslations[lang][key]) return SDHubTranslations[lang][key];
-    if (SDHubTranslations['en'] && SDHubTranslations['en'][key]) return SDHubTranslations['en'][key];
-    return count === 1 ? 'item' : 'items';
-  }
-
-  if (SDHubTranslations[lang] && SDHubTranslations[lang][key]) return SDHubTranslations[lang][key];
-  if (SDHubTranslations['en'] && SDHubTranslations['en'][key]) return SDHubTranslations['en'][key];
-  return key;
+  if ((key === 'item' || key === 'items') && count > 1) return translate['items'] || 'items';
+  return translate[key] || (count > 1 ? 'items' : 'item');
 }
 
 function SDHubUITranslation() {
@@ -326,7 +323,6 @@ function SDHubUITranslation() {
 
     inner ? el.innerHTML = translate
           : el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ? el.placeholder = translate
-          : el.tagName === 'BUTTON' ? el.textContent = translate.toLowerCase()
           : el.textContent = translate;
   });
 }
