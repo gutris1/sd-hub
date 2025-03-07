@@ -1,17 +1,3 @@
-import importlib
-try:
-    import sd_hub
-    miso = [
-        'tokenizer', 'downloader', 'archiver', 'uploader', 
-        'paths', 'scraper', 'version', 'infotext', 
-        'zipoutputs', 'shellTab', 'texteditorTab', 'galleryTab'
-    ]
-    for soop in miso:
-        __import__(f'sd_hub.{soop}')
-        importlib.reload(getattr(sd_hub, soop))
-except (AttributeError, ImportError):
-    pass
-
 from modules.script_callbacks import on_ui_tabs, on_app_started
 from modules.ui_components import FormRow, FormColumn
 from fastapi import FastAPI
@@ -32,7 +18,7 @@ def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
 
     with gr.Blocks(analytics_enabled=False) as sdhub, gr.Tabs(elem_id="sdhub-tab"):
-        with gr.TabItem("Downloader", elem_id="sdhub-downloader"):
+        with gr.TabItem("Downloader", elem_id="sdhub-downloader-tab"):
             gr.HTML(dl_title)
 
             with FormRow():
@@ -141,7 +127,7 @@ def onSDHUBTab():
                 outputs=[dl_input, dl_out2]
             )
 
-        with gr.TabItem("Uploader", elem_id="sdhub-uploader"):
+        with gr.TabItem("Uploader", elem_id="sdhub-uploader-tab"):
             gr.HTML(upl_title)
 
             with FormRow():
@@ -253,7 +239,7 @@ def onSDHUBTab():
                 outputs=[upl_output1, upl_output2]
             )
 
-        with gr.TabItem("Archiver", elem_id="sdhub-archiver", elem_classes="tabs"):
+        with gr.TabItem("Archiver", elem_id="sdhub-archiver-tab"):
             with gr.Accordion("ReadMe", open=False, elem_id="sdhub-archiver-accordion-readme"):
                 gr.HTML(arc_info)
 
