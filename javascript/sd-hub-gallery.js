@@ -480,77 +480,13 @@ function SDHubGalleryContextButton(v) {
   SDHubGalleryKillContextMenu();
 }
 
-function SDHubGalleryDeletion() {
-  const imgEL = document.querySelector(`img[src="${window.SDHubImagePath}"]`);
-  const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image`), '');
-  const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
-
-  const Con = document.getElementById('SDHub-Gallery-Delete-Container');
-  const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
-  const Box = document.getElementById('SDHub-Gallery-Delete-Box');
-  const Text = document.getElementById('SDHub-Gallery-Delete-Text');
-  const Yes = document.getElementById('SDHub-Gallery-Delete-Yes');
-  const No = document.getElementById('SDHub-Gallery-Delete-No');
-
-  Con.style.display = 'flex';
-  Con.focus();
-  Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
-  document.body.classList.add('no-scroll');
-
-  Yes.onclick = () => {
-    Spinner.style.visibility = 'visible';
-    Box.style.opacity = '0';
-    Box.style.transform = 'scale(1.5)';
-
-    fetch(`${SDHubGalleryBase}/delete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    })
-      .then(response => {
-        if (!response.ok) {
-          return response.text().then(err => { throw new Error(err); });
-        }
-        return response.json();
-      })
-      .then(data => {
-        if (data.status === 'deleted') {
-          const parentDiv = imgEL.closest('.sdhub-gallery-image-box');
-          if (parentDiv) parentDiv.remove();
-        } else {
-          console.error("Deletion failed:", data);
-        }
-      })
-      .catch(error => console.error('Error deleting image:', error))
-      .finally(() => {
-        SDHubGalleryTabImageCounters();
-        setTimeout(() => {
-          Con.style.opacity = '';
-          Spinner.style.visibility = '';
-          document.body.classList.remove('no-scroll');
-        }, 1000);
-        setTimeout(() => {
-          Con.style.display = '';
-          Box.style.opacity = '';
-          Box.style.transform = '';
-        }, 1100);
-      });
-  };
-
-  No.onclick = () => {
-    Con.style.opacity = '';
-    Box.style.transform = 'scale(1.5)';
-    document.body.classList.remove('no-scroll');
-    setTimeout(() => (Con.style.display = '', Box.style.transform = ''), 200);
-  };
-
-  setTimeout(() => Con.style.opacity = '1', 100);
-  setTimeout(() => Box.style.transform = 'scale(1)', 200);
-}
-
 function SDHubGallerySendImage(v) {
   const file = document.getElementById('SDHub-Gallery-ContextMenu').targetFile;
   const input = document.querySelector('#SDHubimgInfoImage input');
+
+  const Con = document.getElementById('SDHub-Gallery-Delete-Container');
+  const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
+  Con.style.display = 'flex';
 
   SDHubGalleryImageDataCache.items.clear();
   SDHubGalleryImageDataCache.items.add(file);
@@ -559,23 +495,33 @@ function SDHubGallerySendImage(v) {
 
   const check = setInterval(() => {
     const imgInfoRawOutput = gradioApp().querySelector('#SDHubimgInfoGenInfo textarea');
+    Con.style.opacity = '1';
+    Spinner.style.visibility = 'visible';
 
     if (imgInfoRawOutput && imgInfoRawOutput.value.trim() !== '') {
       clearInterval(check);
 
+      let SendButton;
       switch (v) {
         case 'txt':
-          document.querySelector('#SDHubimgInfoSendButton > #txt2img_tab')?.click();
+          SendButton = document.querySelector('#SDHubimgInfoSendButton > #txt2img_tab');
           break;
         case 'img':
-          document.querySelector('#SDHubimgInfoSendButton > #img2img_tab')?.click();
+          SendButton = document.querySelector('#SDHubimgInfoSendButton > #img2img_tab');
           break;
         case 'inpaint':
-          document.querySelector('#SDHubimgInfoSendButton > #inpaint_tab')?.click();
+          SendButton = document.querySelector('#SDHubimgInfoSendButton > #inpaint_tab');
           break;
         case 'extras':
-          document.querySelector('#SDHubimgInfoSendButton > #extras_tab')?.click();
+          SendButton = document.querySelector('#SDHubimgInfoSendButton > #extras_tab');
           break;
+      }
+
+      if (SendButton) {
+        SendButton.click();
+        setTimeout(() => [
+          Con.style.opacity, Con.style.display, Spinner.style.visibility
+        ] = ['', '', ''], 200);
       }
     }
   }, 100);
@@ -707,7 +653,7 @@ function SDHubCreateGallery(GalleryTab) {
   imgCOn.append(imgWrap);
   imgBox.append(imgCOn);
   TabWrap.prepend(TabCounterCon);
-  GalleryTab.prepend(TabRow, TabWrap, imgBox);
+  GalleryTab.prepend(SDHubGalleryCreateDeleteBox(), TabRow, TabWrap, imgBox);
 
   const imgchestColumn = document.getElementById('SDHub-Gallery-imgchest-Column');
   if (imgchestColumn) SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn);
@@ -765,6 +711,115 @@ function SDHubGalleryTabEventListener(TabCon) {
     SDHubGalleryCMRightClick = true;
     SDHubGalleryContextMenu(e, imgEL);
   });
+}
+
+function SDHubGalleryCreateDeleteBox() {
+  const Con = document.createElement('div');
+  Con.id = 'SDHub-Gallery-Delete-Container';
+  Con.style.display = 'none';
+
+  const Spinner = document.createElement('div');
+  Spinner.id = 'SDHub-Gallery-Delete-Spinner';
+  Spinner.innerHTML = SDHubGallerySpinnerSVG;
+
+  const Box = document.createElement('div');
+  Box.id = 'SDHub-Gallery-Delete-Box';
+
+  const Text = document.createElement('p');
+  Text.id = 'SDHub-Gallery-Delete-Text';
+  Text.textContent = '';
+
+  const ButtonRow = document.createElement('div');
+  ButtonRow.id = 'SDHub-Gallery-Delete-ButtonRow';
+
+  const Yes = document.createElement('span');
+  Yes.id = 'SDHub-Gallery-Delete-Yes';
+  Yes.classList.add('sdhub-gallery-delete-button');
+  Yes.textContent = SDHubGetTranslation('yes');
+
+  const No = document.createElement('span');
+  No.id = 'SDHub-Gallery-Delete-No';
+  No.classList.add('sdhub-gallery-delete-button');
+  No.textContent = SDHubGetTranslation('no');
+
+  const lang = navigator.language || navigator.languages[0] || 'en';
+  ButtonRow.append(...(lang.startsWith('ja') || lang.startsWith('zh') ? [No, Yes] : [Yes, No]));
+
+  Box.append(Text, ButtonRow);
+  Con.append(Box, Spinner);
+
+  document.addEventListener('keydown', ({ key }) => {
+    const Box = document.getElementById('SDHub-Gallery-Delete-Box');
+    if (Box?.style.transform === 'scale(1)') {
+      ({ y: Yes, n: No, Escape: No }[key] ?.click());
+    }
+  });
+
+  return Con;
+}
+
+function SDHubGalleryDeletion() {
+  const imgEL = document.querySelector(`img[src="${window.SDHubImagePath}"]`);
+  const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image`), '');
+  const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
+
+  const Con = document.getElementById('SDHub-Gallery-Delete-Container');
+  const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
+  const Box = document.getElementById('SDHub-Gallery-Delete-Box');
+  const Text = document.getElementById('SDHub-Gallery-Delete-Text');
+  const Yes = document.getElementById('SDHub-Gallery-Delete-Yes');
+  const No = document.getElementById('SDHub-Gallery-Delete-No');
+
+  Con.style.display = 'flex';
+  Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
+
+  Yes.onclick = () => {
+    Spinner.style.visibility = 'visible';
+    Box.style.opacity = '0';
+    Box.style.transform = 'scale(1.5)';
+
+    fetch(`${SDHubGalleryBase}/delete`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.text().then(err => { throw new Error(err); });
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.status === 'deleted') {
+          const parentDiv = imgEL.closest('.sdhub-gallery-image-box');
+          if (parentDiv) parentDiv.remove();
+        } else {
+          console.error("Deletion failed:", data);
+        }
+      })
+      .catch(error => console.error('Error deleting image:', error))
+      .finally(() => {
+        SDHubGalleryTabImageCounters();
+        setTimeout(() => {
+          Con.style.opacity = '';
+          Spinner.style.visibility = '';
+        }, 1000);
+        setTimeout(() => {
+          Con.style.display = '';
+          Box.style.opacity = '';
+          Box.style.transform = '';
+        }, 1100);
+      });
+  };
+
+  No.onclick = () => {
+    Con.style.opacity = '';
+    Box.style.transform = 'scale(1.5)';
+    setTimeout(() => (Con.style.display = '', Box.style.transform = ''), 200);
+  };
+
+  setTimeout(() => Con.style.opacity = '1', 100);
+  setTimeout(() => Box.style.transform = 'scale(1)', 200);
 }
 
 function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
@@ -825,8 +880,7 @@ function SDHubGalleryDOMLoaded() {
 
   SDHubGallery.append(
     SDHubGalleryCreateContextMenu(),
-    SDHubGalleryCreateLightBox(),
-    SDHubGalleryCreateDeleteBox()
+    SDHubGalleryCreateLightBox()
   );
 
   document.body.append(SDHubGallery);
@@ -979,50 +1033,6 @@ function SDHubGalleryCreateLightBox() {
   LightBox.append(Control, Wrapper);
 
   return LightBox;
-}
-
-function SDHubGalleryCreateDeleteBox() {
-  const Con = document.createElement('div');
-  Con.id = 'SDHub-Gallery-Delete-Container';
-  Con.setAttribute('tabindex', '0');
-  Con.style.display = 'none';
-
-  const Spinner = document.createElement('div');
-  Spinner.id = 'SDHub-Gallery-Delete-Spinner';
-  Spinner.innerHTML = SDHubGallerySpinnerSVG;
-
-  const Box = document.createElement('div');
-  Box.id = 'SDHub-Gallery-Delete-Box';
-
-  const Text = document.createElement('p');
-  Text.id = 'SDHub-Gallery-Delete-Text';
-  Text.textContent = '';
-
-  const ButtonRow = document.createElement('div');
-  ButtonRow.id = 'SDHub-Gallery-Delete-ButtonRow';
-
-  const Yes = document.createElement('span');
-  Yes.id = 'SDHub-Gallery-Delete-Yes';
-  Yes.classList.add('sdhub-gallery-delete-button');
-  Yes.textContent = SDHubGetTranslation('yes');
-
-  const No = document.createElement('span');
-  No.id = 'SDHub-Gallery-Delete-No';
-  No.classList.add('sdhub-gallery-delete-button');
-  No.textContent = SDHubGetTranslation('no');
-
-  const lang = navigator.language || navigator.languages[0] || 'en';
-  ButtonRow.append(...(lang.startsWith('ja') || lang.startsWith('zh') ? [No, Yes] : [Yes, No]));
-
-  Box.append(Text, ButtonRow);
-  Con.append(Box, Spinner);
-
-  document.addEventListener('keydown', ({ key }) => {
-    const Con = document.getElementById('SDHub-Gallery-Delete-Container');
-    if (Con?.style.display === 'flex') ({ y: Yes, n: No }[key.toLowerCase()]?.click());
-  });
-
-  return Con;
 }
 
 function SDHubGallerySwitchTab(whichTab) {
