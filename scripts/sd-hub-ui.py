@@ -126,7 +126,23 @@ def onSDHUBTab():
             dl_dl.click(
                 fn=downloader,
                 inputs=[dl_input, dl_token1, dl_token2, gr.State()],
-                outputs=[dl_out1, dl_out2]
+                outputs=[dl_out1, dl_out2],
+                _js="""
+                    () => {
+                        let el = {
+                            input: '#sdhub-downloader-inputs textarea',
+                            token1: '#sdhub-downloader-token1 input',
+                            token2: '#sdhub-downloader-token2 input'
+                        };
+
+                        let v = Object.entries(el).map(([k, id]) => 
+                            document.querySelector(id)?.value || ''
+                        );
+
+                        window.SDHubDownloaderInputsValue = v[0];
+                        return [...v, null];
+                    }
+                """
             ).then(fn=None, _js="() => {SDHubDownloader();}")
 
             dl_txt.upload(
