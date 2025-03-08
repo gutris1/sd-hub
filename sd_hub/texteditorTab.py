@@ -5,8 +5,10 @@ import gradio as gr
 from sd_hub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
-
 LastEdit = Path(__file__).parent / 'lastEdit.txt'
+
+Code = gr.Code.update
+Textbox = gr.Textbox.update
 
 langs = {
     '.py': 'python',
@@ -29,19 +31,19 @@ def LoadTextFile(fp):
 
     if not fp or not Path(fp).exists() or Path(fp).suffix not in langs:
         info = 'File Not Found' if not fp or not Path(fp).exists() else 'File Unsupported'
-        yield gr.Code.update(value='', label='', language=None), gr.Textbox.update(value=info)
+        yield Code(value='', label='', language=None), Textbox(value=info)
         return
 
     script = f.read_text()
     syntax = langs[ext]
 
-    yield gr.Code.update(value=script, label=syntax, language=syntax), gr.Textbox.update(value='Loaded')
+    yield Code(value=script, label=syntax, language=syntax), Textbox(value='Loaded')
 
-def SaveTextFile(fp, script):
+def SaveTextFile(script, fp):
     f = Path(fp)
     f.write_text(script)
     LastEdit.write_text(str(f))
-    yield gr.Textbox.update(value='Saved')
+    yield Textbox(value=fp), Textbox(value='Saved')
 
 def LoadInitial():
     if LastEdit.exists():
@@ -49,13 +51,11 @@ def LoadInitial():
         ext = f.suffix
         script = f.read_text()
         syntax = langs[ext]
-        return str(f), script, syntax, syntax
+        return Code(value=script, label=syntax, language=syntax), Textbox(value=str(f))
     else:
-        return '', '', '', None
+        return Code(value='', label='', language=None), Textbox(value='')
 
 def TextEditorTab():
-    TextPath, TextContent, TextLabel, TextLang = LoadInitial()
-
     with gr.TabItem("Text Editor", elem_id="sdhub-texteditor-tab"):
         with FormRow(elem_id="sdhub-texteditor-row"):
             loading = gr.Button(
@@ -65,7 +65,7 @@ def TextEditorTab():
             )
 
             inputs = gr.Textbox(
-                value=TextPath,
+                value='',
                 show_label=False,
                 interactive=True,
                 max_lines=1,
@@ -89,13 +89,36 @@ def TextEditorTab():
             )
 
         editor = gr.Code(
-            value=TextContent,
-            label=TextLabel,
-            language=TextLang,
+            value='',
+            label='',
+            language=None,
             interactive=True,
             elem_id="sdhub-texteditor-editor"
         )
 
-        loading.click(fn=LoadTextFile, inputs=inputs, outputs=[editor, info])
-        saving.click(fn=SaveTextFile, inputs=[inputs, editor], outputs=info)
-        info.change(fn=None, _js="() => {SDHubTextEditorInfo();}")
+        initial = gr.Button(visible=False, elem_id='sdhub-texteditor-initial-load')
+        initial.click(fn=LoadInitial, inputs=[], outputs=[editor, inputs])
+
+        loading.click(
+            fn=LoadTextFile, inputs=inputs, outputs=[editor, info]
+        ).then(
+            fn=None, 
+            _js="""
+                () => {
+                    let info = document.querySelector('#sdhub-texteditor-info input')?.value;
+                    if (info) SDHubTextEditorInfo(info);
+                }
+            """
+        )
+
+        saving.click(
+            fn=SaveTextFile, inputs=[editor, inputs], outputs=[inputs, info]
+        ).then(
+            fn=None, 
+            _js="""
+                () => {
+                    let info = document.querySelector('#sdhub-texteditor-info input')?.value;
+                    if (info) SDHubTextEditorInfo(info);
+                }
+            """
+        )
