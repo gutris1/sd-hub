@@ -1,3 +1,17 @@
+import importlib
+try:
+    import sd_hub
+    miso = [
+        'tokenizer', 'downloader', 'archiver', 'uploader', 
+        'paths', 'scraper', 'version', 'infotext', 
+        'zipoutputs', 'shellTab', 'texteditorTab', 'galleryTab'
+    ]
+    for soop in miso:
+        __import__(f'sd_hub.{soop}')
+        importlib.reload(getattr(sd_hub, soop))
+except (AttributeError, ImportError):
+    pass
+
 from modules.script_callbacks import on_ui_tabs, on_app_started
 from modules.ui_components import FormRow, FormColumn
 from fastapi import FastAPI
@@ -113,7 +127,7 @@ def onSDHUBTab():
                 fn=downloader,
                 inputs=[dl_input, dl_token1, dl_token2, gr.State()],
                 outputs=[dl_out1, dl_out2]
-            )
+            ).then(fn=None, _js="() => {SDHubDownloader();}")
 
             dl_txt.upload(
                 fn=read_txt,
