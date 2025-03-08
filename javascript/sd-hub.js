@@ -63,6 +63,30 @@ function SDHubKeyBindings() {
   });
 }
 
+async function SDHubDownloader() {
+  const file = `${window.SDHubFilePath}downloader-info.txt`;
+
+  const response = await fetch(file, { cache: 'no-store' });
+  if (!response.ok) return;
+
+  const text = await response.text();
+  if (!text.trim()) return;
+
+  const TagMap = {
+    '$ckpt': ['txt2img_checkpoints_extra_refresh', 'img2img_checkpoints_extra_refresh', 'refresh_sd_model_checkpoint'],
+    '$vae': ['refresh_sd_vae'],
+    '$lora': ['txt2img_lora_extra_refresh', 'img2img_lora_extra_refresh'],
+    '$emb': ['txt2img_textual_inversion_extra_refresh', 'img2img_textual_inversion_extra_refresh'],
+    '$hn': ['txt2img_hypernetworks_extra_refresh', 'img2img_hypernetworks_extra_refresh'],
+    '$cn': ['txt2img_controlnet_ControlNet-0_controlnet_refresh_models', 'img2img_controlnet_ControlNet-0_controlnet_refresh_models']
+  };
+
+  Object.entries(TagMap).forEach(([tags, buttons]) => {
+    const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
+    if (Tag.test(text)) buttons.forEach(id => document.getElementById(id)?.click());
+  });
+}
+
 async function SDHubTextEditorInfo() {
   const info = document.querySelector('#sdhub-texteditor-info input');
 
