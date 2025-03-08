@@ -4,12 +4,18 @@ from modules.shared import cmd_opts
 from modules.scripts import basedir
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys, time, json, shlex
+import subprocess
+import shlex
+import time
+import json
+import sys
+import re
 
 from sd_hub.paths import SDHubPaths, BLOCK
 from sd_hub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
+info = Path(basedir()) / 'uploader-info.json'
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
     msg = commit_msg.replace('"', '\\"')
@@ -198,41 +204,33 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             yield details, True
 
 
-jsonpath = Path(basedir()) / 'uploader-info.json'
-
-def SaveUploaderInfo(user, repo, branch):
-    data = {
-        "username": user,
-        "repository": repo,
-        "branch": branch
-    }
-
-    with open(jsonpath, "w") as f:
-        json.dump(data, f, indent=4)
+def uploaderLog(user, repo, branch):
+    data = {'username': user, 'repository': repo, 'branch': branch}
+    info.write_text(json.dumps(data, indent=4))
 
 
 def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()):
-    SaveUploaderInfo(user, repo, branch)
+    uploaderLog(user, repo, branch)
     output_box = box_state if box_state else []
 
     for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
         if not _flag:
-            if "files from/to outside" in _text: 
-                yield "Blocked", "\n".join([_text] + output_box)
+            if 'files from/to outside' in _text: 
+                yield 'Blocked', '\n'.join([_text] + output_box)
                 assert not cmd_opts.disable_extension_access, BLOCK
 
-            if "Uploading" in _text:
-                yield _text, "\n".join(output_box)
+            if 'Uploading' in _text:
+                yield _text, '\n'.join(output_box)
 
-            yield _text, "\n".join(output_box)
+            yield _text, '\n'.join(output_box)
         else:
             output_box.append(_text)
             
-    catcher = ["not", "Missing", "Error", "Invalid"]
+    catcher = ['not', 'Missing', 'Error', 'Invalid']
     
     if any(k in w for k in catcher for w in output_box):
-        yield "Error", "\n".join(output_box)
+        yield 'Error', '\n'.join(output_box)
     else:
-        yield "Done", "\n".join(output_box)
+        yield 'Done', '\n'.join(output_box)
         
     return gr.update(), gr.State(output_box)
