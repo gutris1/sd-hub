@@ -370,6 +370,7 @@
   top: 3.2rem;
   right: 0;
   position: absolute;
+  pointer-events: none;
 }
 
 #sdhub-texteditor-info > .wrap {
@@ -378,7 +379,7 @@
 
 #sdhub-texteditor-info input {
   text-align: right;
-  font-size: 15px;
+  font-size: 17px;
   opacity: 0;
   transition: opacity 0.3s ease;
   background: transparent;
