@@ -283,6 +283,11 @@
   box-shadow: 0 0 10px 1px var(--primary-400);
 }
 
+#sdhub-tag-dataframe tbody {
+  position: relative;
+  z-index: 11;
+}
+
 #sdhub-tag-dataframe td {
   border: 0;
 }
