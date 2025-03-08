@@ -221,8 +221,9 @@
   overflow: hidden;
 }
 
-.gradio-container-4-40-0 #sdhub-uploader-radio-box .svelte-1kzox3m {
-  margin-top: -4px;
+.gradio-container-4-40-0 #sdhub-uploader-radio-box .svelte-1kzox3m,
+:not(.gradio-container-4-40-0) #sdhub-uploader-radio-box > div:nth-of-type(2) {
+  margin-top: -3px !important;
 }
 
 #sdhub-repo {
