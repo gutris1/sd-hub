@@ -15,7 +15,6 @@ from sd_hub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
-info = Path(basedir()) / 'downloader-info.txt'
 
 def gitclown(url, target_path):
     parts = shlex.split(url)
@@ -407,12 +406,7 @@ def lobby(command, token2=None, token3=None):
             yield output
 
 
-def downloaderLog(inputs):
-    info.write_text(str(inputs))
-
-
 def downloader(inputs, token2, token3, box_state=gr.State()):
-    downloaderLog(inputs)
     output_box = box_state if box_state else []
 
     ngword = [
