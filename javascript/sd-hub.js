@@ -24,6 +24,7 @@ onUiLoaded(function () {
   SDHubCopyTextFromUselessDataFrame();
   SDHubKeyBindings();
   SDHubUITranslation();
+  SDHubTextEditorInitialLoad();
   SDHubOnTabChange();
 });
 
@@ -64,13 +65,8 @@ function SDHubKeyBindings() {
 }
 
 async function SDHubDownloader() {
-  const file = `${window.SDHubFilePath}downloader-info.txt`;
-
-  const response = await fetch(file, { cache: 'no-store' });
-  if (!response.ok) return;
-
-  const text = await response.text();
-  if (!text.trim()) return;
+  let inputs = window.SDHubDownloaderInputsValue;
+  if (!inputs?.trim()) return;
 
   const TagMap = {
     '$ckpt': ['txt2img_checkpoints_extra_refresh', 'img2img_checkpoints_extra_refresh', 'refresh_sd_model_checkpoint'],
@@ -83,24 +79,24 @@ async function SDHubDownloader() {
 
   Object.entries(TagMap).forEach(([tags, buttons]) => {
     const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
-    if (Tag.test(text)) buttons.forEach(id => document.getElementById(id)?.click());
+    if (Tag.test(inputs)) buttons.forEach(id => document.getElementById(id)?.click());
   });
 }
 
-async function SDHubTextEditorInfo() {
+function SDHubTextEditorInitialLoad() {
+  setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
+}
+
+async function SDHubTextEditorInfo(flag) {
   const info = document.querySelector('#sdhub-texteditor-info input');
 
-  if (info.value.trim() !== '') {
+  if (info && flag.trim() !== '') {
+    info.style.transition = 'opacity 0.5s ease';
     info.style.opacity = '1';
+
     setTimeout(() => {
       info.style.transition = 'opacity 2s ease';
       info.style.opacity = '0';
-    }, 1000);
-
-    setTimeout(() => {
-      info.value = '';
-      updateInput(info);
-      info.style.transition = 'opacity 0.3s ease';
     }, 2000);
   }
 }
