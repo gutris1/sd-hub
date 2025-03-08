@@ -15,6 +15,7 @@ from sd_hub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
+info = Path(basedir()) / 'downloader-info.txt'
 
 def gitclown(url, target_path):
     parts = shlex.split(url)
@@ -406,7 +407,12 @@ def lobby(command, token2=None, token3=None):
             yield output
 
 
-def downloader(command, token2, token3, box_state=gr.State()):
+def downloaderLog(inputs):
+    info.write_text(str(inputs))
+
+
+def downloader(inputs, token2, token3, box_state=gr.State()):
+    downloaderLog(inputs)
     output_box = box_state if box_state else []
 
     ngword = [
@@ -420,7 +426,7 @@ def downloader(command, token2, token3, box_state=gr.State()):
 
     yield 'Now Downloading...', ''
 
-    for _text, _flag in lobby(command, token2, token3):
+    for _text, _flag in lobby(inputs, token2, token3):
         if not _flag:
             if any(k in _text for k in ngword):
                 yield 'Error', '\n'.join([_text] + output_box)
@@ -447,24 +453,11 @@ def downloader(command, token2, token3, box_state=gr.State()):
     return gr.update(), gr.State(output_box)
 
 
-def read_txt(file, box):
-    text_box = []
+def read_txt(f, box):
+    text_box = [box] if box.strip() else []
 
-    if file is not None:
-        inputs = file.name
-        txt = ''
+    if f is not None:
+        txt = Path(f.name).read_text()
+        text_box.append(txt)
 
-        with open(inputs, 'r') as content:
-            txt = content.read()
-
-        if box.strip() == '':
-            result = txt
-        else:
-            result = box + '\n' + txt
-
-        text_box.append(result)
-        output = '\n'.join(text_box)
-
-        return output
-
-    return '\n'.join(text_box)
+    return "\n".join(text_box)
