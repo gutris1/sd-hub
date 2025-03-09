@@ -831,6 +831,12 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   GalleryTab.prepend(imgchestButton);
   TabRow.style.marginLeft = '40px';
 
+  const Save = document.getElementById('SDHub-Gallery-imgchest-Save-Button');
+  Save.title = 'Save Setting';
+
+  const Load = document.getElementById('SDHub-Gallery-imgchest-Load-Button');
+  Load.title = 'Load Setting';
+
   let fromColumn = false;
   const apiInput = document.querySelector('#SDHub-Gallery-imgchest-API input');
 
