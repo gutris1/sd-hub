@@ -1,11 +1,12 @@
 from modules.ui_components import FormRow, FormColumn
+from modules.scripts import basedir
 from pathlib import Path
 import gradio as gr
 
 from sd_hub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
-LastEdit = Path(__file__).parent / 'lastEdit.txt'
+LastEdit = Path(basedir()) / 'texteditor-lastedit.txt'
 
 Code = gr.Code.update
 Textbox = gr.Textbox.update
@@ -56,69 +57,24 @@ def LoadInitial():
         return Code(value='', label='', language=None), Textbox(value='')
 
 def TextEditorTab():
-    with gr.TabItem("Text Editor", elem_id="sdhub-texteditor-tab"):
-        with FormRow(elem_id="sdhub-texteditor-row"):
-            loading = gr.Button(
-                "Load",
-                variant="primary",
-                elem_id="sdhub-texteditor-load-button"
-            )
+    with gr.TabItem('Text Editor', elem_id='sdhub-texteditor-tab'):
+        with FormRow(elem_id='sdhub-texteditor-row'):
+            saving = gr.Button('Save', variant='primary', elem_id='sdhub-texteditor-save-button')
+            inputs = gr.Textbox(value='', show_label=False, interactive=True, max_lines=1, placeholder='file path', scale=9, elem_id='sdhub-texteditor-inputs')
+            info = gr.Textbox(show_label=False, interactive=False, max_lines=1, scale=1, elem_id='sdhub-texteditor-info')
+            loading = gr.Button('Load', variant='primary', elem_id='sdhub-texteditor-load-button')
 
-            inputs = gr.Textbox(
-                value='',
-                show_label=False,
-                interactive=True,
-                max_lines=1,
-                placeholder='file path',
-                scale=9,
-                elem_id="sdhub-texteditor-inputs"
-            )
+        editor = gr.Code(value='', label='', language=None, interactive=True, elem_id='sdhub-texteditor-editor')
 
-            info = gr.Textbox(
-                show_label=False,
-                interactive=False,
-                max_lines=1,
-                scale=1,
-                elem_id="sdhub-texteditor-info"
-            )
+        js = """
+            () => {
+                let info = document.querySelector('#sdhub-texteditor-info input')?.value;
+                if (info) SDHubTextEditorInfo(info);
+            }
+        """
 
-            saving = gr.Button(
-                "Save",
-                variant="primary",
-                elem_id="sdhub-texteditor-save-button"
-            )
-
-        editor = gr.Code(
-            value='',
-            label='',
-            language=None,
-            interactive=True,
-            elem_id="sdhub-texteditor-editor"
-        )
+        loading.click(fn=LoadTextFile, inputs=inputs, outputs=[editor, info]).then(fn=None, _js=js)
+        saving.click(fn=SaveTextFile, inputs=[editor, inputs], outputs=[inputs, info]).then(fn=None, _js=js)
 
         initial = gr.Button(visible=False, elem_id='sdhub-texteditor-initial-load')
         initial.click(fn=LoadInitial, inputs=[], outputs=[editor, inputs])
-
-        loading.click(
-            fn=LoadTextFile, inputs=inputs, outputs=[editor, info]
-        ).then(
-            fn=None, 
-            _js="""
-                () => {
-                    let info = document.querySelector('#sdhub-texteditor-info input')?.value;
-                    if (info) SDHubTextEditorInfo(info);
-                }
-            """
-        )
-
-        saving.click(
-            fn=SaveTextFile, inputs=[editor, inputs], outputs=[inputs, info]
-        ).then(
-            fn=None, 
-            _js="""
-                () => {
-                    let info = document.querySelector('#sdhub-texteditor-info input')?.value;
-                    if (info) SDHubTextEditorInfo(info);
-                }
-            """
-        )
