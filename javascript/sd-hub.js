@@ -20,6 +20,8 @@ let SDHubLangIndex = {
 let SDHubTranslations = {};
 
 onUiLoaded(function () {
+  SDHubSet();
+  SDHubTokenBlur();
   SDHubInsertUploaderInfo();
   SDHubCopyTextFromUselessDataFrame();
   SDHubKeyBindings();
@@ -27,6 +29,15 @@ onUiLoaded(function () {
   SDHubTextEditorInitialLoad();
   SDHubOnTabChange();
 });
+
+function SDHubSet() {
+  [
+    ['sdhub-downloader-load-button', 'Load Token'],
+    ['sdhub-downloader-save-button', 'Save Token'],
+    ['sdhub-uploader-load-button', 'Load Token'],
+    ['sdhub-uploader-save-button', 'Save Token']
+  ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
+}
 
 function SDHubCopyTextFromUselessDataFrame() {
   document.addEventListener('click', (e) => {
@@ -64,6 +75,14 @@ function SDHubKeyBindings() {
   });
 }
 
+async function SDHubTokenBlur() {
+  ['#sdhub-downloader-token1 input', '#sdhub-downloader-token2 input', '#sdhub-uploader-token input']
+    .forEach(id => {
+      const el = document.querySelector(id);
+      if (el) el.style.filter = el.value.trim() ? 'blur(3px)' : 'none';
+    });
+}
+
 async function SDHubDownloader() {
   let inputs = window.SDHubDownloaderInputsValue;
   if (!inputs?.trim()) return;
@@ -84,6 +103,8 @@ async function SDHubDownloader() {
 }
 
 function SDHubTextEditorInitialLoad() {
+  document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
+  document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
   setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
 }
 
