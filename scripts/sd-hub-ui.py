@@ -115,13 +115,13 @@ def onSDHUBTab():
                 fn=load_token,
                 inputs=[],
                 outputs=[dl_out2, dl_token1, dl_token2, dl_out2]
-            )
+            ).then(fn=None, _js="() => {SDHubTokenBlur();}")
 
             dl_save.click(
                 fn=lambda token2, token3: save_token(None, token2, token3),
                 inputs=[dl_token1, dl_token2],
                 outputs=dl_out2
-            )
+            ).then(fn=None, _js="() => {SDHubTokenBlur();}")
 
             dl_dl.click(
                 fn=downloader,
@@ -255,13 +255,13 @@ def onSDHUBTab():
                 fn=load_token,
                 inputs=[],
                 outputs=[upl_token, upl_output2, upl_output2, upl_output2]
-            )
+            ).then(fn=None, _js="() => {SDHubTokenBlur();}")
 
             upl_save.click(
                 fn=lambda token1: save_token(token1, None, None),
                 inputs=[upl_token],
                 outputs=upl_output2
-            )
+            ).then(fn=None, _js="() => {SDHubTokenBlur();}")
 
             upl_btn.click(
                 fn=uploader,
