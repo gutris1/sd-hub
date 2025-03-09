@@ -89,23 +89,29 @@
   margin-top: 10px;
 }
 
-#sdhub-downloader-scrape-button {
+#sdhub-downloader-scrape-button,
+#sdhub-downloader-txt-button {
+  position: relative;
+  height: 40px;
   font-size: 100%;
   transition: 0.4s ease;
+}
+
+#sdhub-downloader-scrape-button {
   border-top-left-radius: var(--button-large-radius);
   border-bottom-left-radius: var(--button-large-radius);
 }
 
 #sdhub-downloader-txt-button {
-  font-size: 100%;
-  transition: 0.4s ease;
   border-top-right-radius: var(--button-large-radius);
   border-bottom-right-radius: var(--button-large-radius);
 }
 
 #sdhub-downloader-scrape-button:hover,
 #sdhub-downloader-txt-button:hover {
-  box-shadow: 0 0 0 1.5px var(--primary-400);
+  filter: drop-shadow(0 0 5px var(--button-secondary-text-color));
+  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
+  color: var(--button-secondary-text-color);
 }
 
 #sdhub-downloader-save-button:hover,
@@ -129,13 +135,19 @@
 #sdhub-downloader-inputs textarea,
 #sdhub-downloader-token1 input,
 #sdhub-downloader-token2 input,
-#sdhub-uploader-token input,
+#sdhub-downloader-save-button,
+#sdhub-downloader-load-button,
+#sdhub-downloader-download-button,
 #sdhub-uploader-inputs textarea,
+#sdhub-uploader-token input,
 #sdhub-uploader-username-box input,
 #sdhub-uploader-repo-box input,
 #sdhub-uploader-branch-box input,
 #sdhub-uploader-radio-box label,
 #sdhub-uploader-radio-box input,
+#sdhub-uploader-save-button,
+#sdhub-uploader-load-button,
+#sdhub-uploader-upload-button,
 #sdhub-archiver-radio-format label,
 #sdhub-archiver-radio-format input,
 #sdhub-archiver-radio-split label,
@@ -143,26 +155,25 @@
 #sdhub-archiver-arc-inputname input,
 #sdhub-archiver-arc-inputpath input,
 #sdhub-archiver-arc-outputpath input,
+#sdhub-archiver-arc-button,
 #sdhub-archiver-extr-inputpath input,
 #sdhub-archiver-extr-outputpath input,
+#sdhub-archiver-extr-button,
 #sdhub-archiver-zipoutputs-inputname input,
 #sdhub-archiver-zipoutputs-outputpath input,
-#sdhub-texteditor-inputs input,
-#sdhub-shell-inputs textarea,
-#sdhub-downloader-save-button,
-#sdhub-downloader-load-button,
-#sdhub-downloader-download-button,
-#sdhub-uploader-save-button,
-#sdhub-uploader-load-button,
-#sdhub-uploader-upload-button,
-#sdhub-archiver-arc-button,
-#sdhub-archiver-extr-button,
 #sdhub-archiver-zipoutputs-button,
+#sdhub-texteditor-inputs input,
 #sdhub-texteditor-load-button,
 #sdhub-texteditor-save-button,
+#sdhub-shell-inputs textarea,
 #sdhub-shell-button,
 #sdhub-dataframe-accordion {
-  transition: 0.4s ease;
+  transition:
+    box-shadow 0.5s ease,
+    filter 0.5s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    color 0.5s ease;
 }
 
 #sdhub-downloader-inputs textarea:focus,
@@ -182,7 +193,7 @@
 #sdhub-archiver-zipoutputs-outputpath input:focus,
 #sdhub-texteditor-inputs input:focus,
 #sdhub-shell-inputs textarea:focus {
-  filter: drop-shadow(0 0 1px var(--primary-400));
+  filter: drop-shadow(0 0 1px var(--primary-400)) blur(0px) !important;
   box-shadow: 0 0 10px 1px var(--primary-400);
 }
 
@@ -362,6 +373,8 @@
 
 #sdhub-texteditor-inputs input {
   text-align: center;
+  font-size: 15px;
+  padding: 10px;
 }
 
 #sdhub-texteditor-info {
@@ -437,6 +450,12 @@
 
 #sdhub-texteditor-editor span.\ͼ23 {
   color: #cf6db9;
+}
+
+#sdhub-texteditor-load-button,
+#sdhub-texteditor-save-button {
+  padding: 0;
+  font-size: 18px;
 }
 
 #sdhub-shell-button, #sdhub-shell-ghost-button {
