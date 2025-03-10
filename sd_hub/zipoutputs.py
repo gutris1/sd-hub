@@ -75,7 +75,7 @@ def zipping(file_name, output_path, mkdir_zip):
 
                             yield pbar, False
 
-    yield f'Saved To: {zip_out}', True
+    yield f'Saved To: {zip_out.resolve()}', True
 
 def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     output_box = box_state if box_state else []
