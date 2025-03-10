@@ -59,12 +59,46 @@ def LoadInitial():
 def TextEditorTab():
     with gr.TabItem('Text Editor', elem_id='sdhub-texteditor-tab'):
         with FormRow(elem_id='sdhub-texteditor-row'):
-            saving = gr.Button('Save', variant='primary', elem_id='sdhub-texteditor-save-button')
-            inputs = gr.Textbox(value='', show_label=False, interactive=True, max_lines=1, placeholder='file path', scale=9, elem_id='sdhub-texteditor-inputs')
-            info = gr.Textbox(show_label=False, interactive=False, max_lines=1, scale=1, elem_id='sdhub-texteditor-info')
-            loading = gr.Button('Load', variant='primary', elem_id='sdhub-texteditor-load-button')
+            saving = gr.Button(
+                'Save',
+                variant='primary',
+                elem_id='sdhub-texteditor-save-button',
+                elem_classes='sdhub-buttons'
+            )
 
-        editor = gr.Code(value='', label='', language=None, interactive=True, elem_id='sdhub-texteditor-editor')
+            inputs = gr.Textbox(
+                value='',
+                show_label=False,
+                interactive=True,
+                max_lines=1,
+                placeholder='file path',
+                scale=9,
+                elem_id='sdhub-texteditor-inputs',
+                elem_classes='sdhub-input'
+            )
+
+            info = gr.Textbox(
+                show_label=False,
+                interactive=False,
+                max_lines=1,
+                scale=1,
+                elem_id='sdhub-texteditor-info'
+            )
+
+            loading = gr.Button(
+                'Load',
+                variant='primary',
+                elem_id='sdhub-texteditor-load-button',
+                elem_classes='sdhub-buttons'
+            )
+
+        editor = gr.Code(
+            value='',
+            label='',
+            language=None,
+            interactive=True,
+            elem_id='sdhub-texteditor-editor'
+        )
 
         js = """
             () => {
