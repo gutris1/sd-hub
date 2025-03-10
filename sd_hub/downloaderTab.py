@@ -541,7 +541,7 @@ def DownloaderTab(token2, token3):
                 dl_out2 = gr.TextArea(show_label=False, interactive=False, lines=5)
 
         dl_load.click(
-            fn=lambda: load_token("downloader"),
+            fn=lambda: load_token('downloader'),
             inputs=[],
             outputs=[dl_out2, dl_token1, dl_token2, dl_out2]
         ).then(fn=None, _js=TokenBlur)
