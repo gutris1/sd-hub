@@ -1,4 +1,4 @@
-from modules.ui_components import FormRow, FormColumn
+from modules.ui_components import FormRow
 from modules.shared import cmd_opts
 from pathlib import Path
 from tqdm import tqdm
