@@ -20,39 +20,58 @@ let SDHubLangIndex = {
 let SDHubTranslations = {};
 
 onUiLoaded(function () {
-  SDHubSet();
+  SDHubTabLoaded();
   SDHubTokenBlur();
-  SDHubInsertUploaderInfo();
-  SDHubCopyTextFromUselessDataFrame();
-  SDHubKeyBindings();
+  SDHubEvents();
   SDHubUITranslation();
-  SDHubTextEditorInitialLoad();
   SDHubOnTabChange();
 });
 
-function SDHubSet() {
+function SDHubTabLoaded() {
   [
     ['sdhub-downloader-load-button', 'Load Token'],
     ['sdhub-downloader-save-button', 'Save Token'],
     ['sdhub-uploader-load-button', 'Load Token'],
     ['sdhub-uploader-save-button', 'Save Token']
   ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
+
+  const file = `${window.SDHubFilePath}.uploader-info.json`;
+
+  fetch(file, { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) return;
+      return response.json();
+    })
+    .then(data => {
+      if (data) {
+        const { username, repository, branch } = data;
+
+        const UsernameBox = gradioApp().querySelector('#sdhub-uploader-username-box input');
+        const RepoBox = gradioApp().querySelector('#sdhub-uploader-repo-box input');
+        const BranchBox = gradioApp().querySelector('#sdhub-uploader-branch-box input');
+
+        const info = [
+          { value: username, box: UsernameBox },
+          { value: repository, box: RepoBox },
+          { value: branch, box: BranchBox }
+        ];
+
+        info.forEach(i => {
+          if (i.value) {
+            i.box.value = i.value;
+            updateInput(i.box);
+          }
+        });
+      }
+    })
+    .catch(err => console.error("Error :", err));
+
+  document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
+  document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
+  setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
 }
 
-function SDHubCopyTextFromUselessDataFrame() {
-  document.addEventListener('click', (e) => {
-    const td = e.target.closest('#sdhub-tag-dataframe td');
-    const text = td?.querySelector('span')?.textContent;
-    
-    if (text) {
-      navigator.clipboard.writeText(text);
-      td.classList.add('pulse-td');
-      setTimeout(() => td.classList.remove('pulse-td'), 2000);
-    }
-  });
-}
-
-function SDHubKeyBindings() {
+function SDHubEvents() {
   const Tab = {
     shell: document.querySelector('#sdhub-shell-tab'),
     textEditor: document.querySelector('#sdhub-texteditor-tab')
@@ -71,6 +90,17 @@ function SDHubKeyBindings() {
     if (Tab.textEditor?.style.display === 'block' && e.ctrlKey && e.key === 's') {
       e.preventDefault();
       Button.textEditor?.click();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    const td = e.target.closest('#sdhub-tag-dataframe td');
+    const text = td?.querySelector('span')?.textContent;
+    
+    if (text) {
+      navigator.clipboard.writeText(text);
+      td.classList.add('pulse-td');
+      setTimeout(() => td.classList.remove('pulse-td'), 2000);
     }
   });
 }
@@ -100,12 +130,6 @@ async function SDHubDownloader() {
     const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
     if (Tag.test(inputs)) buttons.forEach(id => document.getElementById(id)?.click());
   });
-}
-
-function SDHubTextEditorInitialLoad() {
-  document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
-  document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
-  setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
 }
 
 async function SDHubTextEditorInfo(flag) {
@@ -175,39 +199,6 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   ScrollBAR.innerHTML = isFirefox ? SBforFirefox : SBwebkit;
-}
-
-function SDHubInsertUploaderInfo() {
-  const file = `${window.SDHubFilePath}uploader-info.json`;
-
-  fetch(file, { cache: "no-store" })
-    .then(response => {
-      if (!response.ok) return;
-      return response.json();
-    })
-    .then(data => {
-      if (data) {
-        const { username, repository, branch } = data;
-
-        const UsernameBox = gradioApp().querySelector('#sdhub-uploader-username-box input');
-        const RepoBox = gradioApp().querySelector('#sdhub-uploader-repo-box input');
-        const BranchBox = gradioApp().querySelector('#sdhub-uploader-branch-box input');
-
-        const info = [
-          { value: username, box: UsernameBox },
-          { value: repository, box: RepoBox },
-          { value: branch, box: BranchBox }
-        ];
-
-        info.forEach(i => {
-          if (i.value) {
-            i.box.value = i.value;
-            updateInput(i.box);
-          }
-        });
-      }
-    })
-    .catch(err => console.error("Error :", err));
 }
 
 function SDHubOnTabChange() {
