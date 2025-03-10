@@ -35,40 +35,10 @@ function SDHubTabLoaded() {
     ['sdhub-uploader-save-button', 'Save Token']
   ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
 
-  const file = `${window.SDHubFilePath}.uploader-info.json`;
-
-  fetch(file, { cache: "no-store" })
-    .then(response => {
-      if (!response.ok) return;
-      return response.json();
-    })
-    .then(data => {
-      if (data) {
-        const { username, repository, branch } = data;
-
-        const UsernameBox = gradioApp().querySelector('#sdhub-uploader-username-box input');
-        const RepoBox = gradioApp().querySelector('#sdhub-uploader-repo-box input');
-        const BranchBox = gradioApp().querySelector('#sdhub-uploader-branch-box input');
-
-        const info = [
-          { value: username, box: UsernameBox },
-          { value: repository, box: RepoBox },
-          { value: branch, box: BranchBox }
-        ];
-
-        info.forEach(i => {
-          if (i.value) {
-            i.box.value = i.value;
-            updateInput(i.box);
-          }
-        });
-      }
-    })
-    .catch(err => console.error("Error :", err));
-
   document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
   document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
   setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
+  setTimeout(() => document.getElementById('sdhub-uploader-load-info')?.click(), 2000);
 }
 
 function SDHubEvents() {
