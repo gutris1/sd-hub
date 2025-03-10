@@ -54,35 +54,8 @@
   visibility: hidden !important;
 }
 
-#sdhub-downloader-tab .dl-btn {
-  width: 100px !important;
-}
-
-#sdhub-downloader-tab .dl-row {
-  margin-top: -7px !important;
-}
-
-#sdhub-uploader-tab .up-btn {
-  width: 100px !important;
-}
-#sdhub-uploader-tab .up-input {
-  margin-top: -15px !important;
-}
-#sdhub-uploader-tab .up-row {
-  margin-top: -14px !important;
-}
-
-#sdhub-archiver-tab .arc-btn {
-  width: 100px !important;
-}
-#sdhub-archiver-tab .arc-input {
-  margin-top: -15px !important;
-}
 #sdhub-archiver-tab .arc-row {
   margin-top: -9px !important;
-}
-#sdhub-archiver-tab .cb {
-  margin-left: 60px !important;
 }
 
 #sdhub-downloader-inputs {
@@ -91,9 +64,16 @@
 
 #sdhub-downloader-scrape-button,
 #sdhub-downloader-txt-button {
+  display: flex;
   position: relative;
   height: 40px;
-  font-size: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: clamp(15px, 4vw, 100%);
   transition: 0.4s ease;
 }
 
@@ -114,17 +94,7 @@
   color: var(--button-secondary-text-color);
 }
 
-#sdhub-downloader-save-button:hover,
-#sdhub-downloader-load-button:hover,
-#sdhub-downloader-download-button:hover,
-#sdhub-uploader-save-button:hover,
-#sdhub-uploader-load-button:hover,
-#sdhub-uploader-upload-button:hover,
-#sdhub-archiver-arc-button:hover,
-#sdhub-archiver-extr-button:hover,
-#sdhub-archiver-zipoutputs-button:hover,
-#sdhub-texteditor-load-button:hover,
-#sdhub-texteditor-save-button:hover,
+#sdhub-tab .sdhub-buttons:hover,
 #sdhub-shell-button:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
@@ -132,90 +102,85 @@
   background: var(--button-primary-background-fill-hover);
 }
 
-#sdhub-downloader-inputs textarea,
-#sdhub-downloader-token1 input,
-#sdhub-downloader-token2 input,
-#sdhub-downloader-save-button,
-#sdhub-downloader-load-button,
-#sdhub-downloader-download-button,
-#sdhub-uploader-inputs textarea,
-#sdhub-uploader-token input,
-#sdhub-uploader-username-box input,
-#sdhub-uploader-repo-box input,
-#sdhub-uploader-branch-box input,
-#sdhub-uploader-radio-box label,
-#sdhub-uploader-radio-box input,
-#sdhub-uploader-save-button,
-#sdhub-uploader-load-button,
-#sdhub-uploader-upload-button,
-#sdhub-archiver-radio-format label,
-#sdhub-archiver-radio-format input,
-#sdhub-archiver-radio-split label,
-#sdhub-archiver-radio-split input,
-#sdhub-archiver-arc-inputname input,
-#sdhub-archiver-arc-inputpath input,
-#sdhub-archiver-arc-outputpath input,
-#sdhub-archiver-arc-button,
-#sdhub-archiver-extr-inputpath input,
-#sdhub-archiver-extr-outputpath input,
-#sdhub-archiver-extr-button,
-#sdhub-archiver-zipoutputs-inputname input,
-#sdhub-archiver-zipoutputs-outputpath input,
-#sdhub-archiver-zipoutputs-button,
-#sdhub-texteditor-inputs input,
-#sdhub-texteditor-load-button,
-#sdhub-texteditor-save-button,
-#sdhub-shell-inputs textarea,
+#sdhub-tab .sdhub-checkbox {
+  display: flex;
+  margin: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+#sdhub-tab .sdhub-checkbox label {
+  gap: 20px;
+}
+
+#sdhub-tab .sdhub-checkbox input {
+  transform: rotate(45deg);
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: 0.4s ease;
+}
+
+#sdhub-tab .sdhub-checkbox input:hover {
+  filter: drop-shadow(0 0 10px var(--primary-400));
+  box-shadow: 0 0 1px 2px var(--primary-500);
+}
+
+#sdhub-tab .sdhub-checkbox input:checked {
+  filter: drop-shadow(0 0 5px var(--primary-500));
+  box-shadow: 0 0 20px 0px var(--primary-500);
+  background-image: var(--radio-circle);
+  background-color: var(--primary-500);
+}
+
+#sdhub-tab .sdhub-checkbox span {
+  margin: 0;
+}
+
+#sdhub-tab .sdhub-buttons,
+#sdhub-tab .sdhub-textarea textarea,
+#sdhub-tab .sdhub-input input,
+#sdhub-tab .sdhub-radio label,
+#sdhub-tab .sdhub-radio input,
 #sdhub-shell-button,
 #sdhub-dataframe-accordion {
   transition:
-    box-shadow 0.5s ease,
-    filter 0.5s ease,
+    box-shadow 0.4s ease,
+    filter 0.4s ease,
     border-color 0.3s ease,
     background-color 0.3s ease,
     color 0.5s ease;
 }
 
-#sdhub-downloader-inputs textarea:focus,
-#sdhub-downloader-token1 input:focus,
-#sdhub-downloader-token2 input:focus,
-#sdhub-uploader-inputs textarea:focus,
-#sdhub-uploader-username-box input:focus,
-#sdhub-uploader-repo-box input:focus,
-#sdhub-uploader-branch-box input:focus,
-#sdhub-uploader-token input:focus,
-#sdhub-archiver-arc-inputname input:focus,
-#sdhub-archiver-arc-inputpath input:focus,
-#sdhub-archiver-arc-outputpath input:focus,
-#sdhub-archiver-extr-inputpath input:focus,
-#sdhub-archiver-extr-outputpath input:focus,
-#sdhub-archiver-zipoutputs-inputname input:focus,
-#sdhub-archiver-zipoutputs-outputpath input:focus,
-#sdhub-texteditor-inputs input:focus,
-#sdhub-shell-inputs textarea:focus {
+#sdhub-tab .sdhub-buttons {
+  position: relative;
+  height: 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 17px;
+}
+
+#sdhub-tab .sdhub-textarea textarea:focus,
+#sdhub-tab .sdhub-input input:focus {
   filter: drop-shadow(0 0 1px var(--primary-400)) blur(0px) !important;
   box-shadow: 0 0 10px 1px var(--primary-400);
 }
 
-#sdhub-uploader-radio-box input:checked,
-#sdhub-uploader-radio-box input:checked:focus,
-#sdhub-archiver-radio-format input:checked,
-#sdhub-archiver-radio-format input:checked:focus,
-#sdhub-archiver-radio-split input:checked,
-#sdhub-archiver-radio-split input:checked:focus,
-#SDHub-Gallery-imgchest-NSFW input:checked,
-#SDHub-Gallery-imgchest-NSFW input:checked:focus,
-#SDHub-Gallery-imgchest-Privacy input:checked,
-#SDHub-Gallery-imgchest-Privacy input:checked:focus {
+#sdhub-tab .sdhub-radio input:checked,
+#sdhub-tab .sdhub-radio input:checked:focus {
   border-color: var(--primary-500);
+  filter: drop-shadow(0 0 5px var(--primary-500));
+  box-shadow: 0 0 20px 0px var(--primary-500);
+  background-image: var(--radio-circle);
   background-color: var(--primary-500);
 }
 
-#sdhub-uploader-radio-box label:hover, 
-#sdhub-archiver-radio-format label:hover,
-#sdhub-archiver-radio-split label:hover, 
-#SDHub-Gallery-imgchest-Privacy label:hover, 
-#SDHub-Gallery-imgchest-NSFW label:hover {
+#sdhub-tab .sdhub-radio label:hover {
   box-shadow:
     inset 0 0 5px 1px var(--primary-400),
     inset 0 0 5px 1px var(--primary-400),
@@ -290,6 +255,7 @@
   overflow: visible !important;
 }
 
+#sdhub-dataframe-accordion:has(> .open),
 #sdhub-dataframe-accordion:hover:not(:has(> .open)) {
   border: 1px solid var(--primary-500) !important;
   box-shadow: 0 0 10px 1px var(--primary-400);
@@ -450,12 +416,6 @@
 
 #sdhub-texteditor-editor span.\ͼ23 {
   color: #cf6db9;
-}
-
-#sdhub-texteditor-load-button,
-#sdhub-texteditor-save-button {
-  padding: 0;
-  font-size: 18px;
 }
 
 #sdhub-shell-button, #sdhub-shell-ghost-button {
