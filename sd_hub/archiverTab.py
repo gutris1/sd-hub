@@ -46,7 +46,6 @@ def tar_win_process(inputs, paths, formats, outputs):
 
     yield f"Saved to: {outputs}.tar.{formats}", True
 
-
 def tar_win(input_path, file_name, output_path, input_type, format_type, split_by):
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
@@ -70,7 +69,6 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
     else:
         output = output_path_obj / f"{file_name}"
         yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
-
 
 def tar_process(_tar, _pv, _format, _output):
     ayu, rika = pty.openpty() # type: ignore
@@ -122,7 +120,6 @@ def tar_process(_tar, _pv, _format, _output):
 
     yield f"Saved to: {_output}", True
 
-
 def tar_tar(input_path, file_name, output_path, input_type, format_type, split_by):
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
@@ -163,7 +160,6 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
     else:
         _output = output_path_obj / f"{file_name}.tar.{format_type}"
         yield from tar_process(cmd, _pv, _format, _output)
-
 
 def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
     _ = format_type
@@ -237,7 +233,6 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
                         yield pbar, False
 
         yield f"Saved To: {output_zip}", True
-
 
 def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by):
     input_path = input_path.strip('"').strip("'")
@@ -400,7 +395,6 @@ def extraction_win(input_path, output_path, format_type):
     if is_done:
         yield f"Extracted To: {output_path}", True
 
-
 def extraction(input_path, output_path, format_type):
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
@@ -483,7 +477,6 @@ def extraction(input_path, output_path, format_type):
     if is_done:
         yield f"Extracted To: {output_path}", True
 
-
 def path_extract(input_path, output_path, mkdir_cb2):
     input_path = input_path.strip('"').strip("'")
     output_path = output_path.strip('"').strip("'")
@@ -555,7 +548,6 @@ def path_extract(input_path, output_path, mkdir_cb2):
     for output in ext_func(input_path, output_path, format_type):
         yield output
 
-
 def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
     output_box = box_state if box_state else []
 
@@ -581,7 +573,6 @@ def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
         yield "Done", "\n".join(output_box)
 
     return gr.update(), gr.State(output_box)
-
 
 def ArchiverTab():
     with gr.TabItem('Archiver', elem_id='sdhub-archiver-tab'):
