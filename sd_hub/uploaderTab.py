@@ -204,12 +204,8 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
 
             yield details, True
 
-def uploaderLog(user, repo, branch):
-    data = {'username': user, 'repository': repo, 'branch': branch}
-    info.write_text(json.dumps(data, indent=4))
-
 def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()):
-    uploaderLog(user, repo, branch)
+    SaveInfo(user, repo, branch)
     output_box = box_state if box_state else []
 
     for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
@@ -233,6 +229,22 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
         yield 'Done', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
+
+def SaveInfo(user, repo, branch):
+    data = {'username': user, 'repository': repo, 'branch': branch}
+    info.write_text(json.dumps(data, indent=4))
+
+def LoadInfo():
+    Textbox = gr.Textbox.update
+
+    if info.exists():
+        data = json.loads(info.read_text(encoding='utf-8'))
+        user = data.get('username', '')
+        repo = data.get('repository', '')
+        branch = data.get('branch', '')
+        return Textbox(value=user), Textbox(value=repo), Textbox(value=branch)
+
+    return Textbox(value=''), Textbox(value=''), Textbox(value='')
 
 def UploaderTab(token1):
     TokenBlur = '() => { SDHubTokenBlur(); }'
@@ -341,7 +353,7 @@ def UploaderTab(token1):
                 upl_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
 
         upl_load.click(
-            fn=lambda: load_token("uploader"),
+            fn=lambda: load_token('uploader'),
             inputs=[],
             outputs=[upl_token, upl_output2, upl_output2, upl_output2]
         ).then(fn=None, _js=TokenBlur)
@@ -357,3 +369,6 @@ def UploaderTab(token1):
             inputs=[upl_inputs, user_box, repo_box, branch_box, upl_token, repo_radio, gr.State()],
             outputs=[upl_output1, upl_output2]
         )
+
+        load_info = gr.Button(visible=False, elem_id='sdhub-uploader-load-info')
+        load_info.click(fn=LoadInfo, inputs=[], outputs=[user_box, repo_box, branch_box])
