@@ -13,7 +13,7 @@ tag_tag = SDHubPaths.SDHubTagsAndPaths()
 def is_that_tag(output_path):
     if output_path.startswith('$'):
         parts = output_path[1:].strip().split('/', 1)
-        tags_key = f"${parts[0].lower()}"
+        tags_key = f'${parts[0].lower()}'
         subfolder = parts[1] if len(parts) > 1 else None
         path = tag_tag.get(tags_key)
 
@@ -21,7 +21,7 @@ def is_that_tag(output_path):
             fp = Path(path, subfolder) if subfolder else Path(path)
             return fp, None
         else:
-            return None, f"Invalid tag: {tags_key}"
+            return None, f'Invalid tag: {tags_key}'
     else:
         return Path(output_path), None
 
@@ -36,33 +36,33 @@ def zipping(file_name, output_path, mkdir_zip):
 
     if not mkdir_zip:
         if not out.exists():
-            yield f"{out}\nOutput path does not exist.", True
+            yield f'{out}\nOutput path does not exist.', True
             return
     else:
         out.mkdir(parents=True, exist_ok=True)
 
     zip_in = opts.outdir_samples or Path(data_path) / 'outputs'
-    zip_out = out / f"{fn}.zip"
+    zip_out = out / f'{fn}.zip'
     counter = 1
     while zip_out.exists():
-        zip_out = out / f"{fn}_{counter}.zip"
+        zip_out = out / f'{fn}_{counter}.zip'
         counter += 1
 
     zip_bar = '{percentage:3.0f}% | {n_fmt}/{total_fmt} | {rate_fmt}{postfix}'
-    total_size = sum(f.stat().st_size for f in zip_in.rglob("*") if f.is_file())
+    total_size = sum(f.stat().st_size for f in zip_in.rglob('*') if f.is_file())
 
-    yield f"zipping {zip_out.name}", False
+    yield f'zipping {zip_out.name}', False
 
     with tqdm(
         total=total_size,
-        unit="B",
+        unit='B',
         unit_scale=True,
         bar_format=zip_bar,
-        ascii="▷▶"
+        ascii='▷▶'
     ) as pbar:
         with zipfile.ZipFile(zip_out, 'w', zipfile.ZIP_DEFLATED) as zipf:
             chunk_size = 4096 * 1024
-            for file_to_compress in zip_in.rglob("*"):
+            for file_to_compress in zip_in.rglob('*'):
                 if file_to_compress.is_file():
                     with open(file_to_compress, 'rb') as f:
                         while True:
@@ -75,54 +75,57 @@ def zipping(file_name, output_path, mkdir_zip):
 
                             yield pbar, False
 
-    yield f"Saved To: {zip_out}", True
+    yield f'Saved To: {zip_out}', True
 
 def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     for _text, _flag in zipping(file_name, output_path, mkdir_zip):
         if not _flag:
-            yield _text, "\n".join(output_box)
+            yield _text, '\n'.join(output_box)
         else:
             output_box.append(_text)
 
-    cc = ["not", "Missing", "Invalid"]
+    cc = ['not', 'Missing', 'Invalid']
 
     if any(aa in bb for aa in cc for bb in output_box):
-        yield "Error", "\n".join(output_box)
+        yield 'Error', '\n'.join(output_box)
     else:
-        yield "Done", "\n".join(output_box)
+        yield 'Done', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 
 def ZipOutputs():
-    with gr.Accordion("Zip Outputs", open=False, elem_id="sdhub-archiver-accordion-zipoutputs"), FormRow():
+    with gr.Accordion('Zip Outputs', open=False, elem_id='sdhub-archiver-accordion-zipoutputs'), FormRow():
         with FormColumn():
             zip_name = gr.Textbox(
                 max_lines=1,
-                placeholder="ZIP Name (default to ZipOutputs if empty)",
+                placeholder='ZIP Name (default to ZipOutputs if empty)',
                 show_label=False,
-                elem_id="sdhub-archiver-zipoutputs-inputname"
+                elem_id='sdhub-archiver-zipoutputs-inputname',
+                elem_classes='sdhub-input'
             )
 
             zip_out = gr.Textbox(
                 max_lines=1,
-                placeholder="ZIP Output Path (default to WebUI root if empty)",
+                placeholder='ZIP Output Path (default to WebUI root if empty)',
                 show_label=False,
-                elem_id="sdhub-archiver-zipoutputs-outputpath"
+                elem_id='sdhub-archiver-zipoutputs-outputpath',
+                elem_classes='sdhub-input'
             )
 
             with FormRow():
                 zip_run = gr.Button(
-                    "Zip Zip",
-                    variant="primary",
-                    elem_id="sdhub-archiver-zipoutputs-button"
+                    'Zip Zip',
+                    variant='primary',
+                    elem_id='sdhub-archiver-zipoutputs-button',
+                    elem_classes='sdhub-buttons'
                 )
 
                 mkdir_zip = gr.Checkbox(
-                    label="Create Directory",
-                    elem_classes="cb",
-                    elem_id="sdhub-archiver-zipoutputs-checkbox"
+                    label='Create Directory',
+                    elem_id='sdhub-archiver-zipoutputs-checkbox',
+                    elem_classes='sdhub-checkbox'
                 )
 
         with FormColumn():
