@@ -1,3 +1,4 @@
+from modules.ui_components import FormRow, FormColumn
 from modules.scripts import basedir
 from modules.shared import cmd_opts
 from urllib.parse import urlparse
@@ -10,7 +11,10 @@ import time
 import sys
 import re
 
+from sd_hub.tokenizer import load_token, save_token
+from sd_hub.infotext import dl_title, dl_info
 from sd_hub.paths import SDHubPaths, BLOCK
+from sd_hub.scraper import scraper
 from sd_hub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
@@ -50,7 +54,6 @@ def gitclown(url, target_path):
         yield lines, True
 
     p.wait()
-
 
 def gdrown(url, target_path=None, fn=None):
     gfolder = 'drive.google.com/drive/folders' in url
@@ -106,7 +109,6 @@ def gdrown(url, target_path=None, fn=None):
                 yield f'Saved To: {target_path}/{completed.group()}', True
 
     p.wait()
-
 
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
@@ -268,7 +270,6 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     p.wait()
 
-
 def get_fn(url):
     fn_fn = urlparse(url)
 
@@ -277,7 +278,6 @@ def get_fn(url):
     else:
         fn = Path(fn_fn.path).name
         return fn
-
 
 def url_check(url):
     try:
@@ -300,7 +300,6 @@ def url_check(url):
         return True, ''
     except Exception as e:
         return False, str(e)
-
 
 def process_inputs(url_line, current_path, ext_tag, github_repo):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
@@ -358,7 +357,6 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
 
     return target_path, url, fn, None
 
-
 def lobby(command, token2=None, token3=None):
     if not command.strip():
         yield 'Nothing To See Here.', True
@@ -405,8 +403,7 @@ def lobby(command, token2=None, token3=None):
         ):
             yield output
 
-
-def downloader(command, token2, token3, box_state=gr.State()):
+def downloader(inputs, token2, token3, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     ngword = [
@@ -420,7 +417,7 @@ def downloader(command, token2, token3, box_state=gr.State()):
 
     yield 'Now Downloading...', ''
 
-    for _text, _flag in lobby(command, token2, token3):
+    for _text, _flag in lobby(inputs, token2, token3):
         if not _flag:
             if any(k in _text for k in ngword):
                 yield 'Error', '\n'.join([_text] + output_box)
@@ -446,25 +443,136 @@ def downloader(command, token2, token3, box_state=gr.State()):
 
     return gr.update(), gr.State(output_box)
 
+def read_txt(f, box):
+    text_box = [box] if box.strip() else []
 
-def read_txt(file, box):
-    text_box = []
+    if f is not None:
+        txt = Path(f.name).read_text()
+        text_box.append(txt)
 
-    if file is not None:
-        inputs = file.name
-        txt = ''
+    return "\n".join(text_box)
 
-        with open(inputs, 'r') as content:
-            txt = content.read()
+def DownloaderTab(token2, token3):
+    TokenBlur = '() => { SDHubTokenBlur(); }'
 
-        if box.strip() == '':
-            result = txt
-        else:
-            result = box + '\n' + txt
+    with gr.TabItem('Downloader', elem_id='sdhub-downloader-tab'):
+        gr.HTML(dl_title)
 
-        text_box.append(result)
-        output = '\n'.join(text_box)
+        with FormRow():
+            with FormColumn(scale=7):
+                gr.HTML(dl_info)
 
-        return output
+            with FormColumn(scale=3):
+                dl_token1 = gr.TextArea(
+                    value=token2,
+                    label='Huggingface Token (READ)',
+                    lines=1,
+                    max_lines=1,
+                    placeholder='Your Huggingface Token here (role = READ)',
+                    interactive=True,
+                    elem_id='sdhub-downloader-token1',
+                    elem_classes='sdhub-input'
+                )
 
-    return '\n'.join(text_box)
+                dl_token2 = gr.TextArea(
+                    value=token3,
+                    label='Civitai API Key',
+                    lines=1,
+                    max_lines=1,
+                    placeholder='Your Civitai API Key here',
+                    interactive=True,
+                    elem_id='sdhub-downloader-token2',
+                    elem_classes='sdhub-input'
+                )
+
+                with FormRow():
+                    dl_save = gr.Button(
+                        value='SAVE',
+                        variant='primary',
+                        min_width=0,
+                        elem_id='sdhub-downloader-save-button',
+                        elem_classes='sdhub-buttons'
+                    )
+
+                    dl_load = gr.Button(
+                        value='LOAD',
+                        variant='primary',
+                        min_width=0,
+                        elem_id='sdhub-downloader-load-button',
+                        elem_classes='sdhub-buttons'
+                    )
+
+        dl_input = gr.Textbox(
+            show_label=False,
+            lines=5,
+            placeholder='$tag\nURL',
+            elem_id='sdhub-downloader-inputs',
+            elem_classes='sdhub-textarea'
+        )
+
+        with FormRow(elem_id='sdhub-downloader-button-row'):
+            with FormColumn(scale=1):
+                dl_dl = gr.Button(
+                    'DOWNLOAD',
+                    variant='primary',
+                    elem_id='sdhub-downloader-download-button',
+                    elem_classes='sdhub-buttons'
+                )
+
+            with FormColumn(scale=1), FormRow(variant='compact'):
+                dl_scrape = gr.Button(
+                    'Scrape',
+                    variant='secondary',
+                    min_width=0,
+                    elem_id='sdhub-downloader-scrape-button'
+                )
+
+                dl_txt = gr.UploadButton(
+                    label='Insert TXT',
+                    variant='secondary',
+                    file_count='single',
+                    file_types=['.txt'],
+                    min_width=0,
+                    elem_id='sdhub-downloader-txt-button'
+                )
+
+            with FormColumn(scale=2, variant='compact'):
+                dl_out1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
+                dl_out2 = gr.TextArea(show_label=False, interactive=False, lines=5)
+
+        dl_load.click(
+            fn=lambda: load_token('downloader'),
+            inputs=[],
+            outputs=[dl_out2, dl_token1, dl_token2, dl_out2]
+        ).then(fn=None, _js=TokenBlur)
+
+        dl_save.click(
+            fn=lambda token2, token3: save_token(None, token2, token3),
+            inputs=[dl_token1, dl_token2],
+            outputs=dl_out2
+        ).then(fn=None, _js=TokenBlur)
+
+        dl_dl.click(
+            fn=downloader,
+            inputs=[dl_input, dl_token1, dl_token2, gr.State()],
+            outputs=[dl_out1, dl_out2],
+            _js="""
+                () => {
+                    let el = {
+                        input: '#sdhub-downloader-inputs textarea',
+                        token1: '#sdhub-downloader-token1 input',
+                        token2: '#sdhub-downloader-token2 input'
+                    };
+
+                    let v = Object.entries(el).map(([k, id]) => 
+                        document.querySelector(id)?.value || ''
+                    );
+
+                    window.SDHubDownloaderInputsValue = v[0];
+                    return [...v, null];
+                }
+            """
+        ).then(fn=None, _js='() => { SDHubDownloader(); }')
+
+        dl_txt.upload(fn=read_txt, inputs=[dl_txt, dl_input], outputs=dl_input)
+        dl_scrape.click(fn=scraper, inputs=[dl_input, dl_token1, gr.State()], outputs=[dl_input, dl_out2])

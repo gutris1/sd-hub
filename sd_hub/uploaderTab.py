@@ -1,15 +1,24 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
+from modules.ui_components import FormRow, FormColumn
 from modules.shared import cmd_opts
 from modules.scripts import basedir
 from pathlib import Path
 import gradio as gr
-import subprocess, re, sys, time, json, shlex
+import subprocess
+import shlex
+import time
+import json
+import sys
+import re
 
+from sd_hub.tokenizer import load_token, save_token
+from sd_hub.infotext import upl_title, upl_info
 from sd_hub.paths import SDHubPaths, BLOCK
 from sd_hub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
+info = Path(basedir()) / '.uploader-info.json'
 
 def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
     msg = commit_msg.replace('"', '\\"')
@@ -34,7 +43,7 @@ def push_push(repo_id, file_path, file_name, token, branch, is_private=False, co
         stderr=subprocess.STDOUT,
         text=True
     )
-    
+
     failed = False
     error = ""
     starting_line = time.time()
@@ -74,14 +83,12 @@ def push_push(repo_id, file_path, file_name, token, branch, is_private=False, co
     p.stdout.close()
     p.wait()
 
-
 def isEmpty(fp):
     for f in fp.iterdir():
         rp = f.resolve()
         if rp.is_file() or (rp.is_dir() and any(rp.iterdir())):
             return False
     return True
-
 
 def up_up(inputs, user, repo, branch, token, repo_radio):
     input_lines = [line.strip() for line in inputs.strip().splitlines()]
@@ -197,42 +204,171 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
 
             yield details, True
 
-
-jsonpath = Path(basedir()) / 'uploader-info.json'
-
-def SaveUploaderInfo(user, repo, branch):
-    data = {
-        "username": user,
-        "repository": repo,
-        "branch": branch
-    }
-
-    with open(jsonpath, "w") as f:
-        json.dump(data, f, indent=4)
-
-
 def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()):
-    SaveUploaderInfo(user, repo, branch)
+    SaveInfo(user, repo, branch)
     output_box = box_state if box_state else []
 
     for _text, _flag in up_up(inputs, user, repo, branch, token, repo_radio):
         if not _flag:
-            if "files from/to outside" in _text: 
-                yield "Blocked", "\n".join([_text] + output_box)
+            if 'files from/to outside' in _text: 
+                yield 'Blocked', '\n'.join([_text] + output_box)
                 assert not cmd_opts.disable_extension_access, BLOCK
 
-            if "Uploading" in _text:
-                yield _text, "\n".join(output_box)
+            if 'Uploading' in _text:
+                yield _text, '\n'.join(output_box)
 
-            yield _text, "\n".join(output_box)
+            yield _text, '\n'.join(output_box)
         else:
             output_box.append(_text)
-            
-    catcher = ["not", "Missing", "Error", "Invalid"]
-    
+
+    catcher = ['not', 'Missing', 'Error', 'Invalid']
+
     if any(k in w for k in catcher for w in output_box):
-        yield "Error", "\n".join(output_box)
+        yield 'Error', '\n'.join(output_box)
     else:
-        yield "Done", "\n".join(output_box)
-        
+        yield 'Done', '\n'.join(output_box)
+
     return gr.update(), gr.State(output_box)
+
+def SaveInfo(user, repo, branch):
+    data = {'username': user, 'repository': repo, 'branch': branch}
+    info.write_text(json.dumps(data, indent=4))
+
+def LoadInfo():
+    Textbox = gr.Textbox.update
+
+    if info.exists():
+        data = json.loads(info.read_text(encoding='utf-8'))
+        user = data.get('username', '')
+        repo = data.get('repository', '')
+        branch = data.get('branch', '')
+        return Textbox(value=user), Textbox(value=repo), Textbox(value=branch)
+
+    return Textbox(value=''), Textbox(value=''), Textbox(value='')
+
+def UploaderTab(token1):
+    TokenBlur = '() => { SDHubTokenBlur(); }'
+
+    with gr.TabItem('Uploader', elem_id='sdhub-uploader-tab'):
+        gr.HTML(upl_title)
+
+        with FormRow():
+            with FormColumn(scale=7):
+                gr.HTML(upl_info)
+
+            with FormColumn(scale=3):
+                gr.Textbox(visible=False, max_lines=1)
+                upl_token = gr.TextArea(
+                    value=token1,
+                    label='Huggingface Token (WRITE)',
+                    lines=1,
+                    max_lines=1,
+                    placeholder='Your Huggingface Token here (role = WRITE)',
+                    interactive=True,
+                    elem_id='sdhub-uploader-token',
+                    elem_classes='sdhub-input'
+                )
+
+                with FormRow():
+                    upl_save = gr.Button(
+                        value='SAVE',
+                        variant='primary',
+                        min_width=0,
+                        elem_id='sdhub-uploader-save-button',
+                        elem_classes='sdhub-buttons'
+                    )
+
+                    upl_load = gr.Button(
+                        value='LOAD',
+                        variant='primary',
+                        min_width=0,
+                        elem_id='sdhub-uploader-load-button',
+                        elem_classes='sdhub-buttons'
+                    )
+
+        with FormRow():
+            user_box = gr.Textbox(
+                max_lines=1,
+                placeholder='Username',
+                label='Username',
+                elem_id='sdhub-uploader-username-box',
+                elem_classes='sdhub-input'
+            )
+
+            repo_box = gr.Textbox(
+                max_lines=1,
+                placeholder='Repository',
+                label='Repository',
+                elem_id='sdhub-uploader-repo-box',
+                elem_classes='sdhub-input'
+            )
+
+            branch_box = gr.Textbox(
+                value='main',
+                max_lines=1,
+                placeholder='Branch',
+                label='Branch',
+                elem_id='sdhub-uploader-branch-box',
+                elem_classes='sdhub-input'
+            )
+
+            repo_radio = gr.Radio(
+                ['Public', 'Private'],
+                value='Private',
+                label='Visibility',
+                interactive=True,
+                elem_id='sdhub-uploader-radio-box',
+                elem_classes='sdhub-radio'
+            )
+
+            gr.Textbox(
+                max_lines=1,
+                show_label=False,
+                elem_id='sdhub-uploader-ghost-box',
+                elem_classes='hide-this'
+            )
+
+        upl_inputs = gr.Textbox(
+            elem_id='sdhub-uploader-inputs',
+            show_label=False,
+            lines=5,
+            placeholder='Input File Path',
+            elem_classes='sdhub-textarea'
+        )
+
+        with FormRow(elem_id='sdhub-uploader-button-row'):
+            with FormColumn(scale=1):
+                upl_btn = gr.Button(
+                    'UPLOAD',
+                    variant='primary',
+                    elem_id='sdhub-uploader-upload-button',
+                    elem_classes='sdhub-buttons'
+                )
+
+            with FormColumn(scale=1):
+                gr.Button('hantu', variant='primary', elem_classes='hide-this')
+
+            with FormColumn(scale=2, variant='compact'):
+                upl_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
+                upl_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
+
+        upl_load.click(
+            fn=lambda: load_token('uploader'),
+            inputs=[],
+            outputs=[upl_token, upl_output2, upl_output2, upl_output2]
+        ).then(fn=None, _js=TokenBlur)
+
+        upl_save.click(
+            fn=lambda token1: save_token(token1, None, None),
+            inputs=[upl_token],
+            outputs=upl_output2
+        ).then(fn=None, _js=TokenBlur)
+
+        upl_btn.click(
+            fn=uploader,
+            inputs=[upl_inputs, user_box, repo_box, branch_box, upl_token, repo_radio, gr.State()],
+            outputs=[upl_output1, upl_output2]
+        )
+
+        load_info = gr.Button(visible=False, elem_id='sdhub-uploader-load-info')
+        load_info.click(fn=LoadInfo, inputs=[], outputs=[user_box, repo_box, branch_box])

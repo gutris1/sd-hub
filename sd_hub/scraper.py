@@ -1,10 +1,15 @@
+from modules.scripts import basedir
 from urllib.parse import urlparse
 from pathlib import Path
-from modules.scripts import basedir
 import gradio as gr
-import os, stat, sys, shutil, requests, subprocess
+import subprocess
+import requests
+import shutil
+import stat
+import sys
+import os
 
-_tmp = Path(basedir()) / 'tmp'
+tmp_dir = Path(basedir()) / 'tmp'
 
 def is_valid_url(url):
     parsing = urlparse(url)
@@ -26,11 +31,11 @@ def scraping(input_string, token=None):
     _outputs = []
     _h = {"User-Agent": "Mozilla/5.0"}
     
-    if _tmp.exists():
+    if tmp_dir.exists():
         if sys.platform == 'win32':
-            shutil.rmtree(_tmp, onerror=remove_readonly)
+            shutil.rmtree(tmp_dir, onerror=remove_readonly)
         else:
-            os.system(f"rm -rf {_tmp}")
+            os.system(f"rm -rf {tmp_dir}")
 
     if not input_string.strip():
         yield "Nothing To Scrape Here", True
@@ -74,7 +79,7 @@ def scraping(input_string, token=None):
                     ), True
                     continue
 
-                _tmp.mkdir(exist_ok=True)
+                tmp_dir.mkdir(exist_ok=True)
                 _parts = urlparse(base_url).path.split('/')
                 _tree = _parts.index('tree')
                 _branch = _parts[_tree + 1]
@@ -85,14 +90,14 @@ def scraping(input_string, token=None):
                     _url = f"https://hf_user:{token}@huggingface.co/{_url.split('huggingface.co/')[1]}"
 
                 if _branch != 'main':
-                    subprocess.run(["git", "clone", "--no-checkout", "--depth=1", "-b", _branch, _url, _tmp],
+                    subprocess.run(["git", "clone", "--no-checkout", "--depth=1", "-b", _branch, _url, tmp_dir],
                                 check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 else:
-                    subprocess.run(["git", "clone", "--no-checkout", "--depth=1", _url, _tmp],
+                    subprocess.run(["git", "clone", "--no-checkout", "--depth=1", _url, tmp_dir],
                                 check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-                output = subprocess.run(["git", "--git-dir", _tmp / ".git", "ls-tree", "-r", _branch],
+                output = subprocess.run(["git", "--git-dir", tmp_dir / ".git", "ls-tree", "-r", _branch],
                                         capture_output=True, text=True)
 
                 _file_list = output.stdout.split('\n')
@@ -125,11 +130,11 @@ def scraping(input_string, token=None):
 
                             _outputs.append(url_url)
 
-                            if _tmp.exists():
+                            if tmp_dir.exists():
                                 if sys.platform == 'win32':
-                                    shutil.rmtree(_tmp, onerror=remove_readonly)
+                                    shutil.rmtree(tmp_dir, onerror=remove_readonly)
                                 else:
-                                    os.system(f"rm -rf {_tmp}")
+                                    os.system(f"rm -rf {tmp_dir}")
 
         elif 'pastebin.com' in url:
             p_url = url.replace('pastebin.com', 'pastebin.com/raw')

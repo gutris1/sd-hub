@@ -20,27 +20,29 @@ let SDHubLangIndex = {
 let SDHubTranslations = {};
 
 onUiLoaded(function () {
-  SDHubInsertUploaderInfo();
-  SDHubCopyTextFromUselessDataFrame();
-  SDHubKeyBindings();
+  SDHubTabLoaded();
+  SDHubTokenBlur();
+  SDHubEvents();
   SDHubUITranslation();
   SDHubOnTabChange();
 });
 
-function SDHubCopyTextFromUselessDataFrame() {
-  document.addEventListener('click', (e) => {
-    const td = e.target.closest('#sdhub-tag-dataframe td');
-    const text = td?.querySelector('span')?.textContent;
-    
-    if (text) {
-      navigator.clipboard.writeText(text);
-      td.classList.add('pulse-td');
-      setTimeout(() => td.classList.remove('pulse-td'), 2000);
-    }
-  });
+function SDHubTabLoaded() {
+  [
+    ['sdhub-downloader-load-button', 'Load Token'],
+    ['sdhub-downloader-save-button', 'Save Token'],
+    ['sdhub-uploader-load-button', 'Load Token'],
+    ['sdhub-uploader-save-button', 'Save Token']
+  ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
+
+  setTimeout(() => document.getElementById('sdhub-uploader-load-info')?.click(), 1000);
+
+  document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
+  document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
+  setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
 }
 
-function SDHubKeyBindings() {
+function SDHubEvents() {
   const Tab = {
     shell: document.querySelector('#sdhub-shell-tab'),
     textEditor: document.querySelector('#sdhub-texteditor-tab')
@@ -61,22 +63,56 @@ function SDHubKeyBindings() {
       Button.textEditor?.click();
     }
   });
+
+  document.addEventListener('click', (e) => {
+    const td = e.target.closest('#sdhub-tag-dataframe td');
+    const text = td?.querySelector('span')?.textContent;
+    
+    if (text) {
+      navigator.clipboard.writeText(text);
+      td.classList.add('pulse-td');
+      setTimeout(() => td.classList.remove('pulse-td'), 2000);
+    }
+  });
 }
 
-async function SDHubTextEditorInfo() {
+async function SDHubTokenBlur() {
+  ['#sdhub-downloader-token1 input', '#sdhub-downloader-token2 input', '#sdhub-uploader-token input']
+    .forEach(id => {
+      const el = document.querySelector(id);
+      if (el) el.style.filter = el.value.trim() ? 'blur(3px)' : 'none';
+    });
+}
+
+async function SDHubDownloader() {
+  let inputs = window.SDHubDownloaderInputsValue;
+  if (!inputs?.trim()) return;
+
+  const TagMap = {
+    '$ckpt': ['txt2img_checkpoints_extra_refresh', 'img2img_checkpoints_extra_refresh', 'refresh_sd_model_checkpoint'],
+    '$vae': ['refresh_sd_vae'],
+    '$lora': ['txt2img_lora_extra_refresh', 'img2img_lora_extra_refresh'],
+    '$emb': ['txt2img_textual_inversion_extra_refresh', 'img2img_textual_inversion_extra_refresh'],
+    '$hn': ['txt2img_hypernetworks_extra_refresh', 'img2img_hypernetworks_extra_refresh'],
+    '$cn': ['txt2img_controlnet_ControlNet-0_controlnet_refresh_models', 'img2img_controlnet_ControlNet-0_controlnet_refresh_models']
+  };
+
+  Object.entries(TagMap).forEach(([tags, buttons]) => {
+    const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
+    if (Tag.test(inputs)) buttons.forEach(id => document.getElementById(id)?.click());
+  });
+}
+
+async function SDHubTextEditorInfo(flag) {
   const info = document.querySelector('#sdhub-texteditor-info input');
 
-  if (info.value.trim() !== '') {
+  if (info && flag.trim() !== '') {
+    info.style.transition = 'opacity 0.5s ease';
     info.style.opacity = '1';
+
     setTimeout(() => {
       info.style.transition = 'opacity 2s ease';
       info.style.opacity = '0';
-    }, 1000);
-
-    setTimeout(() => {
-      info.value = '';
-      updateInput(info);
-      info.style.transition = 'opacity 0.3s ease';
     }, 2000);
   }
 }
@@ -134,39 +170,6 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   ScrollBAR.innerHTML = isFirefox ? SBforFirefox : SBwebkit;
-}
-
-function SDHubInsertUploaderInfo() {
-  const file = `${window.SDHubFilePath}uploader-info.json`;
-
-  fetch(file, { cache: "no-store" })
-    .then(response => {
-      if (!response.ok) return;
-      return response.json();
-    })
-    .then(data => {
-      if (data) {
-        const { username, repository, branch } = data;
-
-        const UsernameBox = gradioApp().querySelector('#sdhub-uploader-username-box input');
-        const RepoBox = gradioApp().querySelector('#sdhub-uploader-repo-box input');
-        const BranchBox = gradioApp().querySelector('#sdhub-uploader-branch-box input');
-
-        const info = [
-          { value: username, box: UsernameBox },
-          { value: repository, box: RepoBox },
-          { value: branch, box: BranchBox }
-        ];
-
-        info.forEach(i => {
-          if (i.value) {
-            i.box.value = i.value;
-            updateInput(i.box);
-          }
-        });
-      }
-    })
-    .catch(err => console.error("Error :", err));
 }
 
 function SDHubOnTabChange() {
@@ -316,7 +319,11 @@ function SDHubUITranslation() {
     { element: '#sdhub-texteditor-load-button', key: 'load' },
     { element: '#sdhub-texteditor-save-button', key: 'save' },
     { element: '#sdhub-texteditor-inputs > label > input', key: 'file_path' },
-    { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd' }
+    { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd' },
+    { element: '#SDHubimgInfoSendButton > #txt2img_tab', key: 'send_txt2img' },
+    { element: '#SDHubimgInfoSendButton > #img2img_tab', key: 'send_img2img' },
+    { element: '#SDHubimgInfoSendButton > #inpaint_tab', key: 'send_inpaint' },
+    { element: '#SDHubimgInfoSendButton > #extras_tab', key: 'send_extras' }
   ];
 
   EL.forEach(({ element, key, inner }) => {

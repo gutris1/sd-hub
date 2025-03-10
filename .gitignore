@@ -4,7 +4,7 @@ __pycache__/
 *.jpg
 aria2c.exe
 sd_hub/hf-logo.svg
-sd_hub/lastEdit.txt
-uploader-info.json
+texteditor-lastedit.txt
+.uploader-info.json
 .sd-hub-token.json
 .imgchest.json

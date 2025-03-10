@@ -57,33 +57,34 @@ def ShellLobby(inputs, box_state=gr.State()):
     for output in ShellRun(inputs):
         if output:
             output_box.append(output)
-            yield "\n".join(output_box)
+            yield '\n'.join(output_box)
 
     return gr.update()
 
 def ShellTab():
-    with gr.TabItem("Shell", elem_id="sdhub-shell-tab"):
+    with gr.TabItem('Shell', elem_id='sdhub-shell-tab'):
         with FormRow():
             button = gr.Button(
-                "▶",
-                variant="primary",
-                elem_id="sdhub-shell-button"
+                '▶',
+                variant='primary',
+                elem_id='sdhub-shell-button'
             )
 
             inputs = gr.Textbox(
                 lines=5,
-                placeholder="press Shift + Enter to run command",
+                placeholder='press Shift + Enter to run command',
                 show_label=False,
-                elem_id="sdhub-shell-inputs",
-                scale=9
+                scale=9,
+                elem_id='sdhub-shell-inputs',
+                elem_classes='sdhub-textarea'
             )
 
         with FormRow():
             gr.Button(
-                "hantu",
-                variant="primary",
-                elem_id="sdhub-shell-ghost-button",
-                elem_classes="hide-this"
+                'hantu',
+                variant='primary',
+                elem_id='sdhub-shell-ghost-button',
+                elem_classes='hide-this'
             )
 
             output = gr.Textbox(
@@ -91,11 +92,7 @@ def ShellTab():
                 interactive=False,
                 max_lines=21,
                 scale=9,
-                elem_id="sdhub-shell-output"
+                elem_id='sdhub-shell-output'
             )
 
-        button.click(
-            fn=ShellLobby,
-            inputs=[inputs, gr.State()],
-            outputs=[output]
-        )
+        button.click(fn=ShellLobby, inputs=[inputs, gr.State()], outputs=[output])

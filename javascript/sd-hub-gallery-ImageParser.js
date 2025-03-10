@@ -263,24 +263,24 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     <button id="SDHub-promptButton"
       class="SDHubimgInfoButtons"
       style="${buttonStyle}; padding-top: 0px; margin-bottom: 2px;"
-      title="Copy Prompt">
-      Prompt
+      title="${SDHubGetTranslation('copy_prompt')}">
+      ${SDHubGetTranslation('prompt')}
     </button>`;
 
   var titleNegativePrompt = `
     <button id="SDHub-negativePromptButton"
       class="SDHubimgInfoButtons"
       style="${buttonStyle}"
-      title="Copy Negative Prompt">
-      Negative Prompt
+      title="${SDHubGetTranslation('copy_negative_prompt')}">
+      ${SDHubGetTranslation('negative_prompt')}
     </button>`;
 
   var titleParams = `
     <button id="SDHub-paramsButton"
       class="SDHubimgInfoButtons"
       style="${buttonStyle}"
-      title="Copy Parameter Settings">
-      Params
+      title="${SDHubGetTranslation('copy_parameters')}">
+      ${SDHubGetTranslation('parameters')}
     </button>`;
 
   const titleModels = '';
@@ -339,7 +339,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
           <button id="SDHub-seedButton"
             class="SDHubimgInfoButtons"
             style="color: ${buttonColor}; margin-bottom: -5px; cursor: pointer;"
-            title="Copy Seed Value">
+            title="${SDHubGetTranslation('copy_seed')}">
             Seed
           </button>: ${seedNumber},`;
       });

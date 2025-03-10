@@ -123,7 +123,8 @@ def GalleryTab():
                     value=privacy,
                     label='Privacy',
                     interactive=True,
-                    elem_id='SDHub-Gallery-imgchest-Privacy'
+                    elem_id='SDHub-Gallery-imgchest-Privacy',
+                    elem_classes='sdhub-radio'
                 )
 
                 nsfwset = gr.Radio(
@@ -131,7 +132,8 @@ def GalleryTab():
                     value=nsfw,
                     label='NSFW',
                     interactive=True,
-                    elem_id='SDHub-Gallery-imgchest-NSFW'
+                    elem_id='SDHub-Gallery-imgchest-NSFW',
+                    elem_classes='sdhub-radio'
                 )
 
             apibox = gr.TextArea(

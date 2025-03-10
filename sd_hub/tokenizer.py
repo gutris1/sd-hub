@@ -2,67 +2,63 @@ from modules.scripts import basedir
 from pathlib import Path
 import json
 
-token_dir = Path(basedir()) / ".sd-hub-token.json"
+Token = Path(basedir()) / '.sd-hub-token.json'
 
-def load_token():
+Keys = {
+    'write': 'huggingface-token-write',
+    'read': 'huggingface-token-read',
+    'civitai': 'civitai-api-key'
+}
+
+Info = {
+    Keys['write']: 'Huggingface Token (WRITE) loaded',
+    Keys['read']: 'Huggingface Token (READ) loaded',
+    Keys['civitai']: 'Civitai API Key loaded'
+}
+
+def load_token(Tab: str = 'all'):
     try:
-        with open(token_dir, "r", encoding="utf-8") as file:
-            value = json.load(file)
-
-        token1 = value.get("huggingface-token-write", "")
-        token2 = value.get("huggingface-token-read", "")
-        token3 = value.get("civitai-api-key", "")
-
-        msg = []
-        title = 'SD-Hub :'
-        if token1:
-            msg1 = "Huggingface Token (WRITE) loaded"
-            msg.append(msg1)
-            print(f"{title} {msg1}")
-
-        if token2:
-            msg2 = "Huggingface Token (READ) loaded"
-            msg.append(msg2)
-            print(f"{title} {msg2}")
-
-        if token3:
-            msg3 = "Civitai API Key loaded"
-            msg.append(msg3)
-            print(f"{title} {msg3}")
-
-        if not msg:
-            return "", "", "", "No Token Found", "No Token Found"
-
-        joined = "\n".join(msg)
-        return token1, token2, token3, joined, joined
-
+        v = json.loads(Token.read_text(encoding='utf-8'))
     except FileNotFoundError:
-        return "", "", "", f"{token_dir.name} Not Found", f"{token_dir.name} Not Found"
+        return '', '', '', f'{Token.name} Not Found', f'{Token.name} Not Found'
 
+    t = {key: v.get(key, '') for key in Keys.values()}
+
+    if Tab == 'downloader':
+        t[Keys['write']] = ''
+    elif Tab == 'uploader':
+        t[Keys['read']] = ''
+        t[Keys['civitai']] = ''
+
+    msg = [f'SD-Hub : {Info[key]}' for key, val in t.items() if val]
+
+    if msg:
+        print('\n'.join(msg))
+    else:
+        return '', '', '', 'No Token Found', 'No Token Found'
+
+    return (
+        t[Keys['write']],
+        t[Keys['read']],
+        t[Keys['civitai']],
+        '\n'.join(msg),
+        '\n'.join(msg)
+    )
 
 def save_token(token1=None, token2=None, token3=None):
-    try:
-        with open(token_dir, "r", encoding="utf-8") as file:
-            value = json.load(file)
+    if Token.exists():
+        try:
+            v = json.loads(Token.read_text(encoding='utf-8'))
+        except json.JSONDecodeError:
+            v = {}
+    else:
+        v = {}
 
-    except FileNotFoundError:
-        value = {
-            "huggingface-token-write": "",
-            "huggingface-token-read": "",
-            "civitai-api-key": ""
-        }
-
-    if token1 is not None:
-        value["huggingface-token-write"] = token1
-    if token2 is not None:
-        value["huggingface-token-read"] = token2
-    if token3 is not None:
-        value["civitai-api-key"] = token3
+    for key, token in zip(Keys.values(), [token1, token2, token3]):
+        v[key] = token if token is not None else v.get(key, '')
 
     try:
-        with open(token_dir, "w", encoding="utf-8") as file:
-            json.dump(value, file, indent=4)
-        return f"Token Saved To: {token_dir}"
-
+        Token.write_text(json.dumps(v, indent=4), encoding='utf-8')
+        return f'Token Saved To: {Token}'
     except Exception as e:
-        return f"Error: {e}"
+        return f'Error: {e}'
