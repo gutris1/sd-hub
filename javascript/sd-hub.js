@@ -35,10 +35,11 @@ function SDHubTabLoaded() {
     ['sdhub-uploader-save-button', 'Save Token']
   ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
 
+  setTimeout(() => document.getElementById('sdhub-uploader-load-info')?.click(), 1000);
+
   document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
   document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
   setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
-  setTimeout(() => document.getElementById('sdhub-uploader-load-info')?.click(), 2000);
 }
 
 function SDHubEvents() {
@@ -318,7 +319,11 @@ function SDHubUITranslation() {
     { element: '#sdhub-texteditor-load-button', key: 'load' },
     { element: '#sdhub-texteditor-save-button', key: 'save' },
     { element: '#sdhub-texteditor-inputs > label > input', key: 'file_path' },
-    { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd' }
+    { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd' },
+    { element: '#SDHubimgInfoSendButton > #txt2img_tab', key: 'send_txt2img' },
+    { element: '#SDHubimgInfoSendButton > #img2img_tab', key: 'send_img2img' },
+    { element: '#SDHubimgInfoSendButton > #inpaint_tab', key: 'send_inpaint' },
+    { element: '#SDHubimgInfoSendButton > #extras_tab', key: 'send_extras' }
   ];
 
   EL.forEach(({ element, key, inner }) => {
