@@ -45,10 +45,14 @@ def _install_req_1():
 
     with open(base / 'requirements.txt') as file:
         for pkg in map(str.strip, file):
-            if '==' in pkg:
-                pkg_name, pkg_version = pkg.split('==')
+            if '==' in pkg or '>=' in pkg:
+                pkg_name, pkg_version = pkg.split('==' if '==' in pkg else '>=')
+
                 try:
-                    if version.parse(metadata.version(pkg_name)) < version.parse(pkg_version):
+                    installed = version.parse(metadata.version(pkg_name))
+                    required = version.parse(pkg_version)
+
+                    if ('==' in pkg and installed < required) or ('>=' in pkg and installed < required):
                         reqs.append(pkg)
                         names.append(pkg_name)
                 except metadata.PackageNotFoundError:
