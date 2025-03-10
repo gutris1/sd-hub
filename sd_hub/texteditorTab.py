@@ -41,9 +41,14 @@ def LoadTextFile(fp):
     yield Code(value=script, label=syntax, language=syntax), Textbox(value='Loaded')
 
 def SaveTextFile(script, fp):
+    if not fp.strip():
+        yield Textbox(value=''), Textbox(value='Save Nothing')
+        return
+
     f = Path(fp)
     f.write_text(script)
     LastEdit.write_text(str(f))
+
     yield Textbox(value=fp), Textbox(value='Saved')
 
 def LoadInitial():
