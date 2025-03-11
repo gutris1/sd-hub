@@ -244,20 +244,23 @@ function SDHubUITranslation() {
   let ForgeCheck = document.querySelector('.gradio-container-4-40-0') !== null;
   let TabList = gradioApp().querySelectorAll('#sdhub-tab > .tab-nav > button');
 
-  TabList.forEach(button => {
+  for (let i = 0; i < TabList.length; i++) {
+    let button = TabList[i];
     let t = button.textContent.trim();
     if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
     let c = SDHubGetTranslation(t.toLowerCase());
     if (c) button.textContent = c;
-  });
+  }
 
-  ['.sdhub-downloader-tab-title', '.sdhub-uploader-tab-title'].forEach(tab => {
+  let tabs = ['.sdhub-downloader-tab-title', '.sdhub-uploader-tab-title'];
+  for (let i = 0; i < tabs.length; i++) {
+    let tab = tabs[i];
     let title = document.querySelector(tab);
     if (title) {
       let key = tab === '.sdhub-downloader-tab-title' ? 'download_command_center' : 'upload_to_huggingface';
       if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = SDHubGetTranslation(key);
     }
-  });
+  }
 
   const isThatForge = ForgeCheck ? [
     { element: '#sdhub-dataframe-accordion > button > span:nth-child(1)', key: 'tag_list' },
@@ -326,28 +329,40 @@ function SDHubUITranslation() {
     { element: '#SDHubimgInfoSendButton > #extras_tab', key: 'send_extras' }
   ];
 
-  EL.forEach(({ element, key, inner }) => {
+  for (let i = 0; i < EL.length; i++) {
+    const { element, key, inner } = EL[i];
     let translate = SDHubGetTranslation(key);
     let el = document.querySelector(element);
-    if (!el) return;
+    if (!el) continue;
 
     inner ? el.innerHTML = translate
           : el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' ? el.placeholder = translate
           : el.textContent = translate;
-  });
+  }
 }
 
 function SDHubParseXLSX(data) {
-  SDHubTranslations = Object.fromEntries(Object.keys(SDHubLangIndex).map(lang => [lang, {}]));
+  SDHubTranslations = {};
+  const langKeys = Object.keys(SDHubLangIndex);
 
-  data.slice(1).filter(row => row[0] && !row[0].startsWith("//")).forEach(row => {
-    const key = row[0]?.trim();
-    if (!key) return;
+  for (let i = 0; i < langKeys.length; i++) {
+    SDHubTranslations[langKeys[i]] = {};
+  }
 
-    Object.entries(SDHubLangIndex).forEach(([lang, index]) => {
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+
+    if (!row[0] || row[0].startsWith("//")) continue;
+
+    const key = row[0].trim();
+    if (!key) continue;
+
+    for (let j = 0; j < langKeys.length; j++) {
+      const lang = langKeys[j];
+      const index = SDHubLangIndex[lang];
       SDHubTranslations[lang][key] = row[index]?.trim() || key;
-    });
-  });
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
