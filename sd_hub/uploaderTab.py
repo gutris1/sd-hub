@@ -244,7 +244,7 @@ def LoadInfo():
         branch = data.get('branch', '')
         return Textbox(value=user), Textbox(value=repo), Textbox(value=branch)
 
-    return Textbox(value=''), Textbox(value=''), Textbox(value='')
+    return Textbox(value=''), Textbox(value=''), Textbox(value='main')
 
 def UploaderTab(token1):
     TokenBlur = '() => { SDHubTokenBlur(); }'
@@ -304,7 +304,6 @@ def UploaderTab(token1):
             )
 
             branch_box = gr.Textbox(
-                value='main',
                 max_lines=1,
                 placeholder='Branch',
                 label='Branch',
