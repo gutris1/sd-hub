@@ -341,52 +341,38 @@ function SDHubUITranslation() {
   }
 }
 
-function SDHubParseXLSX(data) {
-  SDHubTranslations = {};
-  const langKeys = Object.keys(SDHubLangIndex);
+document.addEventListener('DOMContentLoaded', async function () {
+  const script = document.createElement('script');
+  script.id = 'SDHub-XLSX';
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  script.onload = async () => {
+    try {
+      window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
+      window.SDHubFilePath = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
 
-  for (let i = 0; i < langKeys.length; i++) {
-    SDHubTranslations[langKeys[i]] = {};
-  }
+      const file = `${window.SDHubFilePath}sd-hub-translations.xlsx`;
+      const response = await fetch(file);
+      const arrayBuffer = await response.arrayBuffer();
+      const book = XLSX.read(arrayBuffer, { type: 'array' });
+      const data = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1 });
 
-  for (let i = 1; i < data.length; i++) {
-    const row = data[i];
+      const langKeys = Object.keys(SDHubLangIndex);
+      SDHubTranslations = Object.fromEntries(langKeys.map(lang => [lang, {}]));
 
-    if (!row[0] || row[0].startsWith("//")) continue;
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        if (!row[0] || row[0].startsWith("//")) continue;
 
-    const key = row[0].trim();
-    if (!key) continue;
+        const key = row[0].trim();
+        if (!key) continue;
 
-    for (let j = 0; j < langKeys.length; j++) {
-      const lang = langKeys[j];
-      const index = SDHubLangIndex[lang];
-      SDHubTranslations[lang][key] = row[index]?.trim() || key;
-    }
-  }
-}
+        langKeys.forEach(lang => SDHubTranslations[lang][key] = row[SDHubLangIndex[lang]]?.trim() || key);
+      }
 
-document.addEventListener('DOMContentLoaded', function () {
-  const reader = document.createElement('script');
-  reader.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-  reader.onload = () => {
-    window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
-    window.SDHubFilePath = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
-    const file = `${window.SDHubFilePath}sd-hub-translations.xlsx`;
-
-    fetch(file)
-      .then(response => response.arrayBuffer())
-      .then(arrayBuffer => {
-        const book = XLSX.read(arrayBuffer, { type: 'array' });
-        const name = book.SheetNames[0];
-        const sheet = book.Sheets[name];
-        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-        SDHubParseXLSX(data);
-        SDHubTextEditorGalleryScrollBar();
-        SDHubGalleryDOMLoaded();
-      })
-      .catch(err => console.error("XLSX Error :", err));
+      SDHubTextEditorGalleryScrollBar();
+      SDHubGalleryDOMLoaded();
+    } catch (err) { console.error("XLSX Error:", err); }
   };
 
-  document.head.appendChild(reader);
+  document.head.appendChild(script);
 });
