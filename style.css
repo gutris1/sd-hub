@@ -89,9 +89,9 @@
 
 #sdhub-downloader-scrape-button:hover,
 #sdhub-downloader-txt-button:hover {
-  filter: drop-shadow(0 0 5px var(--button-secondary-text-color));
-  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
-  color: var(--button-secondary-text-color);
+  filter: drop-shadow(0 0 5px var(--primary-400));
+  box-shadow: 0 0 10px 1px var(--primary-400);
+  color: var(--primary-500);
 }
 
 #sdhub-tab .sdhub-buttons:hover,
@@ -185,6 +185,20 @@
     inset 0 0 5px 1px var(--primary-400),
     inset 0 0 5px 1px var(--primary-400),
     inset 0 0 5px 1px var(--primary-400);
+}
+
+#sdhub-tab .sdhub-radio input:checked + span {
+  filter: drop-shadow(0 0 5px var(--primary-500));
+}
+
+#sdhub-tab .sdhub-radio input:hover {
+  cursor: pointer;
+}
+
+#sdhub-tab .sdhub-radio input:not(:checked):hover {
+  border-color: var(--primary-500);
+  filter: drop-shadow(0 0 3px var(--primary-500));
+  background-color: var(--checkbox-label-background-fill-hover);
 }
 
 .gradio-container-4-40-0 #sdhub-downloader-button-row,
