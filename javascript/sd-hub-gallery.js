@@ -19,41 +19,10 @@ const SDHubGalleryTabList = [
 
 onUiLoaded(function () {
   let GalleryTab = document.getElementById('sdhub-gallery-tab');
-  if (GalleryTab) SDHubCreateGallery(GalleryTab); SDHubGalleryTranslation();
+  if (GalleryTab) SDHubCreateGallery(GalleryTab);
 });
 
 onAfterUiUpdate(SDHubGalleryWatchNewImage);
-
-function SDHubGalleryTranslation() {
-  const imgchest = document.getElementById('SDHub-Gallery-imgchest-Column');
-  if (imgchest) {
-    document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
-      if (el.textContent.includes('Auto Upload to')) {
-        el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
-          <a class="sdhub-gallery-imgchest-info" href="https://imgchest.com" target="_blank">
-            imgchest.com
-          </a>`;
-      }
-    });
-
-    const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
-    if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
-
-    document.querySelectorAll('#SDHub-Gallery-imgchest-Privacy label > span')
-      .forEach(span => span.textContent = SDHubGetTranslation(span.textContent.toLowerCase()));
-
-    document.querySelectorAll('#SDHub-Gallery-imgchest-NSFW label > span')
-      .forEach(span => span.textContent = SDHubGetTranslation(span.textContent.toLowerCase()));
-
-    const inputElement = document.querySelector('#SDHub-Gallery-imgchest-API input[placeholder="imgchest API key"]');
-    if (inputElement) inputElement.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
-
-    ['Load', 'Save'].forEach((key) => {
-      const button = document.querySelector(`#SDHub-Gallery-imgchest-${key}-Button`);
-      if (button) button.textContent = SDHubGetTranslation(key.toLowerCase());
-    });
-  }
-}
 
 function SDHubGalleryLoadInitial() {
   fetch(`${SDHubGalleryBase}/initial`)
@@ -823,6 +792,8 @@ function SDHubGalleryDeletion() {
 }
 
 function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
+  let fromColumn = false;
+
   const imgchestButton = document.createElement('div');
   imgchestButton.id = 'SDHub-Gallery-imgchest-Button';
   imgchestButton.style.display = 'flex';
@@ -831,19 +802,15 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   GalleryTab.prepend(imgchestButton);
   TabRow.style.marginLeft = '40px';
 
-  const Save = document.getElementById('SDHub-Gallery-imgchest-Save-Button');
-  Save.title = 'Save Setting';
+  ['Save', 'Load'].forEach(key => {
+    const btn = document.getElementById(`SDHub-Gallery-imgchest-${key}-Button`);
+    btn && (btn.title = `${key} Setting`, btn.textContent = SDHubGetTranslation(key.toLowerCase()));
+  });
 
-  const Load = document.getElementById('SDHub-Gallery-imgchest-Load-Button');
-  Load.title = 'Load Setting';
-
-  let fromColumn = false;
   const apiInput = document.querySelector('#SDHub-Gallery-imgchest-API input');
-
-  apiInput.addEventListener('mousedown', () => {
-    if (window.getComputedStyle(imgchestColumn).display === 'flex') {
-      fromColumn = true;
-    }
+  apiInput?.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
+  apiInput?.addEventListener('mousedown', () => {
+    fromColumn = window.getComputedStyle(imgchestColumn).display === 'flex';
   });
 
   document.addEventListener('mouseup', () => {
@@ -868,6 +835,32 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
       }
     }
   });
+
+  document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
+    if (el.textContent.includes('Auto Upload to')) {
+      el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
+        <a class="sdhub-gallery-imgchest-info" href="https://imgchest.com" target="_blank">
+          imgchest.com
+        </a>`;
+    }
+  });
+
+  const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
+  if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
+
+  ['#SDHub-Gallery-imgchest-Privacy', '#SDHub-Gallery-imgchest-NSFW'].forEach(id =>
+    document.querySelectorAll(`${id} label > span`).forEach(s => s.textContent = SDHubGetTranslation(s.textContent.toLowerCase()))
+  );
+
+  fetch(`${SDHubGalleryBase}/imgChest`)
+    .then(r => r.json())
+    .then(d => {
+      const clickRadio = (id, v) => document.querySelector(`${id} label[data-testid="${v}-radio-label"]`)?.click();
+      clickRadio('#SDHub-Gallery-imgchest-Privacy', d.privacy);
+      clickRadio('#SDHub-Gallery-imgchest-NSFW', d.nsfw);
+      if (apiInput) apiInput.value = d.api, updateInput(apiInput);
+    })
+    .catch(e => console.error('Error loading imgchest settings:', e));
 }
 
 function SDHubGalleryDOMLoaded() {
