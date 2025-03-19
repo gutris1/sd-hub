@@ -35,11 +35,20 @@ function SDHubTabLoaded() {
     ['sdhub-uploader-save-button', 'Save Token']
   ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
 
-  setTimeout(() => document.getElementById('sdhub-uploader-load-info')?.click(), 1000);
-
   document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
   document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
   setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
+
+  fetch('/sd-hub/LoadUploaderInfo')
+    .then(r => r.json())
+    .then(({ username, repository, branch }) => {
+      [['username', username], ['repo', repository], ['branch', branch]]
+        .forEach(([id, v]) => {
+          const input = document.querySelector(`#sdhub-uploader-${id}-box input`);
+          if (input) input.value = v, updateInput(input);
+        });
+    })
+    .catch(e => console.error('Error loading info:', e));
 }
 
 function SDHubEvents() {
