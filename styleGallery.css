@@ -1017,6 +1017,7 @@ body.no-scroll {
 
 #SDHub-Gallery-imgchest-Checkbox input:checked {
   transition: 0.4s ease;
+  background: var(--button-primary-background-fill);
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:checked:hover {
