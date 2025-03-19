@@ -23,8 +23,6 @@ from sd_hub.tokenizer import load_token
 from sd_hub.infotext import sdhub_repo
 from sd_hub.paths import SDHubPaths
 
-insecureENV = SDHubPaths.getENV()
-
 def onSDHUBTab():
     token1, token2, token3, _, _ = load_token()
 
@@ -33,7 +31,7 @@ def onSDHUBTab():
         UploaderTab(token1)
         ArchiverTab()
 
-        if insecureENV:
+        if SDHubPaths.getENV():
             from sd_hub.texteditorTab import TextEditorTab
             from sd_hub.shellTab import ShellTab
             TextEditorTab()
@@ -41,7 +39,13 @@ def onSDHUBTab():
 
         GalleryTab()
 
-        with gr.Accordion('Tag List', open=False, visible=True, elem_id='sdhub-dataframe-accordion'):
+        with gr.Accordion(
+            'Tag List',
+            open=False,
+            visible=True,
+            elem_id='sdhub-dataframe-accordion',
+            elem_classes='sdhub-accordion'
+        ):
             gr.DataFrame(
                 [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
                 headers=['SD-Hub Tag', 'WebUI Path'],
