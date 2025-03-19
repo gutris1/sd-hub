@@ -11,8 +11,30 @@ Add <code>--enable-insecure-extension-access</code> command line argument to pro
 Support both Windows and Unix.
 
 # Changelog
-### 2025-03-08  v8.0.0
+### 2025-03-20  v8.8.8
+- Changed/Added function for Uploader Tab.
+```python
+# To rename a file or folder when uploading, add =
+/input-path/SomeFolder = ThisFolder
+/input-path/SomeFile.safetensors = ThatFile.safetensors
+
+# To exclude specific file extensions from being uploaded, add -
+/input-path/SomeFolder - js json py
+
+# To upload a file or folder into a specific directory within your Huggingface repository, add >
+/input-path/SomeFolder > folder1
+/input-path/SomeFile.safetensors > folder2
+# or
+/input-path/SomeFile.safetensors > folder2/subFolder/deepFolder/here
+
+# Combining all options in single line
+/input-path/SomeFolder = ThisFolder - js json py > folder3
+```
+
+<details><summary>2025-03-08  v8.0.0</summary><br>
+  
 - UI translation based on browser language. Excel file for the translation [here](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx)
+</details>
 
 <details><summary>2025-02-17  v7.0.0</summary><br>
 
@@ -187,30 +209,33 @@ Visibility = Defaults to Private and will only take effect if you are creating a
 Token = Obtain your huggingface token with the role WRITE from [Here](https://huggingface.co/settings/tokens).<br>
 
 For the input box, you can either provide a path pointing to a folder or a single file.<br>
-You can also use <code>$tag</code> to skip the long path name.<br>
-You can rename the upload (file or folder) by adding <code>-</code> after the input path.<br>
-You can exclude specific file extension from being uploaded by adding <code>--</code>.<br>
+You can use <code>$tag</code> to skip the long path name.<br>
 ```python
-# Folder as input, so all the files inside the folder with its folder uploaded to your repository
-/kaggle/working/stable-diffusion-webui/models/Stable-diffusion
+/input-path/SomeFolder
+/input-path/SomeFile.safetensors
+```
+Rename the file or folder when uploading by adding <code>=</code><br>
+```python
+/input-path/SomeFolder = ThisFolder
+/input-path/SomeFile.safetensors = ThatFile.txt
+```
+Exclude specific file extensions from being uploaded by adding <code>-</code><br>
+Only applicable when uploading a folder.<br>
+```python
+/input-path/SomeFolder - js json py
+```
+Upload into a specific folder within your Huggingface repository by adding <code>></code><br>
+The folder will be created automatically if it doesn’t exist.<br>
+```python
+/input-path/SomeFolder > folder1
+/input-path/SomeFile.safetensors > folder2
 
-# With tag
-$ckpt
-
-# To rename the folder
-$ckpt - my-merge
-
-# To rename and exclude specific file extension
-$ext/sd-hub - mymodel -- json txt py
-
-# File as input, so only the file gets uploaded to your repository
-/kaggle/working/stable-diffusion-webui/models/Stable-diffusion/animagineXLV31_v31.safetensors
-
-# with tag
-$ckpt/animagineXLV31_v31.safetensors
-
-# to rename the uploaded file
-$ckpt/animagineXLV31_v31.safetensors - XL-imagine-animeV31.txt
+# or
+/input-path/SomeFile.safetensors > folder2/subFolder/deepFolder/here
+```
+Combining all options in single line
+```python
+/input-path/SomeFolder = ThisFolder - js json py > folder3
 ```
 </details>
 
@@ -233,7 +258,7 @@ Archive:<br>
 
 Extract:<br>
 <code>Input Path</code> Path pointing to a compressed file.<br>
-<code>Output Path</code> Path where the compressed file will be saved.<br>
+<code>Output Path</code> Path where the compressed file will be extracted.<br>
 <code>Create Directory</code> Automatically creates a new folder at the Output Path if not already existing.<br>
 
 You can use <code>$tag</code> for the path in Input and Output Path.<br>
