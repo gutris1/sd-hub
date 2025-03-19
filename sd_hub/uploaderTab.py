@@ -1,8 +1,10 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from modules.ui_components import FormRow, FormColumn
-from modules.shared import cmd_opts
+from modules.script_callbacks import on_app_started
 from modules.scripts import basedir
+from modules.shared import cmd_opts
+from fastapi import FastAPI
 from pathlib import Path
 import gradio as gr
 import subprocess
@@ -250,16 +252,17 @@ def SaveInfo(user, repo, branch):
     info.write_text(json.dumps(data, indent=4))
 
 def LoadInfo():
-    Textbox = gr.Textbox.update
-
+    default = ('', '', 'main')
     if info.exists():
-        data = json.loads(info.read_text(encoding='utf-8'))
-        user = data.get('username', '')
-        repo = data.get('repository', '')
-        branch = data.get('branch', '')
-        return Textbox(value=user), Textbox(value=repo), Textbox(value=branch)
+        d = json.loads(info.read_text(encoding='utf-8'))
+        return tuple(d.get(k, v) for k, v in zip(['username', 'repository', 'branch'], default))
+    return default
 
-    return Textbox(value=''), Textbox(value=''), Textbox(value='main')
+def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
+    @app.get('/sd-hub/LoadUploaderInfo')
+    async def uploaderInfo():
+        username, repository, branch = LoadInfo()
+        return {'username': username, 'repository': repository, 'branch': branch}
 
 def UploaderTab(token1):
     TokenBlur = '() => { SDHubTokenBlur(); }'
@@ -384,5 +387,4 @@ def UploaderTab(token1):
             outputs=[upl_output1, upl_output2]
         )
 
-        load_info = gr.Button(visible=False, elem_id='sdhub-uploader-load-info')
-        load_info.click(fn=LoadInfo, inputs=[], outputs=[user_box, repo_box, branch_box])
+on_app_started(LoadUploaderInfo)
