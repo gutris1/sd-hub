@@ -10,12 +10,15 @@
 
 #sdhub-tab > .tab-nav > button.selected {
   cursor: default;
-  font-weight: bold;
   color: var(--background-fill-primary);
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--button-primary-background-fill);
   border-color: var(--primary-500);
+  text-shadow:
+    0 0 0 transparent,
+    0 0 0 transparent,
+    0 0 0 var(--background-fill-primary);
 }
 
 #sdhub-tab > .tab-nav > button:not(.selected) {
@@ -144,7 +147,7 @@
 #sdhub-tab .sdhub-radio label,
 #sdhub-tab .sdhub-radio input,
 #sdhub-shell-button,
-#sdhub-dataframe-accordion {
+#sdhub-tab .sdhub-accordion {
   transition:
     box-shadow 0.4s ease,
     filter 0.4s ease,
@@ -269,8 +272,8 @@
   overflow: visible !important;
 }
 
-#sdhub-dataframe-accordion:has(> .open),
-#sdhub-dataframe-accordion:hover:not(:has(> .open)) {
+#sdhub-tab .sdhub-accordion:has(> .open),
+#sdhub-tab .sdhub-accordion:hover:not(:has(> .open)) {
   border: 1px solid var(--primary-500) !important;
   box-shadow: 0 0 10px 1px var(--primary-400);
 }
@@ -371,6 +374,7 @@
 }
 
 #sdhub-texteditor-info input {
+  border: 0;
   text-align: right;
   font-size: 17px;
   opacity: 0;
