@@ -6,7 +6,7 @@ Archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</co
 And a simple Gallery for displaying your outputs with built-in image info and an image viewer.
 <br>
 
-- Downloading/Uploading/compressing/extracting files from/to outside Models or Embeddings folders is blocked.<br>
+- Downloading/Uploading/Archiving/Extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 
 - The UI uses JavaScript to read the [Excel](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx) translation file, to translate any readable text based on the user's browser language.<br>
@@ -20,98 +20,6 @@ Supported languages include:
   - Russian (Русский)
 
 - Support both <code>Windows</code> and <code>Unix</code>.
-
-# Changelog
-### 2025-03-20  v8.8.8
-- Changed/Added function for Uploader Tab.
-```python
-# Add = to rename the uploaded file/folder
-/input-path/someFolder = thisFolder
-/input-path/someFile.safetensors = thatFile.safetensors
-
-# Add - to exclude specific file extensions when uploading a folder
-/input-path/someFolder - js json py
-
-# Add > to upload into a specific folder within your Huggingface repository.
-# The folder will be automatically created if it doesn’t exist.
-/input-path/someFolder > folder1
-/input-path/someFile.safetensors > folder2
-# or
-/input-path/someFile.safetensors > folder/subFolder/deepFolder/folderFolder
-
-# Combining all options in single line
-/input-path/someFolder = thisFolder - js json py > folder3
-```
-
-<details><summary>2025-03-08  v8.0.0</summary><br>
-  
-- UI translation based on browser language. Excel file for the translation [here](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx)
-</details>
-
-<details><summary>2025-02-17  v7.0.0</summary><br>
-
-- Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
-- Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
-</details>
-
-<details><summary>2024-12-30  v5.6.1</summary><br>
-
-- Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
-- Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/74802d39-fcee-4d12-ba9f-302b67eb6375", width=1000px>
-</p>
-</details>
-
-<details><summary>2024-12-25  v5.5.5</summary><br>
-
-- Added security measures to restrict downloading, uploading, and compressing to the Models and Embeddings folders only when WebUI is run without <code>--enable-insecure-extension-access</code>.<br>
-- Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
-- Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
-- Fixed path handling.<br>
-- Relocated the token file to the extension folder and renamed it to <code>.sd-hub-token.json</code>.<br>
-</details>
-
-<details><summary>2024-09-30  v4.8.4</summary><br>
-
-- Gradio 4 Compatibility Update for Forge Webui.<br>
-</details>
-
-<details><summary>2024-07-21  v4.5.6</summary><br>
-
-- Added support for downloading from Civitai using webpage URLs directly.<br>
-![image](https://github.com/user-attachments/assets/2cde28e1-e88b-45cf-aae4-88bf0bfcf17b)
-</details>
-
-<details><summary>2024-07-12  v4.4.4</summary><br>
-
-- Added support for Windows.
-</details>
-
-<details><summary>2024-07-03  v3.3.3</summary><br>
-  
-- Added venv support.
-</details>
-
-<details><summary>2024-05-14  v3.2.1</summary><br>
-
-- Added an optional argument <code>-</code> for the Scrape button to filter specific extension instead of using the default extension list.
-```python
-https://huggingface.co/ckpt/controlnet-sdxl-1.0/tree/main - pth md txt safetensors
-```
-- Added an optional argument <code>--</code> for the Uploader input box to exclude specific file extension instead of uploading all files.
-```python
-$ext/sd-hub -- json txt py
-```
-- Moved <code>Token.json</code> to the Stable Diffusion root directory and renamed to <code>sd-hub-token.json</code>.
-- Added a <code>Split by</code> radio button for the Archiver to split compressed files based on the total number of files if input is pointing to a folder.
-</details>
-
-<details><summary>2024-04-22  v2.0.2</summary><br>
-
-- Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.
-- Improved Compress and Decompress logic for Archiver.
-</details>
 
 # Usage
 <details><summary> <h2>Downloader</h2> </summary><br>
@@ -244,7 +152,7 @@ Token = Obtain your huggingface token with the role WRITE from [Here](https://hu
 - Add <code>=</code> to rename the uploaded file/folder.<br>
 ```python
 /input-path/someFolder = thisFolder
-/input-path/someFile.safetensors = thatFile.txt
+/input-path/someFile.safetensors = thatFile.safetensors
 ```
 
 - Add <code>-</code> to exclude specific file extensions when uploading a folder.<br>
@@ -329,9 +237,101 @@ Left-click on the bottom left button to open an image viewer.<br>
 
 </details>
 
-## NB
+# NB
 - The Text Editor and Shell tabs will only be imported and run if WebUI is launched with <code>--enable-insecure-extension-access</code> and the environment is <code>Google Colab</code>, <code>Kaggle</code>, or <code>SageMaker Studio Lab</code>. Otherwise, they will have no effect.<br>
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
+
+# Changelog
+### 2025-03-22  v8.8.8
+- Changed/Added function for Uploader Tab.
+```python
+# Add = to rename the uploaded file/folder
+/input-path/someFolder = thisFolder
+/input-path/someFile.safetensors = thatFile.safetensors
+
+# Add - to exclude specific file extensions when uploading a folder
+/input-path/someFolder - js json py
+
+# Add > to upload into a specific folder within your Huggingface repository.
+# The folder will be automatically created if it doesn’t exist.
+/input-path/someFolder > folder1
+/input-path/someFile.safetensors > folder2
+# or
+/input-path/someFile.safetensors > folder/subFolder/deepFolder/folderFolder
+
+# Combining all options in single line
+/input-path/someFolder = thisFolder - js json py > folder3
+```
+
+<details><summary>2025-03-08  v8.0.0</summary><br>
+  
+- UI translation based on browser language. Excel file for the translation [here](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx)
+</details>
+
+<details><summary>2025-02-17  v7.0.0</summary><br>
+
+- Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
+- Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
+</details>
+
+<details><summary>2024-12-30  v5.6.1</summary><br>
+
+- Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
+- Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/74802d39-fcee-4d12-ba9f-302b67eb6375", width=1000px>
+</p>
+</details>
+
+<details><summary>2024-12-25  v5.5.5</summary><br>
+
+- Added security measures to restrict downloading, uploading, and compressing to the Models and Embeddings folders only when WebUI is run without <code>--enable-insecure-extension-access</code>.<br>
+- Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
+- Added a function to automatically save the last used username, repository, and branch when uploading to Huggingface, which will be automatically used when WebUI is loaded.<br>
+- Fixed path handling.<br>
+- Relocated the token file to the extension folder and renamed it to <code>.sd-hub-token.json</code>.<br>
+</details>
+
+<details><summary>2024-09-30  v4.8.4</summary><br>
+
+- Gradio 4 Compatibility Update for Forge Webui.<br>
+</details>
+
+<details><summary>2024-07-21  v4.5.6</summary><br>
+
+- Added support for downloading from Civitai using webpage URLs directly.<br>
+![image](https://github.com/user-attachments/assets/2cde28e1-e88b-45cf-aae4-88bf0bfcf17b)
+</details>
+
+<details><summary>2024-07-12  v4.4.4</summary><br>
+
+- Added support for Windows.
+</details>
+
+<details><summary>2024-07-03  v3.3.3</summary><br>
+  
+- Added venv support.
+</details>
+
+<details><summary>2024-05-14  v3.2.1</summary><br>
+
+- Added an optional argument <code>-</code> for the Scrape button to filter specific extension instead of using the default extension list.
+```python
+https://huggingface.co/ckpt/controlnet-sdxl-1.0/tree/main - pth md txt safetensors
+```
+- Added an optional argument <code>--</code> for the Uploader input box to exclude specific file extension instead of uploading all files.
+```python
+$ext/sd-hub -- json txt py
+```
+- Moved <code>Token.json</code> to the Stable Diffusion root directory and renamed to <code>sd-hub-token.json</code>.
+- Added a <code>Split by</code> radio button for the Archiver to split compressed files based on the total number of files if input is pointing to a folder.
+</details>
+
+<details><summary>2024-04-22  v2.0.2</summary><br>
+
+- Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.
+- Improved Compress and Decompress logic for Archiver.
+</details>
 
 # Credits
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
