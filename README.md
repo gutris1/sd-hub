@@ -14,21 +14,22 @@ Support both Windows and Unix.
 ### 2025-03-20  v8.8.8
 - Changed/Added function for Uploader Tab.
 ```python
-# To rename a file or folder when uploading, add =
-/input-path/SomeFolder = ThisFolder
-/input-path/SomeFile.safetensors = ThatFile.safetensors
+# Add = to rename the uploaded file/folder
+/input-path/someFolder = thisFolder
+/input-path/someFile.safetensors = thatFile.safetensors
 
-# To exclude specific file extensions from being uploaded, add -
-/input-path/SomeFolder - js json py
+# Add - to exclude specific file extensions when uploading a folder
+/input-path/someFolder - js json py
 
-# To upload a file or folder into a specific directory within your Huggingface repository, add >
-/input-path/SomeFolder > folder1
-/input-path/SomeFile.safetensors > folder2
+# Add > to upload into a specific folder within your Huggingface repository.
+# The folder will be automatically created if it doesn’t exist.
+/input-path/someFolder > folder1
+/input-path/someFile.safetensors > folder2
 # or
-/input-path/SomeFile.safetensors > folder2/subFolder/deepFolder/here
+/input-path/someFile.safetensors > folder/subFolder/deepFolder/folderFolder
 
 # Combining all options in single line
-/input-path/SomeFolder = ThisFolder - js json py > folder3
+/input-path/someFolder = thisFolder - js json py > folder3
 ```
 
 <details><summary>2025-03-08  v8.0.0</summary><br>
@@ -105,11 +106,11 @@ $ext/sd-hub -- json txt py
 <details><summary> <h2>Downloader</h2> </summary><br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/59e3ffc6-a63a-4a4b-a29d-e6787aa946ac", width=1000px>
+  <img src="https://github.com/user-attachments/assets/b38ce6c3-230d-4d45-bc7e-8b638b872ac0", width=1000px>
 </p>
 
 
-### ● Input box
+### ● Downloader Input
 Similar to [batchlink](https://github.com/etherealxx/batchlinks-webui), you use tag then URL:
 
 ```python
@@ -118,37 +119,48 @@ URL
 ```
 Tag should begin with <code>$</code><br>
 Tag is mandatory and there is no default path.<br>
-For available tags, refer to the [Tag List] at the bottom of the extension.<br>
+For available tags, refer to the <code>Tag List</code> at the bottom of the extension.<br>
 
-Click on the table row, tag or path to automatically copy its text.<br>
+- Click on the table row, tag or path to automatically copy its text.<br>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/37ed0ab7-a52d-42ac-9252-44eaa88181a8", width=1000px>
+  <img src="https://github.com/user-attachments/assets/0bf7bc74-35b5-4569-ac85-8f7ac44b1acb", width=1000px>
 </p>
 
-You can also add subdirectories to the tag if you have any:
+- For <code>Civitai</code> you can use the webpage URL directly.<br>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f0600bc8-d18d-45ad-bf3a-aeb252d8f17c", width=1000px>
+</p>
+
+- Basic input.
+```python
+$ckpt
+https://civitai.com/models/643227?modelVersionId=811710
+```
+
+- Add subdirectories to the tag if exist.
 ```python
 $ckpt/tmp_ckpt
-https://civitai.com/api/download/models/403131
+https://civitai.com/models/643227?modelVersionId=811710
 ```
 
-To add an optional path:
+- Add an optional path for certain URLs. in that case, the tag will be ignored.
 ```python
 $ckpt
-https://civitai.com/api/download/models/403131 /kaggle/working/stable-diffusion-webui/zzzzz
+https://civitai.com/models/1188071/animagine-xl-40
+https://civitai.com/models/643227?modelVersionId=811710 /content/A1111/models/Stable-diffusion/tmp_ckpt
 ```
 
-To download with custom filename, add <code>-</code> after the URL or optional path (if provided):
+- Add <code>=</code> after the URL or an optional path (if provided) to download with a custom filename.
 ```python
-# Without optional path
 $ckpt
-https://civitai.com/api/download/models/403131 - imagine-anime-XL.safetensors
+https://civitai.com/models/1188071/animagine-xl-40 = imagine-anime-XL.safetensors
 
-# With optional path
+# or with optional path
 $ckpt
-https://civitai.com/api/download/models/403131 /kaggle/working/stable-diffusion-webui/zzzzz - imagine-anime-XL.safetensors
+https://civitai.com/models/643227?modelVersionId=811710 /content/A1111/models/Stable-diffusion = MeichiDarkMix.safetensors
 ```
 
-### ● Token box
+● Token box<br>
 ![token](https://github.com/gutris1/sd-hub/assets/132797949/b95fe024-0cde-4462-8ca1-3e6df2b10cc3)<br>
 
 Enter your Huggingface token with the role READ to download from your private repo, get one [Here](https://huggingface.co/settings/tokens).<br>
@@ -156,21 +168,18 @@ Enter your Civitai API key if you encounter an Authorization failed error. Get y
 Save = To automatically load token upon Reload UI or Webui launch.<br>
 Load = Load token.
 
-### ● Scrape Button
+● Scrape Button<br>
+
 ![UntitledProject-ezgif com-video-to-gif-converter (2)](https://github.com/gutris1/sd-hub/assets/132797949/67f09cca-d433-4f16-982b-cb39b3f2dbed)
 
 
 For Huggingface repository:<br>
-By default it will return a list of resolve URLs that match these extensions <code>.safetensors .bin .pth .pt .ckpt .yaml</code><br>
-add <code>-</code> to return only a specific file extension.<br>
+By default it will return a list of resolve URLs that match these extensions <code>.safetensors</code> <code>.bin</code> <code>.pth</code> <code>.pt</code> <code>.ckpt</code> <code>.yaml</code><br>
 
-Paste the repository URL in the following format:<br>
+- Paste the repository URL in the following format:<br>
 ```python
-# To scrape everything in the branch tree list (folders and subfolders won't be included)
+# This will scrape everything in the branch tree list (folders and subfolders won't be included)
 htttps://huggingface.co/user_name/repo_name/tree/branch_name
-
-# To filter specific extension
-htttps://huggingface.co/user_name/repo_name/tree/branch_name - pth safetensors
 
 # To Scrape a folder
 htttps://huggingface.co/user_name/repo_name/tree/branch_name/folder
@@ -178,7 +187,13 @@ htttps://huggingface.co/user_name/repo_name/tree/branch_name/folder
 # or
 htttps://huggingface.co/user_name/repo_name/tree/branch_name/folder/sub_folder
 ```
-Enter your Hugginface READ token into Token box if you want to Scrape your private repo.<br>
+
+- Add <code>-</code> to return only a specific file extension.<br>
+```python
+htttps://huggingface.co/user_name/repo_name/tree/branch_name - pth safetensors
+```
+
+- Enter your Hugging Face READ token into the token box if you want to scrape your private repo.<br>
 
 And Pastebin:<br>
 Simply paste the pastebin URL<br>
@@ -188,8 +203,8 @@ https://pastebin.com/696969
 And it will return a list of whatever is available at the pastebin URL.<br>
 If it has a hashtag from batchlink, it will automatically be replaced with SD-Hub Tags.<br>
 
-### ● Insert TXT Button
-To upload a TXT file from your device, simply select it and upload it into the input box.<br>
+● Insert TXT Button<br>
+This allows you to upload a <code>.txt</code> file from your device and add its content to the downloader input.<br>
 
 <code>Supported Domains for Downloader: Civitai Huggingface Github Drive.Google</code>
 
@@ -198,51 +213,54 @@ To upload a TXT file from your device, simply select it and upload it into the i
 <details><summary> <h2>Uploader</h2> </summary><br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/a2f0b341-8743-43da-b857-2e925f3eb7fb", width=1000px>
+  <img src="https://github.com/user-attachments/assets/df368836-2a44-4f5a-a0de-212b22910310", width=1000px>
 </p>
 
-### ● Input
+### ● Uploader Input
 Username = Your username at huggingface.co.<br>
 Repository = Your model repository at huggingface.co, it will automatically create a new repository if reponame does not exist.<br>
 Branch = Defaults to main. You can change the branch name to create a new branch.<br>
 Visibility = Defaults to Private and will only take effect if you are creating a new repository; otherwise, it will be ignored.<br>
 Token = Obtain your huggingface token with the role WRITE from [Here](https://huggingface.co/settings/tokens).<br>
 
-For the input box, you can either provide a path pointing to a folder or a single file.<br>
-You can use <code>$tag</code> to skip the long path name.<br>
+- For uploader input area, you can either provide a path pointing to a folder or a single file.<br>
+- or use <code>$tag</code> to skip the long path name.<br>
 ```python
-/input-path/SomeFolder
-/input-path/SomeFile.safetensors
+/input-path/someFolder
+/input-path/someFile.safetensors
 ```
-Rename the file or folder when uploading by adding <code>=</code><br>
+
+- Add <code>=</code> to rename the uploaded file/folder.<br>
 ```python
-/input-path/SomeFolder = ThisFolder
-/input-path/SomeFile.safetensors = ThatFile.txt
+/input-path/someFolder = thisFolder
+/input-path/someFile.safetensors = thatFile.txt
 ```
-Exclude specific file extensions from being uploaded by adding <code>-</code><br>
-Only applicable when uploading a folder.<br>
+
+- Add <code>-</code> to exclude specific file extensions when uploading a folder.<br>
 ```python
-/input-path/SomeFolder - js json py
+/input-path/someFolder - js json py
 ```
-Upload into a specific folder within your Huggingface repository by adding <code>></code><br>
-The folder will be created automatically if it doesn’t exist.<br>
+
+- Add <code>></code> to upload into a specific folder within your Huggingface repository.<br>
+- The folder will be automatically created if it doesn’t exist.<br>
 ```python
-/input-path/SomeFolder > folder1
-/input-path/SomeFile.safetensors > folder2
+/input-path/someFolder > folder1
+/input-path/someFile.safetensors > folder2
 
 # or
-/input-path/SomeFile.safetensors > folder2/subFolder/deepFolder/here
+/input-path/someFile.safetensors > folder/subFolder/deepFolder/here
 ```
-Combining all options in single line
+
+- Combining all options in single line.
 ```python
-/input-path/SomeFolder = ThisFolder - js json py > folder3
+/input-path/someFolder = thisFolder - js json py > folder3
 ```
 </details>
 
 <details><summary> <h2>Archiver</h2> </summary><br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/81bdcde3-8043-4339-af30-d1305379f7f4", width=1000px>
+  <img src="https://github.com/user-attachments/assets/07959d71-f7d5-4eec-b40d-907f21f48e63", width=1000px>
 </p>
 
 
@@ -299,6 +317,10 @@ Left-click on the bottom left button to open an image viewer.<br>
 ![Screenshot_3](https://github.com/user-attachments/assets/b3bd8e45-21f5-4c9a-9aa6-a98fd51abe3b)<br>
 
 </details>
+
+## NB
+- The Text Editor and Shell tabs will only be imported and run if WebUI is launched with <code>--enable-insecure-extension-access</code> and the environment is <code>Google Colab</code>, <code>Kaggle</code>, or <code>SageMaker Studio Lab</code>. Otherwise, they will have no effect.<br>
+- The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Credits
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
