@@ -4,11 +4,22 @@ It lets you download files from sites like <code>Civitai</code>, <code>Hugging F
 You can also upload files or entire folders to the <code>Hugging Face</code> model repository (with a WRITE token, of course), making sharing and access easier.<br>
 Archive and extract files in formats like <code>tar.lz4</code>, <code>tar.gz</code>, and <code>zip</code>.<br>
 And a simple Gallery for displaying your outputs with built-in image info and an image viewer.
-<br><br>
-Downloading/Uploading/compressing/extracting files from/to outside Models or Embeddings folders is blocked.<br>
-Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 <br>
-Support both Windows and Unix.
+
+- Downloading/Uploading/compressing/extracting files from/to outside Models or Embeddings folders is blocked.<br>
+Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
+
+- The UI uses JavaScript to read the [Excel](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx) translation file, to translate any readable text based on the user's browser language.<br>
+Supported languages include:
+  - English
+  - Japanese (日本語)
+  - Simplified Chinese (简体中文)
+  - Traditional Chinese (繁體中文)
+  - Spanish (Español)
+  - Korean (한국어)
+  - Russian (Русский)
+
+- Support both <code>Windows</code> and <code>Unix</code>.
 
 # Changelog
 ### 2025-03-20  v8.8.8
