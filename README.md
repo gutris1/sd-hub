@@ -9,7 +9,7 @@ And a simple Gallery for displaying your outputs with built-in image info and an
 - Downloading/Uploading/Archiving/Extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 
-- The UI uses JavaScript to read the [Excel](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx) translation file, to translate any readable text based on the user's browser language.<br>
+- The UI uses JavaScript to read the [Excel](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx) file and translate any readable text based on the user's browser language.<br>
 Supported languages include:
   - English
   - Japanese (日本語)
