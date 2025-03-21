@@ -216,24 +216,23 @@ $ckpt
 
 <details><summary> <h2>Gallery</h2> </summary><br>
 
-![Screenshot_1](https://github.com/user-attachments/assets/e4442af7-45a9-41e6-9db7-fefc190691ef)<br>
-
+<p><img src="https://github.com/user-attachments/assets/0df71fe8-dcc6-4947-99ea-cb71fe0046ea", max-width=1000px></p>
 
 inspired by [IIB](https://github.com/zanllp/sd-webui-infinite-image-browsing)<br>
 a simple gallery to display your outputs.<br>
 it's not as advanced as IIB, you can't add folders and browse images in here.<br>
-oh no anyway,<br>
-Left-click on an image to show an image info.<br>
-![Screenshot_4](https://github.com/user-attachments/assets/55772568-4b0d-48d2-906b-b906610a59b2)<br>
 
-Right-click on an image to open a context menu.<br>
-![Screenshot_2](https://github.com/user-attachments/assets/57f957e4-3b5c-4f1f-a1aa-f2a363737f32)<br>
+- Left-click on an image to show an image info.<br>
+<p><img src="https://github.com/user-attachments/assets/13547409-916c-430c-9b08-86523f511eda", max-width=1000px></p>
 
-Hover over an image to reveal an image viewer button in the bottom left and a context menu button on the top right.<br>
-![Screenshot_1](https://github.com/user-attachments/assets/aa69c5c9-3fb8-498f-905f-7a9ffc24e34e)<br>
+- Right-click on an image to open a context menu.<br>
+<p><img src="https://github.com/user-attachments/assets/903aae36-649b-44b4-9ea7-833e1cfd3d12", max-width=1000px></p>
 
-Left-click on the bottom left button to open an image viewer.<br>
-![Screenshot_3](https://github.com/user-attachments/assets/b3bd8e45-21f5-4c9a-9aa6-a98fd51abe3b)<br>
+- Hover over an image will reveal an image viewer button in the bottom left and a context menu button on the top right.<br>
+<p><img src="https://github.com/user-attachments/assets/1f407ac0-1901-491e-aee4-868b78e39024", max-width=1000px></p>
+
+- Left-click on the bottom left button to open an image viewer.<br>
+<p><img src="https://github.com/user-attachments/assets/10bdf1c1-42d7-4e8b-86b1-8578bef5a799", max-width=1000px></p>
 
 </details>
 
