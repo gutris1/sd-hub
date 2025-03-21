@@ -264,7 +264,8 @@ def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
         username, repository, branch = LoadInfo()
         return {'username': username, 'repository': repository, 'branch': branch}
 
-def UploaderTab(token1):
+def UploaderTab():
+    token1, _, _, _, _ = load_token('uploader')
     TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Uploader', elem_id='sdhub-uploader-tab'):
