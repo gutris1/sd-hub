@@ -1,10 +1,11 @@
 #sdhub-tab > .tab-nav {
   border: 0;
-  margin: 5px 0 5px 0;
+  margin: 8px 0 8px 0;
   gap: 15px;
 }
 
 #sdhub-tab > .tab-nav > button {
+  border: 0;
   border-radius: 100px;
 }
 
@@ -14,11 +15,7 @@
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--button-primary-background-fill);
-  border-color: var(--primary-500);
-  text-shadow:
-    0 0 0 transparent,
-    0 0 0 transparent,
-    0 0 0 var(--background-fill-primary);
+  font-weight: bold;
 }
 
 #sdhub-tab > .tab-nav > button:not(.selected) {
@@ -34,22 +31,16 @@
 #sdhub-downloader-tab,
 #sdhub-uploader-tab,
 #sdhub-archiver-tab,
-#sdhub-texteditor-tab,
-#sdhub-shell-tab,
-#sdhub-gallery-tab {
+#sdhub-shell-tab {
   border: 0;
   margin: 0;
-}
-
-#sdhub-downloader-tab,
-#sdhub-uploader-tab,
-#sdhub-archiver-tab,
-#sdhub-shell-tab {
   padding: 10px 0px;
 }
 
 #sdhub-texteditor-tab,
 #sdhub-gallery-tab {
+  border: 0;
+  margin: 0;
   padding: 10px 0px 0px;
 }
 
