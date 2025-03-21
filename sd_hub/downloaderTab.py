@@ -21,37 +21,22 @@ tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
 
 def gitclown(url, target_path):
-    parts = shlex.split(url)
-    repo = parts[0]
-
-    cmd = ['git', 'clone', repo]
-    cwd = str(target_path)
-
-    if len(parts) > 1:
-        cmd.extend(parts[1:])
+    cmd = ['git', 'clone'] + shlex.split(url)
 
     p = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        bufsize=1,
-        text=True
+        cmd, cwd=str(target_path),
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        bufsize=1, text=True
     )
 
-    git_output = ''
+    git_output = []
 
-    while True:
-        output = p.stdout.readline()
-        if not output:
-            break
-        git_output += output
+    for output in iter(p.stdout.readline, ''):
+        git_output.append(output)
+        yield output, False
 
-        for lines in output.splitlines():
-            yield lines, False
-
-    for lines in git_output.splitlines():
-        yield lines, True
+    for line in git_output:
+        yield line, True
 
     p.wait()
 
@@ -59,42 +44,25 @@ def gdrown(url, target_path=None, fn=None):
     gfolder = 'drive.google.com/drive/folders' in url
     cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
     cmd = cli + ['--fuzzy', url]
-
-    if fn:
-        cmd += ['-O', fn]
-    if gfolder:
-        cmd.append('--folder')
+    fn and cmd.extend(['-O', fn])
+    gfolder and cmd.append('--folder')
 
     cwd = target_path if target_path else Path.cwd()
 
     p = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        bufsize=1,
-        text=True
+        cmd, cwd=cwd,
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        bufsize=1, text=True
     )
 
-    gdown_output = ''
-    gdown_progress = None
-    starting_line = time.time()
-    failure = False
+    gdown_output, gdown_progress, starting_line, failure = '', None, time.time(), False
 
-    while True:
-        output = p.stdout.readline()
-        if not output:
-            break
-        gdown_output += output
-
-        if 'Failed to retrieve file url' in output:
-            failure = True
-
-        if re.search(r'\d{1,3}%', output):
-            gdown_progress = output.strip()
-
-        if gdown_progress and time.time() - starting_line >= 1:
-            yield gdown_progress, False
+    while (output := p.stdout.readline()):  
+        gdown_output += output  
+        failure |= 'Failed to retrieve file url' in output  
+        gdown_progress = output.strip() if re.search(r'\d{1,3}%', output) else gdown_progress  
+        if gdown_progress and time.time() - starting_line >= 1:  
+            yield gdown_progress, False  
             starting_line = time.time()
 
     if failure:
@@ -114,64 +82,47 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
 
     if any(domain in url for domain in ['huggingface.co', 'gitHub.com']):
-        if '/blob/' in url:
-            if 'gitHub.com' in url:
-                url = url.replace('/blob/', '/raw/')
-            else:
-                url = url.replace('/blob/', '/resolve/')
+        url = url.replace('/blob/', '/raw/' if 'gitHub.com' in url else '/resolve/')
 
         if 'huggingface.co' in url and token2:
-            aria2cmd.extend(['--header=User-Agent: Mozilla/5.0',
-                            f'--header=Authorization: Bearer {token2}'])
+            aria2cmd.extend([
+                '--header=User-Agent: Mozilla/5.0',
+                f'--header=Authorization: Bearer {token2}'
+            ])
 
-    elif 'civitai.com' in url:
-        if token3:
-            aria2cmd.extend(['--header=User-Agent: Mozilla/5.0'])
+    elif 'civitai.com/models/' in url:
+        try:
+            model_id, version_id = url.split('/models/')[1].split('/')[0], None
+            version_id = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
+            api_url = (
+                f'https://civitai.com/api/v1/model-versions/{version_id}'
+                if version_id else f'https://civitai.com/api/v1/models/{model_id}'
+            )
 
-            url = url.split('?token=')[0] if '?token=' in url else url
-            if '?type=' in url:
-                url = url.replace('?type=', f'?token={token3}&type=')
-            else:
-                url = f'{url}?token={token3}'
+            res = requests.get(api_url)
+            res.raise_for_status()
+            data = res.json()
 
-        if 'civitai.com/models/' in url:
-            try:
-                model_id, version_id = (url.split('/models/')[1].split('/')[0], None)
-                if '?modelVersionId=' in url:
-                    version_id = url.split('?modelVersionId=')[1]
-                    response = requests.get(f'https://civitai.com/api/v1/model-versions/{version_id}')
-                else:
-                    response = requests.get(f'https://civitai.com/api/v1/models/{model_id}')
-
-                response.raise_for_status()
-                data = response.json()
-
-                early_access = data.get('earlyAccessEndsAt')
-                if early_access:
-                    model_page = f'https://civitai.com/models/{data.get("modelId")}?modelVersionId={data.get("id")}'
-                    msg = f'The model is in early access and requires payment for downloading.'
-                    yield f'-> {model_page}\n{msg}', False
-                    return
-
-                download_url = data.get('downloadUrl') or data.get('modelVersions', [{}])[0].get('downloadUrl', '')
-                if not download_url:
-                    yield f'Unable to find download URL for\n-> {url}\n', False
-                    return
-
-                url = f'{download_url}?token={token3}' if token3 else download_url
-            except requests.exceptions.RequestException as e:
-                yield f'{str(e)}\n', True
+            if (early_access := data.get('earlyAccessEndsAt')):
+                model_page = f'https://civitai.com/models/{data.get("modelId")}?modelVersionId={data.get("id")}'
+                yield f'-> {model_page}\nThe model is in early access and requires payment for downloading.', False
                 return
 
+            url = (
+                f'{data.get("downloadUrl") or data.get("modelVersions", [{}])[0].get("downloadUrl", "")}?token={token3}'
+                if token3 else data.get("downloadUrl", "")
+            )
+            if not url:
+                yield f'Unable to find download URL for\n-> {url}\n', False
+                return
+
+        except requests.exceptions.RequestException as e:
+            yield f'{str(e)}\n', True
+            return
+
     aria2cmd.extend([
-        '--console-log-level=error',
-        '--stderr=true',
-        '--summary-interval=1',
-        '-c', 
-        '-x16', 
-        '-s16', 
-        '-k1M', 
-        '-j5'
+        '--console-log-level=error', '--stderr=true', '--summary-interval=1',
+        '-c', '-x16', '-s16', '-k1M', '-j5'
     ])
 
     if target_path:
@@ -187,39 +138,27 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
         aria2cmd.extend(['-d', target_path])
 
-    if fn:
-        aria2cmd.extend(['-o', fn])
-
+    fn and aria2cmd.extend(['-o', fn])
     aria2cmd.append(url)
 
     p = subprocess.Popen(
         aria2cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        bufsize=1,
-        text=True
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        bufsize=1, text=True
     )
 
-    aria2_output = ''
-    break_line = False
-    error = False
+    aria2_output, break_line, error = '', False, False
 
-    while True:
-        output = p.stdout.readline()
-        if not output:
-            break
-
+    while (output := p.stdout.readline()):
         aria2_output += output
 
         if 'errorCode=24' in output:
-            uri_pattern = re.search(r'URI=(https?://\S+)', output)
-            if uri_pattern:
+            if (uri_pattern := re.search(r'URI=(https?://\S+)', output)):
                 uri = uri_pattern.group(1)
                 url_list = {
                     'huggingface.co': f'## Authorization Failed, Enter your Huggingface Token\n-> {url}\n',
                     'civitai.com': f'## Authorization Failed, Enter your Civitai API Key\n-> {url}\n'
                 }
-
                 for domain, msg in url_list.items():
                     if domain in uri:
                         yield msg, False
@@ -228,45 +167,26 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             continue
 
         if 'errorCode' in output:
-            arrow = aria2_output.find('->')
-            if arrow != -1:
-                lines = aria2_output.find('\n', arrow)
-                if lines != -1:
+            if (arrow := aria2_output.find('->')) != -1:
+                if (lines := aria2_output.find('\n', arrow)) != -1:
                     errorcode = aria2_output[arrow:lines]
-                    uri_pattern = re.search(r'URI=(https?://\S+)', aria2_output)
-                    if uri_pattern:
-                        uri = uri_pattern.group(1)
-                        errorcode += '\n' + uri + '\n'
-
+                    if (uri_pattern := re.search(r'URI=(https?://\S+)', aria2_output)):
+                        errorcode += f'\n{uri_pattern.group(1)}\n'
                     yield errorcode, False
                     error = True
             continue
 
         for lines in output.splitlines():
-            dl_line = re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', lines)
-            if dl_line:
-                sizes = dl_line.group(1)
-                percent = dl_line.group(2)
-                speed = dl_line.group(3)
-                outputs = f'{percent} | {sizes} | {speed}/s'
-                yield outputs, False
-
-                break_line = True
-                error = False
+            if (dl_line := re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', lines)):
+                sizes, percent, speed = dl_line.groups()
+                yield f'{percent} | {sizes} | {speed}/s', False
+                break_line, error = True, False
                 break
 
-    if break_line:
-        pass
-
-    if not error:
-        separator = aria2_output.find('======+====+===========')
-        if separator != -1:
-            for lines in aria2_output[separator:].splitlines():
-                if '|' in lines:
-                    pipe = lines.split('|')
-                    if len(pipe) > 3:
-                        output_dir = pipe[3].strip()
-                        yield f'Saved To: {output_dir}', True
+    if not error and (stripe := aria2_output.find('======+====+===========')) != -1:
+        for lines in aria2_output[stripe:].splitlines():
+            if '|' in lines and (pipe := lines.split('|')) and len(pipe) > 3:
+                yield f'Saved To: {pipe[3].strip()}', True
 
     p.wait()
 
@@ -282,20 +202,18 @@ def get_fn(url):
 def url_check(url):
     try:
         url_parsed = urlparse(url)
-
-        if not (url_parsed.scheme and url_parsed.netloc):
-            return False, 'Invalid URL.'
-
-        supported = [
+        supported = {
             'civitai.com',
             'huggingface.co',
             'github.com',
             'drive.google.com'
-        ]
+        }
+
+        if not (url_parsed.scheme and url_parsed.netloc):
+            return False, 'Invalid URL.'
 
         if url_parsed.netloc not in supported:
-            supported_str = '\n'.join(supported)
-            return False, f'Supported Domain :\n{supported_str}'
+            return False, f'Supported Domain:\n' + '\n'.join(supported)
 
         return True, ''
     except Exception as e:
@@ -320,12 +238,12 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
     parts = shlex.split(url_line)
     url = parts[0].strip()
 
-    is_valid, err = url_check(url)
-    if not is_valid:
-        return None, None, None, err
+    if not (ext_tag and github_repo):
+        is_valid, err = url_check(url)
+        if not is_valid:
+            return None, None, None, err
 
-    optional_path = None
-    optional_fn = None
+    optional_path = optional_fn = None
 
     if len(parts) > 1:
         if ext_tag and github_repo:
