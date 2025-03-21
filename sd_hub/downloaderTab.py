@@ -331,8 +331,8 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
         if ext_tag and github_repo:
             url = ' '.join(parts).strip()
         else:
-            if '-' in parts:
-                dash_index = parts.index('-')
+            if '=' in parts:
+                dash_index = parts.index('=')
                 optional_path_raw = ' '.join(parts[1:dash_index]).strip()
                 optional_fn = ' '.join(parts[dash_index + 1:]).strip()
             else:
@@ -450,9 +450,10 @@ def read_txt(f, box):
         txt = Path(f.name).read_text()
         text_box.append(txt)
 
-    return "\n".join(text_box)
+    return '\n'.join(text_box)
 
-def DownloaderTab(token2, token3):
+def DownloaderTab():
+    _, token2, token3, _, _ = load_token('downloader')
     TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Downloader', elem_id='sdhub-downloader-tab'):
