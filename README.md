@@ -223,6 +223,7 @@ a simple gallery to display your outputs.<br>
 it's not as advanced as IIB, you can't add folders and browse images in here.<br>
 
 - Left-click on an image to show an image info.<br>
+  - Press ESC to exit.
 <p><img src="https://github.com/user-attachments/assets/13547409-916c-430c-9b08-86523f511eda", max-width=1000px></p>
 
 - Right-click on an image to open a context menu.<br>
@@ -231,7 +232,9 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - Hover over an image will reveal an image viewer button in the bottom left and a context menu button on the top right.<br>
 <p><img src="https://github.com/user-attachments/assets/1f407ac0-1901-491e-aee4-868b78e39024", max-width=1000px></p>
 
-- Left-click on the bottom left button to open an image viewer.<br>
+- Left-click on the bottom left button to open an image viewer.
+  - Use the left or right arrow key to navigate between images.
+  - Press ESC to exit.
 <p><img src="https://github.com/user-attachments/assets/10bdf1c1-42d7-4e8b-86b1-8578bef5a799", max-width=1000px></p>
 
 </details>
