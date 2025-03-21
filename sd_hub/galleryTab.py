@@ -98,13 +98,17 @@ def Gallery(app: FastAPI):
         if fp.exists(): fp.unlink()
         return {'status': 'deleted'}
 
+    if insecureENV:
+        @app.get(BASE + '/imgChest')
+        async def imgChest():
+            privacy, nsfw, api = Loadimgchest()
+            return {'privacy': privacy, 'nsfw': nsfw, 'api': api}
+
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     Gallery(app)
 
 def GalleryTab():
     if insecureENV:
-        privacy, nsfw, api = Loadimgchest()
-
         with gr.Column(elem_id='SDHub-Gallery-imgchest-Column'):
             gr.HTML(
                 'Auto Upload to <a class="sdhub-gallery-imgchest-info" '
@@ -120,7 +124,7 @@ def GalleryTab():
             with FormRow():
                 privacyset = gr.Radio(
                     ['Hidden', 'Public'],
-                    value=privacy,
+                    value='Hidden',
                     label='Privacy',
                     interactive=True,
                     elem_id='SDHub-Gallery-imgchest-Privacy',
@@ -129,7 +133,7 @@ def GalleryTab():
 
                 nsfwset = gr.Radio(
                     ['True', 'False'],
-                    value=nsfw,
+                    value='True',
                     label='NSFW',
                     interactive=True,
                     elem_id='SDHub-Gallery-imgchest-NSFW',
@@ -137,7 +141,7 @@ def GalleryTab():
                 )
 
             apibox = gr.TextArea(
-                value=api,
+                value='',
                 show_label=False,
                 interactive=True,
                 placeholder='imgchest API key',

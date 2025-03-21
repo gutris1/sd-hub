@@ -19,41 +19,10 @@ const SDHubGalleryTabList = [
 
 onUiLoaded(function () {
   let GalleryTab = document.getElementById('sdhub-gallery-tab');
-  if (GalleryTab) SDHubCreateGallery(GalleryTab); SDHubGalleryTranslation();
+  if (GalleryTab) SDHubCreateGallery(GalleryTab);
 });
 
 onAfterUiUpdate(SDHubGalleryWatchNewImage);
-
-function SDHubGalleryTranslation() {
-  const imgchest = document.getElementById('SDHub-Gallery-imgchest-Column');
-  if (imgchest) {
-    document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
-      if (el.textContent.includes('Auto Upload to')) {
-        el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
-          <a class="sdhub-gallery-imgchest-info" href="https://imgchest.com" target="_blank">
-            imgchest.com
-          </a>`;
-      }
-    });
-
-    const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
-    if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
-
-    document.querySelectorAll('#SDHub-Gallery-imgchest-Privacy label > span')
-      .forEach(span => span.textContent = SDHubGetTranslation(span.textContent.toLowerCase()));
-
-    document.querySelectorAll('#SDHub-Gallery-imgchest-NSFW label > span')
-      .forEach(span => span.textContent = SDHubGetTranslation(span.textContent.toLowerCase()));
-
-    const inputElement = document.querySelector('#SDHub-Gallery-imgchest-API input[placeholder="imgchest API key"]');
-    if (inputElement) inputElement.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
-
-    ['Load', 'Save'].forEach((key) => {
-      const button = document.querySelector(`#SDHub-Gallery-imgchest-${key}-Button`);
-      if (button) button.textContent = SDHubGetTranslation(key.toLowerCase());
-    });
-  }
-}
 
 function SDHubGalleryLoadInitial() {
   fetch(`${SDHubGalleryBase}/initial`)
@@ -68,9 +37,7 @@ function SDHubGalleryLoadInitial() {
       const today = /^\d{4}-\d{2}-\d{2}$/;
 
       document.querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]').forEach(tab => {
-        if (tab.classList.contains('active') && tab.style.display === 'flex') {
-          selectedTab = true;
-        }
+        if (tab.classList.contains('active') && tab.style.display === 'flex') selectedTab = true;
       });
 
       const processImage = async (index) => {
@@ -91,9 +58,7 @@ function SDHubGalleryLoadInitial() {
           else if (parentFolder) {
             tabToUse = parentFolder;
             let tabName = `${pathParts[dateIndex - 1]} ${pathParts[dateIndex]}`;
-            if (!document.getElementById(`SDHub-Gallery-${tabToUse}-Tab-Container`)) {
-              SDHubGalleryCloneTab(tabToUse, tabName);
-            }
+            if (!document.getElementById(`SDHub-Gallery-${tabToUse}-Tab-Container`)) SDHubGalleryCloneTab(tabToUse, tabName);
           }
         }
 
@@ -236,8 +201,7 @@ function SDHubGalleryGetNewImage(whichGallery) {
   document
     .querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]')
     .forEach((tab) => {
-      if (tab.classList.contains("active") && tab.style.display === "flex")
-        selectedTab = true;
+      if (tab.classList.contains("active") && tab.style.display === "flex") selectedTab = true;
     });
 
   let img = document.querySelectorAll(`#${whichGallery} > .preview > .thumbnails img`);
@@ -663,6 +627,12 @@ function SDHubCreateGallery(GalleryTab) {
 }
 
 function SDHubGalleryTabEventListener(TabCon) {
+  TabCon.addEventListener('contextmenu', e => e.preventDefault());
+
+  TabCon.ondrag = TabCon.ondragend = TabCon.ondragstart = (e) => {
+    e.stopPropagation(); e.preventDefault();
+  };
+
   TabCon.addEventListener('click', (e) => {
     const imgEL = e.target.closest('img');
     const viewerBtn = e.target.closest('#SDHub-Gallery-Image-Viewer-Button');
@@ -750,10 +720,8 @@ function SDHubGalleryCreateDeleteBox() {
 
   document.addEventListener('keydown', ({ key }) => {
     const Box = document.getElementById('SDHub-Gallery-Delete-Box');
-    if (Box?.style.transform === 'scale(1)') {
-      ({ y: Yes, n: No, Escape: No }[key] ?.click());
-    }
-  });
+    if (Box?.style.transform === 'scale(1)') ({ y: Yes, n: No, Escape: No }[key]?.click());
+  });  
 
   return Con;
 }
@@ -784,18 +752,14 @@ function SDHubGalleryDeletion() {
       body: JSON.stringify({ path }),
     })
       .then(response => {
-        if (!response.ok) {
-          return response.text().then(err => { throw new Error(err); });
-        }
+        if (!response.ok) return response.text().then(err => { throw new Error(err); });
         return response.json();
       })
       .then(data => {
         if (data.status === 'deleted') {
           const parentDiv = imgEL.closest('.sdhub-gallery-image-box');
           if (parentDiv) parentDiv.remove();
-        } else {
-          console.error("Deletion failed:", data);
-        }
+        } else console.error("Deletion failed:", data);
       })
       .catch(error => console.error('Error deleting image:', error))
       .finally(() => {
@@ -812,7 +776,7 @@ function SDHubGalleryDeletion() {
       });
   };
 
-  No.onclick = () => {
+  Con.onclick = No.onclick = () => {
     Con.style.opacity = '';
     Box.style.transform = 'scale(1.5)';
     setTimeout(() => (Con.style.display = '', Box.style.transform = ''), 200);
@@ -823,6 +787,8 @@ function SDHubGalleryDeletion() {
 }
 
 function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
+  let fromColumn = false;
+
   const imgchestButton = document.createElement('div');
   imgchestButton.id = 'SDHub-Gallery-imgchest-Button';
   imgchestButton.style.display = 'flex';
@@ -831,25 +797,19 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   GalleryTab.prepend(imgchestButton);
   TabRow.style.marginLeft = '40px';
 
-  const Save = document.getElementById('SDHub-Gallery-imgchest-Save-Button');
-  Save.title = 'Save Setting';
+  ['Save', 'Load'].forEach(key => {
+    const btn = document.getElementById(`SDHub-Gallery-imgchest-${key}-Button`);
+    btn && (btn.title = `${key} Setting`, btn.textContent = SDHubGetTranslation(key.toLowerCase()));
+  });
 
-  const Load = document.getElementById('SDHub-Gallery-imgchest-Load-Button');
-  Load.title = 'Load Setting';
-
-  let fromColumn = false;
   const apiInput = document.querySelector('#SDHub-Gallery-imgchest-API input');
-
-  apiInput.addEventListener('mousedown', () => {
-    if (window.getComputedStyle(imgchestColumn).display === 'flex') {
-      fromColumn = true;
-    }
+  apiInput?.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
+  apiInput?.addEventListener('mousedown', () => {
+    fromColumn = window.getComputedStyle(imgchestColumn).display === 'flex';
   });
 
   document.addEventListener('mouseup', () => {
-    if (window.getComputedStyle(imgchestColumn).display === 'flex') {
-      setTimeout(() => (fromColumn = false), 0);
-    }
+    if (window.getComputedStyle(imgchestColumn).display === 'flex') setTimeout(() => (fromColumn = false), 0);
   });
 
   document.addEventListener('click', (e) => {
@@ -868,6 +828,32 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
       }
     }
   });
+
+  document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
+    if (el.textContent.includes('Auto Upload to')) {
+      el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
+        <a class="sdhub-gallery-imgchest-info" href="https://imgchest.com" target="_blank">
+          imgchest.com
+        </a>`;
+    }
+  });
+
+  const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
+  if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
+
+  ['#SDHub-Gallery-imgchest-Privacy', '#SDHub-Gallery-imgchest-NSFW'].forEach(id =>
+    document.querySelectorAll(`${id} label > span`).forEach(s => s.textContent = SDHubGetTranslation(s.textContent.toLowerCase()))
+  );
+
+  fetch(`${SDHubGalleryBase}/imgChest`)
+    .then(r => r.json())
+    .then(d => {
+      const clickRadio = (id, v) => document.querySelector(`${id} label[data-testid="${v}-radio-label"]`)?.click();
+      clickRadio('#SDHub-Gallery-imgchest-Privacy', d.privacy);
+      clickRadio('#SDHub-Gallery-imgchest-NSFW', d.nsfw);
+      if (apiInput) apiInput.value = d.api, updateInput(apiInput);
+    })
+    .catch(e => console.error('Error loading imgchest settings:', e));
 }
 
 function SDHubGalleryDOMLoaded() {

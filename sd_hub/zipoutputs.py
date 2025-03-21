@@ -96,7 +96,12 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     return gr.update(), gr.State(output_box)
 
 def ZipOutputs():
-    with gr.Accordion('Zip Outputs', open=False, elem_id='sdhub-archiver-accordion-zipoutputs'), FormRow():
+    with gr.Accordion(
+        'Zip Outputs',
+        open=False,
+        elem_id='sdhub-archiver-accordion-zipoutputs',
+        elem_classes='sdhub-accordion'
+    ), FormRow():
         with FormColumn():
             zip_name = gr.Textbox(
                 max_lines=1,

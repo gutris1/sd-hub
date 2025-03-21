@@ -1,8 +1,10 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from modules.ui_components import FormRow, FormColumn
-from modules.shared import cmd_opts
+from modules.script_callbacks import on_app_started
 from modules.scripts import basedir
+from modules.shared import cmd_opts
+from fastapi import FastAPI
 from pathlib import Path
 import gradio as gr
 import subprocess
@@ -20,22 +22,24 @@ from sd_hub.version import xyz
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 info = Path(basedir()) / '.uploader-info.json'
 
-def push_push(repo_id, file_path, file_name, token, branch, is_private=False, commit_msg="", ex_ext=None):
+def push_push(
+    repo_id, file_path, file_name, token, branch,
+    is_private=False, commit_msg="", ex_ext=None, path_in_repo=None
+):
     msg = commit_msg.replace('"', '\\"')
     cli = xyz('huggingface-cli.exe') if sys.platform == 'win32' else xyz('huggingface-cli')
-    cmd = cli + [
-        'upload', repo_id, file_path, file_name,
-        '--token', token,
-        '--revision', branch,
-        '--commit-message', msg
-    ]
+    cmd = cli + ['upload', repo_id, file_path]
 
-    if is_private:
-        cmd.append('--private')
+    if path_in_repo:
+        path_in_repo = '/' + path_in_repo.lstrip('/') if path_in_repo.startswith('//') else path_in_repo
+        path_in_repo = path_in_repo.rstrip('/')
+        cmd += [f'{path_in_repo}/{file_name}']
+    else:
+        cmd += [file_name]
 
-    if ex_ext:
-        cmd.append('--exclude')
-        cmd.extend([f'*.{ext}' for ext in ex_ext])
+    cmd += ['--token', token, '--revision', branch, '--commit-message', msg]
+    if is_private: cmd.append('--private')
+    if ex_ext: cmd += ['--exclude', *[f'*.{ext}' for ext in ex_ext]]
 
     p = subprocess.Popen(
         cmd,
@@ -94,9 +98,13 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
     input_lines = [line.strip() for line in inputs.strip().splitlines()]
 
     if not inputs.strip() or not all([user, repo, branch, token]):
-        params = [name for name, value in zip(
-            ["Input", "Username", "Repository", "Branch", "Token"],
-            [inputs.strip(), user, repo, branch, token]) if not value]
+        params = [
+            name for name, value in zip(
+                ["Input", "Username", "Repository", "Branch", "Token"],
+                [inputs.strip(), user, repo, branch, token]
+            ) 
+            if not value
+        ]
 
         missing = ', '.join(params)
 
@@ -113,21 +121,30 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
 
         given_fn = None
         ex_ext = None
+        path_in_repo = None
+
+        if '=' in parts:
+            given_fn_idx = parts.index('=') + 1
+            if given_fn_idx < len(parts):
+                given_fn = parts[given_fn_idx]
+            else:
+                yield "Invalid usage\n[ = ]", True
+                return
 
         if '-' in parts:
-            given_fn_fn = parts.index('-') + 1
-            if given_fn_fn < len(parts):
-                given_fn = parts[given_fn_fn]
+            ex_ext_idx = parts.index('-') + 1
+            if ex_ext_idx < len(parts):
+                ex_ext = parts[ex_ext_idx:]
             else:
                 yield "Invalid usage\n[ - ]", True
                 return
 
-        if '--' in parts:
-            ex_ext_ext = parts.index('--') + 1
-            if ex_ext_ext < len(parts):
-                ex_ext = parts[ex_ext_ext:]
+        if '>' in parts:
+            path_in_repo_idx = parts.index('>') + 1
+            if path_in_repo_idx < len(parts):
+                path_in_repo = parts[path_in_repo_idx]
             else:
-                yield "Invalid usage\n[ -- ]", True
+                yield "Invalid usage\n[ > ]", True
                 return
 
         full_path = Path(input_path) if not input_path.startswith('$') else None
@@ -163,9 +180,9 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         if given_fn and not Path(given_fn).suffix and full_path.is_file():
             given_fn += full_path.suffix
 
-        task_task.append((full_path, given_fn or full_path.name, type_))
+        task_task.append((full_path, given_fn or full_path.name, type_, path_in_repo))
 
-    for file_path, file_name, type_ in task_task:
+    for file_path, file_name, type_, path_in_repo in task_task:
         yield f"Uploading: {file_name}", False
 
         try:
@@ -187,18 +204,18 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             branch=branch,
             is_private=repo_radio == "Private",
             commit_msg=f"Upload {file_name} using SD-Hub extension",
-            ex_ext=ex_ext):
+            ex_ext=ex_ext,
+            path_in_repo=path_in_repo):
 
             yield output
 
-            if output[1]:
-                erorr = True
-                break
+            if output[1]: erorr = True; break
 
         if not erorr:
+            files = f"{path_in_repo}/{file_name}" if path_in_repo else file_name
+
             details = (
-                f"{repo_info.id}/{branch}\n"
-                f"{file_name}\n"
+                f"{repo_info.id}/{branch}/{files}\n"
                 f"{repo_info.last_modified.strftime('%Y-%m-%d %H:%M:%S')}\n"
             )
 
@@ -235,18 +252,20 @@ def SaveInfo(user, repo, branch):
     info.write_text(json.dumps(data, indent=4))
 
 def LoadInfo():
-    Textbox = gr.Textbox.update
-
+    default = ('', '', 'main')
     if info.exists():
-        data = json.loads(info.read_text(encoding='utf-8'))
-        user = data.get('username', '')
-        repo = data.get('repository', '')
-        branch = data.get('branch', '')
-        return Textbox(value=user), Textbox(value=repo), Textbox(value=branch)
+        d = json.loads(info.read_text(encoding='utf-8'))
+        return tuple(d.get(k, v) for k, v in zip(['username', 'repository', 'branch'], default))
+    return default
 
-    return Textbox(value=''), Textbox(value=''), Textbox(value='main')
+def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
+    @app.get('/sd-hub/LoadUploaderInfo')
+    async def uploaderInfo():
+        username, repository, branch = LoadInfo()
+        return {'username': username, 'repository': repository, 'branch': branch}
 
-def UploaderTab(token1):
+def UploaderTab():
+    token1, _, _, _, _ = load_token('uploader')
     TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Uploader', elem_id='sdhub-uploader-tab'):
@@ -369,5 +388,4 @@ def UploaderTab(token1):
             outputs=[upl_output1, upl_output2]
         )
 
-        load_info = gr.Button(visible=False, elem_id='sdhub-uploader-load-info')
-        load_info.click(fn=LoadInfo, inputs=[], outputs=[user_box, repo_box, branch_box])
+on_app_started(LoadUploaderInfo)

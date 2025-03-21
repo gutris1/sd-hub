@@ -576,7 +576,12 @@ def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
 
 def ArchiverTab():
     with gr.TabItem('Archiver', elem_id='sdhub-archiver-tab'):
-        with gr.Accordion('ReadMe', open=False, elem_id='sdhub-archiver-accordion-readme'):
+        with gr.Accordion(
+            'ReadMe',
+            open=False,
+            elem_id='sdhub-archiver-accordion-readme',
+            elem_classes='sdhub-accordion'
+        ):
             gr.HTML(arc_info)
 
         if insecureENV:

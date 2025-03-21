@@ -1,21 +1,21 @@
 #sdhub-tab > .tab-nav {
   border: 0;
-  margin: 5px 0 5px 0;
+  margin: 8px 0 8px 0;
   gap: 15px;
 }
 
 #sdhub-tab > .tab-nav > button {
+  border: 0;
   border-radius: 100px;
 }
 
 #sdhub-tab > .tab-nav > button.selected {
   cursor: default;
-  font-weight: bold;
   color: var(--background-fill-primary);
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--button-primary-background-fill);
-  border-color: var(--primary-500);
+  font-weight: bold;
 }
 
 #sdhub-tab > .tab-nav > button:not(.selected) {
@@ -31,22 +31,16 @@
 #sdhub-downloader-tab,
 #sdhub-uploader-tab,
 #sdhub-archiver-tab,
-#sdhub-texteditor-tab,
-#sdhub-shell-tab,
-#sdhub-gallery-tab {
+#sdhub-shell-tab {
   border: 0;
   margin: 0;
-}
-
-#sdhub-downloader-tab,
-#sdhub-uploader-tab,
-#sdhub-archiver-tab,
-#sdhub-shell-tab {
   padding: 10px 0px;
 }
 
 #sdhub-texteditor-tab,
 #sdhub-gallery-tab {
+  border: 0;
+  margin: 0;
   padding: 10px 0px 0px;
 }
 
@@ -89,9 +83,9 @@
 
 #sdhub-downloader-scrape-button:hover,
 #sdhub-downloader-txt-button:hover {
-  filter: drop-shadow(0 0 5px var(--button-secondary-text-color));
-  box-shadow: 0 0 10px 1px var(--button-secondary-text-color);
-  color: var(--button-secondary-text-color);
+  filter: drop-shadow(0 0 5px var(--primary-400));
+  box-shadow: 0 0 10px 1px var(--primary-400);
+  color: var(--primary-500);
 }
 
 #sdhub-tab .sdhub-buttons:hover,
@@ -144,7 +138,7 @@
 #sdhub-tab .sdhub-radio label,
 #sdhub-tab .sdhub-radio input,
 #sdhub-shell-button,
-#sdhub-dataframe-accordion {
+#sdhub-tab .sdhub-accordion {
   transition:
     box-shadow 0.4s ease,
     filter 0.4s ease,
@@ -185,6 +179,20 @@
     inset 0 0 5px 1px var(--primary-400),
     inset 0 0 5px 1px var(--primary-400),
     inset 0 0 5px 1px var(--primary-400);
+}
+
+#sdhub-tab .sdhub-radio input:checked + span {
+  filter: drop-shadow(0 0 5px var(--primary-500));
+}
+
+#sdhub-tab .sdhub-radio input:hover {
+  cursor: pointer;
+}
+
+#sdhub-tab .sdhub-radio input:not(:checked):hover {
+  border-color: var(--primary-500);
+  filter: drop-shadow(0 0 3px var(--primary-500));
+  background-color: var(--checkbox-label-background-fill-hover);
 }
 
 .gradio-container-4-40-0 #sdhub-downloader-button-row,
@@ -255,8 +263,8 @@
   overflow: visible !important;
 }
 
-#sdhub-dataframe-accordion:has(> .open),
-#sdhub-dataframe-accordion:hover:not(:has(> .open)) {
+#sdhub-tab .sdhub-accordion:has(> .open),
+#sdhub-tab .sdhub-accordion:hover:not(:has(> .open)) {
   border: 1px solid var(--primary-500) !important;
   box-shadow: 0 0 10px 1px var(--primary-400);
 }
@@ -357,6 +365,7 @@
 }
 
 #sdhub-texteditor-info input {
+  border: 0;
   text-align: right;
   font-size: 17px;
   opacity: 0;
