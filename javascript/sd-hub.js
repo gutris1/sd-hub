@@ -167,7 +167,7 @@ function SDHubTextEditorGalleryScrollBar() {
     .sdhub-gallery-tab-container::-webkit-scrollbar-track {
       background: transparent !important;
       border-radius: 0px !important;
-      margin: 0 !important;
+      margin: 7px 0 !important;
     }
   `;
 
