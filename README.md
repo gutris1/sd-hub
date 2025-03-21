@@ -223,6 +223,7 @@ a simple gallery to display your outputs.<br>
 it's not as advanced as IIB, you can't add folders and browse images in here.<br>
 
 - Left-click on an image to show an image info.<br>
+  - Left-clicking on the image will open the image viewer.
   - Press ESC to exit.
 <p><img src="https://github.com/user-attachments/assets/13547409-916c-430c-9b08-86523f511eda", max-width=1000px></p>
 
