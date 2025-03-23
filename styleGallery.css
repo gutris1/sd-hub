@@ -138,7 +138,7 @@ body.no-scroll {
   border-radius: 0.6rem;
   background-size: contain;
   background-position: center;
-  background-image: url(https://huggingface.co/pantat88/ui/resolve/main/card-no-preview.png);
+  background-image: url(https://huggingface.co/gutris1/webui/blob/main/misc/card-no-preview.png);
 }
 
 #SDHub-Gallery-Image {
@@ -277,6 +277,7 @@ body.no-scroll {
   position: fixed;
   overflow: auto;
   opacity: 0;
+  pointer-events: auto;
   transition: opacity 0.6s ease;
 }
 
