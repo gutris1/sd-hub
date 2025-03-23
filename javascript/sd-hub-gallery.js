@@ -1,6 +1,4 @@
 let SDHubGalleryImageDataCache = new DataTransfer();
-let SDHubGalleryFetchTimeout = null;
-let SDHubGalleryLastFetch = 0;
 let SDHubGalleryTabImageIndex = 1;
 let SDHubGalleryCMHover = null;
 let SDHubGalleryCMRightClick = false;
@@ -23,6 +21,33 @@ onUiLoaded(function () {
 });
 
 onAfterUiUpdate(SDHubGalleryWatchNewImage);
+
+async function SDHubResizeImage(blob, size = 512) {
+  const pica = window.pica?.default || window.pica;
+  if (!pica) return null;
+
+  const img = await createImageBitmap(blob);
+  const aR = img.width / img.height;
+  let W, H;
+
+  if (img.width > img.height) {
+    W = size;
+    H = Math.round(size / aR);
+  } else {
+    H = size;
+    W = Math.round(size * aR);
+  }
+
+  const C = document.createElement('canvas');
+  C.width = W;
+  C.height = H;
+
+  await pica().resize(img, C);
+
+  return new Promise((resolve) => {
+    C.toBlob(blob => resolve(blob), 'image/jpeg');
+  });
+}
 
 function SDHubGalleryLoadInitial() {
   fetch(`${SDHubGalleryBase}/initial`)
@@ -80,8 +105,15 @@ function SDHubGalleryLoadInitial() {
           const img = newimgBox.querySelector('img');
 
           if (img) {
-            img.src = path;
-            img.title = fn;
+            img.dataset.image = path;
+            const blob = await fetch(path.split('?')[0]).then(res => res.blob());
+            const thumb = await SDHubResizeImage(blob);
+            img.fileObject = new File([blob], fn, { type: blob.type });
+
+            if (thumb) {
+              img.src = URL.createObjectURL(thumb);
+              img.title = fn;
+            }
 
             img.onload = () => {
               loaded++;
@@ -91,14 +123,6 @@ function SDHubGalleryLoadInitial() {
                 SDHubGalleryTabImageCounters();
               }
             };
-
-            fetch(path.split('?')[0])
-              .then(response => response.blob())
-              .then(blob => {
-                const mimeType = blob.type;
-                img.fileObject = new File([blob], fn, { type: mimeType });
-              })
-              .catch(error => console.error('Error fetching:', error));
           }
 
           TabCon.prepend(newimgBox);
@@ -247,33 +271,32 @@ function SDHubGalleryGetNewImage(whichGallery) {
       const newImg = newimgBox.querySelector("img");
 
       if (newImg) {
-        newImg.src = path;
-        newImg.title = fn;
+        newImg.dataset.image = path;
         fileNames.push(fn);
+
+        const blob = await fetch(path).then(res => res.blob());
+        const thumb = await SDHubResizeImage(blob);
+        newImg.fileObject = new File([blob], fn, { type: blob.type });
+
+        if (thumb) {
+          newImg.src = URL.createObjectURL(thumb);
+          newImg.title = fn;
+        }
 
         newImg.onload = () => {
           loaded++;
           newImg.parentElement.style.backgroundImage = 'none';
           if (loaded === total) {
-            console.log('all-loaded');
             SDHubGalleryTabImageCounters();
           }
         };
 
-        fetch(path)
-          .then(response => response.blob())
-          .then(blob => {
-            const mimeType = blob.type;
-            newImg.fileObject = new File([blob], fn, { type: mimeType });
-            files.push(newImg.fileObject);
-
-            if (files.length === total) {
-              SDHubGalleryImgChest(files, fileNames);
-              files = [];
-              fileNames = [];
-            }
-          })
-          .catch(error => console.error("Error fetching:", error));
+        files.push(newImg.fileObject);
+        if (files.length === total) {
+          SDHubGalleryImgChest(files, fileNames);
+          files = [];
+          fileNames = [];
+        }
       }
 
       TabCon.prepend(newimgBox);
@@ -299,8 +322,8 @@ function SDHubGalleryContextMenu(e, imgEL) {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
   const TabCon = imgEL.closest('.sdhub-gallery-tab-container');
 
-  window.SDHubImagePath = imgEL.getAttribute('src');
-  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('src'));
+  window.SDHubImagePath = imgEL.getAttribute('data-image');
+  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
 
   GalleryCM.targetFile = imgEL.fileObject;
@@ -428,7 +451,7 @@ function SDHubGalleryContextButton(v) {
       break;
 
     case 'info':
-      const imgEL = document.querySelector(`img[src="${imagePath}"]`);
+      const imgEL = document.querySelector(`img[data-image="${imagePath}"]`);
       if (imgEL) SDHubGalleryImageInfo(imgEL, new Event('click'));
       break;
 
@@ -446,46 +469,42 @@ function SDHubGalleryContextButton(v) {
 
 function SDHubGallerySendImage(v) {
   const file = document.getElementById('SDHub-Gallery-ContextMenu').targetFile;
-  const input = document.querySelector('#SDHubimgInfoImage input');
+  if (!file) return;
 
+  const row = document.getElementById('sdhub-gallery-image-info-row');
+  const input = document.querySelector('#SDHubimgInfoImage input');
   const Con = document.getElementById('SDHub-Gallery-Delete-Container');
   const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
+
+  row.style.display = 'flex';
+  row.style.pointerEvents = 'none';
   Con.style.display = 'flex';
+  Con.style.opacity = '1';
+  Spinner.style.visibility = 'visible';
 
   SDHubGalleryImageDataCache.items.clear();
   SDHubGalleryImageDataCache.items.add(file);
   input.files = SDHubGalleryImageDataCache.files;
   input.dispatchEvent(new Event('change', { bubbles: true }));
 
-  const check = setInterval(() => {
-    const imgInfoRawOutput = gradioApp().querySelector('#SDHubimgInfoGenInfo textarea');
-    Con.style.opacity = '1';
-    Spinner.style.visibility = 'visible';
+  const wait = setInterval(() => {
+    if (window.SDHubimgRawOutput?.trim()) {
+      clearInterval(wait);
 
-    if (imgInfoRawOutput && imgInfoRawOutput.value.trim() !== '') {
-      clearInterval(check);
+      const SendButton = document.querySelector(`#SDHubimgInfoSendButton > #${v}_tab`);
+      const ClearButton = document.querySelector('#SDHubimgInfoImage > div > div > div > button:nth-child(2)') || 
+                          document.querySelector('.gradio-container-4-40-0 #SDHubimgInfoImage > div > div > button');
 
-      let SendButton;
-      switch (v) {
-        case 'txt':
-          SendButton = document.querySelector('#SDHubimgInfoSendButton > #txt2img_tab');
-          break;
-        case 'img':
-          SendButton = document.querySelector('#SDHubimgInfoSendButton > #img2img_tab');
-          break;
-        case 'inpaint':
-          SendButton = document.querySelector('#SDHubimgInfoSendButton > #inpaint_tab');
-          break;
-        case 'extras':
-          SendButton = document.querySelector('#SDHubimgInfoSendButton > #extras_tab');
-          break;
-      }
-
-      if (SendButton) {
-        SendButton.click();
-        setTimeout(() => [
-          Con.style.opacity, Con.style.display, Spinner.style.visibility
-        ] = ['', '', ''], 200);
+      if (SendButton && ClearButton) {
+        setTimeout(() => SendButton.click(), 1000);
+        setTimeout(() => {
+          ClearButton.click();
+          row.style.display = '';
+          row.style.pointerEvents = '';
+          Con.style.opacity = '';
+          Con.style.display = '';
+          Spinner.style.visibility = '';
+        }, 1300);
       }
     }
   }, 100);
@@ -508,7 +527,7 @@ function SDHubGalleryImageInfo(imgEL, e) {
   const row = document.querySelector('#sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
   const file = imgEL.fileObject;
-  window.SDHubImagePath = imgEL.getAttribute('src');
+  window.SDHubImagePath = imgEL.getAttribute('data-image');
 
   if (file) {
     row.style.display = 'flex';
@@ -539,7 +558,7 @@ function SDHubImageInfoClearButton() {
     const closeRow = () => {
       row.style.opacity = '';
       document.body.classList.remove('no-scroll');
-      setTimeout(() => (ClearButton.click(), (row.style.display = 'none')), 200);
+      setTimeout(() => (ClearButton.click(), (row.style.display = '')), 200);
     };
 
     btn.onclick = (e) => (e.stopPropagation(), closeRow());
@@ -727,7 +746,7 @@ function SDHubGalleryCreateDeleteBox() {
 }
 
 function SDHubGalleryDeletion() {
-  const imgEL = document.querySelector(`img[src="${window.SDHubImagePath}"]`);
+  const imgEL = document.querySelector(`img[data-image="${window.SDHubImagePath}"]`);
   const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image`), '');
   const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
 
@@ -893,7 +912,7 @@ function SDHubGalleryDOMLoaded() {
     if (SendButton?.contains(e.target)) {
       e.stopPropagation();
       e.preventDefault();
-      if (e.target.closest('button')) window.SDHubCloseImageInfoRow();
+      if (e.target.closest('button')) window.SDHubCloseImageInfoRow()
     }
   });
 
@@ -945,8 +964,8 @@ function SDHubGalleryCreateContextMenu() {
         <span>${SDHubGallerySendToSVG} ${SDHubGetTranslation('send_to')} ${SDHubGalleryARRSVG}</span>
         <div id="sdhub-cm-sendto-menu" class="sdhub-cm-submenu sdhub-gallery-contextmenu">
           <ul>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('txt')">txt2img</li>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('img')">img2img</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('txt2img')">txt2img</li>
+            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('img2img')">img2img</li>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('extras')">extras</li>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
             <li class='sdhub-cm-li' onclick="SDHubGallerySendToUploader()">${SDHubGetTranslation('uploader')}</li>
