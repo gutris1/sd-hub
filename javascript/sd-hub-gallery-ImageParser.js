@@ -11,6 +11,7 @@ async function SDHubGalleryParser() {
   window.SDHubimgInfoSha256 = '';
   window.SDHubimgInfoNaiSource = '';
   window.SDHubimgInfoSoftware = '';
+  window.SDHubimgRawOutput = '';
 
   const SDHubimgInfoRawOutput = gradioApp().querySelector('#SDHubimgInfoGenInfo textarea');
   const SDHubimgInfoHTML = gradioApp().getElementById('SDHubimgInfoHTML');
@@ -100,6 +101,7 @@ async function SDHubGalleryParser() {
     } else { output = 'Nothing To See Here'; }
 
     if (output) {
+      window.SDHubimgRawOutput = output;
       SDHubimgInfoRawOutput.value = output;
       updateInput(SDHubimgInfoRawOutput);
       SDHubimgInfoHTML.classList.add('prose');
@@ -203,7 +205,6 @@ function SDHubGalleryConvertSwarmUI(Sui, extraData = {}) {
   if (Sui.vae) output += `VAE: ${Sui.vae.split('/').pop()}, `;
 
   window.SDHubimgInfoSoftware = Sui?.swarm_version ? `SwarmUI ${Sui.swarm_version}` : '';
-
   output = output.trim().replace(/,$/, "");
 
   let otherParams = Object.entries(Sui)
@@ -242,9 +243,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   const Sha256Info = window.SDHubimgInfoSha256;
   const NaiSourceInfo = window.SDHubimgInfoNaiSource;
   const SoftwareInfo = window.SDHubimgInfoSoftware;
-
   const buttonColor = 'var(--primary-400)';
-
   const SDHubimgInfoSendButton = document.getElementById("SDHubimgInfoSendButton");
   var SDHubimgInfoOutputPanel = document.getElementById("SDHubimgInfoOutputPanel");
   var sty = `display: block; margin-bottom: 2px; color: ${buttonColor};`;
@@ -580,11 +579,12 @@ async function SDHubGalleryTIHashesSearchLink(n, h) {
 }
 
 function SDHubGalleryCopyButtonEvent(e) {
-  let OutputRaw = '';
-  let ADModel = OutputRaw.includes('ADetailer model');
+  const btnId = ['SDHub-promptButton', 'SDHub-negativePromptButton', 'SDHub-paramsButton', 'SDHub-seedButton'];
+  const sendbtnId = ['#SDHubimgInfoSendButton > #txt2img_tab', '#SDHubimgInfoSendButton > #img2img_tab'];
+  if (!btnId.includes(e.target.id) && !sendbtnId.some(b => e.target.matches(b))) return;
 
-  const imgInfoRawOutput = gradioApp().querySelector("#SDHubimgInfoGenInfo textarea");
-  if (imgInfoRawOutput) OutputRaw = imgInfoRawOutput.value;
+  let OutputRaw = window.SDHubimgRawOutput;
+  let ADModel = OutputRaw.includes('ADetailer model');
 
   function SDHubGalleryPulseBorderSection(button) {
     var section = button.closest('.SDHubimgInfoOutputSection');
@@ -599,30 +599,27 @@ function SDHubGalleryCopyButtonEvent(e) {
 
   if (e.target?.id) {
     const { id } = e.target;
-    const stepsStart = OutputRaw.indexOf("Steps:");
-    const negStart = OutputRaw.indexOf("Negative prompt:");
+    const stepsStart = OutputRaw.indexOf('Steps:');
+    const negStart = OutputRaw.indexOf('Negative prompt:');
     const seedMatch = OutputRaw.match(/Seed:\s?(\d+),/i);
 
     const text = {
-      "SDHub-promptButton": () => OutputRaw.substring(0, [negStart, stepsStart].find(i => i !== -1) || OutputRaw.length).trim(),
-      "SDHub-negativePromptButton": () => negStart !== -1 && stepsStart > negStart ? OutputRaw.slice(negStart + 16, stepsStart).trim() : null,
-      "SDHub-paramsButton": () => stepsStart !== -1 ? OutputRaw.slice(stepsStart).trim() : null,
-      "SDHub-seedButton": () => seedMatch?.[1]?.trim() || null
+      'SDHub-promptButton': () => OutputRaw.substring(0, [negStart, stepsStart].find(i => i !== -1) || OutputRaw.length).trim(),
+      'SDHub-negativePromptButton': () => negStart !== -1 && stepsStart > negStart ? OutputRaw.slice(negStart + 16, stepsStart).trim() : null,
+      'SDHub-paramsButton': () => stepsStart !== -1 ? OutputRaw.slice(stepsStart).trim() : null,
+      'SDHub-seedButton': () => seedMatch?.[1]?.trim() || null
     }[id]?.();
-    
+
     if (text) SDHubGalleryCopy(text, e.target);
   }
 
   function SDHubGallerySendButton(tabname) {
-    if (e.target && e.target.id === `${tabname}_tab` && e.target.parentElement &&
-        e.target.parentElement.id === "SDHubimgInfoSendButton" && ADModel
-    ) {
-      let Id = `script_${tabname}_adetailer_ad_main_accordion-visible-checkbox`;
-      let checkbox = gradioApp().getElementById(Id);
-      if (checkbox && !checkbox.checked) checkbox.click();
+    if (e.target?.id === `${tabname}_tab` && e.target.parentElement?.id === 'SDHubimgInfoSendButton' && ADModel) {
+      let cb = gradioApp().getElementById(`script_${tabname}_adetailer_ad_main_accordion-visible-checkbox`);
+      cb?.checked === false && cb.click();
     }
   }
 
-  SDHubGallerySendButton("txt2img");
-  SDHubGallerySendButton("img2img");
+  SDHubGallerySendButton('txt2img');
+  SDHubGallerySendButton('img2img');
 }
