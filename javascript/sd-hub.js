@@ -350,37 +350,41 @@ function SDHubUITranslation() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
-  const script = document.createElement('script');
-  script.id = 'SDHub-XLSX';
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-  script.onload = async () => {
-    try {
-      window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
-      window.SDHubFilePath = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
-
-      const file = `${window.SDHubFilePath}sd-hub-translations.xlsx`;
-      const response = await fetch(file);
-      const arrayBuffer = await response.arrayBuffer();
-      const book = XLSX.read(arrayBuffer, { type: 'array' });
-      const data = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1 });
-
-      const langKeys = Object.keys(SDHubLangIndex);
-      SDHubTranslations = Object.fromEntries(langKeys.map(lang => [lang, {}]));
-
-      for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-        if (!row[0] || row[0].startsWith("//")) continue;
-
-        const key = row[0].trim();
-        if (!key) continue;
-
-        langKeys.forEach(lang => SDHubTranslations[lang][key] = row[SDHubLangIndex[lang]]?.trim() || key);
+  const waitingXLSX = new Promise((resolve) => {
+    if (window.XLSX) return resolve();
+    const interval = setInterval(() => {
+      if (window.XLSX) {
+        clearInterval(interval);
+        resolve();
       }
+    }, 50);
+  });
 
-      SDHubTextEditorGalleryScrollBar();
-      SDHubGalleryDOMLoaded();
-    } catch (err) { console.error("XLSX Error:", err); }
-  };
+  await waitingXLSX;
 
-  document.head.appendChild(script);
+  try {
+    window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
+    window.SDHubFilePath = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
+
+    const file = `${window.SDHubFilePath}sd-hub-translations.xlsx`;
+    const response = await fetch(file);
+    const arrayBuffer = await response.arrayBuffer();
+    const book = XLSX.read(arrayBuffer, { type: 'array' });
+    const data = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1 });
+    const langKeys = Object.keys(SDHubLangIndex);
+    SDHubTranslations = Object.fromEntries(langKeys.map(lang => [lang, {}]));
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (!row[0] || row[0].startsWith("//")) continue;
+      const key = row[0].trim();
+      if (!key) continue;
+      langKeys.forEach(lang => SDHubTranslations[lang][key] = row[SDHubLangIndex[lang]]?.trim() || key);
+    }
+
+    SDHubTextEditorGalleryScrollBar();
+    SDHubGalleryDOMLoaded();
+  } catch (err) {
+    console.error("XLSX Error:", err);
+  }
 });
