@@ -497,8 +497,8 @@ function SDHubGalleryToggleNextPrev(mode) {
 
 function SDHubGalleryOpenViewerFromButton(imgEL) {
   const TabCon = imgEL.closest('.sdhub-gallery-tab-container');
-  window.SDHubImagePath = imgEL.getAttribute('src');
-  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('src'));
+  window.SDHubImagePath = imgEL.getAttribute('data-image');
+  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
   SDHubGalleryImageViewer('m');
 }
