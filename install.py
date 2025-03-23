@@ -19,7 +19,11 @@ def _SDHubReq():
     req = {
         'sd-hub-translations.xlsx': 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
         'javascript/exif-reader.js': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-        'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
+        'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
+        'javascript/XLSX-reader.js': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+        'javascript/XLSX-reader-LICENSE': 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
+        'javascript/Pica.js': 'https://cdnjs.cloudflare.com/ajax/libs/pica/9.0.1/pica.min.js',
+        'javascript/Pica-LICENSE': 'https://raw.githubusercontent.com/nodeca/pica/master/LICENSE'
     }
     for file, url in req.items():
         fp = base / file
