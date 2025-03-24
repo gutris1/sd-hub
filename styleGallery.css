@@ -129,16 +129,13 @@ body.no-scroll {
 #SDHub-Gallery-Image-Wrapper {
   display: flex;
   overflow: hidden;
+  max-width: 240px;
+  max-height: 240px;
   align-self: center;
   justify-content: center;
   align-items: center;
-  min-height: 1rem;
-  min-width: 1rem;
   border: 0;
   border-radius: 0.6rem;
-  background-size: contain;
-  background-position: center;
-  background-image: url(https://huggingface.co/gutris1/webui/blob/main/misc/card-no-preview.png);
 }
 
 #SDHub-Gallery-Image {
@@ -148,7 +145,6 @@ body.no-scroll {
   border-radius: 0.6rem;
   user-select: none;
   -webkit-user-select: none;
-  transition: 0.5s ease;
 }
 
 .sdhub-gallery-image-loading {
@@ -287,6 +283,7 @@ body.no-scroll {
     width: 150px;
   }
 
+  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
     max-width: 150px;
     max-height: 150px;
@@ -315,6 +312,7 @@ body.no-scroll {
     width: 190px;
   }
 
+  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
     max-width: 190px;
     max-height: 190px;
@@ -327,6 +325,7 @@ body.no-scroll {
     width: 240px;
   }
 
+  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
     max-width: 240px;
     max-height: 240px;
@@ -339,6 +338,7 @@ body.no-scroll {
     width: 250px;
   }
 
+  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
     max-width: 250px;
     max-height: 250px;
@@ -351,6 +351,7 @@ body.no-scroll {
     width: 310px;
   }
 
+  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
     max-width: 310px;
     max-height: 310px;
