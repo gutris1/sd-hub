@@ -1,8 +1,12 @@
 onUiLoaded(function () {
-  let imgInfoImage = document.getElementById("SDHubimgInfoImage");
+  let imgInfoImage = document.getElementById('SDHubimgInfoImage');
   if (imgInfoImage) {
     imgInfoImage.style.removeProperty('height')
-    document.addEventListener('click', SDHubGalleryCopyButtonEvent);
+
+    const sendButton = document.getElementById('SDHubimgInfoSendButton');
+    sendButton?.querySelectorAll('#txt2img_tab, #img2img_tab').forEach(btn => {
+      btn.onclick = () => SDHubGallerySendButton(btn.id.replace('_tab', ''));
+    });
   }
 });
 
@@ -245,10 +249,16 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   const SoftwareInfo = window.SDHubimgInfoSoftware;
   const buttonColor = 'var(--primary-400)';
   const SDHubimgInfoSendButton = document.getElementById("SDHubimgInfoSendButton");
-  var SDHubimgInfoOutputPanel = document.getElementById("SDHubimgInfoOutputPanel");
-  var sty = `display: block; margin-bottom: 2px; color: ${buttonColor};`;
+  const SDHubimgInfoOutputPanel = document.getElementById("SDHubimgInfoOutputPanel");
+  const sty = `display: block; margin-bottom: 2px; color: ${buttonColor};`;
 
-  var buttonStyle = `
+  let outputHTML = '';
+  let promptText = '';
+  let negativePromptText = '';
+  let paramsText = '';
+  let modelBox = '';
+
+  let buttonStyle = `
     color: ${buttonColor};
     font-size: 15px;
     font-weight: bold;
@@ -258,27 +268,30 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     background-color: transparent;
     cursor: pointer;`;
 
-  var titlePrompt = `
+  let titlePrompt = `
     <button id="SDHub-promptButton"
       class="SDHubimgInfoButtons"
       style="${buttonStyle}; padding-top: 0px; margin-bottom: 2px;"
-      title="${SDHubGetTranslation('copy_prompt')}">
+      title="${SDHubGetTranslation('copy_prompt')}"
+      onclick="SDHubGalleryCopyButtonEvent(e)">
       ${SDHubGetTranslation('prompt')}
     </button>`;
 
-  var titleNegativePrompt = `
+  let titleNegativePrompt = `
     <button id="SDHub-negativePromptButton"
       class="SDHubimgInfoButtons"
       style="${buttonStyle}"
-      title="${SDHubGetTranslation('copy_negative_prompt')}">
+      title="${SDHubGetTranslation('copy_negative_prompt')}"
+      onclick="SDHubGalleryCopyButtonEvent(e)">
       ${SDHubGetTranslation('negative_prompt')}
     </button>`;
 
-  var titleParams = `
+  let titleParams = `
     <button id="SDHub-paramsButton"
       class="SDHubimgInfoButtons"
       style="${buttonStyle}"
-      title="${SDHubGetTranslation('copy_parameters')}">
+      title="${SDHubGetTranslation('copy_parameters')}"
+      onclick="SDHubGalleryCopyButtonEvent(e)">
       ${SDHubGetTranslation('parameters')}
     </button>`;
 
@@ -287,14 +300,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   const titleSha = `<b style="${sty};">EncryptPwdSha</b>`;
   const titleSoftware = `<b style="${sty};">Software</b>`;
   const titleSource = `<b style="${sty};">Source</b>`;
-
   const br = /\n/g;
-
-  let outputHTML = '';
-  let promptText = '';
-  let negativePromptText = '';
-  let paramsText = '';
-  let modelBox = '';
 
   function SDHubGalleryHTMLOutput(title, content) {
     return `<div class="SDHubimgInfoOutputSection"><p>${title}${content}</p></div>`;
@@ -338,7 +344,8 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
           <button id="SDHub-seedButton"
             class="SDHubimgInfoButtons"
             style="color: ${buttonColor}; margin-bottom: -5px; cursor: pointer;"
-            title="${SDHubGetTranslation('copy_seed')}">
+            title="${SDHubGetTranslation('copy_seed')}"
+            onclick="SDHubGalleryCopyButtonEvent(e)">
             Seed
           </button>: ${seedNumber},`;
       });
@@ -403,9 +410,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
             if (SDHubimgInfoModelOutput) {
               SDHubimgInfoModelOutput.classList.add("SDHubimgInfoModelOutputReveal");
               SDHubimgInfoModelOutput.innerHTML = ModelOutputFetched;
-              setTimeout(() => {
-                SDHubimgInfoModelOutput.classList.remove("SDHubimgInfoModelOutputReveal");
-              }, 2000);
+              setTimeout(() => SDHubimgInfoModelOutput.classList.remove("SDHubimgInfoModelOutputReveal"), 2000);
             }
           } catch (error) {
             if (error.message === 'Timeout') {
@@ -455,9 +460,7 @@ async function SDHubGalleryFetchModelOutput(i) {
   const loraHashEX = i.match(/Lora hashes:\s*"([^"]+)"/);
   const tiHashEX = i.match(/TI hashes:\s*"([^"]+)"/);
   const hashesIndex = i.indexOf("Hashes:");
-  const hashesEX = hashesIndex !== -1
-    ? i.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/)
-    : null;
+  const hashesEX = hashesIndex !== -1 ? i.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/) : null;
 
   let HashesDict = {};
   let TIHashDict = {};
@@ -578,16 +581,18 @@ async function SDHubGalleryTIHashesSearchLink(n, h) {
   return nonLink;
 }
 
-function SDHubGalleryCopyButtonEvent(e) {
-  const btnId = ['SDHub-promptButton', 'SDHub-negativePromptButton', 'SDHub-paramsButton', 'SDHub-seedButton'];
-  const sendbtnId = ['#SDHubimgInfoSendButton > #txt2img_tab', '#SDHubimgInfoSendButton > #img2img_tab'];
-  if (!btnId.includes(e.target.id) && !sendbtnId.some(b => e.target.matches(b))) return;
-
+function SDHubGallerySendButton(Id) {
   let OutputRaw = window.SDHubimgRawOutput;
-  let ADModel = OutputRaw.includes('ADetailer model');
+  let ADmodel = OutputRaw?.includes('ADetailer model');
+  let cb = gradioApp().getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
+  if (ADmodel) cb?.checked === false && cb.click();
+}
+
+function SDHubGalleryCopyButtonEvent(e) {
+  let OutputRaw = window.SDHubimgRawOutput;
 
   function SDHubGalleryPulseBorderSection(button) {
-    var section = button.closest('.SDHubimgInfoOutputSection');
+    let section = button.closest('.SDHubimgInfoOutputSection');
     section.classList.add('SDHubimgInfoBorderPulse');
     setTimeout(() => section.classList.remove('SDHubimgInfoBorderPulse'), 2000);
   }
@@ -612,14 +617,4 @@ function SDHubGalleryCopyButtonEvent(e) {
 
     if (text) SDHubGalleryCopy(text, e.target);
   }
-
-  function SDHubGallerySendButton(tabname) {
-    if (e.target?.id === `${tabname}_tab` && e.target.parentElement?.id === 'SDHubimgInfoSendButton' && ADModel) {
-      let cb = gradioApp().getElementById(`script_${tabname}_adetailer_ad_main_accordion-visible-checkbox`);
-      cb?.checked === false && cb.click();
-    }
-  }
-
-  SDHubGallerySendButton('txt2img');
-  SDHubGallerySendButton('img2img');
 }
