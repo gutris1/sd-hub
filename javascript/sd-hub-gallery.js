@@ -22,15 +22,16 @@ onUiLoaded(function () {
 
 onAfterUiUpdate(SDHubGalleryWatchNewImage);
 
-async function SDHubResizeImage(blob, size = 512) {
+async function SDHubResizeImage(img, path, fn, size = 512) {
   const pica = window.pica?.default || window.pica;
   if (!pica) return null;
 
-  const img = await createImageBitmap(blob);
-  const aR = img.width / img.height;
+  const blob = await fetch(path.split("?")[0]).then((res) => res.blob());
+  const image = await createImageBitmap(blob);
+  const aR = image.width / image.height;
   let W, H;
 
-  if (img.width > img.height) {
+  if (image.width > image.height) {
     W = size;
     H = Math.round(size / aR);
   } else {
@@ -42,11 +43,16 @@ async function SDHubResizeImage(blob, size = 512) {
   C.width = W;
   C.height = H;
 
-  await pica().resize(img, C);
+  await pica().resize(image, C);
 
-  return new Promise((resolve) => {
-    C.toBlob(blob => resolve(blob), 'image/jpeg');
+  const thumb = await new Promise((resolve) => {
+    C.toBlob((blob) => resolve(blob), 'image/jpeg');
   });
+
+  img.dataset.image = path;
+  img.fileObject = new File([blob], fn, { type: blob.type });
+  img.src = URL.createObjectURL(thumb);
+  img.title = fn;
 }
 
 async function SDHubGalleryLoadInitial() {
@@ -114,12 +120,7 @@ async function SDHubGalleryLoadInitial() {
       const fn = path.substring(path.lastIndexOf("/") + 1).split("?")[0];
 
       if (img) {
-        img.dataset.image = path;
-        const blob = await fetch(path.split("?")[0]).then((res) => res.blob());
-        const thumb = await SDHubResizeImage(blob);
-        img.fileObject = new File([blob], fn, { type: blob.type });
-        img.src = URL.createObjectURL(thumb);
-        img.title = fn;
+        await SDHubResizeImage(img, path, fn);
 
         img.onload = () => {
           loaded++;
@@ -276,19 +277,14 @@ async function SDHubGalleryGetNewImage(whichGallery) {
 
     if (newImg) {
       fileNames.push(fn);
-      let blob = await fetch(path).then((res) => res.blob());
-      let thumb = await SDHubResizeImage(blob);
-      newImg.fileObject = new File([blob], fn, { type: blob.type });
-      newImg.src = URL.createObjectURL(thumb);
-      newImg.title = fn;
+      await SDHubResizeImage(newImg, path, fn);
 
       newImg.onload = () => {
         loaded++;
         if (loaded === total) SDHubGalleryTabImageCounters();
       };
 
-      files.push(newImg.fileObject);
-
+      if (newImg.fileObject) files.push(newImg.fileObject);
       if (files.length === total) {
         SDHubGalleryImgChest(files, fileNames);
         files = [];
@@ -556,6 +552,11 @@ function SDHubImageInfoClearButton() {
 }
 
 function SDHubCreateGallery(GalleryTab) {
+  const sendButton = document.getElementById('SDHubimgInfoSendButton');
+  sendButton?.querySelectorAll('#txt2img_tab, #img2img_tab').forEach(btn => {
+    btn.onclick = () => SDHubGallerySendButton(btn.id.replace('_tab', ''));
+  });
+
   const TabRow = document.createElement('div');
   TabRow.id = 'SDHub-Gallery-Tab-Button-Row';
 
@@ -749,50 +750,46 @@ function SDHubGalleryDeletion() {
 
   Con.style.display = 'flex';
   Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
+  document.body.classList.add('no-scroll');
 
-  Yes.onclick = () => {
+  Yes.onclick = async () => {
     Spinner.style.visibility = 'visible';
-    Box.style.opacity = '0';
-    Box.style.transform = 'scale(1.5)';
+    Object.assign(Box.style, { opacity: '0', transform: 'scale(1.5)' });
 
-    fetch(`${SDHubGalleryBase}/delete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    })
-      .then(response => {
-        if (!response.ok) return response.text().then(err => { throw new Error(err); });
-        return response.json();
-      })
-      .then(data => {
-        if (data.status === 'deleted') {
-          const parentDiv = imgEL.closest('.sdhub-gallery-image-box');
-          if (parentDiv) parentDiv.remove();
-        } else console.error("Deletion failed:", data);
-      })
-      .catch(error => console.error('Error deleting image:', error))
-      .finally(() => {
-        SDHubGalleryTabImageCounters();
-        setTimeout(() => {
-          Con.style.opacity = '';
-          Spinner.style.visibility = '';
-        }, 1000);
-        setTimeout(() => {
-          Con.style.display = '';
-          Box.style.opacity = '';
-          Box.style.transform = '';
-        }, 1100);
+    try {
+      const response = await fetch(`${SDHubGalleryBase}/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path }),
       });
+
+      if (!response.ok) throw new Error(await response.text());
+
+      const data = await response.json();
+      if (data.status === 'deleted') imgEL.closest('.sdhub-gallery-image-box')?.remove();
+      else console.error("Deletion failed:", data);
+
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    } finally {
+      SDHubGalleryTabImageCounters();
+      setTimeout(() => {
+        Object.assign(Con.style, { opacity: '', display: '' });
+        Object.assign(Box.style, { opacity: '', transform: '' });
+        Spinner.style.visibility = '';
+        document.body.classList.remove('no-scroll');
+      }, 1000);
+    }
   };
 
   Con.onclick = No.onclick = () => {
-    Con.style.opacity = '';
-    Box.style.transform = 'scale(1.5)';
-    setTimeout(() => (Con.style.display = '', Box.style.transform = ''), 200);
+    document.body.classList.remove('no-scroll');
+    Object.assign(Con.style, { opacity: '', display: '' });
+    Object.assign(Box.style, { transform: '' });
   };
 
-  setTimeout(() => Con.style.opacity = '1', 100);
-  setTimeout(() => Box.style.transform = 'scale(1)', 200);
+  requestAnimationFrame(() => (Con.style.opacity = '1'));
+  setTimeout(() => (Box.style.transform = 'scale(1)'), 200);
 }
 
 function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
