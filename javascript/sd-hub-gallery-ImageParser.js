@@ -1,15 +1,3 @@
-onUiLoaded(function () {
-  let imgInfoImage = document.getElementById('SDHubimgInfoImage');
-  if (imgInfoImage) {
-    imgInfoImage.style.removeProperty('height')
-
-    const sendButton = document.getElementById('SDHubimgInfoSendButton');
-    sendButton?.querySelectorAll('#txt2img_tab, #img2img_tab').forEach(btn => {
-      btn.onclick = () => SDHubGallerySendButton(btn.id.replace('_tab', ''));
-    });
-  }
-});
-
 async function SDHubGalleryParser() {
   window.SDHubimgInfoEncrypt = '';
   window.SDHubimgInfoSha256 = '';
@@ -273,7 +261,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
       class="SDHubimgInfoButtons"
       style="${buttonStyle}; padding-top: 0px; margin-bottom: 2px;"
       title="${SDHubGetTranslation('copy_prompt')}"
-      onclick="SDHubGalleryCopyButtonEvent(e)">
+      onclick="SDHubGalleryCopyButtonEvent(event)">
       ${SDHubGetTranslation('prompt')}
     </button>`;
 
@@ -282,7 +270,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
       class="SDHubimgInfoButtons"
       style="${buttonStyle}"
       title="${SDHubGetTranslation('copy_negative_prompt')}"
-      onclick="SDHubGalleryCopyButtonEvent(e)">
+      onclick="SDHubGalleryCopyButtonEvent(event)">
       ${SDHubGetTranslation('negative_prompt')}
     </button>`;
 
@@ -291,7 +279,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
       class="SDHubimgInfoButtons"
       style="${buttonStyle}"
       title="${SDHubGetTranslation('copy_parameters')}"
-      onclick="SDHubGalleryCopyButtonEvent(e)">
+      onclick="SDHubGalleryCopyButtonEvent(event)">
       ${SDHubGetTranslation('parameters')}
     </button>`;
 
@@ -345,7 +333,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
             class="SDHubimgInfoButtons"
             style="color: ${buttonColor}; margin-bottom: -5px; cursor: pointer;"
             title="${SDHubGetTranslation('copy_seed')}"
-            onclick="SDHubGalleryCopyButtonEvent(e)">
+            onclick="SDHubGalleryCopyButtonEvent(event)">
             Seed
           </button>: ${seedNumber},`;
       });
