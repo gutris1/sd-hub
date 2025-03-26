@@ -1,12 +1,13 @@
 from fastapi import FastAPI, HTTPException, responses, Request
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
+from datetime import datetime, timedelta
 from modules.scripts import basedir
 from modules.shared import opts
 from urllib.parse import quote
-from datetime import datetime
 from pathlib import Path
 import gradio as gr
+import mimetypes
 import json
 import sys
 import os
@@ -77,8 +78,6 @@ def getImage():
     return results
 
 def Gallery(app: FastAPI):
-    headers = {'Cache-Control': 'public, max-age=31536000'}
-
     @app.get(BASE + '/initial')
     async def initialLoad():
         imgs = getImage()
@@ -87,9 +86,16 @@ def Gallery(app: FastAPI):
     @app.get(BASE + '/image{img:path}')
     async def sendImage(img: str):
         fp = Path(img)
-        if fp.exists():
-            return responses.FileResponse(fp, headers=headers)
-        raise HTTPException(status_code=404, detail='Image not found')
+        if not fp.exists():
+            raise HTTPException(status_code=404, detail='Image not found')
+
+        media_type, _ = mimetypes.guess_type(fp)
+        headers = {
+            'Cache-Control': 'public, max-age=31536000',
+            'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
+        }
+
+        return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
