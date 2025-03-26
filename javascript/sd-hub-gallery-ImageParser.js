@@ -17,7 +17,6 @@ async function SDHubGalleryParser() {
   }
 
   SDHubimgInfoImage.style.cssText += 'box-shadow: inset 0 0 0 0 !important;';
-
   img.onload = SDHubImageInfoClearButton;
   img.onclick = () => SDHubGalleryImageViewer('s');
 
@@ -42,7 +41,6 @@ async function SDHubGalleryParser() {
   let output = '';
 
   if (tags) {
-    console.log(tags);
     window.SDHubimgInfoEncrypt = tags.Encrypt ? tags.Encrypt.description : '';
     window.SDHubimgInfoSha256 = tags.EncryptPwdSha ? tags.EncryptPwdSha.description : '';
 
@@ -85,7 +83,9 @@ async function SDHubGalleryParser() {
         ", Clip skip: 2, ENSD: 31337";
 
     } else if (tags.prompt && tags.workflow && tags.prompt.description) {
-      if (tags.prompt.description.includes('"filename_prefix": "ComfyUI"')) output = 'ComfyUI<br>Nothing To Read Here';
+      if (tags.prompt.description.includes('"filename_prefix": "ComfyUI"')) {
+        output = 'ComfyUI<br>Nothing To Read Here';
+      }
 
     } else if (tags.invokeai_graph && tags.invokeai_graph.description) {
       output = 'InvokeAI<br>Nothing To Read Here';
@@ -100,6 +100,7 @@ async function SDHubGalleryParser() {
       SDHubimgInfoHTML.innerHTML = await SDHubGalleryPlainTextToHTML(output);
     }
   }
+
   return tags;
 }
 
