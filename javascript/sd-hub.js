@@ -221,6 +221,8 @@ function SDHubOnTabChange() {
               if (Scrollbar) document.head.removeChild(Scrollbar);
               Object.assign(document.documentElement.style, { scrollbarWidth: '' });
               document.body.classList.remove('no-scroll');
+              const row = document.getElementById('sdhub-gallery-image-info-row');
+              if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
             }
           }
         });
