@@ -22,33 +22,20 @@ onUiLoaded(function () {
 
 onAfterUiUpdate(SDHubGalleryWatchNewImage);
 
-function SDHubGalleryUpdateImageInput(input, file) {
-  const data = new DataTransfer();
-  data.items.add(file);
-  input.files = data.files;
-  const e = new Event('change', { 'bubbles': true, 'composed': true });
-  input.dispatchEvent(e);
-}
-
-async function SDHubResizeImage(path, size = 512) {
+async function SDHubResizeImage(blob, size = 512) {
   try {
-    const res = await fetch(path.split('?')[0]);
-    const blob = await res.blob();
     const img = await createImageBitmap(blob);
-
     const ar = img.width / img.height;
+
     SDHubCanvas.width = img.width > img.height ? size : Math.round(size * ar);
     SDHubCanvas.height = img.width > img.height ? Math.round(size / ar) : size;
-
     SDHubCTX.clearRect(0, 0, SDHubCanvas.width, SDHubCanvas.height);
     SDHubCTX.drawImage(img, 0, 0, SDHubCanvas.width, SDHubCanvas.height);
 
     return new Promise((resolve) => {
-      SDHubCanvas.toBlob((thumb) => resolve({ thumb, blob }), 'image/jpeg', 0.7);
+      SDHubCanvas.toBlob((thumb) => resolve(thumb), 'image/jpeg', 0.7);
     });
-  } catch (error) {
-    console.error('Error in resizing:', error);
-  }
+  } catch (error) { console.error('Error in resizing:', error); }
 }
 
 async function SDHubGalleryLoadInitial() {
@@ -75,7 +62,6 @@ async function SDHubGalleryLoadInitial() {
     for (let index = 0; index < total; index++) {
       let { path } = data.images[index];
       let whichTab = SDHubGalleryTabList.find((tab) => path.includes(`/${tab}/`));
-
       let tabToUse = whichTab || "extras-images";
       let pathParts = path.split("/");
       let dateIndex = pathParts.findIndex((part) => todayRegex.test(part));
@@ -127,9 +113,10 @@ async function SDHubGalleryLoadInitial() {
             DelCon.style.display = 'flex';
             DelCon.style.opacity = '1';
           });
-          
-          const { thumb, blob } = await SDHubResizeImage(path);
+
           img.dataset.image = path;
+          const blob = await fetch(path.split('?')[0]).then((res) => res.blob());
+          const thumb = await SDHubResizeImage(blob);
           img.fileObject = new File([blob], name, { type: blob.type });
           img.src = URL.createObjectURL(thumb);
           img.title = name;
@@ -145,9 +132,8 @@ async function SDHubGalleryLoadInitial() {
               });
             }
           };
-        } catch (error) {
-          console.error("Error:", error);
-        }
+
+        } catch (error) { console.error("Error:", error); }
       }
 
       if (TabBtn) TabBtn.style.display = "flex";
@@ -337,8 +323,7 @@ function SDHubGalleryContextMenu(e, imgEL) {
   window.SDHubImagePath = imgEL.getAttribute('data-image');
   window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
-
-  GalleryCM.targetFile = imgEL.fileObject;
+  window.SDHubImageFile = imgEL.fileObject;
 
   Object.assign(GalleryCM.style, {
     transition: 'none',
@@ -488,21 +473,18 @@ function SDHubGallerySendToUploader() {
   SDHubGalleryKillContextMenu();
 }
 
-function SDHubGallerySendImage(v) {
-  const file = document.getElementById('SDHub-Gallery-ContextMenu').targetFile;
-  if (!file) return;
-
+async function SDHubGallerySendImage(v) {
   const row = document.getElementById('sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
   const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
   const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
+  window.SDHubCenterElement('Spinner');
 
   row.style.display = 'flex'; row.style.pointerEvents = 'none';
   DelCon.style.display = 'flex'; DelCon.style.opacity = '1';
   Spinner.style.visibility = 'visible';
 
-  SDHubGalleryUpdateImageInput(input, file);
-  window.SDHubCenterElement('Spinner');
+  await SDHubGalleryPasteImage(input, window.SDHubImageFile);
 
   const wait = setInterval(() => {
     if (window.SDHubimgRawOutput?.trim()) {
@@ -550,18 +532,27 @@ function SDHubImageInfoClearButton() {
   }
 }
 
-function SDHubGalleryImageInfo(imgEL) {
-  const file = imgEL.fileObject;
+async function SDHubGalleryImageInfo(imgEL) {
   window.SDHubImagePath = imgEL.getAttribute('data-image');
-  document.body.classList.add('no-scroll');
+  window.SDHubImageFile = imgEL.fileObject;
   const row = document.querySelector('#sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
 
   if (input) {
-    requestAnimationFrame(() => (row.style.display = 'flex'));
-    SDHubGalleryUpdateImageInput(input, file);
-    setTimeout(() => (row.style.opacity = '1'), 300);
+    row.style.display = 'flex'; row.style.pointerEvents = 'none';
+    await SDHubGalleryPasteImage(input, window.SDHubImageFile);
+
+    document.body.classList.add('no-scroll');
+    setTimeout(() => (row.style.pointerEvents = '', row.style.opacity = '1'), 300);
   }
+}
+
+async function SDHubGalleryPasteImage(input, file) {
+  const data = new DataTransfer();
+  data.items.add(file);
+  const pasteImg = new ClipboardEvent('paste', { clipboardData: data, bubbles: true });
+  navigator.clipboard.writeText('');
+  input.dispatchEvent(pasteImg);
 }
 
 function SDHubGalleryTabEventListener(TabCon) {
@@ -796,6 +787,7 @@ function SDHubGalleryDOMLoaded() {
     SDHubGalleryCreateDeleteBox(),
     TabRow, TabWrap, imgBox
   );
+
   document.body.append(SDHubGallery);
 
   document.addEventListener('click', (e) => {
@@ -837,18 +829,18 @@ function SDHubGalleryDOMLoaded() {
   window.SDHubCenterElement = (flag) => {
     const tab = document.getElementById('sdhub-gallery-tab');
     if (!tab || tab.style.display !== 'block') return;
-  
+
     const V = -200;
     const W = window.innerHeight;
     const T = window.pageYOffset || document.documentElement.scrollTop;
-  
+
     let element = null;
     if (flag === 'DelBox') {
       element = document.getElementById('SDHub-Gallery-Delete-Box');
     } else if (flag === 'Spinner') {
       element = document.getElementById('SDHub-Gallery-Delete-Spinner');
     }
-  
+
     if (element) {
       const H = element.offsetHeight || 0;
       element.style.top = `${T + (W - H) / 2 + V}px`;
