@@ -121,21 +121,12 @@ body.no-scroll {
   border: 0;
   position: relative;
   overflow: hidden;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
   border-radius: 0.5rem;
   box-shadow: 0 0 3px 2px #000;
   transition: 0.2s ease-in-out;
-}
-
-#SDHub-Gallery-Image-Wrapper {
-  display: flex;
-  overflow: hidden;
-  max-width: 240px;
-  max-height: 240px;
-  align-self: center;
-  justify-content: center;
-  align-items: center;
-  border: 0;
-  border-radius: 0.6rem;
 }
 
 #SDHub-Gallery-Image {
@@ -273,24 +264,22 @@ body.no-scroll {
   position: fixed;
   overflow: auto;
   opacity: 0;
-  pointer-events: auto;
   transition: opacity 0.6s ease;
 }
 
 @media (max-width: 600px) {
   .sdhub-gallery-image-box {
-    height: 150px;
-    width: 150px;
+    height: 220px;
+    width: 220px;
   }
 
-  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
-    max-width: 150px;
-    max-height: 150px;
+    max-width: 220px;
+    max-height: 220px;
   }
 
   .sdhub-gallery-tab-container {
-    gap: 10px;
+    gap: 20px;
   }
 
   #SDHub-Gallery-Tab-Button-Row {
@@ -306,16 +295,19 @@ body.no-scroll {
   }
 }
 
-@media (min-width: 1000px) {
+@media (min-width: 1280px) {
   .sdhub-gallery-image-box {
-    height: 190px;
-    width: 190px;
+    height: 210px;
+    width: 210px;
   }
 
-  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
-    max-width: 190px;
-    max-height: 190px;
+    max-width: 210px;
+    max-height: 210px;
+  }
+
+  .sdhub-gallery-tab-container {
+    gap: 1.3rem;
   }
 }
 
@@ -325,36 +317,41 @@ body.no-scroll {
     width: 240px;
   }
 
-  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
     max-width: 240px;
     max-height: 240px;
+  }
+
+  .sdhub-gallery-tab-container {
+    gap: 1.3rem;
   }
 }
 
 @media (min-width: 1600px) {
   .sdhub-gallery-image-box {
-    height: 250px;
-    width: 250px;
+    height: 270px;
+    width: 270px;
   }
 
-  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
-    max-width: 250px;
-    max-height: 250px;
+    max-width: 270px;
+    max-height: 270px;
+  }
+
+  .sdhub-gallery-tab-container {
+    gap: 1.5rem;
   }
 }
 
 @media (min-width: 1920px) {
   .sdhub-gallery-image-box {
-    height: 310px;
-    width: 310px;
+    height: 280px;
+    width: 280px;
   }
 
-  #SDHub-Gallery-Image-Wrapper,
   #SDHub-Gallery-Image {
-    max-width: 310px;
-    max-height: 310px;
+    max-width: 280px;
+    max-height: 280px;
   }
 
   #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button {
@@ -362,11 +359,38 @@ body.no-scroll {
     transform: scale(1.4);
     pointer-events: auto;
   }
+
+  .sdhub-gallery-tab-container {
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 2560px) {
+  .sdhub-gallery-image-box {
+    height: 320px;
+    width: 320px;
+  }
+
+  #SDHub-Gallery-Image {
+    max-width: 320px;
+    max-height: 320px;
+  }
+
+  #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button {
+    opacity: 1;
+    transform: scale(1.5);
+    pointer-events: auto;
+  }
+
+  .sdhub-gallery-tab-container {
+    gap: 2rem;
+  }
 }
 
 /* ############################################################################################################ */
 
 #SDHub-Gallery-ContextMenu {
+  display: block;
   margin: 0;
   padding-top: 6px;
   padding-bottom: 6px;
@@ -875,7 +899,7 @@ body.no-scroll {
 
 #SDHub-Gallery-Delete-Container {
   display: none;
-  position: fixed;
+  position: absolute;
   top: 0px;
   left: 0px;
   width: 100%;
@@ -891,11 +915,15 @@ body.no-scroll {
 
 #SDHub-Gallery-Delete-Spinner {
   z-index: 5;
+  position: absolute;
   color: var(--primary-400);
   pointer-events: none;
   visibility: hidden;
   transition: 0.3s ease;
-  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.6));
+  filter:
+    drop-shadow(0 0 10px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 1px var(--primary-400))
+    drop-shadow(0 0 6px black);
 }
 
 #SDHub-Gallery-Delete-Spinner svg {
