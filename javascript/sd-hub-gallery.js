@@ -133,7 +133,7 @@ async function SDHubGalleryLoadInitial() {
             }
           };
 
-        } catch (error) { console.error("Error:", error); }
+        } catch (error) { console.error("Error in initial imgbox:", error); }
       }
 
       if (TabBtn) TabBtn.style.display = "flex";
@@ -145,9 +145,8 @@ async function SDHubGalleryLoadInitial() {
         selectedTab = true;
       }
     }
-  } catch (error) {
-    console.error("Error:", error);
-  }
+
+  } catch (error) { console.error("Error in initial-load:", error); }
 }
 
 function SDHubGalleryCloneTab(id, name) {
@@ -283,7 +282,10 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     if (newImg) {
       fileNames.push(name);
       try {
-        const { thumb, blob } = await SDHubResizeImage(path);
+        const res = await fetch(path);
+        const blob = await res.blob();
+        const thumb = await SDHubResizeImage(blob);
+
         newImg.dataset.image = path;
         newImg.fileObject = new File([blob], name, { type: blob.type });
         newImg.src = URL.createObjectURL(thumb);
@@ -300,9 +302,8 @@ async function SDHubGalleryGetNewImage(whichGallery) {
           files = [];
           fileNames = [];
         }
-      } catch (error) {
-        console.error("Error:", error);
-      }
+
+      } catch (error) { console.error("Error in new imgbox:", error); }
     }
 
     if (TabBtn) TabBtn.style.display = "flex";
