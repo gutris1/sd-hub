@@ -238,6 +238,14 @@
   line-height: 1.8;
 }
 
+#sdhub-tab-info.sdhub-archiver-tab-info {
+  font-size: 14px;
+  background: var(--input-background-fill);
+  margin: 0;
+  border-radius: var(--input-radius);
+  padding: var(--input-padding);
+}
+
 #sdhub-tab-info .sdhub-link,
 #sdhub-tab-info .sdhub-nonlink {
   padding-top: 2px;
@@ -261,6 +269,15 @@
 :not(.gradio-container-4-40-0) #sdhub-tag-dataframe > div > div,
 :not(.gradio-container-4-40-0) #sdhub-tag-dataframe table {
   overflow: visible !important;
+}
+
+#sdhub-tab .sdhub-accordion > .label-wrap {
+  padding: 8px 0;
+  margin: -8px 0;
+}
+
+#sdhub-tab .sdhub-accordion > div[style*="display: block"] {
+  margin-top: 8px;
 }
 
 #sdhub-tab .sdhub-accordion:has(> .open),
