@@ -125,6 +125,12 @@ function SDHubEvents() {
       setTimeout(() => td.classList.remove('pulse-td'), 2000);
     }
   });
+
+  document.querySelectorAll('#sdhub-downloader-token1 input, #sdhub-downloader-token2 input, #sdhub-uploader-token input')
+    .forEach(input => {
+      input.addEventListener('blur', () => input.value.trim() !== '' && (input.style.filter = 'blur(3px)'));
+      input.addEventListener('focus', () => (input.style.filter = 'none'));
+    });
 }
 
 async function SDHubTokenBlur() {
