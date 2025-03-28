@@ -228,7 +228,7 @@ function SDHubGalleryImageViewer(mode) {
     e.stopPropagation();
     e.preventDefault();
 
-    const CTRL = e.ctrlKey;
+    const CTRL = e.ctrlKey || e.metaKey;
     const SHIFT = e.shiftKey;
 
     const currentTime = Date.now();
