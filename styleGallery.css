@@ -572,12 +572,18 @@ body.no-scroll {
   color: var(--primary-400);
   background: transparent;
   position: absolute;
-  filter: drop-shadow(0 0 3px #000);
+  filter:
+    drop-shadow(0 0 4px rgba(0,0,0,1))
+    drop-shadow(0 0 4px rgba(0,0,0,0.2))
+    drop-shadow(0 0 4px rgba(0,0,0,0.2));
   transition: 0.3s ease;
 }
 
 .sdhub-gallery-image-viewer-button svg {
-  filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.6));
+  filter:
+    drop-shadow(0 0 2px rgba(0,0,0,0.5))
+    drop-shadow(0 0 2px rgba(0,0,0,0.5))
+    drop-shadow(0 0 2px rgba(0,0,0,0.5));
 }
 
 .sdhub-gallery-image-viewer-button:hover {
@@ -608,6 +614,7 @@ body.no-scroll {
 
 #SDHubimgInfoImage {
   height: unset !important;
+  min-height: min(160px, 100%) !important;
   background: transparent;
   border-radius: 0.8rem !important;
   transition: 0.5s ease;
