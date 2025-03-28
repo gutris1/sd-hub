@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, responses, Request
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
+from modules.script_callbacks import on_app_started
 from datetime import datetime, timedelta
 from modules.scripts import basedir
 from modules.shared import opts
@@ -77,7 +78,7 @@ def getImage():
 
     return results
 
-def Gallery(app: FastAPI):
+def GalleryApp(_: gr.Blocks, app: FastAPI):
     @app.get(BASE + '/initial')
     async def initialLoad():
         imgs = getImage()
@@ -111,9 +112,6 @@ def Gallery(app: FastAPI):
         async def imgChest():
             privacy, nsfw, api = Loadimgchest()
             return {'privacy': privacy, 'nsfw': nsfw, 'api': api}
-
-def GalleryApp(_: gr.Blocks, app: FastAPI):
-    Gallery(app)
 
 def GalleryTab():
     if insecureENV:
@@ -213,3 +211,5 @@ def GalleryTab():
                 )
 
             image.change(fn=None, _js='() => {SDHubGalleryParser();}')
+
+on_app_started(GalleryApp)
