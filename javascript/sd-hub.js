@@ -27,6 +27,51 @@ onUiLoaded(async function () {
   SDHubObserver();
 });
 
+onUiUpdate(function() {
+  let row = document.getElementById('sdhub-gallery-image-info-row');
+  let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
+  let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button');
+  let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
+  let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
+  let Id = 'sdHUBHidingScrollBar';
+
+  if (TabList) {
+    TabList.forEach(button => {
+      let t = button.textContent.trim();
+      if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
+      let c = SDHubGetTranslation(t.toLowerCase());
+      if (c) button.textContent = c;
+    });
+  }
+
+  let Tab = SelectedTab?.id;
+
+  if (Tab === 'sdhub-tab-button-texteditor' || Tab === 'sdhub-tab-button-gallery') {
+    if (Accordion) Accordion.style.display = 'none';
+    if (!document.getElementById(Id)) {
+      const Scrollbar = document.createElement('style');
+      Scrollbar.id = Id;
+      Scrollbar.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
+      document.head.appendChild(Scrollbar);
+    }
+
+    Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
+
+  } else if (Tab !== 'sdhub-tab-button-texteditor' && Tab !== 'sdhub-tab-button-gallery') {
+    if (Accordion) Accordion.style.display = 'block';
+    document.getElementById(Id)?.remove();
+    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+    document.body.classList.remove('no-scroll');
+  }
+
+  if (MainTab?.textContent.trim() !== 'HUB') {
+    document.getElementById(Id)?.remove();
+    Object.assign(document.documentElement.style, { scrollbarWidth: '' });
+    document.body.classList.remove('no-scroll');
+    if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
+  }
+});
+
 async function SDHubTabLoaded() {
   [
     ['sdhub-downloader-load-button', 'Load Token'],
@@ -172,75 +217,6 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   ScrollBAR.innerHTML = isFirefox ? SBforFirefox : SBwebkit;
-}
-
-function SDHubObserver() {
-  const TargetEL = [
-    document.getElementById('tabs'),
-    document.getElementById('sdhub-tab'),
-    document.getElementById('SDHubGallery')
-  ];
-
-  const config = { childList: true, subtree: true };
-
-  TargetEL.forEach(EL => {
-    if (EL) {
-      const obs = new MutationObserver((List) => {
-        List.forEach(id => {
-          if (id.type === 'childList') {
-            let ImageViewer = document.getElementById('SDHub-Gallery-Image-Viewer');
-            let row = document.getElementById('sdhub-gallery-image-info-row');
-            let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
-            let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button');
-            let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
-            let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
-            let Id = 'sdHUBHidingScrollBar';
-
-            TabList?.forEach(button => {
-              let t = button.textContent.trim();
-              if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
-              let c = SDHubGetTranslation(t.toLowerCase());
-              if (c) button.textContent = c;
-            });
-
-            let Tab = SelectedTab?.id;
-
-            if (Tab === 'sdhub-tab-button-texteditor' || Tab === 'sdhub-tab-button-gallery') {
-              if (Accordion) Accordion.style.display = 'none';
-              if (!document.getElementById(Id)) {
-                const Scrollbar = document.createElement('style');
-                Scrollbar.id = Id;
-                Scrollbar.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
-                document.head.appendChild(Scrollbar);
-              }
-              Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
-
-            } else if (Tab !== 'sdhub-tab-button-texteditor' || Tab !== 'sdhub-tab-button-gallery') {
-              if (Accordion) Accordion?.style.display = 'block';
-              document.getElementById(Id)?.remove();
-              Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-              document.body.classList.remove('no-scroll');
-            }
-
-            if (MainTab?.textContent.trim() !== 'HUB') {
-              document.getElementById(Id)?.remove();
-              Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-              document.body.classList.remove('no-scroll');
-              if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
-            }
-
-            if (ImageViewer?.style.display === 'flex') {
-              document.body.classList.add('no-scroll');
-            } else {
-              document.body.classList.remove('no-scroll');
-            }
-          }
-        });
-      });
-
-      obs.observe(EL, config);
-    }
-  });
 }
 
 function SDHubGetTranslation(key, count = 1) {
