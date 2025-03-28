@@ -24,7 +24,6 @@ onUiLoaded(async function () {
   SDHubTokenBlur();
   SDHubEvents();
   SDHubUITranslation();
-  SDHubObserver();
 });
 
 onUiUpdate(function() {
