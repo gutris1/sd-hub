@@ -15,6 +15,15 @@ var SDHubGalleryDLSVG = `
   </svg>
 `;
 
+var SDHubGalleryCopySVG = `
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="transparent"
+    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(0.85)">
+    <rect x="0.802" y="0.846" width="22.352" height="22.352" rx="2" ry="2"/>
+    <circle cx="7.632" cy="7.676" r="1.862"/>
+    <polyline points="23.154 15.747 16.946 9.539 3.285 23.198"/>
+  </svg>
+`;
+
 var SDHubGalleryARRSVG = `
   <svg class='sdhub-gallery-cm-svg submenu-arrow' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs">
