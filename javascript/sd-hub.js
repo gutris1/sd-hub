@@ -24,7 +24,7 @@ onUiLoaded(async function () {
   SDHubTokenBlur();
   SDHubEvents();
   SDHubUITranslation();
-  SDHubOnTabChange();
+  SDHubObserver();
 });
 
 async function SDHubTabLoaded() {
@@ -174,22 +174,29 @@ function SDHubTextEditorGalleryScrollBar() {
   ScrollBAR.innerHTML = isFirefox ? SBforFirefox : SBwebkit;
 }
 
-function SDHubOnTabChange() {
-  const TargetTabs = [document.getElementById('tabs'), document.getElementById('sdhub-tab')];
+function SDHubObserver() {
+  const TargetEL = [
+    document.getElementById('tabs'),
+    document.getElementById('sdhub-tab'),
+    document.getElementById('SDHubGallery')
+  ];
+
   const config = { childList: true, subtree: true };
 
-  TargetTabs.forEach(Target => {
-    if (Target) {
-      const obs = new MutationObserver((mutationsList, observer) => {
-        mutationsList.forEach(mutation => {
-          if (mutation.type === 'childList') {
-            let MainTab = gradioApp().querySelector('#tabs > .tab-nav > button.selected');
-            let TabList = gradioApp().querySelectorAll('#sdhub-tab > .tab-nav > button');
-            let SelectedTab = gradioApp().querySelector('#sdhub-tab > .tab-nav > button.selected');
-            let Accordion = gradioApp().querySelector('#sdhub-dataframe-accordion');
-            const Id = 'sdHUBHidingScrollBar';
+  TargetEL.forEach(EL => {
+    if (EL) {
+      const obs = new MutationObserver((List) => {
+        List.forEach(id => {
+          if (id.type === 'childList') {
+            let ImageViewer = document.getElementById('SDHub-Gallery-Image-Viewer');
+            let row = document.getElementById('sdhub-gallery-image-info-row');
+            let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
+            let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button');
+            let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
+            let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
+            let Id = 'sdHUBHidingScrollBar';
 
-            TabList.forEach(button => {
+            TabList?.forEach(button => {
               let t = button.textContent.trim();
               if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
               let c = SDHubGetTranslation(t.toLowerCase());
@@ -199,7 +206,7 @@ function SDHubOnTabChange() {
             let Tab = SelectedTab?.id;
 
             if (Tab === 'sdhub-tab-button-texteditor' || Tab === 'sdhub-tab-button-gallery') {
-              Accordion.style.display = 'none';
+              if (Accordion) Accordion.style.display = 'none';
               if (!document.getElementById(Id)) {
                 const Scrollbar = document.createElement('style');
                 Scrollbar.id = Id;
@@ -208,27 +215,30 @@ function SDHubOnTabChange() {
               }
               Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
-            } else if (Tab !== 'sdhub-tab-button-texteditor' && Tab !== 'sdhub-tab-button-gallery') {
-              Accordion.style.display = 'block';
-              const Scrollbar = document.getElementById(Id);
-              if (Scrollbar) document.head.removeChild(Scrollbar);
+            } else if (Tab !== 'sdhub-tab-button-texteditor' || Tab !== 'sdhub-tab-button-gallery') {
+              if (Accordion) Accordion?.style.display = 'block';
+              document.getElementById(Id)?.remove();
               Object.assign(document.documentElement.style, { scrollbarWidth: '' });
               document.body.classList.remove('no-scroll');
             }
 
-            if (MainTab && MainTab.textContent.trim() !== 'HUB') {
-              const Scrollbar = document.getElementById(Id);
-              if (Scrollbar) document.head.removeChild(Scrollbar);
+            if (MainTab?.textContent.trim() !== 'HUB') {
+              document.getElementById(Id)?.remove();
               Object.assign(document.documentElement.style, { scrollbarWidth: '' });
               document.body.classList.remove('no-scroll');
-              const row = document.getElementById('sdhub-gallery-image-info-row');
               if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
+            }
+
+            if (ImageViewer?.style.display === 'flex') {
+              document.body.classList.add('no-scroll');
+            } else {
+              document.body.classList.remove('no-scroll');
             }
           }
         });
       });
 
-      obs.observe(Target, config);
+      obs.observe(EL, config);
     }
   });
 }
