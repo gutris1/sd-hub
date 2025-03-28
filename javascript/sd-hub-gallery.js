@@ -812,7 +812,7 @@ function SDHubGalleryDOMLoaded() {
     const row = document.getElementById('sdhub-gallery-image-info-row');
     if (e.key === 'Escape' && row && window.getComputedStyle(row).display === 'flex') {
       const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
-      if (LightBox && window.getComputedStyle(LightBox).display === 'flex') return;
+      if (LightBox?.style.display === 'flex') return;
       else e.stopPropagation(); e.preventDefault(); window.SDHubCloseImageInfoRow();
     }
   });
