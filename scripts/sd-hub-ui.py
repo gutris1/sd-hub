@@ -1,10 +1,10 @@
-from modules.script_callbacks import on_ui_tabs, on_app_started
+from modules.script_callbacks import on_ui_tabs
 import gradio as gr
 
-from sd_hub.galleryTab import GalleryTab, GalleryApp
 from sd_hub.downloaderTab import DownloaderTab
 from sd_hub.archiverTab import ArchiverTab
 from sd_hub.uploaderTab import UploaderTab
+from sd_hub.galleryTab import GalleryTab
 from sd_hub.infotext import sdhub_repo
 from sd_hub.paths import SDHubPaths
 
@@ -40,4 +40,3 @@ def onSDHUBTab():
     return (sdhub, 'HUB', 'sdhub'),
 
 on_ui_tabs(onSDHUBTab)
-on_app_started(GalleryApp)
