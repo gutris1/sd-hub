@@ -430,27 +430,31 @@ function SDHubGalleryKillContextMenu() {
   });
 }
 
-function SDHubGalleryContextButton(v) {
-  const imagePath = window.SDHubImagePath;
+async function SDHubGalleryContextButton(v) {
+  const path = window.SDHubImagePath;
+  const img = document.querySelector(`img[data-image="${path}"]`);
 
   switch (v) {
     case 'open':
-      window.open(imagePath, '_blank');
+      window.open(path, '_blank');
       break;
 
     case 'download':
-      const name = decodeURIComponent(imagePath.split('/').pop());
-      const link = document.createElement('a');
-      link.href = imagePath;
-      link.download = name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const link = Object.assign(document.createElement('a'), { 
+        href: path, 
+        download: img?.title
+      });
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      break;
+
+    case 'copy':
+      if (img?.fileObject) await navigator.clipboard.write([
+        new ClipboardItem({ [img.fileObject.type]: img.fileObject })
+      ]).catch(err => console.error('Error in copy:', err));
       break;
 
     case 'info':
-      const imgEL = document.querySelector(`img[data-image="${imagePath}"]`);
-      if (imgEL) SDHubGalleryImageInfo(imgEL, new Event('click'));
+      if (img) SDHubGalleryImageInfo(img, new Event('click'));
       break;
 
     case 'viewer':
@@ -867,6 +871,9 @@ function SDHubGalleryCreateContextMenu() {
       </li>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('download')">
         <span>${SDHubGalleryDLSVG} ${SDHubGetTranslation('download')}</span>
+      </li>
+      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('copy')">
+        <span>${SDHubGalleryCopySVG} ${SDHubGetTranslation('copy')}</span>
       </li>
       <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('info')">
         <span>${SDHubGalleryImageInfoSVG} ${SDHubGetTranslation('image_info')}</span>
