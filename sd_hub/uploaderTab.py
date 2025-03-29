@@ -1,7 +1,6 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from modules.ui_components import FormRow, FormColumn
-from modules.script_callbacks import on_app_started
 from modules.scripts import basedir
 from modules.shared import cmd_opts
 from fastapi import FastAPI
@@ -387,5 +386,3 @@ def UploaderTab():
             inputs=[upl_inputs, user_box, repo_box, branch_box, upl_token, repo_radio, gr.State()],
             outputs=[upl_output1, upl_output2]
         )
-
-on_app_started(LoadUploaderInfo)
