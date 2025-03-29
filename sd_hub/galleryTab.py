@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, responses, Request
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
-from modules.script_callbacks import on_app_started
 from datetime import datetime, timedelta
 from modules.scripts import basedir
 from modules.shared import opts
@@ -211,5 +210,3 @@ def GalleryTab():
                 )
 
             image.change(fn=None, _js='() => {SDHubGalleryParser();}')
-
-on_app_started(GalleryApp)
