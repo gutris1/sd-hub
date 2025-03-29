@@ -346,10 +346,10 @@ def UploaderTab():
             )
 
         upl_inputs = gr.Textbox(
-            elem_id='sdhub-uploader-inputs',
             show_label=False,
             lines=5,
             placeholder='Input File Path',
+            elem_id='sdhub-uploader-inputs',
             elem_classes='sdhub-textarea'
         )
 
@@ -366,8 +366,19 @@ def UploaderTab():
                 gr.Button('hantu', variant='primary', elem_classes='hide-this')
 
             with FormColumn(scale=2, variant='compact'):
-                upl_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
-                upl_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
+                upl_output1 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    max_lines=1,
+                    elem_classes='sdhub-output'
+                )
+
+                upl_output2 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    lines=5,
+                    elem_classes='sdhub-output'
+                )
 
         upl_load.click(
             fn=lambda: load_token('uploader'),
