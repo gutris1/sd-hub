@@ -350,7 +350,7 @@ def UploaderTab():
             lines=5,
             placeholder='Input File Path',
             elem_id='sdhub-uploader-inputs',
-            elem_classes='sdhub-textarea'
+            elem_classes='sdhub-input'
         )
 
         with FormRow(elem_id='sdhub-uploader-button-row'):
