@@ -456,8 +456,19 @@ def DownloaderTab():
                 )
 
             with FormColumn(scale=2, variant='compact'):
-                dl_out1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
-                dl_out2 = gr.TextArea(show_label=False, interactive=False, lines=5)
+                dl_out1 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    max_lines=1,
+                    elem_classes='sdhub-output'
+                )
+
+                dl_out2 = gr.TextArea(
+                    show_label=False,
+                    interactive=False,
+                    lines=5,
+                    elem_classes='sdhub-output'
+                )
 
         dl_load.click(
             fn=lambda: load_token('downloader'),
