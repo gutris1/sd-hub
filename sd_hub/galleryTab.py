@@ -145,27 +145,28 @@ def GalleryTab():
                     elem_classes='sdhub-radio'
                 )
 
-            apibox = gr.TextArea(
-                value='',
+            apibox = gr.Textbox(
                 show_label=False,
                 interactive=True,
                 placeholder='imgchest API key',
-                lines=1,
                 max_lines=1,
-                elem_id='SDHub-Gallery-imgchest-API'
+                elem_id='SDHub-Gallery-imgchest-API',
+                elem_classes='sdhub-input'
             )
 
             with FormRow():
                 savebtn = gr.Button(
                     'Save',
                     variant='primary',
-                    elem_id='SDHub-Gallery-imgchest-Save-Button'
+                    elem_id='SDHub-Gallery-imgchest-Save-Button',
+                    elem_classes='sdhub-buttons'
                 )
 
                 loadbtn = gr.Button(
                     'Load',
                     variant='primary',
-                    elem_id='SDHub-Gallery-imgchest-Load-Button'
+                    elem_id='SDHub-Gallery-imgchest-Load-Button',
+                    elem_classes='sdhub-buttons'
                 )
 
         savebtn.click(
