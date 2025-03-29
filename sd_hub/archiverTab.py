@@ -653,8 +653,19 @@ def ArchiverTab():
                     )
 
             with gr.Column():
-                arc_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
-                arc_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
+                arc_output1 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    max_lines=1,
+                    elem_classes='sdhub-output'
+                )
+
+                arc_output2 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    lines=5,
+                    elem_classes='sdhub-output'
+                )
 
         gr.HTML("""<h3 style='font-size: 17px;' id='sdhub-archiver-extr-title'>Extract</h3>""")
         extr_in = gr.Textbox(
