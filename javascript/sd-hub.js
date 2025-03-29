@@ -73,14 +73,16 @@ onUiUpdate(function() {
 
 async function SDHubTabLoaded() {
   [
-    ['sdhub-downloader-load-button', 'Load Token'],
-    ['sdhub-downloader-save-button', 'Save Token'],
-    ['sdhub-uploader-load-button', 'Load Token'],
-    ['sdhub-uploader-save-button', 'Save Token']
-  ].forEach(([id, title]) => document.getElementById(id)?.setAttribute('title', title));
+    ['sdhub-downloader-load-button', 'load_token'],
+    ['sdhub-downloader-save-button', 'save_token'],
+    ['sdhub-uploader-load-button', 'load_token'],
+    ['sdhub-uploader-save-button', 'save_token']
+  ].forEach(([id, key]) => {
+    document.getElementById(id)?.setAttribute('title', SDHubGetTranslation(key));
+  });
 
-  document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', 'Load File');
-  document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', 'Save changes');
+  document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', SDHubGetTranslation('load_file'));
+  document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', SDHubGetTranslation('save_changes'));
   setTimeout(() => document.getElementById('sdhub-texteditor-initial-load')?.click(), 2000);
 
   try {
