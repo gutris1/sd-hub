@@ -16,11 +16,13 @@ var SDHubGalleryDLSVG = `
 `;
 
 var SDHubGalleryCopySVG = `
-  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="transparent"
-    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(0.85)">
-    <rect x="0.802" y="0.846" width="22.352" height="22.352" rx="2" ry="2"/>
-    <circle cx="7.632" cy="7.676" r="1.862"/>
-    <polyline points="23.154 15.747 16.946 9.539 3.285 23.198"/>
+  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'
+    width='30px' height='30px' viewBox='0 0 24 24' fill='transparent'>
+    <rect x='4.758' y='0.768' width='18.475' height='18.475' rx='2' ry='2'/>
+    <circle cx='10.404' cy='6.414' r='1.539'/>
+    <polyline points='23.234 13.085 18.102 7.954 6.81 19.244'/>
+    <path d='M 19.23 19.381 L 19.23 21.237 C 19.23 22.342 18.335 23.237 17.23 23.237 L 2.755 23.237 C 1.65 23.237 0.755 22.342 0.755 21.237
+    L 0.755 6.762 C 0.755 5.657 1.65 4.762 2.755 4.762 L 4.588 4.762'/>
   </svg>
 `;
 
