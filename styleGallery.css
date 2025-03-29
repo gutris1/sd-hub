@@ -1,3 +1,23 @@
+:root {
+  --sdhub-gallery-tab-background: var(--input-background-fill-hover);
+  --sdhub-gallery-img-button: #000;
+  --sdhub-gallery-cm-border: #000;
+  --sdhub-gallery-cm-background: #404040;
+  --sdhub-gallery-cm-arrow: var(--body-text-color);
+  --sdhub-gallery-li-hover-background: #404040;
+  --sdhub-gallery-li-hover-color: var(--background-fill-primary);
+}
+
+.dark {
+  --sdhub-gallery-tab-background: var(--input-background-fill);
+  --sdhub-gallery-img-button: var(--input-background-fill);
+  --sdhub-gallery-cm-border: #8c8c8c;
+  --sdhub-gallery-cm-background: #404040;
+  --sdhub-gallery-cm-arrow: var(--primary-400);
+  --sdhub-gallery-li-hover-background: #8c8c8c;
+  --sdhub-gallery-li-hover-color: var(--background-fill-primary);
+}
+
 body.no-scroll {
   overflow: hidden;
 }
@@ -26,7 +46,7 @@ body.no-scroll {
   display: none;
   position: relative;
   background: transparent;
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   transition: 0.4s ease;
   border: 0;
   border-radius: 100px;
@@ -52,7 +72,7 @@ body.no-scroll {
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
   color: var(--primary-400);
-  filter: drop-shadow(0 0 10px var(--body-text-color-subdued));
+  filter: drop-shadow(0 0 10px var(--body-text-color));
   box-shadow: 0 0 10px 1px var(--primary-400);
 }
 
@@ -62,7 +82,7 @@ body.no-scroll {
   overflow: hidden;
   padding: 5px 0;
   border-radius: 1rem;
-  background: var(--background-fill-secondary);
+  background: var(--sdhub-gallery-tab-background);
 }
 
 #SDHub-Gallery-Tab-Counter-Container {
@@ -83,7 +103,7 @@ body.no-scroll {
   border-bottom-right-radius: 1rem;
   background: var(--input-background-fill-hover);
   pointer-events: none;
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   font-size: var(--block-info-text-size);
 }
 
@@ -133,7 +153,6 @@ body.no-scroll {
   max-width: 240px;
   max-height: 240px;
   object-fit: contain;
-  border-radius: 0.6rem;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -148,7 +167,7 @@ body.no-scroll {
   padding: 2px;
   border-radius: 0;
   color: var(--primary-400);
-  background: var(--input-background-fill);
+  background: var(--sdhub-gallery-img-button);
   box-shadow: 0 0 3px 1px #000;
   cursor: pointer;
   opacity: 0;
@@ -391,33 +410,28 @@ body.no-scroll {
 
 #SDHub-Gallery-ContextMenu {
   display: block;
-  margin: 0;
-  padding-top: 6px;
-  padding-bottom: 6px;
-  padding-left: 0;
-  padding-right: 0;
+  position: absolute;
   pointer-events: none;
   opacity: 0;
-}
-
-.sdhub-gallery-contextmenu {
-  position: absolute;
-  background: var(--background-fill-secondary);
-  color: var(--body-text-color-subdued);
-  border-radius: 0.5rem;
-  box-shadow: 0 0 10px 2px #000;
-  z-index: 1000;
-  border: 1px solid #8c8c8c;
-  transform: scale(0);
   transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: scale(0);
+  z-index: 1000;
 }
 
-#SDHub-Gallery-ContextMenu ul {
+.sdhub-gallery-cm-ul {
+  width: max-content;
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 6px 0;
   font-family: var(--font);
   font-size: var(--body-text-size);
+  background: var(--background-fill-secondary);
+  color: var(--body-text-color);
+  border-radius: 0.5rem;
+  box-shadow:
+    0 0 15px 2px #000,
+    0 0 10px 0px #000;
+  border: 1px solid var(--sdhub-gallery-cm-border);
 }
 
 #SDHub-Gallery-ContextMenu li {
@@ -427,7 +441,7 @@ body.no-scroll {
   justify-content: left;
   text-align: center;
   align-items: center;
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   padding: 5px 10px;
   border-radius: 0;
 }
@@ -450,10 +464,10 @@ body.no-scroll {
   right: 0;
   margin-right: 0 !important;
   transition: transform 0.3s ease;
-  color: var(--primary-400) !important;
+  color: var(--sdhub-gallery-cm-arrow) !important;
 }
 
-#sdhub-cm-sendto-menu {
+#SDHub-Gallery-ContextMenu-SubMenu {
   position: absolute;
   top: 0;
   height: auto;
@@ -463,24 +477,11 @@ body.no-scroll {
   background: transparent;
   border: 0;
   border-radius: 0;
-  box-shadow: unset;
   transform: scale(0);
   transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-#sdhub-cm-sendto-menu ul {
-  width: max-content;
-  padding-top: 6px;
-  padding-bottom: 6px;
-  padding-left: 0;
-  padding-right: 0;
-  background: var(--background-fill-secondary);
-  border: 1px solid #8c8c8c;
-  border-radius: 0.5rem;
-  box-shadow: 0 0 10px 2px #000;
-}
-
-.sdhub-cm-sendto:hover #sdhub-cm-sendto-menu {
+.sdhub-cm-sendto:hover #SDHub-Gallery-ContextMenu-SubMenu {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
@@ -490,12 +491,12 @@ body.no-scroll {
   margin-right: 10px;
   width: 20px;
   height: 20px;
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
 }
 
 #SDHub-Gallery-ContextMenu li:hover {
-  background: #8c8c8c;
-  color: var(--background-fill-primary);
+  background: var(--sdhub-gallery-li-hover-background);
+  color: var(--sdhub-gallery-li-hover-color);
   cursor: pointer;
 }
 
@@ -698,6 +699,7 @@ body.no-scroll {
   border-radius: 0.5rem;
   border: 1px solid transparent;
   margin-bottom: 8px;
+  box-shadow: var(--sdhub-box-shadow);
   transition: all 0.3s ease;
 }
 
@@ -710,6 +712,7 @@ body.no-scroll {
   padding-top: 0;
   padding-left: 0;
   padding-right: 0;
+  box-shadow: none;
   background-color: transparent;
   transition: none;
 }
@@ -842,8 +845,10 @@ body.no-scroll {
 }
 
 #SDHubimgInfoSendButton button {
-  transition: 0.2s ease;
   padding: 0.4rem;
+  box-shadow: var(--sdhub-box-shadow);
+  background: var(--sdhub-secondary-button-background);
+  transition: 0.2s ease;
 }
 
 #SDHubimgInfoSendButton button:hover {
@@ -907,12 +912,13 @@ body.no-scroll {
 #SDHub-Gallery-Delete-Container {
   display: none;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(5px);
+  border-radius: 1rem;
   justify-content: center;
   align-items: center;
   z-index: 10000;
@@ -954,7 +960,7 @@ body.no-scroll {
 #SDHub-Gallery-Delete-Text {
   margin: 0 0 30px;
   font-size: 20px;
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   pointer-events: none;
 }
 
@@ -972,7 +978,7 @@ body.no-scroll {
   padding: 1px;
   border: 0;
   border-radius: 10px;
-  background: var(--body-text-color-subdued);
+  background: var(--body-text-color);
   color: var(--background-fill-secondary);
   cursor: pointer;
   pointer-events: auto;
@@ -989,7 +995,7 @@ body.no-scroll {
   transform: scale(1.2);
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   background: var(--button-primary-background-fill-hover);
 }
 
@@ -1048,7 +1054,7 @@ body.no-scroll {
 #SDHub-Gallery-imgchest-Info {
   cursor: default;
   text-align: center;
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
 }
 
 .sdhub-gallery-imgchest-info {
@@ -1090,12 +1096,12 @@ body.no-scroll {
 #SDHub-Gallery-imgchest-Checkbox input:checked:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   background: var(--button-primary-background-fill-hover);
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:checked:hover ~ span {
-  color: var(--body-text-color-subdued) !important;
+  color: var(--body-text-color) !important;
 }
 
 #SDHub-Gallery-imgchest-Checkbox span {
@@ -1149,7 +1155,7 @@ body.no-scroll {
 #SDHub-Gallery-imgchest-Load-Button:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
-  color: var(--body-text-color-subdued);
+  color: var(--body-text-color);
   background: var(--button-primary-background-fill-hover);
 }
 
