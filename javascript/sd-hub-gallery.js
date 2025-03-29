@@ -20,7 +20,13 @@ onUiLoaded(function () {
   if (GalleryTab) SDHubCreateGallery(GalleryTab);
 });
 
-onAfterUiUpdate(SDHubGalleryWatchNewImage);
+function SDHubGalleryUpdateImageInput(input, file) {
+  const data = new DataTransfer();
+  data.items.add(file);
+  input.files = data.files;
+  const e = new Event('change', { 'bubbles': true, 'composed': true });
+  input.dispatchEvent(e);
+}
 
 async function SDHubResizeImage(blob, size = 512) {
   try {
@@ -386,8 +392,8 @@ function SDHubGalleryContextMenu(e, imgEL) {
 }
 
 function SDHubGallerySubmenu() {
-  const submenu = document.querySelector('.sdhub-cm-submenu');
-  const ul = document.querySelector('.sdhub-cm-submenu > ul');
+  const submenu = document.querySelector('.sdhub-gallery-cm-submenu');
+  const ul = document.querySelector('.sdhub-gallery-cm-submenu > ul');
   const sendToButton = document.querySelector('.sdhub-cm-sendto');
 
   if (!submenu || !sendToButton) return;
@@ -478,7 +484,7 @@ function SDHubGallerySendToUploader() {
   SDHubGalleryKillContextMenu();
 }
 
-async function SDHubGallerySendImage(v) {
+function SDHubGallerySendImage(v) {
   const row = document.getElementById('sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
   const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
@@ -489,7 +495,7 @@ async function SDHubGallerySendImage(v) {
   DelCon.style.display = 'flex'; DelCon.style.opacity = '1';
   Spinner.style.visibility = 'visible';
 
-  await SDHubGalleryPasteImage(input, window.SDHubImageFile);
+  SDHubGalleryUpdateImageInput(input, window.SDHubImageFile);
 
   const wait = setInterval(() => {
     if (window.SDHubimgRawOutput?.trim()) {
@@ -528,7 +534,7 @@ function SDHubImageInfoClearButton() {
 
     const closeRow = () => {
       row.style.opacity = '';
-      document.body.classList.remove('no-scroll');
+      if (!FoxFire) document.body.classList.remove('no-scroll');
       setTimeout(() => (ClearButton.click(), (row.style.display = '')), 200);
     };
 
@@ -537,7 +543,7 @@ function SDHubImageInfoClearButton() {
   }
 }
 
-async function SDHubGalleryImageInfo(imgEL) {
+function SDHubGalleryImageInfo(imgEL) {
   window.SDHubImagePath = imgEL.getAttribute('data-image');
   window.SDHubImageFile = imgEL.fileObject;
   const row = document.querySelector('#sdhub-gallery-image-info-row');
@@ -545,19 +551,11 @@ async function SDHubGalleryImageInfo(imgEL) {
 
   if (input) {
     row.style.display = 'flex'; row.style.pointerEvents = 'none';
-    await SDHubGalleryPasteImage(input, window.SDHubImageFile);
+    SDHubGalleryUpdateImageInput(input, window.SDHubImageFile);
 
-    document.body.classList.add('no-scroll');
+    if (!FoxFire) document.body.classList.add('no-scroll');
     setTimeout(() => (row.style.pointerEvents = '', row.style.opacity = '1'), 300);
   }
-}
-
-async function SDHubGalleryPasteImage(input, file) {
-  const data = new DataTransfer();
-  data.items.add(file);
-  const pasteImg = new ClipboardEvent('paste', { clipboardData: data, bubbles: true });
-  navigator.clipboard.writeText('');
-  input.dispatchEvent(pasteImg);
 }
 
 function SDHubGalleryTabEventListener(TabCon) {
@@ -631,7 +629,7 @@ function SDHubGalleryDeletion() {
 
   DelCon.style.display = 'flex';
   Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
-  document.body.classList.add('no-scroll');
+  if (!FoxFire) document.body.classList.add('no-scroll');
 
   window.SDHubCenterElement('DelBox');
   window.SDHubCenterElement('Spinner');
@@ -660,7 +658,7 @@ function SDHubGalleryDeletion() {
       setTimeout(() => {
         DelCon.style.opacity = '';
         Spinner.style.visibility = '';
-        document.body.classList.remove('no-scroll');
+        if (!FoxFire) document.body.classList.remove('no-scroll');
       }, 1000);
       setTimeout(() => {
         DelCon.style.display = '';
@@ -671,7 +669,7 @@ function SDHubGalleryDeletion() {
   };
 
   DelCon.onclick = No.onclick = () => {
-    document.body.classList.remove('no-scroll');
+    if (!FoxFire) document.body.classList.remove('no-scroll');
     DelCon.style.opacity = '';
     DelBox.style.transform = 'scale(1.5)';
     setTimeout(() => (DelCon.style.display = '', DelBox.style.transform = ''), 200);
@@ -698,6 +696,7 @@ function SDHubCreateGallery(GalleryTab) {
 
     const imgchestColumn = document.getElementById('SDHub-Gallery-imgchest-Column');
     if (imgchestColumn) SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn);
+    onAfterUiUpdate(SDHubGalleryWatchNewImage);
   }
 }
 
@@ -710,7 +709,7 @@ function SDHubGalleryDOMLoaded() {
   link.setAttribute('property', 'stylesheet');
   link.href = file;
 
-  document.body.insertBefore(link, document.body.querySelector('style'));
+  document.body.appendChild(link);
 
   SDHubCanvas = document.createElement('canvas');
   SDHubCTX = SDHubCanvas.getContext('2d');
@@ -863,37 +862,37 @@ function SDHubGalleryDOMLoaded() {
 function SDHubGalleryCreateContextMenu() {
   const GalleryCM = document.createElement('div');
   GalleryCM.id = 'SDHub-Gallery-ContextMenu';
-  GalleryCM.classList.add('sdhub-gallery-contextmenu');
+  GalleryCM.classList.add('sdhub-gallery-cm-menu');
   GalleryCM.innerHTML = `
-    <ul>
-      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('open')">
+    <ul class='sdhub-gallery-cm-ul'>
+      <li onclick="SDHubGalleryContextButton('open')">
         <span>${SDHubGalleryOpenNewTabSVG} ${SDHubGetTranslation('open_new_tab')}</span>
       </li>
-      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('download')">
+      <li onclick="SDHubGalleryContextButton('download')">
         <span>${SDHubGalleryDLSVG} ${SDHubGetTranslation('download')}</span>
       </li>
-      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('copy')">
+      <li onclick="SDHubGalleryContextButton('copy')">
         <span>${SDHubGalleryCopySVG} ${SDHubGetTranslation('copy')}</span>
       </li>
-      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('info')">
+      <li onclick="SDHubGalleryContextButton('info')">
         <span>${SDHubGalleryImageInfoSVG} ${SDHubGetTranslation('image_info')}</span>
       </li>
-      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('viewer')">
+      <li onclick="SDHubGalleryContextButton('viewer')">
         <span>${SDHubGalleryImageSVG} ${SDHubGetTranslation('image_viewer')}</span>
       </li>
-      <li class='sdhub-cm-li sdhub-cm-sendto'>
+      <li class='sdhub-cm-sendto'>
         <span>${SDHubGallerySendToSVG} ${SDHubGetTranslation('send_to')} ${SDHubGalleryARRSVG}</span>
-        <div id="sdhub-cm-sendto-menu" class="sdhub-cm-submenu sdhub-gallery-contextmenu">
-          <ul>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('txt2img')">txt2img</li>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('img2img')">img2img</li>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('extras')">extras</li>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
-            <li class='sdhub-cm-li' onclick="SDHubGallerySendToUploader()">${SDHubGetTranslation('uploader')}</li>
+        <div id='SDHub-Gallery-ContextMenu-SubMenu' class='sdhub-gallery-cm-menu sdhub-gallery-cm-submenu' sdhub-gallery-contextmenu">
+          <ul class='sdhub-gallery-cm-ul'>
+            <li onclick="SDHubGallerySendImage('txt2img')">txt2img</li>
+            <li onclick="SDHubGallerySendImage('img2img')">img2img</li>
+            <li onclick="SDHubGallerySendImage('extras')">extras</li>
+            <li onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
+            <li onclick="SDHubGallerySendToUploader()">${SDHubGetTranslation('uploader')}</li>
           </ul>
         </div>
       </li>
-      <li class='sdhub-cm-li' onclick="SDHubGalleryContextButton('delete')">
+      <li onclick="SDHubGalleryContextButton('delete')">
         <span>${SDHubGalleryDeleteSVG} ${SDHubGetTranslation('delete')}</span>
       </li>
     </ul>
