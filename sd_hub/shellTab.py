@@ -92,7 +92,8 @@ def ShellTab():
                 interactive=False,
                 max_lines=21,
                 scale=9,
-                elem_id='sdhub-shell-output'
+                elem_id='sdhub-shell-output',
+                elem_classes='sdhub-output'
             )
 
         button.click(fn=ShellLobby, inputs=[inputs, gr.State()], outputs=[output])
