@@ -1048,7 +1048,10 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
 
   ['Save', 'Load'].forEach(key => {
     const btn = document.getElementById(`SDHub-Gallery-imgchest-${key}-Button`);
-    btn && (btn.title = `${key} Setting`, btn.textContent = SDHubGetTranslation(key.toLowerCase()));
+    if (btn) {
+      btn.title = SDHubGetTranslation(`${key.toLowerCase()}_setting`);
+      btn.textContent = SDHubGetTranslation(key.toLowerCase());
+    }
   });
 
   const apiInput = document.querySelector('#SDHub-Gallery-imgchest-API input');
