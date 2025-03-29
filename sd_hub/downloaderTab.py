@@ -426,7 +426,7 @@ def DownloaderTab():
             lines=5,
             placeholder='$tag\nURL',
             elem_id='sdhub-downloader-inputs',
-            elem_classes='sdhub-textarea'
+            elem_classes='sdhub-input'
         )
 
         with FormRow(elem_id='sdhub-downloader-button-row'):
