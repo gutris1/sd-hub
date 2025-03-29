@@ -76,7 +76,7 @@ def ShellTab():
                 show_label=False,
                 scale=9,
                 elem_id='sdhub-shell-inputs',
-                elem_classes='sdhub-textarea'
+                elem_classes='sdhub-input'
             )
 
         with FormRow():
