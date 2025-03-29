@@ -1,3 +1,5 @@
+let FoxFire = /firefox/i.test(navigator.userAgent);
+
 let SDHubTabButtons = {
   'Downloader': 'sdhub-tab-button-downloader',
   'Uploader': 'sdhub-tab-button-uploader',
@@ -19,33 +21,33 @@ let SDHubLangIndex = {
 
 let SDHubTranslations = {};
 
-onUiLoaded(async function () {
-  SDHubTabLoaded();
-  SDHubTokenBlur();
-  SDHubEvents();
-  SDHubUITranslation();
+onUiLoaded(function() {
+  SDHubTabLoaded(); SDHubTokenBlur(); SDHubEvents(); SDHubUITranslation();
 });
 
 onUiUpdate(function() {
   let row = document.getElementById('sdhub-gallery-image-info-row');
-  let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
-  let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button');
-  let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
   let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
+  let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
+  let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
+  let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
   let Id = 'sdHUBHidingScrollBar';
 
-  if (TabList) {
+  if (TabList.length > 0) {
     TabList.forEach(button => {
+      if (!button || !button.textContent?.trim()) return;
       let t = button.textContent.trim();
-      if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
-      let c = SDHubGetTranslation(t.toLowerCase());
-      if (c) button.textContent = c;
+      let c = SDHubTabButtons[t]; 
+      if (c && !button.classList.contains(c)) button.classList.add(c);
+      let tl = SDHubGetTranslation(t.toLowerCase());
+      if (tl && button.textContent !== tl) button.textContent = tl;
     });
   }
 
-  let Tab = SelectedTab?.id;
+  let TextEditorTab = SelectedTab?.classList.contains('sdhub-tab-button-texteditor');
+  let GalleryTab = SelectedTab?.classList.contains('sdhub-tab-button-gallery');
 
-  if (Tab === 'sdhub-tab-button-texteditor' || Tab === 'sdhub-tab-button-gallery') {
+  if (TextEditorTab || GalleryTab) {
     if (Accordion) Accordion.style.display = 'none';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
@@ -53,20 +55,21 @@ onUiUpdate(function() {
       Scrollbar.innerHTML = `::-webkit-scrollbar { width: 0 !important; height: 0 !important; }`;
       document.head.appendChild(Scrollbar);
     }
-
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
-  } else if (Tab !== 'sdhub-tab-button-texteditor' && Tab !== 'sdhub-tab-button-gallery') {
+  } else {
     if (Accordion) Accordion.style.display = 'block';
-    document.getElementById(Id)?.remove();
+    let el = document.getElementById(Id);
+    if (el) el.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
+    if (!FoxFire) document.body.classList.remove('no-scroll');
   }
 
   if (MainTab?.textContent.trim() !== 'HUB') {
-    document.getElementById(Id)?.remove();
+    const id = document.getElementById(Id);
+    if (id) id.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
+    if (!FoxFire) document.body.classList.remove('no-scroll');
     if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
   }
 });
@@ -172,8 +175,6 @@ async function SDHubTextEditorInfo(flag) {
 }
 
 function SDHubTextEditorGalleryScrollBar() {
-  const isFirefox = /firefox/i.test(navigator.userAgent);
-
   const ScrollBAR = document.createElement('style');
   document.body.appendChild(ScrollBAR);
 
@@ -223,7 +224,7 @@ function SDHubTextEditorGalleryScrollBar() {
     }
   `;
 
-  ScrollBAR.innerHTML = isFirefox ? SBforFirefox : SBwebkit;
+  ScrollBAR.innerHTML = FoxFire ? SBforFirefox : SBwebkit;
 }
 
 function SDHubGetTranslation(key, count = 1) {
@@ -345,41 +346,31 @@ function SDHubUITranslation() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
-  const waitingXLSX = new Promise((resolve) => {
-    if (window.XLSX) return resolve();
-    const interval = setInterval(() => {
-      if (window.XLSX) {
-        clearInterval(interval);
-        resolve();
-      }
-    }, 50);
-  });
-
-  await waitingXLSX;
+  await new Promise(resolve => (function check() { window.XLSX ? resolve() : setTimeout(check, 50); })());
 
   try {
-    window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)[0];
-    window.SDHubFilePath = getRunningScript().match(/file=[^\/]+\/[^\/]+\//)?.[0];
+    window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)?.[0];
+    const path = getRunningScript()?.match(/file=[^\/]+\/[^\/]+\//)?.[0];
+    if (path) window.SDHubFilePath = path;
+    console.log(window.SDHubFilePath);
 
-    const file = `${window.SDHubFilePath}sd-hub-translations.xlsx`;
-    const response = await fetch(file);
-    const arrayBuffer = await response.arrayBuffer();
-    const book = XLSX.read(arrayBuffer, { type: 'array' });
-    const data = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1 });
-    const langKeys = Object.keys(SDHubLangIndex);
-    SDHubTranslations = Object.fromEntries(langKeys.map(lang => [lang, {}]));
+    const res = await fetch(`${path}sd-hub-translations.xlsx`);
+    if (res.ok) {
+      const book = XLSX.read(await res.arrayBuffer(), { type: 'array' });
+      const data = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1 });
 
-    for (let i = 1; i < data.length; i++) {
-      const row = data[i];
-      if (!row[0] || row[0].startsWith("//")) continue;
-      const key = row[0].trim();
-      if (!key) continue;
-      langKeys.forEach(lang => SDHubTranslations[lang][key] = row[SDHubLangIndex[lang]]?.trim() || key);
+      SDHubTranslations = Object.fromEntries(Object.keys(SDHubLangIndex).map(lang => [lang, {}]));
+      data.slice(1).forEach(row => {
+        if (row[0] && !row[0].startsWith("//")) {
+          const key = row[0].trim();
+          Object.keys(SDHubLangIndex).forEach(lang => {
+            SDHubTranslations[lang][key] = row[SDHubLangIndex[lang]]?.trim() || key;
+          });
+        }
+      });
+
+      SDHubTextEditorGalleryScrollBar();
+      SDHubGalleryDOMLoaded();
     }
-
-    SDHubTextEditorGalleryScrollBar();
-    SDHubGalleryDOMLoaded();
-  } catch (err) {
-    console.error("XLSX Error:", err);
-  }
+  } catch (err) { console.error("XLSX Error:", err); }
 });
