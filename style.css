@@ -1,3 +1,21 @@
+:root {
+  --sdhub-box-shadow: 0 0 5px 0 #000;
+  --sdhub-box-shadow-radio-label: inset 0 0 5px 0 #000;
+  --sdhub-tab-button-selected: var(--button-primary-text-color);
+  --sdhub-secondary-button-background: var(--input-background-fill-hover);
+  --sdhub-radio-input-not-checked: drop-shadow(0 0 2px #000);
+  --sdhub-accordion-border: 1px solid #000;
+}
+
+.dark {
+  --sdhub-box-shadow: none;
+  --sdhub-box-shadow-radio-label: none;
+  --sdhub-tab-button-selected: var(--background-fill-primary);
+  --sdhub-secondary-button-background: var(--button-secondary-background-fill);
+  --sdhub-radio-input-not-checked: drop-shadow(0 0 2px transparent);
+  --sdhub-accordion-border: 1px solid var(--block-border-color);
+}
+
 #sdhub-tab > .tab-nav {
   border: 0;
   margin: 8px 0 8px 0;
@@ -11,7 +29,7 @@
 
 #sdhub-tab > .tab-nav > button.selected {
   cursor: default;
-  color: var(--background-fill-primary);
+  color: var(--sdhub-tab-button-selected);
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--button-primary-background-fill);
@@ -69,6 +87,8 @@
   padding: 0;
   font-size: clamp(15px, 4vw, 100%);
   transition: 0.4s ease;
+  box-shadow: var(--sdhub-box-shadow);
+  background: var(--sdhub-secondary-button-background);
 }
 
 #sdhub-downloader-scrape-button {
@@ -113,6 +133,7 @@
   border-radius: 0;
   padding: 0;
   cursor: pointer;
+  box-shadow: 0 0 3px 1px #000;
   transition: 0.4s ease;
 }
 
@@ -132,8 +153,21 @@
   margin: 0;
 }
 
+#sdhub-tab .sdhub-input textarea,
+#sdhub-tab .sdhub-input input,
+#sdhub-tab .sdhub-radio input,
+#sdhub-tab .sdhub-output input,
+#sdhub-tab .sdhub-output textarea,
+#sdhub-tab .sdhub-accordion {
+  box-shadow: var(--sdhub-box-shadow);
+}
+
+#sdhub-tab .sdhub-radio label {
+  box-shadow: var(--sdhub-box-shadow-radio-label);
+}
+
 #sdhub-tab .sdhub-buttons,
-#sdhub-tab .sdhub-textarea textarea,
+#sdhub-tab .sdhub-input textarea,
 #sdhub-tab .sdhub-input input,
 #sdhub-tab .sdhub-radio label,
 #sdhub-tab .sdhub-radio input,
@@ -159,7 +193,7 @@
   font-size: 17px;
 }
 
-#sdhub-tab .sdhub-textarea textarea:focus,
+#sdhub-tab .sdhub-input textarea:focus,
 #sdhub-tab .sdhub-input input:focus {
   filter: drop-shadow(0 0 1px var(--primary-400)) blur(0px) !important;
   box-shadow: 0 0 10px 1px var(--primary-400);
@@ -187,6 +221,10 @@
 
 #sdhub-tab .sdhub-radio input:hover {
   cursor: pointer;
+}
+
+#sdhub-tab .sdhub-radio input:not(:checked):hover {
+  filter: var(--sdhub-radio-input-not-checked);
 }
 
 #sdhub-tab .sdhub-radio input:not(:checked):hover {
@@ -269,6 +307,10 @@
 :not(.gradio-container-4-40-0) #sdhub-tag-dataframe > div > div,
 :not(.gradio-container-4-40-0) #sdhub-tag-dataframe table {
   overflow: visible !important;
+}
+
+#sdhub-tab .sdhub-accordion {
+  border: var(--sdhub-accordion-border) !important;
 }
 
 #sdhub-tab .sdhub-accordion > .label-wrap {
