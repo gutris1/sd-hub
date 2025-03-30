@@ -20,12 +20,32 @@ onUiLoaded(function () {
   if (GalleryTab) SDHubCreateGallery(GalleryTab);
 });
 
-function SDHubGalleryUpdateImageInput(input, file) {
-  const data = new DataTransfer();
-  data.items.add(file);
-  input.files = data.files;
-  const e = new Event('change', { 'bubbles': true, 'composed': true });
-  input.dispatchEvent(e);
+async function SDHubGalleryUpdateImageInput(input, path) {
+  try {
+    const file = await SDHubGalleryCreateImageFile(path);
+    if (!file) throw new Error('Failed to create file');
+
+    const data = new DataTransfer();
+    data.items.add(file);
+    input.files = data.files;
+
+    const e = new Event('change', { bubbles: true, composed: true });
+    input.dispatchEvent(e);
+  } catch (err) {
+    console.error('Error in updating image input:', err);
+  }
+}
+
+async function SDHubGalleryCreateImageFile(path) {
+  try {
+    const res = await fetch(path);
+    const blob = await res.blob();
+    const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
+    return new File([blob], name, { type: blob.type });
+  } catch (err) {
+    console.error('Error in creating file:', err);
+    return null;
+  }
 }
 
 async function SDHubResizeImage(blob, size = 512) {
@@ -66,7 +86,7 @@ async function SDHubGalleryLoadInitial() {
     });
 
     for (let index = 0; index < total; index++) {
-      let { path } = data.images[index];
+      let { path, thumbnail } = data.images[index];
       let whichTab = SDHubGalleryTabList.find((tab) => path.includes(`/${tab}/`));
       let tabToUse = whichTab || 'extras-images';
       let pathParts = path.split('/');
@@ -100,7 +120,7 @@ async function SDHubGalleryLoadInitial() {
         }
 
         newImgBox.id = newId;
-        imgBoxes.push({ newImgBox, path, TabCon, TabBtn, counter });
+        imgBoxes.push({ newImgBox, path, thumbnail, TabCon, TabBtn, counter });
         SDHubGalleryTabImageIndex++;
       }
     }
@@ -109,9 +129,9 @@ async function SDHubGalleryLoadInitial() {
       TabCon.prepend(newImgBox);
     });
 
-    for (const { newImgBox, path, TabCon, TabBtn, counter } of imgBoxes) {
+    for (const { newImgBox, path, thumbnail, TabCon, TabBtn, counter } of imgBoxes) {
       const img = newImgBox.querySelector('img');
-      const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
+      const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0]; // Extract filename
 
       if (img) {
         try {
@@ -121,10 +141,7 @@ async function SDHubGalleryLoadInitial() {
           });
 
           img.dataset.image = path;
-          const blob = await fetch(path.split('?')[0]).then((res) => res.blob());
-          const thumb = await SDHubResizeImage(blob);
-          img.fileObject = new File([blob], name, { type: blob.type });
-          img.src = URL.createObjectURL(thumb);
+          img.src = thumbnail;
           img.title = name;
 
           img.onload = () => {
@@ -139,7 +156,9 @@ async function SDHubGalleryLoadInitial() {
             }
           };
 
-        } catch (error) { console.error('Error in initial imgbox:', error); }
+        } catch (error) {
+          console.error('Error in initial imgbox:', error);
+        }
       }
 
       if (TabBtn) TabBtn.style.display = 'flex';
@@ -152,7 +171,9 @@ async function SDHubGalleryLoadInitial() {
       }
     }
 
-  } catch (error) { console.error('Error in initial-load:', error); }
+  } catch (error) {
+    console.error('Error in initial-load:', error);
+  }
 }
 
 function SDHubGalleryCloneTab(id, name) {
@@ -330,7 +351,6 @@ function SDHubGalleryContextMenu(e, imgEL) {
   window.SDHubImagePath = imgEL.getAttribute('data-image');
   window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
-  window.SDHubImageFile = imgEL.fileObject;
 
   Object.assign(GalleryCM.style, {
     transition: 'none',
@@ -454,9 +474,8 @@ async function SDHubGalleryContextButton(v) {
       break;
 
     case 'copy':
-      if (img?.fileObject) await navigator.clipboard.write([
-        new ClipboardItem({ [img.fileObject.type]: img.fileObject })
-      ]).catch(err => console.error('Error in copy:', err));
+      const file = await SDHubGalleryCreateImageFile(path);
+      if (file) await navigator.clipboard.write([new ClipboardItem({ [file.type]: file })]);
       break;
 
     case 'info':
@@ -484,7 +503,8 @@ function SDHubGallerySendToUploader() {
   SDHubGalleryKillContextMenu();
 }
 
-function SDHubGallerySendImage(v) {
+async function SDHubGallerySendImage(v) {
+  SDHubGalleryKillContextMenu();
   const row = document.getElementById('sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
   const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
@@ -492,11 +512,9 @@ function SDHubGallerySendImage(v) {
   window.SDHubCenterElement('Spinner');
 
   row.style.display = 'flex'; row.style.pointerEvents = 'none';
-  DelCon.style.display = 'flex'; DelCon.style.opacity = '1';
-  Spinner.classList.add('sdhub-gallery-spinner');
-  Spinner.style.visibility = 'visible';
+  DelCon.style.display = 'flex'; DelCon.style.opacity = '1'; Spinner.style.display = 'flex';
 
-  SDHubGalleryUpdateImageInput(input, window.SDHubImageFile);
+  await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
 
   const wait = setInterval(() => {
     if (window.SDHubimgRawOutput?.trim()) {
@@ -507,15 +525,11 @@ function SDHubGallerySendImage(v) {
         setTimeout(() => SendButton.click(), 1000);
         setTimeout(() => {
           row.style.display = ''; row.style.pointerEvents = '';
-          DelCon.style.opacity = ''; DelCon.style.display = '';
-          Spinner.style.visibility = '';
-          Spinner.classList.remove('sdhub-gallery-spinner');
+          DelCon.style.opacity = ''; DelCon.style.display = ''; Spinner.style.display = '';
         }, 1300);
       }
     }
   }, 100);
-
-  SDHubGalleryKillContextMenu();
 }
 
 function SDHubImageInfoClearButton() {
@@ -545,18 +559,31 @@ function SDHubImageInfoClearButton() {
   }
 }
 
-function SDHubGalleryImageInfo(imgEL) {
+async function SDHubGalleryImageInfo(imgEL) {
+  const row = document.getElementById('sdhub-gallery-image-info-row');
+  const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
+  const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
+  DelCon.style.display = 'flex';
+  window.SDHubCenterElement('Spinner');
+
   window.SDHubImagePath = imgEL.getAttribute('data-image');
-  window.SDHubImageFile = imgEL.fileObject;
-  const row = document.querySelector('#sdhub-gallery-image-info-row');
   const input = document.querySelector('#SDHubimgInfoImage input');
 
   if (input) {
-    row.style.display = 'flex'; row.style.pointerEvents = 'none';
-    SDHubGalleryUpdateImageInput(input, window.SDHubImageFile);
+    requestAnimationFrame(() => {
+      Spinner.style.display = 'flex'; DelCon.style.opacity = '1';
+      row.style.display = 'flex'; row.style.pointerEvents = 'none';
+    });
 
+    await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
     if (!FoxFire) document.body.classList.add('no-scroll');
-    setTimeout(() => (row.style.pointerEvents = '', row.style.opacity = '1'), 300);
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        DelCon.style.display = ''; DelCon.style.opacity = ''; Spinner.style.display = '';
+        row.style.pointerEvents = ''; row.style.opacity = '1';
+      }, 300);
+    });
   }
 }
 
@@ -637,8 +664,7 @@ function SDHubGalleryDeletion() {
   window.SDHubCenterElement('Spinner');
 
   Yes.onclick = async () => {
-    Spinner.classList.add('sdhub-gallery-spinner');
-    Spinner.style.visibility = 'visible';
+    Spinner.style.display = 'flex';
     Object.assign(DelBox.style, { opacity: '0', transform: 'scale(1.5)' });
 
     try {
@@ -657,8 +683,7 @@ function SDHubGalleryDeletion() {
       SDHubGalleryTabImageCounters();
       setTimeout(() => {
         DelCon.style.opacity = '';
-        Spinner.style.visibility = '';
-        Spinner.classList.remove('sdhub-gallery-spinner');
+        Spinner.style.display = '';
         if (!FoxFire) document.body.classList.remove('no-scroll');
       }, 1000);
       setTimeout(() => {
