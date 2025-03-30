@@ -52,15 +52,15 @@ async function SDHubGalleryLoadInitial() {
 
     if (!data.images?.length) return;
 
-    let imgBox = document.getElementById("SDHub-Gallery-Image-Box-0");
+    let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0');
     let loaded = 0;
     let total = data.images.length;
     let selectedTab = false;
     const todayRegex = /^\d{4}-\d{2}-\d{2}$/;
     const imgBoxes = [];
 
-    document.querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]').forEach((tab) => {
-      if (tab.classList.contains("active") && tab.style.display === "flex") {
+    document.querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']").forEach((tab) => {
+      if (tab.classList.contains('active') && tab.style.display === 'flex') {
         selectedTab = true;
       }
     });
@@ -68,15 +68,15 @@ async function SDHubGalleryLoadInitial() {
     for (let index = 0; index < total; index++) {
       let { path } = data.images[index];
       let whichTab = SDHubGalleryTabList.find((tab) => path.includes(`/${tab}/`));
-      let tabToUse = whichTab || "extras-images";
-      let pathParts = path.split("/");
+      let tabToUse = whichTab || 'extras-images';
+      let pathParts = path.split('/');
       let dateIndex = pathParts.findIndex((part) => todayRegex.test(part));
-      let parentFolder = dateIndex > 0 ? `${pathParts[dateIndex - 1]}-${pathParts[dateIndex]}` : "";
+      let parentFolder = dateIndex > 0 ? `${pathParts[dateIndex - 1]}-${pathParts[dateIndex]}` : '';
 
       if (!whichTab) {
-        if (path.includes("?extras")) tabToUse = "extras-images";
-        else if (path.includes("?init")) tabToUse = "init-images";
-        else if (path.includes("?save")) tabToUse = "manual-save";
+        if (path.includes('?extras')) tabToUse = 'extras-images';
+        else if (path.includes('?init')) tabToUse = 'init-images';
+        else if (path.includes('?save')) tabToUse = 'manual-save';
         else if (parentFolder) {
           tabToUse = parentFolder;
           let tabName = `${pathParts[dateIndex - 1]} ${pathParts[dateIndex]}`;
@@ -110,8 +110,8 @@ async function SDHubGalleryLoadInitial() {
     });
 
     for (const { newImgBox, path, TabCon, TabBtn, counter } of imgBoxes) {
-      const img = newImgBox.querySelector("img");
-      const name = path.substring(path.lastIndexOf("/") + 1).split("?")[0];
+      const img = newImgBox.querySelector('img');
+      const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
 
       if (img) {
         try {
@@ -139,20 +139,20 @@ async function SDHubGalleryLoadInitial() {
             }
           };
 
-        } catch (error) { console.error("Error in initial imgbox:", error); }
+        } catch (error) { console.error('Error in initial imgbox:', error); }
       }
 
-      if (TabBtn) TabBtn.style.display = "flex";
+      if (TabBtn) TabBtn.style.display = 'flex';
       if (!selectedTab) {
-        TabCon.classList.add("active");
-        TabCon.style.display = "flex";
-        counter.style.display = "flex";
-        TabBtn.classList.add("selected");
+        TabCon.classList.add('active');
+        TabCon.style.display = 'flex';
+        counter.style.display = 'flex';
+        TabBtn.classList.add('selected');
         selectedTab = true;
       }
     }
 
-  } catch (error) { console.error("Error in initial-load:", error); }
+  } catch (error) { console.error('Error in initial-load:', error); }
 }
 
 function SDHubGalleryCloneTab(id, name) {
@@ -185,7 +185,7 @@ function SDHubGalleryCloneTab(id, name) {
 }
 
 function SDHubGalleryTabImageCounters() {
-  document.querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]').forEach(tab => {
+  document.querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']").forEach(tab => {
     const img = tab.querySelectorAll('img').length;
     const counter = document.getElementById(tab.id.replace('-Tab-Container', '-Tab-Image-Counter'));
 
@@ -225,7 +225,7 @@ function SDHubGalleryWatchNewImage() {
 }
 
 async function SDHubGalleryGetNewImage(whichGallery) {
-  let imgBox = document.getElementById("SDHub-Gallery-Image-Box-0");
+  let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0');
   let selectedTab = false;
   let files = [];
   let fileNames = [];
@@ -233,9 +233,9 @@ async function SDHubGalleryGetNewImage(whichGallery) {
   let loaded = 0;
 
   document
-    .querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]')
+    .querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']")
     .forEach((tab) => {
-      if (tab.classList.contains("active") && tab.style.display === "flex") {
+      if (tab.classList.contains('active') && tab.style.display === 'flex') {
         selectedTab = true;
       }
     });
@@ -246,17 +246,17 @@ async function SDHubGalleryGetNewImage(whichGallery) {
 
   for (let index = 0; index < total; index++) {
     const imgEL = img[index];
-    let src = imgEL.getAttribute("src");
-    if (!src || !src.includes("/file=")) continue;
+    let src = imgEL.getAttribute('src');
+    if (!src || !src.includes('/file=')) continue;
 
-    let imgSrc = src.split("/file=")[1].split("?")[0];
+    let imgSrc = src.split('/file=')[1].split('?')[0];
     let path = `${SDHubGalleryBase}/image${imgSrc}`;
     let whichTab =
-      whichGallery === "extras_gallery"
-        ? "extras-images"
-        : imgSrc.includes("grid")
-        ? `${whichGallery.split("_")[0]}-grids`
-        : `${whichGallery.split("_")[0]}-images`;
+      whichGallery === 'extras_gallery'
+        ? 'extras-images'
+        : imgSrc.includes('grid')
+        ? `${whichGallery.split('_')[0]}-grids`
+        : `${whichGallery.split('_')[0]}-images`;
 
     const TabCon = document.getElementById(`SDHub-Gallery-${whichTab}-Tab-Container`);
     const TabBtn = document.getElementById(`SDHub-Gallery-${whichTab}-Tab-Button`);
@@ -282,8 +282,8 @@ async function SDHubGalleryGetNewImage(whichGallery) {
   });
 
   for (const { newImgBox, path, TabCon, TabBtn, counter } of imgBoxes) {
-    const newImg = newImgBox.querySelector("img");
-    const name = path.substring(path.lastIndexOf("/") + 1).split("?")[0];
+    const newImg = newImgBox.querySelector('img');
+    const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
 
     if (newImg) {
       fileNames.push(name);
@@ -309,15 +309,15 @@ async function SDHubGalleryGetNewImage(whichGallery) {
           fileNames = [];
         }
 
-      } catch (error) { console.error("Error in new imgbox:", error); }
+      } catch (error) { console.error('Error in new imgbox:', error); }
     }
 
-    if (TabBtn) TabBtn.style.display = "flex";
+    if (TabBtn) TabBtn.style.display = 'flex';
     if (!selectedTab) {
-      TabCon.classList.add("active");
-      TabCon.style.display = "flex";
-      counter.style.display = "flex";
-      TabBtn.classList.add("selected");
+      TabCon.classList.add('active');
+      TabCon.style.display = 'flex';
+      counter.style.display = 'flex';
+      TabBtn.classList.add('selected');
       selectedTab = true;
     }
   }
@@ -438,7 +438,7 @@ function SDHubGalleryKillContextMenu() {
 
 async function SDHubGalleryContextButton(v) {
   const path = window.SDHubImagePath;
-  const img = document.querySelector(`img[data-image="${path}"]`);
+  const img = document.querySelector(`img[data-image='${path}']`);
 
   switch (v) {
     case 'open':
@@ -493,6 +493,7 @@ function SDHubGallerySendImage(v) {
 
   row.style.display = 'flex'; row.style.pointerEvents = 'none';
   DelCon.style.display = 'flex'; DelCon.style.opacity = '1';
+  Spinner.classList.add('sdhub-gallery-spinner');
   Spinner.style.visibility = 'visible';
 
   SDHubGalleryUpdateImageInput(input, window.SDHubImageFile);
@@ -508,6 +509,7 @@ function SDHubGallerySendImage(v) {
           row.style.display = ''; row.style.pointerEvents = '';
           DelCon.style.opacity = ''; DelCon.style.display = '';
           Spinner.style.visibility = '';
+          Spinner.classList.remove('sdhub-gallery-spinner');
         }, 1300);
       }
     }
@@ -598,8 +600,8 @@ function SDHubGalleryTabEventListener(TabCon) {
 
   TabCon.addEventListener('mouseleave', (e) => {
     clearTimeout(SDHubGalleryCMHover);
-    const BtnHover = document.querySelector("#SDHub-Gallery-Image-Context-Button:hover");
-    const CMHover = document.querySelector("#SDHub-Gallery-ContextMenu:hover");
+    const BtnHover = document.querySelector('#SDHub-Gallery-Image-Context-Button:hover');
+    const CMHover = document.querySelector('#SDHub-Gallery-ContextMenu:hover');
     if (!BtnHover && !CMHover && !SDHubGalleryCMRightClick) SDHubGalleryKillContextMenu();
   }, true);
 
@@ -616,7 +618,7 @@ function SDHubGalleryTabEventListener(TabCon) {
 }
 
 function SDHubGalleryDeletion() {
-  const imgEL = document.querySelector(`img[data-image="${window.SDHubImagePath}"]`);
+  const imgEL = document.querySelector(`img[data-image='${window.SDHubImagePath}']`);
   const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image`), '');
   const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
 
@@ -635,29 +637,28 @@ function SDHubGalleryDeletion() {
   window.SDHubCenterElement('Spinner');
 
   Yes.onclick = async () => {
+    Spinner.classList.add('sdhub-gallery-spinner');
     Spinner.style.visibility = 'visible';
     Object.assign(DelBox.style, { opacity: '0', transform: 'scale(1.5)' });
 
     try {
-      const response = await fetch(`${SDHubGalleryBase}/delete`, {
+      const res = await fetch(`${SDHubGalleryBase}/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path }),
       });
-
-      if (!response.ok) throw new Error(await response.text());
-
-      const data = await response.json();
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
       if (data.status === 'deleted') imgEL.closest('.sdhub-gallery-image-box')?.remove();
-      else console.error("Deletion failed:", data);
-
-    } catch (error) {
-      console.error('Error deleting image:', error);
+      else console.error('Deletion failed:', data);
+    } catch (err) {
+      console.error('Error deleting image:', err);
     } finally {
       SDHubGalleryTabImageCounters();
       setTimeout(() => {
         DelCon.style.opacity = '';
         Spinner.style.visibility = '';
+        Spinner.classList.remove('sdhub-gallery-spinner');
         if (!FoxFire) document.body.classList.remove('no-scroll');
       }, 1000);
       setTimeout(() => {
@@ -865,34 +866,34 @@ function SDHubGalleryCreateContextMenu() {
   GalleryCM.classList.add('sdhub-gallery-cm-menu');
   GalleryCM.innerHTML = `
     <ul class='sdhub-gallery-cm-ul'>
-      <li onclick="SDHubGalleryContextButton('open')">
+      <li onclick='SDHubGalleryContextButton("open")'>
         <span>${SDHubGalleryOpenNewTabSVG} ${SDHubGetTranslation('open_new_tab')}</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('download')">
+      <li onclick='SDHubGalleryContextButton("download")'>
         <span>${SDHubGalleryDLSVG} ${SDHubGetTranslation('download')}</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('copy')">
+      <li onclick='SDHubGalleryContextButton("copy")'>
         <span>${SDHubGalleryCopySVG} ${SDHubGetTranslation('copy')}</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('info')">
+      <li onclick='SDHubGalleryContextButton("info")'>
         <span>${SDHubGalleryImageInfoSVG} ${SDHubGetTranslation('image_info')}</span>
       </li>
-      <li onclick="SDHubGalleryContextButton('viewer')">
+      <li onclick='SDHubGalleryContextButton("viewer")'>
         <span>${SDHubGalleryImageSVG} ${SDHubGetTranslation('image_viewer')}</span>
       </li>
       <li class='sdhub-cm-sendto'>
         <span>${SDHubGallerySendToSVG} ${SDHubGetTranslation('send_to')} ${SDHubGalleryARRSVG}</span>
-        <div id='SDHub-Gallery-ContextMenu-SubMenu' class='sdhub-gallery-cm-menu sdhub-gallery-cm-submenu' sdhub-gallery-contextmenu">
+        <div id='SDHub-Gallery-ContextMenu-SubMenu' class='sdhub-gallery-cm-menu sdhub-gallery-cm-submenu'>
           <ul class='sdhub-gallery-cm-ul'>
-            <li onclick="SDHubGallerySendImage('txt2img')">txt2img</li>
-            <li onclick="SDHubGallerySendImage('img2img')">img2img</li>
-            <li onclick="SDHubGallerySendImage('extras')">extras</li>
-            <li onclick="SDHubGallerySendImage('inpaint')">inpaint</li>
-            <li onclick="SDHubGallerySendToUploader()">${SDHubGetTranslation('uploader')}</li>
+            <li onclick='SDHubGallerySendImage("txt2img")'>txt2img</li>
+            <li onclick='SDHubGallerySendImage("img2img")'>img2img</li>
+            <li onclick='SDHubGallerySendImage("extras")'>extras</li>
+            <li onclick='SDHubGallerySendImage("inpaint")'>inpaint</li>
+            <li onclick='SDHubGallerySendToUploader()'>${SDHubGetTranslation('uploader')}</li>
           </ul>
         </div>
       </li>
-      <li onclick="SDHubGalleryContextButton('delete')">
+      <li onclick='SDHubGalleryContextButton("delete")'>
         <span>${SDHubGalleryDeleteSVG} ${SDHubGetTranslation('delete')}</span>
       </li>
     </ul>
@@ -1009,7 +1010,7 @@ function SDHubGalleryCreateDeleteBox() {
 }
 
 function SDHubGallerySwitchTab(whichTab) {
-  document.querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Container"]').forEach(Tab => {
+  document.querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']").forEach(Tab => {
     Tab.style.display = 'none';
     Tab.classList.remove('active');
 
@@ -1017,9 +1018,9 @@ function SDHubGallerySwitchTab(whichTab) {
     if (counter) counter.style.display = 'none';
   });
 
-  document.querySelectorAll('[id^="SDHub-Gallery-"][id$="-Tab-Button"]').forEach(Btn => {
+  document.querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Button']").forEach(Btn => {
     Btn.classList.remove('selected');
-  });
+  });  
 
   const Tab = document.getElementById(`SDHub-Gallery-${whichTab}-Tab-Container`);
   if (Tab) {
@@ -1083,7 +1084,7 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
     if (el.textContent.includes('Auto Upload to')) {
       el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
-        <a class="sdhub-gallery-imgchest-info" href="https://imgchest.com" target="_blank">
+        <a class='sdhub-gallery-imgchest-info' href='https://imgchest.com' target='_blank'>
           imgchest.com
         </a>`;
     }
@@ -1099,7 +1100,7 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   fetch(`${SDHubGalleryBase}/imgChest`)
     .then(r => r.json())
     .then(d => {
-      const clickRadio = (id, v) => document.querySelector(`${id} label[data-testid="${v}-radio-label"]`)?.click();
+      const clickRadio = (id, v) => document.querySelector(`${id} label[data-testid='${v}-radio-label']`)?.click();
       clickRadio('#SDHub-Gallery-imgchest-Privacy', d.privacy);
       clickRadio('#SDHub-Gallery-imgchest-NSFW', d.nsfw);
       if (apiInput) apiInput.value = d.api, updateInput(apiInput);
@@ -1108,38 +1109,38 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
 }
 
 function SDHubGalleryImgChestUpload(files, names) {
-  const url = "https://api.imgchest.com/v1/post";
-  const fn = names.length > 0 ? names[names.length - 1] : "image";
+  const url = 'https://api.imgchest.com/v1/post';
+  const fn = names.length > 0 ? names[names.length - 1] : 'image';
 
-  const checkbox = gradioApp().querySelector("#SDHub-Gallery-imgchest-Checkbox input");
+  const checkbox = gradioApp().querySelector('#SDHub-Gallery-imgchest-Checkbox input');
   if (!checkbox?.checked) return;
 
-  const apikey = gradioApp().querySelector("#SDHub-Gallery-imgchest-API input");
+  const apikey = gradioApp().querySelector('#SDHub-Gallery-imgchest-API input');
   if (!apikey?.value.trim()) return;
 
   function getSettings(id) {
     const selected = gradioApp().querySelector(`${id} > div > label.selected`);
-    return selected ? selected.getAttribute("data-testid").replace("-radio-label", "").toLowerCase() : "";
+    return selected ? selected.getAttribute('data-testid').replace('-radio-label', '').toLowerCase() : '';
   }
 
-  const privacy = getSettings("#SDHub-Gallery-imgchest-Privacy") || "hidden";
-  const nsfw = getSettings("#SDHub-Gallery-imgchest-NSFW") || "true";
+  const privacy = getSettings('#SDHub-Gallery-imgchest-Privacy') || 'hidden';
+  const nsfw = getSettings('#SDHub-Gallery-imgchest-NSFW') || 'true';
 
   const data = new FormData();
-  files.forEach((img) => data.append("images[]", img));
-  data.append("title", fn);
-  data.append("privacy", privacy);
-  data.append("nsfw", nsfw);
+  files.forEach((img) => data.append('images[]', img));
+  data.append('title', fn);
+  data.append('privacy', privacy);
+  data.append('nsfw', nsfw);
 
   return fetch(url, {
-    method: "POST",
+    method: 'POST',
     headers: { Authorization: `Bearer ${apikey.value.trim()}` },
     body: data,
   })
     .then((upload) => upload.json())
     .then((result) => {
-      console.log("Uploaded:", result);
+      console.log('Uploaded:', result);
       return result;
     })
-    .catch((error) => console.error("Upload failed:", error));
+    .catch((error) => console.error('Upload failed:', error));
 }
