@@ -1,4 +1,5 @@
 let FoxFire = /firefox/i.test(navigator.userAgent);
+let SDHubTranslations = {};
 
 let SDHubTabButtons = {
   'Downloader': 'sdhub-tab-button-downloader',
@@ -18,8 +19,6 @@ let SDHubLangIndex = {
   ko: 6,
   ru: 7
 };
-
-let SDHubTranslations = {};
 
 onUiLoaded(function() {
   SDHubTabLoaded(); SDHubTokenBlur(); SDHubEvents(); SDHubUITranslation();
@@ -75,14 +74,17 @@ onUiUpdate(function() {
 });
 
 async function SDHubTabLoaded() {
-  [
-    ['sdhub-downloader-load-button', 'load_token'],
-    ['sdhub-downloader-save-button', 'save_token'],
-    ['sdhub-uploader-load-button', 'load_token'],
-    ['sdhub-uploader-save-button', 'save_token']
-  ].forEach(([id, key]) => {
-    document.getElementById(id)?.setAttribute('title', SDHubGetTranslation(key));
-  });
+  const titles = {
+    'sdhub-downloader-load-button': 'load_token',
+    'sdhub-downloader-save-button': 'save_token',
+    'sdhub-uploader-load-button': 'load_token',
+    'sdhub-uploader-save-button': 'save_token'
+  };
+
+  for (const [id, key] of Object.entries(titles)) {
+    const button = document.getElementById(id);
+    if (button) button.setAttribute('title', SDHubGetTranslation(key));
+  }  
 
   document.getElementById('sdhub-texteditor-load-button')?.setAttribute('title', SDHubGetTranslation('load_file'));
   document.getElementById('sdhub-texteditor-save-button')?.setAttribute('title', SDHubGetTranslation('save_changes'));
@@ -245,7 +247,7 @@ function SDHubUITranslation() {
   for (let i = 0; i < TabList.length; i++) {
     let button = TabList[i];
     let t = button.textContent.trim();
-    if (SDHubTabButtons[t]) button.id = SDHubTabButtons[t];
+    if (SDHubTabButtons[t] && !button.classList.contains(SDHubTabButtons[t])) button.classList.add(SDHubTabButtons[t]);
     let c = SDHubGetTranslation(t.toLowerCase());
     if (c) button.textContent = c;
   }
