@@ -6,6 +6,8 @@ from modules.scripts import basedir
 from modules.shared import opts
 from urllib.parse import quote
 from pathlib import Path
+from io import BytesIO
+from PIL import Image
 import gradio as gr
 import mimetypes
 import json
@@ -21,6 +23,7 @@ CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 today = datetime.today().strftime("%Y-%m-%d")
 chest = Path(basedir()) / '.imgchest.json'
+Thumbnails = {}
 
 sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
 grid_dirs = [opts.outdir_txt2img_grids, opts.outdir_img2img_grids]
@@ -52,28 +55,49 @@ def getCTimes(path: Path):
         else os.stat(path, follow_symlinks=True).st_ctime_ns
     )
 
+def getThumbnail(path: Path, size=512, quality=80):
+    try:
+        img = Image.open(path)
+        img.thumbnail((size, size))
+        out = BytesIO()
+        img.save(out, format='WEBP', quality=quality)
+        thumb = out.getvalue()
+        Thumbnails[f'{path.stem}.webp'] = thumb
+        return thumb
+    except Exception as e:
+        print(f'Error processing {path}: {e}')
+        return None
+
 def getImage():
-    valid_dirs = [d for d in outpath if d.exists() and d.is_dir()]
-    img = []
-
-    for d in valid_dirs:
-        if d in outdir_extras:
-            img.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
-        else:
-            img.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
-
-    img.sort(key=getCTimes)
-
+    dirs = [d for d in outpath if d.exists() and d.is_dir()]
+    files = []
     results = []
-    for path in img:
+
+    for d in dirs:
+        if d in outdir_extras:
+            files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
+        else:
+            files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
+
+    files.sort(key=getCTimes)
+
+    for path in files:
         src = str(path.parent)
+        if src == opts.outdir_save:
+            query = '?save'
+        elif src == opts.outdir_init_images:
+            query = '?init'
+        elif path.parent in outdir_extras:
+            query = '?extras'
+        else:
+            query = ''
 
-        if src == opts.outdir_save: query = '?save'
-        elif src == opts.outdir_init_images: query = '?init'
-        elif path.parent in outdir_extras: query = '?extras'
-        else: query = ''
+        getThumbnail(path)
 
-        results.append({'path': f'{BASE}/image{quote(str(path.resolve()))}{query}'})
+        results.append({
+            'path': f'{BASE}/image{quote(str(path.resolve()))}{query}',
+            'thumbnail': f'{BASE}/thumb/{quote(path.stem)}.webp'
+        })
 
     return results
 
@@ -98,6 +122,13 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         }
 
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
+
+    @app.get(BASE + '/thumb/{img}')
+    async def sendThumbnail(img: str):
+        thumb = Thumbnails.get(img)
+        if thumb:
+            return responses.Response(content=thumb, media_type='image/webp')
+        raise HTTPException(status_code=404, detail='Thumbnail not found')
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
