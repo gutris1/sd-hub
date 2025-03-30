@@ -887,6 +887,10 @@ body.no-scroll {
   animation: spinner 1s linear infinite;
 }
 
+.sdhub-gallery-spinner {
+  animation: spinner 1s linear infinite;
+}
+
 @keyframes spinner {
   0% {
     transform: rotate(360deg);
