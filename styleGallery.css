@@ -560,7 +560,7 @@ body.no-scroll {
   user-select: none;
   -webkit-user-select: none;
   transform: translate(0px, 0px) scale(1);
-  transition: transform 0.4s ease;
+  transition: transform 0.4s ease, opacity 0.4s ease;
 }
 
 .sdhub-gallery-image-viewer-button {
@@ -931,11 +931,11 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Delete-Spinner {
+  display: none;
   z-index: 5;
   position: absolute;
   color: var(--primary-400);
   pointer-events: none;
-  visibility: hidden;
   transition: 0.3s ease;
   filter:
     drop-shadow(0 0 10px rgba(0, 0, 0, 0.6))
