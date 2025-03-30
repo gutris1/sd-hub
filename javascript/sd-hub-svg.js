@@ -80,7 +80,7 @@ var SDHubGalleryDeleteSVG = `
 `;
 
 var SDHubGallerySpinnerSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
+  <svg class='sdhub-gallery-spinner' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
     <path fill="currentColor"
       d="M8,24c0-8.8,7.2-16,16-16c1,0,2,0.1,3,0.3l0.7-3.9C26.5,4.1,25.3,4,24,4C12.9,4,4,13,4,24
       c0,4.8,1.7,9.5,4.8,13.1l3-2.6C9.5,31.6,8,28,8,24z"/>
