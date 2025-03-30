@@ -1,6 +1,7 @@
 function SDHubGalleryImageViewer(mode) {
   document.body.classList.add('no-scroll');
   SDHubGalleryToggleNextPrev(mode);
+
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
   const Control = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Control');
   const Wrapper = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Wrapper');
@@ -105,6 +106,7 @@ function SDHubGalleryImageViewer(mode) {
 
       imgEL.style.transition = '';
       imgEL.style.transform = '';
+      setTimeout(() => imgEL.style.opacity = '1', 100);
     },
 
     SDHubGalleryImageViewerCloseZoom: function () {
@@ -123,6 +125,7 @@ function SDHubGalleryImageViewer(mode) {
   };
 
   window.SDHubGalleryImageViewerCloseZoom = imgState.SDHubGalleryImageViewerCloseZoom;
+  window.SDHubGalleryImageViewerimgReset = imgState.SDHubGalleryImageViewerimgReset;
 
   requestAnimationFrame(() => {
     LightBox.style.opacity = '1';
@@ -499,20 +502,28 @@ function SDHubGalleryImageViewer(mode) {
   document.addEventListener('mouseup', MouseUp);
 }
 
+function SDHubGalleryImageViewerSwitchImage(path) {
+  const img = document.getElementById('SDHub-Gallery-Image-Viewer-img');
+  requestAnimationFrame(() => {
+    img.style.transition = 'transform 0s, opacity 0s';
+    img.style.opacity = '0';
+    img.style.transform = 'translate(0px, 0px) scale(1)';
+    img.src = path;
+  });
+}
+
 function SDHubGalleryNextImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex + 1) % window.SDHubImageList.length;
-  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
-  const img = document.getElementById('SDHub-Gallery-Image-Viewer-img');
-  if (img) img.src = window.SDHubImagePath;
+  let Next = window.SDHubImageList[window.SDHubImageIndex];
+  SDHubGalleryImageViewerSwitchImage(Next);
 }
 
 function SDHubGalleryPrevImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex - 1 + window.SDHubImageList.length) % window.SDHubImageList.length;
-  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
-  const img = document.getElementById('SDHub-Gallery-Image-Viewer-img');
-  if (img) img.src = window.SDHubImagePath;
+  let Prev = window.SDHubImageList[window.SDHubImageIndex];
+  SDHubGalleryImageViewerSwitchImage(Prev);
 }
 
 function SDHubGalleryToggleNextPrev(mode) {
