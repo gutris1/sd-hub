@@ -354,7 +354,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)?.[0];
     const path = getRunningScript()?.match(/file=[^\/]+\/[^\/]+\//)?.[0];
     if (path) window.SDHubFilePath = path;
-    console.log(window.SDHubFilePath);
 
     const res = await fetch(`${path}sd-hub-translations.xlsx`);
     if (res.ok) {
@@ -363,7 +362,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       SDHubTranslations = Object.fromEntries(Object.keys(SDHubLangIndex).map(lang => [lang, {}]));
       data.slice(1).forEach(row => {
-        if (row[0] && !row[0].startsWith("//")) {
+        if (row[0] && !row[0].startsWith('//')) {
           const key = row[0].trim();
           Object.keys(SDHubLangIndex).forEach(lang => {
             SDHubTranslations[lang][key] = row[SDHubLangIndex[lang]]?.trim() || key;
@@ -374,5 +373,5 @@ document.addEventListener('DOMContentLoaded', async function () {
       SDHubTextEditorGalleryScrollBar();
       SDHubGalleryDOMLoaded();
     }
-  } catch (err) { console.error("XLSX Error:", err); }
+  } catch (err) { console.error('XLSX Error:', err); }
 });
