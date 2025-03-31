@@ -72,7 +72,6 @@ def TextEditorTab():
             )
 
             inputs = gr.Textbox(
-                value='',
                 show_label=False,
                 interactive=True,
                 max_lines=1,

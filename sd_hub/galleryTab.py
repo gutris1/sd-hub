@@ -1,12 +1,15 @@
-from fastapi import FastAPI, HTTPException, responses, Request
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
+from fastapi import FastAPI, responses, Request
+from datetime import datetime, timedelta
 from modules.scripts import basedir
 from modules.shared import opts
 from urllib.parse import quote
-from datetime import datetime
 from pathlib import Path
+from io import BytesIO
+from PIL import Image
 import gradio as gr
+import mimetypes
 import json
 import sys
 import os
@@ -20,6 +23,7 @@ CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 today = datetime.today().strftime("%Y-%m-%d")
 chest = Path(basedir()) / '.imgchest.json'
+Thumbnails = {}
 
 sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
 grid_dirs = [opts.outdir_txt2img_grids, opts.outdir_img2img_grids]
@@ -51,34 +55,53 @@ def getCTimes(path: Path):
         else os.stat(path, follow_symlinks=True).st_ctime_ns
     )
 
+def getThumbnail(path: Path, size=512, quality=80):
+    try:
+        img = Image.open(path)
+        img.thumbnail((size, size))
+        out = BytesIO()
+        img.save(out, format='WEBP', quality=quality)
+        thumb = out.getvalue()
+        Thumbnails[f'{path.stem}.webp'] = thumb
+        return thumb
+    except Exception as e:
+        print(f'Error processing {path}: {e}')
+        return None
+
 def getImage():
-    valid_dirs = [d for d in outpath if d.exists() and d.is_dir()]
-    img = []
-
-    for d in valid_dirs:
-        if d in outdir_extras:
-            img.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
-        else:
-            img.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
-
-    img.sort(key=getCTimes)
-
+    dirs = [d for d in outpath if d.exists() and d.is_dir()]
+    files = []
     results = []
-    for path in img:
+
+    for d in dirs:
+        if d in outdir_extras:
+            files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
+        else:
+            files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
+
+    files.sort(key=getCTimes)
+
+    for path in files:
         src = str(path.parent)
+        if src == opts.outdir_save:
+            query = '?save'
+        elif src == opts.outdir_init_images:
+            query = '?init'
+        elif path.parent in outdir_extras:
+            query = '?extras'
+        else:
+            query = ''
 
-        if src == opts.outdir_save: query = '?save'
-        elif src == opts.outdir_init_images: query = '?init'
-        elif path.parent in outdir_extras: query = '?extras'
-        else: query = ''
+        getThumbnail(path)
 
-        results.append({'path': f'{BASE}/image{quote(str(path.resolve()))}{query}'})
+        results.append({
+            'path': f'{BASE}/image{quote(str(path.resolve()))}{query}',
+            'thumbnail': f'{BASE}/thumb/{quote(path.stem)}.webp'
+        })
 
     return results
 
-def Gallery(app: FastAPI):
-    headers = {'Cache-Control': 'public, max-age=31536000'}
-
+def GalleryApp(_: gr.Blocks, app: FastAPI):
     @app.get(BASE + '/initial')
     async def initialLoad():
         imgs = getImage()
@@ -87,25 +110,38 @@ def Gallery(app: FastAPI):
     @app.get(BASE + '/image{img:path}')
     async def sendImage(img: str):
         fp = Path(img)
-        if fp.exists():
-            return responses.FileResponse(fp, headers=headers)
-        raise HTTPException(status_code=404, detail='Image not found')
+        media_type, _ = mimetypes.guess_type(fp)
+        headers = {
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT'),
+            'ETag': str(fp.stat().st_mtime),
+            'Last-Modified': datetime.fromtimestamp(fp.stat().st_mtime).strftime('%a, %d %b %Y %H:%M:%S GMT')
+        }
+        return responses.FileResponse(fp, headers=headers, media_type=media_type)
+
+    @app.get(BASE + '/thumb/{img}')
+    async def sendThumb(img: str):
+        thumb = Thumbnails.get(img)
+        return responses.Response(content=thumb, media_type='image/webp')
+
+    @app.post(BASE + '/getthumb')
+    async def getThumb(req: Request):
+        fp = Path((await req.json()).get('path'))
+        getThumbnail(fp)
+        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.webp'}
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
-        d = await req.json()
-        fp = Path(d['path'])
-        if fp.exists(): fp.unlink()
-        return {'status': 'deleted'}
+        fp = Path((await req.json()).get('path'))
+        if fp.exists():
+            fp.unlink()
+            return {'status': 'deleted'}
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
         async def imgChest():
             privacy, nsfw, api = Loadimgchest()
             return {'privacy': privacy, 'nsfw': nsfw, 'api': api}
-
-def GalleryApp(_: gr.Blocks, app: FastAPI):
-    Gallery(app)
 
 def GalleryTab():
     if insecureENV:
@@ -140,27 +176,28 @@ def GalleryTab():
                     elem_classes='sdhub-radio'
                 )
 
-            apibox = gr.TextArea(
-                value='',
+            apibox = gr.Textbox(
                 show_label=False,
                 interactive=True,
                 placeholder='imgchest API key',
-                lines=1,
                 max_lines=1,
-                elem_id='SDHub-Gallery-imgchest-API'
+                elem_id='SDHub-Gallery-imgchest-API',
+                elem_classes='sdhub-input'
             )
 
             with FormRow():
                 savebtn = gr.Button(
                     'Save',
                     variant='primary',
-                    elem_id='SDHub-Gallery-imgchest-Save-Button'
+                    elem_id='SDHub-Gallery-imgchest-Save-Button',
+                    elem_classes='sdhub-buttons'
                 )
 
                 loadbtn = gr.Button(
                     'Load',
                     variant='primary',
-                    elem_id='SDHub-Gallery-imgchest-Load-Button'
+                    elem_id='SDHub-Gallery-imgchest-Load-Button',
+                    elem_classes='sdhub-buttons'
                 )
 
         savebtn.click(

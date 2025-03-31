@@ -245,7 +245,16 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-03-22  v8.8.8
+### 2025-04-01  v9.0.0
+- Fixed crashes on Firefox and other Gecko-based browsers.
+- Fixed the "Send to..." buttons in Gallery context menu or image info when running WebUI on mobile.
+- Optimized Gallery to display the scaled-down image (around 30kb/image), only fetching the full-size file when needed.
+- Added a "Copy" button to the Gallery context menu to copy image. (This copies the image itself, not the file, all image tags will be lost when pasted, just like the browser's "Copy Image" context menu.)
+- Added CTRL + scroll wheel (or Cmd + scroll wheel on macOS) to move images horizontally in the image viewer when the top/bottom edge exceeds the Lightbox.
+- Added SHIFT + scroll wheel to move images horizontally in the image viewer when the left/right edge exceeds the Lightbox.
+
+<details><summary>2025-03-22  v8.8.8</summary><br>
+
 - Changed/Added function for Uploader Tab.
 ```python
 # Add = to rename the uploaded file/folder
@@ -265,6 +274,7 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 # Combining all options in single line
 /input-path/someFolder = thisFolder - js json py > folder3
 ```
+</details>
 
 <details><summary>2025-03-08  v8.0.0</summary><br>
   

@@ -134,8 +134,19 @@ def ZipOutputs():
                 )
 
         with FormColumn():
-            zip_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
-            zip_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
+            zip_output1 = gr.Textbox(
+                show_label=False,
+                interactive=False,
+                max_lines=1,
+                elem_classes='sdhub-output'
+            )
+
+            zip_output2 = gr.Textbox(
+                show_label=False,
+                interactive=False,
+                lines=5,
+                elem_classes='sdhub-output'
+            )
 
         zip_run.click(
             fn=zipzip,

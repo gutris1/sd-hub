@@ -1,7 +1,6 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
 from modules.ui_components import FormRow, FormColumn
-from modules.script_callbacks import on_app_started
 from modules.scripts import basedir
 from modules.shared import cmd_opts
 from fastapi import FastAPI
@@ -347,11 +346,11 @@ def UploaderTab():
             )
 
         upl_inputs = gr.Textbox(
-            elem_id='sdhub-uploader-inputs',
             show_label=False,
             lines=5,
             placeholder='Input File Path',
-            elem_classes='sdhub-textarea'
+            elem_id='sdhub-uploader-inputs',
+            elem_classes='sdhub-input'
         )
 
         with FormRow(elem_id='sdhub-uploader-button-row'):
@@ -367,8 +366,19 @@ def UploaderTab():
                 gr.Button('hantu', variant='primary', elem_classes='hide-this')
 
             with FormColumn(scale=2, variant='compact'):
-                upl_output1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
-                upl_output2 = gr.Textbox(show_label=False, interactive=False, lines=5)
+                upl_output1 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    max_lines=1,
+                    elem_classes='sdhub-output'
+                )
+
+                upl_output2 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    lines=5,
+                    elem_classes='sdhub-output'
+                )
 
         upl_load.click(
             fn=lambda: load_token('uploader'),
@@ -387,5 +397,3 @@ def UploaderTab():
             inputs=[upl_inputs, user_box, repo_box, branch_box, upl_token, repo_radio, gr.State()],
             outputs=[upl_output1, upl_output2]
         )
-
-on_app_started(LoadUploaderInfo)

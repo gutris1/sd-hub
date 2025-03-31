@@ -426,7 +426,7 @@ def DownloaderTab():
             lines=5,
             placeholder='$tag\nURL',
             elem_id='sdhub-downloader-inputs',
-            elem_classes='sdhub-textarea'
+            elem_classes='sdhub-input'
         )
 
         with FormRow(elem_id='sdhub-downloader-button-row'):
@@ -456,8 +456,19 @@ def DownloaderTab():
                 )
 
             with FormColumn(scale=2, variant='compact'):
-                dl_out1 = gr.Textbox(show_label=False, interactive=False, max_lines=1)
-                dl_out2 = gr.TextArea(show_label=False, interactive=False, lines=5)
+                dl_out1 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    max_lines=1,
+                    elem_classes='sdhub-output'
+                )
+
+                dl_out2 = gr.TextArea(
+                    show_label=False,
+                    interactive=False,
+                    lines=5,
+                    elem_classes='sdhub-output'
+                )
 
         dl_load.click(
             fn=lambda: load_token('downloader'),

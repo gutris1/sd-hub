@@ -1,5 +1,7 @@
 function SDHubGalleryImageViewer(mode) {
+  document.body.classList.add('no-scroll');
   SDHubGalleryToggleNextPrev(mode);
+
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
   const Control = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Control');
   const Wrapper = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Wrapper');
@@ -21,6 +23,7 @@ function SDHubGalleryImageViewer(mode) {
     lastLen: 1,
     LastTouch: 0,
     ZoomMomentum: 0,
+    MoveMomentum: 0,
     LastZoom: 0,
     SnapMouse: 20,
     SnapTouch: 10,
@@ -113,13 +116,14 @@ function SDHubGalleryImageViewer(mode) {
         Wrapper.style.transform = '';
         document.removeEventListener('mouseleave', MouseLeave);
         document.removeEventListener('mouseup', MouseUp);
-        const imgEL = document.getElementById('SDHub-Gallery-Image-Viewer-img');
-        if (imgEL) imgEL.remove();
+        document.getElementById('SDHub-Gallery-Image-Viewer-img')?.remove();
+        document.body.classList.remove('no-scroll');
       }, 200);
     }
   };
 
   window.SDHubGalleryImageViewerCloseZoom = imgState.SDHubGalleryImageViewerCloseZoom;
+  window.SDHubGalleryImageViewerimgReset = imgState.SDHubGalleryImageViewerimgReset;
 
   requestAnimationFrame(() => {
     LightBox.style.opacity = '1';
@@ -225,57 +229,86 @@ function SDHubGalleryImageViewer(mode) {
     e.stopPropagation();
     e.preventDefault();
 
+    const CTRL = e.ctrlKey || e.metaKey;
+    const SHIFT = e.shiftKey;
+
     const currentTime = Date.now();
     const timeDelta = currentTime - imgState.LastZoom;
     imgState.LastZoom = currentTime;
+
     const centerX = LightBox.offsetWidth / 2;
     const centerY = LightBox.offsetHeight / 2;
     const delta = Math.max(-1, Math.min(1, e.wheelDelta || -e.detail));
     const zoomStep = 0.15;
     const zoom = 1 + delta * zoomStep;
+    const moveStep = 30 * imgState.scale;
     const lastScale = imgState.scale;
-    imgState.scale *= zoom;
-    imgState.scale = Math.max(1, Math.min(imgState.scale, 10));
+
+    if (!CTRL && !SHIFT) {
+      imgState.scale *= zoom;
+      imgState.scale = Math.max(1, Math.min(imgState.scale, 10));
+    }
+
     imgState.ZoomMomentum = delta / (timeDelta * 0.5 || 1);
     imgState.ZoomMomentum = Math.min(Math.max(imgState.ZoomMomentum, -1.5), 1.5);
+    const ZoomFactor = Math.abs(imgState.ZoomMomentum);
+    const ZoomTransition = `transform ${0.4 * (1 + ZoomFactor)}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
+
+    imgState.MoveMomentum = delta / (timeDelta * 0.1 || 1);
+    imgState.MoveMomentum = Math.min(Math.max(imgState.MoveMomentum, -2), 2);
+    const MoveFactor = Math.abs(imgState.MoveMomentum);
+    const MoveTransition = `transform ${0.2 * (1 + MoveFactor)}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
+
+    imgEL.style.transition = (CTRL || SHIFT) ? MoveTransition : ZoomTransition;
+    const SCALE = (CTRL || SHIFT) ? lastScale : imgState.scale;
 
     const imgELW = imgEL.offsetWidth * imgState.scale;
     const imgELH = imgEL.offsetHeight * imgState.scale;
     const LightBoxW = LightBox.offsetWidth;
     const LightBoxH = LightBox.offsetHeight;
 
-    const momentumFactor = Math.abs(imgState.ZoomMomentum);
-    const ZoomTransition = `transform ${0.4 * (1 + momentumFactor)}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
-    imgEL.style.transition = ZoomTransition;
-
     if (imgState.scale <= 1) {
       imgEL.style.transform = 'translate(0px, 0px) scale(1)';
 
     } else if (imgELW <= LightBoxW && imgELH >= LightBoxH) {
-      const imgCenterY = imgState.offsetY + centerY;
-      imgState.offsetY = e.clientY - ((e.clientY - imgCenterY) / lastScale) * imgState.scale - centerY;
+      if (CTRL) {
+        imgState.offsetY -= delta * moveStep;
+      } else {
+        const imgCenterY = imgState.offsetY + centerY;
+        imgState.offsetY = e.clientY - ((e.clientY - imgCenterY) / lastScale) * imgState.scale - centerY;
+      }
 
       const EdgeY = (imgELH - LightBoxH) / 2;
       if (imgState.offsetY > EdgeY) imgState.offsetY = EdgeY;
       else if (imgState.offsetY < -EdgeY) imgState.offsetY = -EdgeY;
 
-      imgEL.style.transform = `translateY(${imgState.offsetY}px) scale(${imgState.scale})`;
+      imgEL.style.transform = `translateY(${imgState.offsetY}px) scale(${SCALE})`;
 
     } else if (imgELH <= LightBoxH && imgELW >= LightBoxW) {
-      const imgCenterX = imgState.offsetX + centerX;
-      imgState.offsetX = e.clientX - ((e.clientX - imgCenterX) / lastScale) * imgState.scale - centerX;
+      if (SHIFT) {
+        imgState.offsetX -= delta * moveStep;
+      } else {
+        const imgCenterX = imgState.offsetX + centerX;
+        imgState.offsetX = e.clientX - ((e.clientX - imgCenterX) / lastScale) * imgState.scale - centerX;
+      }
 
       const EdgeX = (imgELW - LightBoxW) / 2;
       if (imgState.offsetX > EdgeX) imgState.offsetX = EdgeX;
       else if (imgState.offsetX < -EdgeX) imgState.offsetX = -EdgeX;
 
-      imgEL.style.transform = `translateX(${imgState.offsetX}px) scale(${imgState.scale})`;
+      imgEL.style.transform = `translateX(${imgState.offsetX}px) scale(${SCALE})`;
 
     } else if (imgELW >= LightBoxW && imgELH >= LightBoxH) {
-      const imgCenterX = imgState.offsetX + centerX;
-      const imgCenterY = imgState.offsetY + centerY;
-      imgState.offsetX = e.clientX - ((e.clientX - imgCenterX) / lastScale) * imgState.scale - centerX;
-      imgState.offsetY = e.clientY - ((e.clientY - imgCenterY) / lastScale) * imgState.scale - centerY;
+      if (CTRL) {
+        imgState.offsetY -= delta * moveStep;
+      } else if (SHIFT) {
+        imgState.offsetX -= delta * moveStep;
+      } else if (!SHIFT && !CTRL) {
+        const imgCenterX = imgState.offsetX + centerX;
+        const imgCenterY = imgState.offsetY + centerY;
+        imgState.offsetX = e.clientX - ((e.clientX - imgCenterX) / lastScale) * imgState.scale - centerX;
+        imgState.offsetY = e.clientY - ((e.clientY - imgCenterY) / lastScale) * imgState.scale - centerY;
+      }
 
       const EdgeX = (imgELW - LightBoxW) / 2;
       if (imgState.offsetX > EdgeX) imgState.offsetX = EdgeX;
@@ -285,10 +318,11 @@ function SDHubGalleryImageViewer(mode) {
       if (imgState.offsetY > EdgeY) imgState.offsetY = EdgeY;
       else if (imgState.offsetY < -EdgeY) imgState.offsetY = -EdgeY;
 
-      imgEL.style.transform = `translate(${imgState.offsetX}px, ${imgState.offsetY}px) scale(${imgState.scale})`;
+      imgEL.style.transform = `translate(${imgState.offsetX}px, ${imgState.offsetY}px) scale(${SCALE})`;
     }
 
     imgState.ZoomMomentum *= 0.5;
+    imgState.MoveMomentum *= 0.1;
   }, { passive: false });
 
   let MultiGrope = false;
@@ -469,17 +503,15 @@ function SDHubGalleryImageViewer(mode) {
 function SDHubGalleryNextImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex + 1) % window.SDHubImageList.length;
-  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
-  const img = document.getElementById('SDHub-Gallery-Image-Viewer-img');
-  if (img) img.src = window.SDHubImagePath;
+  let Next = window.SDHubImageList[window.SDHubImageIndex];
+  document.getElementById('SDHub-Gallery-Image-Viewer-img').src = Next;
 }
 
 function SDHubGalleryPrevImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex - 1 + window.SDHubImageList.length) % window.SDHubImageList.length;
-  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
-  const img = document.getElementById('SDHub-Gallery-Image-Viewer-img');
-  if (img) img.src = window.SDHubImagePath;
+  let Prev = window.SDHubImageList[window.SDHubImageIndex];
+  document.getElementById('SDHub-Gallery-Image-Viewer-img').src = Prev;
 }
 
 function SDHubGalleryToggleNextPrev(mode) {
@@ -497,8 +529,8 @@ function SDHubGalleryToggleNextPrev(mode) {
 
 function SDHubGalleryOpenViewerFromButton(imgEL) {
   const TabCon = imgEL.closest('.sdhub-gallery-tab-container');
-  window.SDHubImagePath = imgEL.getAttribute('src');
-  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('src'));
+  window.SDHubImagePath = imgEL.getAttribute('data-image');
+  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
   SDHubGalleryImageViewer('m');
 }

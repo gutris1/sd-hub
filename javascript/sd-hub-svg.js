@@ -15,6 +15,17 @@ var SDHubGalleryDLSVG = `
   </svg>
 `;
 
+var SDHubGalleryCopySVG = `
+  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'
+    width='30px' height='30px' viewBox='0 0 24 24' fill='transparent'>
+    <rect x='4.758' y='0.768' width='18.475' height='18.475' rx='2' ry='2'/>
+    <circle cx='10.404' cy='6.414' r='1.539'/>
+    <polyline points='23.234 13.085 18.102 7.954 6.81 19.244'/>
+    <path d='M 19.23 19.381 L 19.23 21.237 C 19.23 22.342 18.335 23.237 17.23 23.237 L 2.755 23.237 C 1.65 23.237 0.755 22.342 0.755 21.237
+    L 0.755 6.762 C 0.755 5.657 1.65 4.762 2.755 4.762 L 4.588 4.762'/>
+  </svg>
+`;
+
 var SDHubGalleryARRSVG = `
   <svg class='sdhub-gallery-cm-svg submenu-arrow' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs">
@@ -69,24 +80,15 @@ var SDHubGalleryDeleteSVG = `
 `;
 
 var SDHubGallerySpinnerSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
-    <g>
-      <animateTransform
-        attributeType="XML"
-        attributeName="transform"
-        type="rotate"
-        values="360 24 24;0 24 24"
-        dur="1s"
-        repeatCount="indefinite"/>
-      <path fill="currentColor"
-        d="M8,24c0-8.8,7.2-16,16-16c1,0,2,0.1,3,0.3l0.7-3.9C26.5,4.1,25.3,4,24,4C12.9,4,4,13,4,24
-        c0,4.8,1.7,9.5,4.8,13.1l3-2.6C9.5,31.6,8,28,8,24z"/>
-      <path fill="currentColor"
-        d="M39.5,11.3l-3.1,2.5C38.6,16.6,40,20.1,40,24c0,8.8-7.2,16-16,16c-1,0-2-0.1-3-0.3l-0.7,3.8
-        c1.3,0.2,2.5,0.3,3.7,0.3c11.1,0,20-8.9,20-20C44,19.4,42.4,14.8,39.5,11.3z"/>
-      <polygon fill="currentColor" points="31,7 44,8.7 33.3,19"/>
-      <polygon fill="currentColor" points="17,41 4,39.3 14.7,29"/>
-    </g>
+  <svg class='sdhub-gallery-spinner' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
+    <path fill="currentColor"
+      d="M8,24c0-8.8,7.2-16,16-16c1,0,2,0.1,3,0.3l0.7-3.9C26.5,4.1,25.3,4,24,4C12.9,4,4,13,4,24
+      c0,4.8,1.7,9.5,4.8,13.1l3-2.6C9.5,31.6,8,28,8,24z"/>
+    <path fill="currentColor"
+      d="M39.5,11.3l-3.1,2.5C38.6,16.6,40,20.1,40,24c0,8.8-7.2,16-16,16c-1,0-2-0.1-3-0.3l-0.7,3.8
+      c1.3,0.2,2.5,0.3,3.7,0.3c11.1,0,20-8.9,20-20C44,19.4,42.4,14.8,39.5,11.3z"/>
+    <polygon fill="currentColor" points="31,7 44,8.7 33.3,19"/>
+    <polygon fill="currentColor" points="17,41 4,39.3 14.7,29"/>
   </svg>
 `;
 

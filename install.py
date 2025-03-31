@@ -16,15 +16,18 @@ RST = '\033[0m'
 base = Path(__file__).parent
 
 def _SDHubReq():
-    req = {
+    r = {
         'sd-hub-translations.xlsx': 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
         'javascript/exif-reader.js': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-        'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
+        'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
+        'javascript/XLSX-reader.js': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+        'javascript/XLSX-reader-LICENSE': 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE'
     }
-    for file, url in req.items():
-        fp = base / file
+
+    for f, u in r.items():
+        fp = base / f
         if not fp.exists():
-            fp.write_bytes(urllib.request.urlopen(url).read())
+            fp.write_bytes(urllib.request.urlopen(u).read())
 
 def _sub(inputs):
     try:
