@@ -1014,7 +1014,7 @@ body.no-scroll {
   padding: 1px;
   cursor: pointer;
   pointer-events: auto;
-  border: 0;
+  border: 1px solid var(--background-fill-secondary);
   margin: 0;
   margin-top: 3px;
   z-index: 50;
@@ -1025,13 +1025,13 @@ body.no-scroll {
   height: 38px;
   width: 38px;
   border-radius: 0.5em;
-  transition: 0.4s ease;
 }
 
-#SDHub-Gallery-imgchest-Button svg:hover {
+#SDHub-Gallery-imgchest-Button:hover {
+  border: 1px solid var(--primary-400) !important;
   filter: drop-shadow(0 0 10px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
-  background: var(--primary-400);
+  background: var(--primary-400) !important;
 }
 
 #SDHub-Gallery-imgchest-Column {
