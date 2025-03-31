@@ -246,9 +246,9 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 
 # Changelog
 ### 2025-04-01  v9.0.0
-- Fixed crashes on Firefox browser.
+- Fixed crashes on Firefox and other Gecko-based browsers.
 - Fixed the "Send to..." buttons in Gallery context menu or image info when running WebUI on mobile.
-- Optimized Gallery images loading to display only the scaled-down image (around 30kb per image), and only fetching the full-size file when needed.
+- Optimized Gallery to display the scaled-down image (around 30kb/image), only fetching the full-size file when needed.
 - Added a "Copy" button to the Gallery context menu to copy image. (This copies the image itself, not the file, all image tags will be lost when pasted, just like the browser's "Copy Image" context menu.)
 - Added CTRL + scroll wheel (or Cmd + scroll wheel on macOS) to move images horizontally in the image viewer when the top/bottom edge exceeds the Lightbox.
 - Added SHIFT + scroll wheel to move images horizontally in the image viewer when the left/right edge exceeds the Lightbox.
