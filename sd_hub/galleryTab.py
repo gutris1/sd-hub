@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, responses, Request
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
+from fastapi import FastAPI, responses, Request
 from datetime import datetime, timedelta
 from modules.scripts import basedir
 from modules.shared import opts
@@ -110,32 +110,32 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     @app.get(BASE + '/image{img:path}')
     async def sendImage(img: str):
         fp = Path(img)
-        if not fp.exists():
-            raise HTTPException(status_code=404, detail='Image not found')
-
         media_type, _ = mimetypes.guess_type(fp)
         headers = {
             'Cache-Control': 'public, max-age=31536000, immutable',
-            'Expires': (datetime.utcnow() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT'),
+            'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT'),
             'ETag': str(fp.stat().st_mtime),
-            'Last-Modified': datetime.utcfromtimestamp(fp.stat().st_mtime).strftime('%a, %d %b %Y %H:%M:%S GMT')
+            'Last-Modified': datetime.fromtimestamp(fp.stat().st_mtime).strftime('%a, %d %b %Y %H:%M:%S GMT')
         }
-
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
     @app.get(BASE + '/thumb/{img}')
-    async def sendThumbnail(img: str):
+    async def sendThumb(img: str):
         thumb = Thumbnails.get(img)
-        if thumb:
-            return responses.Response(content=thumb, media_type='image/webp')
-        raise HTTPException(status_code=404, detail='Thumbnail not found')
+        return responses.Response(content=thumb, media_type='image/webp')
+
+    @app.post(BASE + '/getthumb')
+    async def getThumb(req: Request):
+        fp = Path((await req.json()).get('path'))
+        getThumbnail(fp)
+        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.webp'}
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
-        d = await req.json()
-        fp = Path(d['path'])
-        if fp.exists(): fp.unlink()
-        return {'status': 'deleted'}
+        fp = Path((await req.json()).get('path'))
+        if fp.exists():
+            fp.unlink()
+            return {'status': 'deleted'}
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
