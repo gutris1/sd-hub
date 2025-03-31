@@ -3,7 +3,6 @@ let SDHubGalleryCMHover = null;
 let SDHubGalleryCMRightClick = false;
 let SDHubGalleryNewImageSrc = new Set();
 let SDHubGalleryBase = '/sd-hub-gallery';
-let SDHubCanvas, SDHubCTX;
 
 const SDHubGalleryTabList = [
   'txt2img-images',
@@ -46,22 +45,6 @@ async function SDHubGalleryCreateImageFile(path) {
     console.error('Error in creating file:', err);
     return null;
   }
-}
-
-async function SDHubResizeImage(blob, size = 512) {
-  try {
-    const img = await createImageBitmap(blob);
-    const ar = img.width / img.height;
-
-    SDHubCanvas.width = img.width > img.height ? size : Math.round(size * ar);
-    SDHubCanvas.height = img.width > img.height ? Math.round(size / ar) : size;
-    SDHubCTX.clearRect(0, 0, SDHubCanvas.width, SDHubCanvas.height);
-    SDHubCTX.drawImage(img, 0, 0, SDHubCanvas.width, SDHubCanvas.height);
-
-    return new Promise((resolve) => {
-      SDHubCanvas.toBlob((thumb) => resolve(thumb), 'image/jpeg', 0.7);
-    });
-  } catch (error) { console.error('Error in resizing:', error); }
 }
 
 async function SDHubGalleryLoadInitial() {
@@ -131,7 +114,7 @@ async function SDHubGalleryLoadInitial() {
 
     for (const { newImgBox, path, thumbnail, TabCon, TabBtn, counter } of imgBoxes) {
       const img = newImgBox.querySelector('img');
-      const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0]; // Extract filename
+      const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
 
       if (img) {
         try {
@@ -248,8 +231,8 @@ function SDHubGalleryWatchNewImage() {
 async function SDHubGalleryGetNewImage(whichGallery) {
   let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0');
   let selectedTab = false;
-  let files = [];
-  let fileNames = [];
+  let imgNames = [];
+  let imgPaths = [];
   let imgBoxes = [];
   let loaded = 0;
 
@@ -271,7 +254,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     if (!src || !src.includes('/file=')) continue;
 
     let imgSrc = src.split('/file=')[1].split('?')[0];
-    let path = `${SDHubGalleryBase}/image${imgSrc}`;
+
     let whichTab =
       whichGallery === 'extras_gallery'
         ? 'extras-images'
@@ -293,7 +276,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
       }
 
       newImgBox.id = newId;
-      imgBoxes.push({ newImgBox, path, TabCon, TabBtn, counter });
+      imgBoxes.push({ newImgBox, imgSrc, TabCon, TabBtn, counter });
       SDHubGalleryTabImageIndex++;
     }
   }
@@ -302,35 +285,37 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     TabCon.prepend(newImgBox);
   });
 
-  for (const { newImgBox, path, TabCon, TabBtn, counter } of imgBoxes) {
-    const newImg = newImgBox.querySelector('img');
-    const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
+  for (const { newImgBox, imgSrc, TabCon, TabBtn, counter } of imgBoxes) {
+    let newImg = newImgBox.querySelector('img');
+    let path = `${SDHubGalleryBase}/image${imgSrc}`;
+    let name = path.substring(path.lastIndexOf('/') + 1);
 
     if (newImg) {
-      fileNames.push(name);
-      try {
-        const res = await fetch(path);
-        const blob = await res.blob();
-        const thumb = await SDHubResizeImage(blob);
+      imgNames.push(name);
+      imgPaths.push(path);
 
-        newImg.dataset.image = path;
-        newImg.fileObject = new File([blob], name, { type: blob.type });
-        newImg.src = URL.createObjectURL(thumb);
-        newImg.title = name;
-        files.push(newImg.fileObject);
+      const res = await fetch(`${SDHubGalleryBase}/getthumb`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: imgSrc })
+      });
 
-        newImg.onload = () => {
-          loaded++;
-          if (loaded === total) SDHubGalleryTabImageCounters();
-        };
+      if (!res.ok) throw new Error('Failed thumbnail');
 
-        if (files.length === total) {
-          SDHubGalleryImgChestUpload(files, fileNames);
-          files = [];
-          fileNames = [];
-        }
+      const data = await res.json();
+      newImg.dataset.image = path;
+      newImg.src = data.status;
+      newImg.title = name;
 
-      } catch (error) { console.error('Error in new imgbox:', error); }
+      newImg.onload = () => {
+        loaded++; if (loaded === total) SDHubGalleryTabImageCounters();
+      };
+
+      if (imgNames.length === total) {
+        SDHubGalleryImgChestUpload(imgPaths, imgNames);
+        imgNames = [];
+        imgPaths = [];
+      }
     }
 
     if (TabBtn) TabBtn.style.display = 'flex';
@@ -644,7 +629,7 @@ function SDHubGalleryTabEventListener(TabCon) {
   });
 }
 
-function SDHubGalleryDeletion() {
+async function SDHubGalleryDeletion() {
   const imgEL = document.querySelector(`img[data-image='${window.SDHubImagePath}']`);
   const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image`), '');
   const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
@@ -736,9 +721,6 @@ function SDHubGalleryDOMLoaded() {
   link.href = file;
 
   document.body.appendChild(link);
-
-  SDHubCanvas = document.createElement('canvas');
-  SDHubCTX = SDHubCanvas.getContext('2d');
 
   const SDHubGallery = document.createElement('div');
   SDHubGallery.id = 'SDHubGallery';
@@ -843,16 +825,6 @@ function SDHubGalleryDOMLoaded() {
       const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
       if (LightBox?.style.display === 'flex') return;
       else e.stopPropagation(); e.preventDefault(); window.SDHubCloseImageInfoRow();
-    }
-  });
-
-  document.addEventListener('change', () => {
-    const checkboxInput = document.querySelector('#SDHub-Gallery-imgchest-Checkbox input');
-    const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
-
-    if (checkboxInput && checkboxSpan) {
-      checkboxSpan.style.color = checkboxInput.checked ? 'var(--background-fill-primary)' : '';
-      checkboxSpan.textContent = SDHubGetTranslation(checkboxInput.checked ? 'enabled' : 'click_to_enable');
     }
   });
 
@@ -1071,18 +1043,35 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   GalleryTab.prepend(imgchestButton);
   TabRow.style.marginLeft = '40px';
 
+  const checkboxInput = document.querySelector('#SDHub-Gallery-imgchest-Checkbox input');
+  const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
+  if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
+
+  document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
+    if (el.textContent.includes('Auto Upload to')) {
+      el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
+        <a class='sdhub-gallery-imgchest-info' href='https://imgchest.com' target='_blank'>
+          imgchest.com
+        </a>`;
+    }
+  });
+
+  ['#SDHub-Gallery-imgchest-Privacy', '#SDHub-Gallery-imgchest-NSFW'].forEach(id =>
+    document.querySelectorAll(`${id} label > span`).forEach(s => s.textContent = SDHubGetTranslation(s.textContent.toLowerCase()))
+  );
+
+  const apiInput = document.querySelector('#SDHub-Gallery-imgchest-API input');
+  apiInput?.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
+  apiInput?.addEventListener('mousedown', () => {
+    fromColumn = window.getComputedStyle(imgchestColumn).display === 'flex';
+  });
+
   ['Save', 'Load'].forEach(key => {
     const btn = document.getElementById(`SDHub-Gallery-imgchest-${key}-Button`);
     if (btn) {
       btn.title = SDHubGetTranslation(`${key.toLowerCase()}_setting`);
       btn.textContent = SDHubGetTranslation(key.toLowerCase());
     }
-  });
-
-  const apiInput = document.querySelector('#SDHub-Gallery-imgchest-API input');
-  apiInput?.setAttribute('placeholder', SDHubGetTranslation('imgchest_api_key'));
-  apiInput?.addEventListener('mousedown', () => {
-    fromColumn = window.getComputedStyle(imgchestColumn).display === 'flex';
   });
 
   document.addEventListener('mouseup', () => {
@@ -1106,21 +1095,13 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
     }
   });
 
-  document.querySelectorAll('#SDHub-Gallery-imgchest-Info').forEach(el => {
-    if (el.textContent.includes('Auto Upload to')) {
-      el.innerHTML = `${SDHubGetTranslation('auto_upload_to')}
-        <a class='sdhub-gallery-imgchest-info' href='https://imgchest.com' target='_blank'>
-          imgchest.com
-        </a>`;
-    }
+  document.addEventListener('change', () => {
+    checkboxSpan.style.color = checkboxInput.checked ? 'var(--background-fill-primary)' : '';
+    checkboxSpan.textContent = SDHubGetTranslation(checkboxInput.checked ? 'enabled' : 'click_to_enable');
+    imgchestButton.style.background = checkboxInput.checked ? 'var(--primary-400)' : 'var(--background-fill-secondary)';
+    imgchestButton.style.boxShadow = checkboxInput.checked ? '0 0 10px 1px var(--primary-400)' : '';
+    imgchestButton.style.border = checkboxInput.checked ? '1px solid var(--primary-400)' : '1px solid var(--background-fill-secondary)';
   });
-
-  const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
-  if (checkboxSpan) checkboxSpan.textContent = SDHubGetTranslation('click_to_enable');
-
-  ['#SDHub-Gallery-imgchest-Privacy', '#SDHub-Gallery-imgchest-NSFW'].forEach(id =>
-    document.querySelectorAll(`${id} label > span`).forEach(s => s.textContent = SDHubGetTranslation(s.textContent.toLowerCase()))
-  );
 
   fetch(`${SDHubGalleryBase}/imgChest`)
     .then(r => r.json())
@@ -1133,39 +1114,34 @@ function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
     .catch(e => console.error('Error loading imgchest settings:', e));
 }
 
-function SDHubGalleryImgChestUpload(files, names) {
-  const url = 'https://api.imgchest.com/v1/post';
-  const fn = names.length > 0 ? names[names.length - 1] : 'image';
+async function SDHubGalleryImgChestUpload(paths, names) {
+  if (!gradioApp().querySelector('#SDHub-Gallery-imgchest-Checkbox input')?.checked) return;
 
-  const checkbox = gradioApp().querySelector('#SDHub-Gallery-imgchest-Checkbox input');
-  if (!checkbox?.checked) return;
+  const apikey = gradioApp().querySelector('#SDHub-Gallery-imgchest-API input')?.value.trim();
+  if (!apikey) return;
 
-  const apikey = gradioApp().querySelector('#SDHub-Gallery-imgchest-API input');
-  if (!apikey?.value.trim()) return;
+  const getSettings = (id) => 
+    gradioApp().querySelector(`${id} > div > label.selected`)?.getAttribute('data-testid')?.replace('-radio-label', '').toLowerCase() || '';
+  const [privacy, nsfw] = ['#SDHub-Gallery-imgchest-Privacy', '#SDHub-Gallery-imgchest-NSFW'].map(getSettings);
 
-  function getSettings(id) {
-    const selected = gradioApp().querySelector(`${id} > div > label.selected`);
-    return selected ? selected.getAttribute('data-testid').replace('-radio-label', '').toLowerCase() : '';
-  }
-
-  const privacy = getSettings('#SDHub-Gallery-imgchest-Privacy') || 'hidden';
-  const nsfw = getSettings('#SDHub-Gallery-imgchest-NSFW') || 'true';
+  const sorted = paths.map((path, i) => ({ path, name: names[i] })).sort((a, b) => b.name.includes('grid-') - a.name.includes('grid-'));
+  const files = await Promise.all(sorted.map(({ path }) => SDHubGalleryCreateImageFile(path)));
 
   const data = new FormData();
-  files.forEach((img) => data.append('images[]', img));
-  data.append('title', fn);
-  data.append('privacy', privacy);
-  data.append('nsfw', nsfw);
+  files.forEach(file => file && data.append('images[]', file));
+  data.append('title', sorted.length > 1 && sorted.some(item => item.name.includes('grid-')) ? sorted[1].name : sorted[0].name);
+  data.append('privacy', privacy || 'hidden');
+  data.append('nsfw', nsfw || 'true');
 
-  return fetch(url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apikey.value.trim()}` },
-    body: data,
-  })
-    .then((upload) => upload.json())
-    .then((result) => {
-      console.log('Uploaded:', result);
-      return result;
-    })
-    .catch((error) => console.error('Upload failed:', error));
+  try {
+    const result = await fetch('https://api.imgchest.com/v1/post', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apikey}` },
+      body: data,
+    }).then(res => res.json());
+
+    console.log('Uploaded:', result);
+  } catch (error) {
+    console.error('Upload failed:', error);
+  }
 }
