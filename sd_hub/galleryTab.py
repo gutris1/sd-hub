@@ -113,9 +113,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         media_type, _ = mimetypes.guess_type(fp)
         headers = {
             'Cache-Control': 'public, max-age=31536000, immutable',
-            'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT'),
-            'ETag': str(fp.stat().st_mtime),
-            'Last-Modified': datetime.fromtimestamp(fp.stat().st_mtime).strftime('%a, %d %b %Y %H:%M:%S GMT')
+            'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
         }
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
