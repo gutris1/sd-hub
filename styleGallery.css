@@ -543,8 +543,9 @@ body.no-scroll {
   height: 100%;
   display: flex;
   position: relative;
+  opacity: 0;
   transform: translate(0px, 0px) scale(0);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.4s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-img {
@@ -559,6 +560,7 @@ body.no-scroll {
   cursor: auto;
   user-select: none;
   -webkit-user-select: none;
+  background-color: #212121;
   transform: translate(0px, 0px) scale(1);
   transition: transform 0.4s ease, opacity 0.4s ease;
 }
