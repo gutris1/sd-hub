@@ -1,7 +1,14 @@
 function SDHubGalleryImageViewer(mode) {
+  const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+  LightBox.style.display = 'flex';
+  LightBox.focus();
+
   document.body.classList.add('no-scroll');
   SDHubGalleryToggleNextPrev(mode);
+  SDHubGalleryImageViewerImage();
+}
 
+function SDHubGalleryImageViewerImage() {
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
   const Control = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Control');
   const Wrapper = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Wrapper');
@@ -11,8 +18,6 @@ function SDHubGalleryImageViewer(mode) {
   imgEL.src = window.SDHubImagePath;
 
   Wrapper.append(imgEL);
-  LightBox.style.display = 'flex';
-  LightBox.focus();
 
   const imgState = {
     scale: 1,
@@ -114,6 +119,7 @@ function SDHubGalleryImageViewer(mode) {
       setTimeout(() => {
         LightBox.style.display = 'none';
         Wrapper.style.transform = '';
+        Wrapper.style.opacity = '';
         document.removeEventListener('mouseleave', MouseLeave);
         document.removeEventListener('mouseup', MouseUp);
         document.getElementById('SDHub-Gallery-Image-Viewer-img')?.remove();
@@ -127,7 +133,9 @@ function SDHubGalleryImageViewer(mode) {
 
   requestAnimationFrame(() => {
     LightBox.style.opacity = '1';
+    Wrapper.style.transition = '';
     Wrapper.style.transform = 'translate(0px, 0px) scale(1)';
+    Wrapper.style.opacity = '1';
   });
 
   imgEL.onload = function () {
@@ -500,18 +508,31 @@ function SDHubGalleryImageViewer(mode) {
   document.addEventListener('mouseup', MouseUp);
 }
 
+function SDHubGalleryImageViewerSwitchImage() {
+  const Wrapper = document.getElementById('SDHub-Gallery-Image-Viewer-Wrapper');
+  if (Wrapper) {
+    Wrapper.style.transition = 'none';
+    Wrapper.style.opacity = '0';
+    Wrapper.style.transform = 'translate(0px, 0px) scale(0)';
+    setTimeout(() => {
+      Wrapper.querySelector('#SDHub-Gallery-Image-Viewer-img')?.remove();
+      SDHubGalleryImageViewerImage();
+    }, 100);
+  }
+}
+
 function SDHubGalleryNextImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex + 1) % window.SDHubImageList.length;
-  let Next = window.SDHubImageList[window.SDHubImageIndex];
-  document.getElementById('SDHub-Gallery-Image-Viewer-img').src = Next;
+  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
+  SDHubGalleryImageViewerSwitchImage();
 }
 
 function SDHubGalleryPrevImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex - 1 + window.SDHubImageList.length) % window.SDHubImageList.length;
-  let Prev = window.SDHubImageList[window.SDHubImageIndex];
-  document.getElementById('SDHub-Gallery-Image-Viewer-img').src = Prev;
+  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
+  SDHubGalleryImageViewerSwitchImage();
 }
 
 function SDHubGalleryToggleNextPrev(mode) {
