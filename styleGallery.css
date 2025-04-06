@@ -545,7 +545,7 @@ body.no-scroll {
   position: relative;
   opacity: 0;
   transform: translate(0px, 0px) scale(0);
-  transition: transform 0.3s ease, opacity 0.4s ease;
+  transition: transform 0.3s ease, opacity 0.4s ease-out;
 }
 
 #SDHub-Gallery-Image-Viewer-img {
