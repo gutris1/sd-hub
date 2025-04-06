@@ -16,23 +16,19 @@ const SDHubGalleryTabList = [
 
 onUiLoaded(function () {
   let GalleryTab = document.getElementById('sdhub-gallery-tab');
-  if (GalleryTab) SDHubCreateGallery(GalleryTab);
+  GalleryTab && SDHubCreateGallery(GalleryTab);
 });
 
 async function SDHubGalleryUpdateImageInput(input, path) {
   try {
     const file = await SDHubGalleryCreateImageFile(path);
     if (!file) throw new Error('Failed to create file');
-
     const data = new DataTransfer();
     data.items.add(file);
     input.files = data.files;
-
     const e = new Event('change', { bubbles: true, composed: true });
     input.dispatchEvent(e);
-  } catch (err) {
-    console.error('Error in updating image input:', err);
-  }
+  } catch (err) { console.error('Error in updating image input:', err); }
 }
 
 async function SDHubGalleryCreateImageFile(path) {
@@ -41,10 +37,7 @@ async function SDHubGalleryCreateImageFile(path) {
     const blob = await res.blob();
     const name = path.substring(path.lastIndexOf('/') + 1).split('?')[0];
     return new File([blob], name, { type: blob.type });
-  } catch (err) {
-    console.error('Error in creating file:', err);
-    return null;
-  }
+  } catch (err) { console.error('Error in creating file:', err); return null; }
 }
 
 async function SDHubGalleryLoadInitial() {
@@ -55,21 +48,23 @@ async function SDHubGalleryLoadInitial() {
 
     if (!data.images?.length) return;
 
+    const sortedImages = data.images.sort((a, b) =>
+      a.path.split('/').pop().split('?')[0].localeCompare(b.path.split('/').pop().split('?')[0], undefined, { numeric: true })
+    );
+
     let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0');
     let loaded = 0;
-    let total = data.images.length;
+    let total = sortedImages.length;
     let selectedTab = false;
     const todayRegex = /^\d{4}-\d{2}-\d{2}$/;
     const imgBoxes = [];
 
     document.querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']").forEach((tab) => {
-      if (tab.classList.contains('active') && tab.style.display === 'flex') {
-        selectedTab = true;
-      }
+      if (tab.classList.contains('active') && tab.style.display === 'flex') selectedTab = true;
     });
 
     for (let index = 0; index < total; index++) {
-      let { path, thumbnail } = data.images[index];
+      let { path, thumbnail } = sortedImages[index];
       let whichTab = SDHubGalleryTabList.find((tab) => path.includes(`/${tab}/`));
       let tabToUse = whichTab || 'extras-images';
       let pathParts = path.split('/');
@@ -83,9 +78,7 @@ async function SDHubGalleryLoadInitial() {
         else if (parentFolder) {
           tabToUse = parentFolder;
           let tabName = `${pathParts[dateIndex - 1]} ${pathParts[dateIndex]}`;
-          if (!document.getElementById(`SDHub-Gallery-${tabToUse}-Tab-Container`)) {
-            SDHubGalleryCloneTab(tabToUse, tabName);
-          }
+          if (!document.getElementById(`SDHub-Gallery-${tabToUse}-Tab-Container`)) SDHubGalleryCloneTab(tabToUse, tabName);
         }
       }
 
@@ -108,9 +101,7 @@ async function SDHubGalleryLoadInitial() {
       }
     }
 
-    imgBoxes.forEach(({ newImgBox, TabCon }) => {
-      TabCon.prepend(newImgBox);
-    });
+    imgBoxes.forEach(({ newImgBox, TabCon }) => { TabCon.prepend(newImgBox); });
 
     for (const { newImgBox, path, thumbnail, TabCon, TabBtn, counter } of imgBoxes) {
       const img = newImgBox.querySelector('img');
@@ -139,9 +130,7 @@ async function SDHubGalleryLoadInitial() {
             }
           };
 
-        } catch (error) {
-          console.error('Error in initial imgbox:', error);
-        }
+        } catch (err) { console.error('Error in initial imgbox:', err); }
       }
 
       if (TabBtn) TabBtn.style.display = 'flex';
@@ -154,9 +143,7 @@ async function SDHubGalleryLoadInitial() {
       }
     }
 
-  } catch (error) {
-    console.error('Error in initial-load:', error);
-  }
+  } catch (err) { console.error('Error in initial-load:', err); }
 }
 
 function SDHubGalleryCloneTab(id, name) {
@@ -236,13 +223,9 @@ async function SDHubGalleryGetNewImage(whichGallery) {
   let imgBoxes = [];
   let loaded = 0;
 
-  document
-    .querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']")
-    .forEach((tab) => {
-      if (tab.classList.contains('active') && tab.style.display === 'flex') {
-        selectedTab = true;
-      }
-    });
+  document.querySelectorAll("[id^='SDHub-Gallery-'][id$='-Tab-Container']").forEach((tab) => {
+    if (tab.classList.contains('active') && tab.style.display === 'flex') selectedTab = true;
+  });
 
   let img = document.querySelectorAll(`#${whichGallery} > .preview > .thumbnails img`);
   let total = img.length;
@@ -255,10 +238,9 @@ async function SDHubGalleryGetNewImage(whichGallery) {
 
     let imgSrc = src.split('/file=')[1].split('?')[0];
 
-    let whichTab =
-      whichGallery === 'extras_gallery'
-        ? 'extras-images'
-        : imgSrc.includes('grid')
+    let whichTab = whichGallery === 'extras_gallery'
+      ? 'extras-images'
+      : imgSrc.includes('grid')
         ? `${whichGallery.split('_')[0]}-grids`
         : `${whichGallery.split('_')[0]}-images`;
 
@@ -281,9 +263,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     }
   }
 
-  imgBoxes.forEach(({ newImgBox, TabCon }) => {
-    TabCon.prepend(newImgBox);
-  });
+  imgBoxes.forEach(({ newImgBox, TabCon }) => { TabCon.prepend(newImgBox); });
 
   for (const { newImgBox, imgSrc, TabCon, TabBtn, counter } of imgBoxes) {
     let newImg = newImgBox.querySelector('img');
@@ -307,9 +287,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
       newImg.src = data.status;
       newImg.title = name;
 
-      newImg.onload = () => {
-        loaded++; if (loaded === total) SDHubGalleryTabImageCounters();
-      };
+      newImg.onload = () => ++loaded === total && SDHubGalleryTabImageCounters();
 
       if (imgNames.length === total) {
         SDHubGalleryImgChestUpload(imgPaths, imgNames);
@@ -363,13 +341,8 @@ function SDHubGalleryContextMenu(e, imgEL) {
 
   let posX, originX, posY, originY;
 
-  posX = spaceRight >= menuWidth
-    ? (originX = 'left', cursorX)
-    : (originX = 'right', cursorX - menuWidth);
-
-  posY = spaceBelow >= menuHeight
-    ? (originY = 'top', cursorY)
-    : (originY = 'bottom', cursorY - menuHeight);
+  posX = spaceRight >= menuWidth ? (originX = 'left', cursorX) : (originX = 'right', cursorX - menuWidth);
+  posY = spaceBelow >= menuHeight ? (originY = 'top', cursorY) : (originY = 'bottom', cursorY - menuHeight);
 
   GalleryCM.style.position = 'fixed';
   GalleryCM.style.left = `${posX}px`;
@@ -386,12 +359,7 @@ function SDHubGalleryContextMenu(e, imgEL) {
   GalleryCM.style.transformOrigin = `${originY} ${originX}`;
 
   requestAnimationFrame(() => {
-    Object.assign(GalleryCM.style, {
-      transition: '',
-      transform: 'scale(1)',
-      opacity: '1',
-    });
-
+    Object.assign(GalleryCM.style, { transition: '', transform: 'scale(1)', opacity: '1' });
     setTimeout(() => SDHubGallerySubmenu(), 200);
   });
 }
@@ -419,8 +387,8 @@ function SDHubGallerySubmenu() {
 
   let X, Y;
 
-  X = spaceOnRight >= menuWidth 
-    ? (submenu.style.left = '100%', ul.style.marginLeft = '10px', 'left') 
+  X = spaceOnRight >= menuWidth
+    ? (submenu.style.left = '100%', ul.style.marginLeft = '10px', 'left')
     : (submenu.style.right = '100%', ul.style.marginRight = '10px', 'right');
 
   Y = spaceBelow < menuHeight
@@ -535,7 +503,7 @@ function SDHubImageInfoClearButton() {
 
     const closeRow = () => {
       row.style.opacity = '';
-      if (!FoxFire) document.body.classList.remove('no-scroll');
+      document.body.classList.remove('no-scroll');
       setTimeout(() => (ClearButton.click(), (row.style.display = '')), 200);
     };
 
@@ -561,7 +529,7 @@ async function SDHubGalleryImageInfo(imgEL) {
     });
 
     await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
-    if (!FoxFire) document.body.classList.add('no-scroll');
+    document.body.classList.add('no-scroll');
 
     requestAnimationFrame(() => {
       setTimeout(() => {
@@ -643,7 +611,7 @@ async function SDHubGalleryDeletion() {
 
   DelCon.style.display = 'flex';
   Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
-  if (!FoxFire) document.body.classList.add('no-scroll');
+  document.body.classList.add('no-scroll');
 
   window.SDHubCenterElement('DelBox');
   window.SDHubCenterElement('Spinner');
@@ -669,7 +637,7 @@ async function SDHubGalleryDeletion() {
       setTimeout(() => {
         DelCon.style.opacity = '';
         Spinner.style.display = '';
-        if (!FoxFire) document.body.classList.remove('no-scroll');
+        document.body.classList.remove('no-scroll');
       }, 1000);
       setTimeout(() => {
         DelCon.style.display = '';
@@ -680,7 +648,7 @@ async function SDHubGalleryDeletion() {
   };
 
   DelCon.onclick = No.onclick = () => {
-    if (!FoxFire) document.body.classList.remove('no-scroll');
+    document.body.classList.remove('no-scroll');
     DelCon.style.opacity = '';
     DelBox.style.transform = 'scale(1.5)';
     setTimeout(() => (DelCon.style.display = '', DelBox.style.transform = ''), 200);
@@ -1120,8 +1088,7 @@ async function SDHubGalleryImgChestUpload(paths, names) {
   const apikey = gradioApp().querySelector('#SDHub-Gallery-imgchest-API input')?.value.trim();
   if (!apikey) return;
 
-  const getSettings = (id) => 
-    gradioApp().querySelector(`${id} > div > label.selected`)?.getAttribute('data-testid')?.replace('-radio-label', '').toLowerCase() || '';
+  const getSettings = (id) => gradioApp().querySelector(`${id} > div > label.selected`)?.getAttribute('data-testid')?.replace('-radio-label', '').toLowerCase() || '';
   const [privacy, nsfw] = ['#SDHub-Gallery-imgchest-Privacy', '#SDHub-Gallery-imgchest-NSFW'].map(getSettings);
 
   const sorted = paths.map((path, i) => ({ path, name: names[i] })).sort((a, b) => b.name.includes('grid-') - a.name.includes('grid-'));
