@@ -1,10 +1,16 @@
 function SDHubGalleryImageViewer(mode) {
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+  const NextBtn = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Next-Button');
+  const PrevBtn = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Prev-Button');
+
+  const show = mode === 's' ? 'none' : (window.SDHubImageList.length > 1 ? 'flex' : 'none');
+  [NextBtn.style.display, PrevBtn.style.display] = [show, show];
+  if (mode === 's') window.SDHubImageList = [window.SDHubImagePath];
+
   LightBox.style.display = 'flex';
   LightBox.focus();
 
   document.body.classList.add('no-scroll');
-  SDHubGalleryToggleNextPrev(mode);
   SDHubGalleryImageViewerImage();
 }
 
@@ -513,11 +519,11 @@ function SDHubGalleryImageViewerSwitchImage() {
   if (Wrapper) {
     Wrapper.style.transition = 'none';
     Wrapper.style.opacity = '0';
-    Wrapper.style.transform = 'translate(0px, 0px) scale(0)';
+    Wrapper.style.transform = 'translate(0px, 0px) scale(0.5)';
     setTimeout(() => {
       Wrapper.querySelector('#SDHub-Gallery-Image-Viewer-img')?.remove();
       SDHubGalleryImageViewerImage();
-    }, 100);
+    }, 10);
   }
 }
 
@@ -533,19 +539,6 @@ function SDHubGalleryPrevImage() {
   window.SDHubImageIndex = (window.SDHubImageIndex - 1 + window.SDHubImageList.length) % window.SDHubImageList.length;
   window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
   SDHubGalleryImageViewerSwitchImage();
-}
-
-function SDHubGalleryToggleNextPrev(mode) {
-  const NextBtn = document.getElementById('SDHub-Gallery-Image-Viewer-Next-Button');
-  const PrevBtn = document.getElementById('SDHub-Gallery-Image-Viewer-Prev-Button');
-
-  if (mode === 's') {
-    NextBtn.style.display = PrevBtn.style.display = 'none';
-    window.SDHubImageList = [window.SDHubImagePath];
-  } else if (mode === 'm') {
-    const show = window.SDHubImageList.length > 1 ? 'flex' : 'none';
-    NextBtn.style.display = PrevBtn.style.display = show;
-  }
 }
 
 function SDHubGalleryOpenViewerFromButton(imgEL) {
