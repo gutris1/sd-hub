@@ -1,4 +1,3 @@
-let FoxFire = /firefox/i.test(navigator.userAgent);
 let SDHubTranslations = {};
 
 let SDHubTabButtons = {
@@ -61,14 +60,14 @@ onUiUpdate(function() {
     let el = document.getElementById(Id);
     if (el) el.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    if (!FoxFire) document.body.classList.remove('no-scroll');
+    document.body.classList.remove('no-scroll');
   }
 
   if (MainTab?.textContent.trim() !== 'HUB') {
     const id = document.getElementById(Id);
     if (id) id.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    if (!FoxFire) document.body.classList.remove('no-scroll');
+    document.body.classList.remove('no-scroll');
     if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
   }
 });
@@ -177,6 +176,7 @@ async function SDHubTextEditorInfo(flag) {
 }
 
 function SDHubTextEditorGalleryScrollBar() {
+  const FoxFire = /firefox/i.test(navigator.userAgent);
   const ScrollBAR = document.createElement('style');
   document.body.appendChild(ScrollBAR);
 
