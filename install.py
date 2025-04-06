@@ -1,3 +1,4 @@
+from modules.paths_internal import extensions_dir
 from importlib import metadata
 from packaging import version
 from pathlib import Path
@@ -16,16 +17,19 @@ RST = '\033[0m'
 base = Path(__file__).parent
 
 def _SDHubReq():
-    r = {
-        'sd-hub-translations.xlsx': 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
-        'javascript/exif-reader.js': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-        'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
-        'javascript/XLSX-reader.js': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-        'javascript/XLSX-reader-LICENSE': 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE'
+    exif = Path(extensions_dir) / 'Exif-Reader/javascript'
+    exif.mkdir(parents=True, exist_ok=True)
+
+    req = {
+        (exif, 'exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
+        (exif, 'exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
+        (base, 'sd-hub-translations.xlsx'): 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
+        (base / 'javascript', 'XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+        (base / 'javascript', 'XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
     }
 
-    for f, u in r.items():
-        fp = base / f
+    for (d, f), u in req.items():
+        fp = d / f
         if not fp.exists():
             fp.write_bytes(urllib.request.urlopen(u).read())
 
