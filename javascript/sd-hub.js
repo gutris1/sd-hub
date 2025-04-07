@@ -1,29 +1,8 @@
-let SDHubTranslations = {};
-
-let SDHubTabButtons = {
-  'Downloader': 'sdhub-tab-button-downloader',
-  'Uploader': 'sdhub-tab-button-uploader',
-  'Archiver': 'sdhub-tab-button-archiver',
-  'Text Editor': 'sdhub-tab-button-texteditor',
-  'Shell': 'sdhub-tab-button-shell',
-  'Gallery': 'sdhub-tab-button-gallery'
-};
-
-let SDHubLangIndex = {
-  en: 1,
-  ja: 2,
-  'zh-CN': 3,
-  'zh-TW': 4,
-  es: 5,
-  ko: 6,
-  ru: 7
-};
-
 onUiLoaded(function() {
-  SDHubTabLoaded(); SDHubTokenBlur(); SDHubEvents(); SDHubUITranslation();
+  SDHubTabLoaded(); SDHubTokenBlur(); SDHubEvents(); SDHubUITranslation(); onUiUpdate(SDHubTabChange);
 });
 
-onUiUpdate(function() {
+function SDHubTabChange() {
   let row = document.getElementById('sdhub-gallery-image-info-row');
   let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
   let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
@@ -70,7 +49,7 @@ onUiUpdate(function() {
     document.body.classList.remove('no-scroll');
     if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
   }
-});
+}
 
 async function SDHubTabLoaded() {
   const titles = {
@@ -228,6 +207,27 @@ function SDHubTextEditorGalleryScrollBar() {
 
   ScrollBAR.innerHTML = FoxFire ? SBforFirefox : SBwebkit;
 }
+
+let SDHubTabButtons = {
+  'Downloader': 'sdhub-tab-button-downloader',
+  'Uploader': 'sdhub-tab-button-uploader',
+  'Archiver': 'sdhub-tab-button-archiver',
+  'Text Editor': 'sdhub-tab-button-texteditor',
+  'Shell': 'sdhub-tab-button-shell',
+  'Gallery': 'sdhub-tab-button-gallery'
+};
+
+let SDHubLangIndex = {
+  en: 1,
+  ja: 2,
+  'zh-CN': 3,
+  'zh-TW': 4,
+  es: 5,
+  ko: 6,
+  ru: 7
+};
+
+let SDHubTranslations = {};
 
 function SDHubGetTranslation(key, count = 1) {
   let lang = navigator.language || navigator.languages[0] || 'en';
