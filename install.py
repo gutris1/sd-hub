@@ -17,21 +17,20 @@ RST = '\033[0m'
 base = Path(__file__).parent
 
 def _SDHubReq():
-    exif = Path(extensions_dir) / 'Exif-Reader/javascript'
-    exif.mkdir(parents=True, exist_ok=True)
+    parser = Path(extensions_dir) / 'sd-image-parser'
+
+    if not parser.exists():
+        subprocess.run(['git', 'clone', '-q', 'https://github.com/gutris1/sd-image-parser', str(parser)], check=True)
 
     req = {
-        (exif, 'exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-        (exif, 'exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
-        (base, 'sd-hub-translations.xlsx'): 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
-        (base / 'javascript', 'XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-        (base / 'javascript', 'XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
+        (base / 'sd-hub-translations.xlsx'): 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
+        (base / 'javascript/XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+        (base / 'javascript/XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
     }
 
-    for (d, f), u in req.items():
-        fp = d / f
-        if not fp.exists():
-            fp.write_bytes(urllib.request.urlopen(u).read())
+    for f, u in req.items():
+        if not f.exists():
+            f.write_bytes(urllib.request.urlopen(u).read())
 
 def _sub(inputs):
     try:
