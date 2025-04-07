@@ -693,16 +693,18 @@ body.no-scroll {
 }
 
 .sdhubimginfo-outputsection {
-  padding-top: 5px;
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-bottom: 0px;
+  padding: 5px 8px;
   background: var(--input-background-fill);
   border-radius: 0.5rem;
   border: 1px solid transparent;
   margin-bottom: 8px;
-  box-shadow: var(--sdhub-box-shadow);
+  cursor: default;
   transition: all 0.3s ease;
+}
+
+#SDHubimgInfoHTML .sdhubimginfo-p {
+  line-height: 1.7;
+  margin: 0;
 }
 
 .sdhubimginfo-outputsection:hover {
@@ -711,11 +713,8 @@ body.no-scroll {
 
 .sdhubimginfo-outputsection.sdhubimginfo-modelBox {
   border: 0;
-  padding-top: 0;
-  padding-left: 0;
-  padding-right: 0;
-  box-shadow: none;
-  background-color: transparent;
+  padding: 0;
+  background: 0;
   transition: none;
 }
 
