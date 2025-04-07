@@ -1,10 +1,4 @@
 async function SDHubGalleryParser() {
-  window.SDHubimgInfoEncrypt = '';
-  window.SDHubimgInfoSha256 = '';
-  window.SDHubimgInfoNaiSource = '';
-  window.SDHubimgInfoSoftware = '';
-  window.SDHubimgRawOutput = '';
-
   const RawOutput = gradioApp().querySelector('#SDHubimgInfoGenInfo textarea');
   const HTMLPanel = gradioApp().getElementById('SDHubimgInfoHTML');
   const ImagePanel = gradioApp().getElementById('SDHubimgInfoImage');
@@ -20,193 +14,18 @@ async function SDHubGalleryParser() {
   img.onload = SDHubImageInfoClearButton;
   img.onclick = () => SDHubGalleryImageViewer('s');
 
-  let res = await fetch(img.src);
-  let blob = await res.blob();
-  let url = URL.createObjectURL(blob);
-  img.src = url;
-
-  const openInNewTab = document.createElement('a');
-  openInNewTab.href = url;
-  openInNewTab.target = '_blank';
-  openInNewTab.textContent = 'Open Image in New Tab';
-  openInNewTab.addEventListener('click', () => setTimeout(() => URL.revokeObjectURL(url), 1000));
-
-  let array = await blob.arrayBuffer();
-  let tags = ExifReader.load(array);
-  let output = '';
-
-  if (tags) {
-    window.SDHubimgInfoEncrypt = tags.Encrypt ? tags.Encrypt.description : '';
-    window.SDHubimgInfoSha256 = tags.EncryptPwdSha ? tags.EncryptPwdSha.description : '';
-
-    if (tags.parameters?.description) {
-      if (tags.parameters.description.includes('sui_image_params')) {
-        const parSing = JSON.parse(tags.parameters.description);
-        const Sui = parSing['sui_image_params'];
-        output = SDHubGalleryConvertSwarmUI(Sui, {});
-      } else { output = tags.parameters.description; }
-
-    } else if (tags.UserComment?.value) {
-      const array = tags.UserComment.value;
-      const UserComments = SDHubGalleryDecodeUserComment(array);
-      if (UserComments.includes('sui_image_params')) {
-        const rippin = UserComments.trim().replace(/[\x00-\x1F\x7F]/g, '');
-        const parSing = JSON.parse(rippin);
-        if (parSing['sui_image_params']) {
-          const Sui = parSing['sui_image_params'];
-          const SuiExtra = parSing['sui_extra_data'] || {};
-          output = SDHubGalleryConvertSwarmUI(Sui, SuiExtra);
-        }
-      } else { output = UserComments; }
-
-    } else if (tags['Software']?.description === 'NovelAI' && tags.Comment?.description) {
-      window.SDHubimgInfoSoftware = tags['Software'] ? tags['Software'].description : '';
-      window.SDHubimgInfoNaiSource = tags['Source'] ? tags['Source'].description : '';
-      const nai = JSON.parse(tags.Comment.description);
-      nai.sampler = 'Euler';
-
-      output = SDHubGalleryConvertNovelAI(nai['prompt']) +
-        '\nNegative prompt: ' + SDHubGalleryConvertNovelAI(nai['uc']) +
-        '\nSteps: ' + nai['steps'] +
-        ', Sampler: ' + nai['sampler'] +
-        ', CFG scale: ' + parseFloat(nai['scale']).toFixed(1) +
-        ', Seed: ' + nai['seed'] +
-        ', Size: ' + nai['width'] + 'x' + nai['height'] +
-        ', Clip skip: 2, ENSD: 31337';
-
-    } else if (tags.prompt?.description && tags.workflow) {
-      if (tags.prompt.description.includes("'filename_prefix': 'ComfyUI'")) {
-        output = 'ComfyUI<br>Nothing To Read Here';
-      }
-
-    } else if (tags.invokeai_graph?.description) {
-      output = 'InvokeAI<br>Nothing To Read Here';
-
-    } else { output = 'Nothing To See Here'; }
-
-    if (output) {
-      window.SDHubimgRawOutput = output;
-      RawOutput.value = output;
-      updateInput(RawOutput);
-      HTMLPanel.classList.add('prose');
-      HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
-    }
-  }
-
-  return tags;
-}
-
-function SDHubGalleryDecodeUserComment(array) {
-  const result = [];
-  let pos = 7;
-
-  if (array[8] === 123) {
-    for (let i = pos; i < array.length; i+=2) {
-      const inDEX = array[i];
-      const nEXT = array[i + 1];
-      if (inDEX === 0 && nEXT === 32) { result.push(32); continue; }
-      const vaLUE = inDEX * 256 + nEXT;
-      result.push(vaLUE);
-    }
-  } else {
-    for (let i = pos; i < array.length; i++) {
-      if (i === 7 && array[i] === 0) continue;
-      if (array[i] === 0) if (i + 1 < array.length && array[i + 1] === 0) { i++; continue; }
-      if (i + 1 < array.length) {
-        const inDEX = array[i];
-        const nEXT = array[i + 1];
-        if (inDEX === 0 && nEXT === 32) { result.push(32); i++; continue; }
-        const vaLUE = inDEX * 256 + nEXT;
-        result.push(vaLUE);
-        i++;
-      }
-    }
-  }
-
-  const output = new TextDecoder('utf-16').decode(new Uint16Array(result)).trim();
-  return output.replace(/^UNICODE[\x00-\x20]*/, '');
-}
-
-function SDHubGalleryConvertNovelAI(input) {
-  const NAIround = v => Math.round(v * 10000) / 10000;
-  const NAIMultiplyRange = (start, multiplier) => res.slice(start).forEach(row => row[1] = NAIround(row[1] * multiplier));
-  const re_attention = /\{|\[|\}|\]|[^\{\}\[\]]+/gmu;
-  let text = input.replaceAll('(', '\\(').replaceAll(')', '\\)').replace(/\\{2,}(\(|\))/gim, '\$1');
-  let res = [];
-  let curly_brackets = [];
-  let square_brackets = [];
-  const curly_bracket_multiplier = 1.05;
-  const square_bracket_multiplier = 1 / 1.05;
-
-  for (const match of text.matchAll(re_attention)) {
-    let word = match[0];
-    if (word === '{') curly_brackets.push(res.length);
-    else if (word === '[') square_brackets.push(res.length);
-    else if (word === '}' && curly_brackets.length > 0) NAIMultiplyRange(curly_brackets.pop(), curly_bracket_multiplier);
-    else if (word === ']' && square_brackets.length > 0) NAIMultiplyRange(square_brackets.pop(), square_bracket_multiplier);
-    else res.push([word, 1.0]);
-  }
-
-  for (const pos of curly_brackets) NAIMultiplyRange(pos, curly_bracket_multiplier);
-  for (const pos of square_brackets) NAIMultiplyRange(pos, square_bracket_multiplier);
-  if (res.length === 0) res = [['', 1.0]];
-
-  let i = 0;
-  while (i + 1 < res.length) { if (res[i][1] === res[i + 1][1]) { res[i][0] += res[i + 1][0]; res.splice(i + 1, 1); } else { i++; }}
-
-  let result = '';
-  for (let i = 0; i < res.length; i++) { if (res[i][1] === 1.0) { result += res[i][0]; } else { result += `(${res[i][0]}:${res[i][1]})`; }}
-  return result;
-}
-
-function SDHubGalleryConvertSwarmUI(Sui, extraData = {}) {
-  let output = '';
-
-  if (Sui.prompt) output += `${Sui.prompt}\n`;
-  if (Sui.negativeprompt) output += `Negative prompt: ${Sui.negativeprompt}\n`;
-  if (Sui.steps) output += `Steps: ${Sui.steps}, `;
-  if (Sui.sampler) {
-    Sui.sampler = Sui.sampler.replace(/\beuler\b|\beuler(-\w+)?/gi, (match) => { return match.replace(/euler/i, 'Euler'); });
-    output += `Sampler: ${Sui.sampler}, `;
-  }
-  if (Sui.scheduler) output += `Schedule type: ${Sui.scheduler}, `;
-  if (Sui.cfgscale) output += `CFG scale: ${Sui.cfgscale}, `;
-  if (Sui.seed) output += `Seed: ${Sui.seed}, `;
-  if (Sui.width && Sui.height) output += `Size: ${Sui.width}x${Sui.height}, `;
-  if (Sui.model) output += `Model: ${Sui.model}, `;
-  if (Sui.vae) { const vaeParts = Sui.vae.split('/'); output += `VAE: ${vaeParts[vaeParts.length - 1]}, `; }
-
-  window.SDHubimgInfoSoftware = Sui?.swarm_version ? `SwarmUI ${Sui.swarm_version}` : '';
-  output = output.trim().replace(/,$/, '');
-
-  let otherParams = Object.entries(Sui)
-    .filter(([key]) => {
-      return ![
-        'prompt', 
-        'negativeprompt', 
-        'steps', 
-        'sampler', 
-        'scheduler', 
-        'cfgscale', 
-        'seed', 
-        'width', 
-        'height', 
-        'model', 
-        'vae', 
-        'swarm_version'
-      ].includes(key);
-    }).map(([key, value]) => `${key}: ${value}`).join(', ');
-
-  let extraParams = Object.entries(extraData).map(([key, value]) => `${key}: ${value}`).join(', ');
-  if (otherParams || extraParams) output += (output ? ', ' : '') + [otherParams, extraParams].filter(Boolean).join(', ');
-  return output.trim();
+  const output = await SDImageParser(img);
+  RawOutput.value = output;
+  updateInput(RawOutput);
+  HTMLPanel.classList.add('prose');
+  HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
 }
 
 async function SDHubGalleryPlainTextToHTML(inputs) {
-  const EncryptInfo = window.SDHubimgInfoEncrypt;
-  const Sha256Info = window.SDHubimgInfoSha256;
-  const NaiSourceInfo = window.SDHubimgInfoNaiSource;
-  const SoftwareInfo = window.SDHubimgInfoSoftware;
+  const EncryptInfo = window.SDImageParserEncryptInfo;
+  const Sha256Info = window.SDImageParserSha256Info;
+  const NaiSourceInfo = window.SDImageParserNaiSourceInfo;
+  const SoftwareInfo = window.SDImageParserSoftwareInfo;
   const SendButton = document.getElementById('SDHubimgInfoSendButton');
   const OutputPanel = document.getElementById('SDHubimgInfoOutputPanel');
   const titlestyle = `display: block; margin-bottom: 2px; color: var(--primary-400);`;
@@ -219,7 +38,6 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
   let titlePrompt = `
     <button id='SDHub-promptButton' class='sdhubimginfo-copybuttons'
-      style='margin-bottom: 2px;'
       title='${SDHubGetTranslation("copy_prompt")}'
       onclick='SDHubGalleryCopyButtonEvent(event)'>
       ${SDHubGetTranslation('prompt')}
@@ -242,15 +60,16 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     </button>
   `;
 
-  let titleModels = '';
-  let titleEncrypt = `<b style='${titlestyle};'>Encrypt</b>`;
-  let titleSha = `<b style='${titlestyle};'>EncryptPwdSha</b>`;
-  let titleSoftware = `<b style='${titlestyle};'>Software</b>`;
-  let titleSource = `<b style='${titlestyle};'>Source</b>`;
-  let br = /\n/g;
+  const titleModels = '';
+  const titleEncrypt = `<b style='${titlestyle};'>Encrypt</b>`;
+  const titleSha = `<b style='${titlestyle};'>EncryptPwdSha</b>`;
+  const titleSoftware = `<b style='${titlestyle};'>Software</b>`;
+  const titleSource = `<b style='${titlestyle};'>Source</b>`;
+  const br = /\n/g;
 
-  const SDHubGalleryHTMLOutput = (title, content) =>
-    `<div class='sdhubimginfo-outputsection'><p><span>${title}</span>: <strong>${content}</strong></p></div>`;
+  function SDHubGalleryHTMLOutput(title, content) {
+    return `<div class="sdhubimginfo-outputsection"><p>${title}${content}</p></div>`;
+  }
 
   if (inputs === undefined || inputs === null || inputs.trim() === '') {
     OutputPanel.style.transition = 'none';
@@ -285,13 +104,11 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
       inputs = inputs.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(br, '<br>');
       inputs = inputs.replace(/Seed:\s?(\d+),/gi, function(match, seedNumber) {
         return `
-          <button id='SDHub-seedButton'
-            class='sdhubimginfo-copybuttons'
-            style='color: var(--primary-400); margin-bottom: -5px; cursor: pointer;'
+          <a id='SDHub-seedButton'
             title='${SDHubGetTranslation("copy_seed")}'
             onclick='SDHubGalleryCopyButtonEvent(event)'>
             Seed
-          </button>: ${seedNumber},`;
+          </a>: ${seedNumber},`;
       });
 
       const negativePromptIndex = inputs.indexOf('Negative prompt:');
@@ -328,7 +145,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
           const SDHubimgInfoModelOutput = document.getElementById('SDHubimgInfoModelOutput');
           if (SDHubimgInfoModelOutput) {
             const SDHubimgInfoModelBox = SDHubimgInfoModelOutput.closest('.sdhubimginfo-outputsection');
-            if (SDHubimgInfoModelBox) SDHubimgInfoModelBox.classList.add('modelBox');
+            if (SDHubimgInfoModelBox) SDHubimgInfoModelBox.classList.add('sdhubimginfo-modelBox');
             SDHubimgInfoModelOutput.innerHTML = modelBox;
           }
         }, 0);
@@ -337,7 +154,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
           const fetchTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 60000));
 
           try {
-            const ModelOutputFetched = await Promise.race([SDHubGalleryFetchModelOutput(paramsRAW), fetchTimeout]);
+            const ModelOutputFetched = await Promise.race([SDImageParserFetchModelOutput(paramsRAW), fetchTimeout]);
             const SDHubimgInfoModelOutput = document.getElementById('SDHubimgInfoModelOutput');
             if (SDHubimgInfoModelOutput) {
               SDHubimgInfoModelOutput.classList.add('sdhubimginfo-display-model-output');
@@ -376,124 +193,15 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   return `${outputHTML}`;
 }
 
-async function SDHubGalleryFetchModelOutput(i) {
-  let modelEX;
-  let FetchedModels = '';
-  let HashesDict = {};
-  let TIHashDict = {};
-
-  const Cat = { checkpoint: [], vae: [], lora: [], embed: [], };
-
-  if (i.includes('Model: "')) modelEX = i.match(/Model:\s*"?([^"]+)"/);
-  else modelEX = i.match(/Model:\s*([^,]+)/);
-
-  const modelHashEX = i.match(/Model hash:\s*([^,]+)/);
-  const vaeEX = i.match(/VAE:\s*([^,]+)/);
-  const vaeHashEX = i.match(/VAE hash:\s*([^,]+)/);
-  const loraHashEX = i.match(/Lora hashes:\s*"([^"]+)"/);
-  const tiHashEX = i.match(/TI hashes:\s*"([^"]+)"/);
-  const hashesIndex = i.indexOf('Hashes:');
-  const hashesEX = hashesIndex !== -1 ? i.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/) : null;
-
-  if (hashesEX && hashesEX[1]) {
-    const s = JSON.parse(hashesEX[1].trim());
-    for (const [k, h] of Object.entries(s)) {
-      if (k.startsWith('embed:')) {
-        const n = k.replace('embed:', '');
-        HashesDict[n] = h;
-        const fetchedHash = await SDHubGalleryFetchingModels(n, h, false);
-        Cat.embed.push(fetchedHash);
-      }
-    }
-  }
-
-  if (tiHashEX) {
-    const embedPairs = tiHashEX[1].split(',').map(pair => pair.trim());
-    for (const pair of embedPairs) {
-      const [n, h] = pair.split(':').map(item => item.trim());
-      if (h && !HashesDict[n]) {
-        TIHashDict[n] = h;
-        const fetchedHash = await SDHubGalleryTIHashesSearchLink(n, h);
-        Cat.embed.push(fetchedHash);
-      }
-    }
-  }
-
-  if (modelEX) {
-    const modelValue = modelEX[1];
-    const modelHash = modelHashEX ? modelHashEX[1] : null;
-    const vaeValue = vaeEX ? vaeEX[1] : null;
-    const vaeHash = vaeHashEX ? vaeHashEX[1] : null;
-    if (modelHash || vaeValue || vaeHash) Cat.checkpoint.push({ n: modelValue, h: modelHash });
-  }
-
-  const vaeValue = vaeEX ? vaeEX[1] : null;
-  const vaeHash = vaeHashEX ? vaeHashEX[1] : null;
-  if (vaeValue || vaeHash) Cat.vae.push({ n: vaeValue, h: vaeHash });
-
-  if (loraHashEX) {
-    const loraPairs = loraHashEX[1].split(',').map(pair => pair.trim());
-    for (const pair of loraPairs) {
-      const [n, h] = pair.split(':').map(item => item.trim());
-      if (h) Cat.lora.push({ n, h });
-    }
-  }
-
-  const FetchResult = (l, m) => {
-    return `
-      <div class='sdhubimginfo-modeloutput-line'>
-        <div class='sdhubimginfo-modeloutput-label'>${l}</div>
-        <div class='sdhubimginfo-modeloutput-hashes'>${m.join(' ')}</div>
-      </div>
-    `;
-  };
-
-  for (const [category, items] of Object.entries(Cat)) {
-    if (items.length > 0) {
-      let models;
-
-      if (category === 'embed') {
-        models = items.map(item => item);
-      } else if (category === 'lora') {
-        models = await Promise.all(items.map(async ({ n, h }) => { return await SDHubGalleryFetchingModels(n, h, false); }));
-      } else {
-        const isTHat = category === 'checkpoint' || category === 'vae';
-        models = await Promise.all(items.map(async ({ n, h }) => { return await SDHubGalleryFetchingModels(n, h, isTHat); }));
-      }
-
-      FetchedModels += FetchResult(category, models);
-    }
-  }
-
-  return `${FetchedModels}`;
-}
-
-async function SDHubGalleryFetchingModels(n, h, isTHat = false) {
-  const nonLink = `<span class='sdhubimginfo-link'>${n}${isTHat ? '' : `: ${h}`}</span>`;
-  if (!h) return nonLink;
-
-  const r = await fetch(`https://civitai.com/api/v1/model-versions/by-hash/${h}`);
-  const d = await r.json();
-
-  if (d.error === 'Model not found' || !d.model?.name) return nonLink;
-  return `<a class='sdhubimginfo-link' href='https://civitai.com/models/${d.modelId}?modelVersionId=${d.id}' target='_blank'>${d.model.name}</a>`;
-}
-
-async function SDHubGalleryTIHashesSearchLink(n, h) {
-  return h 
-    ? `<a class='sdhubimginfo-link' href='https://civitai.com/search/models?sortBy=models_v9&query=${h}' target='_blank'>${n}</a>` 
-    : `<span class='sdhubimginfo-nonlink'>${n}: ${h}</span>`;
-}
-
 function SDHubGallerySendButton(Id) {
-  let OutputRaw = window.SDHubimgRawOutput;
+  let OutputRaw = window.SDImageParserRawOutput;
   let ADmodel = OutputRaw?.includes('ADetailer model');
   let cb = gradioApp().getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
   if (ADmodel) cb?.checked === false && cb.click();
 }
 
 function SDHubGalleryCopyButtonEvent(e) {
-  let OutputRaw = window.SDHubimgRawOutput;
+  let OutputRaw = window.SDImageParserRawOutput;
 
   const CopyText = (text, target) => {
     const section = target.closest('.sdhubimginfo-outputsection');
