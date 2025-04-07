@@ -17,6 +17,7 @@ async function SDHubGalleryParser() {
   const output = await SDImageParser(img);
   RawOutput.value = output;
   updateInput(RawOutput);
+  window.SDHubImageInfoRawOutput = output;
   HTMLPanel.classList.add('prose');
   HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
 }
@@ -26,6 +27,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   const Sha256Info = window.SDImageParserSha256Info;
   const NaiSourceInfo = window.SDImageParserNaiSourceInfo;
   const SoftwareInfo = window.SDImageParserSoftwareInfo;
+
   const SendButton = document.getElementById('SDHubimgInfoSendButton');
   const OutputPanel = document.getElementById('SDHubimgInfoOutputPanel');
   const titlestyle = `display: block; margin-bottom: 2px; color: var(--primary-400);`;
@@ -68,7 +70,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   const br = /\n/g;
 
   function SDHubGalleryHTMLOutput(title, content) {
-    return `<div class="sdhubimginfo-outputsection"><p>${title}${content}</p></div>`;
+    return `<div class='sdhubimginfo-outputsection'><p class='sdhubimginfo-p'>${title}${content}</p></div>`;
   }
 
   if (inputs === undefined || inputs === null || inputs.trim() === '') {
@@ -194,14 +196,14 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 }
 
 function SDHubGallerySendButton(Id) {
-  let OutputRaw = window.SDImageParserRawOutput;
+  let OutputRaw = window.SDHubImageInfoRawOutput;
   let ADmodel = OutputRaw?.includes('ADetailer model');
   let cb = gradioApp().getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
   if (ADmodel) cb?.checked === false && cb.click();
 }
 
 function SDHubGalleryCopyButtonEvent(e) {
-  let OutputRaw = window.SDImageParserRawOutput;
+  let OutputRaw = window.SDHubImageInfoRawOutput;
 
   const CopyText = (text, target) => {
     const section = target.closest('.sdhubimginfo-outputsection');
@@ -224,5 +226,32 @@ function SDHubGalleryCopyButtonEvent(e) {
     }[id]?.();
 
     if (text) CopyText(text, e.target);
+  }
+}
+
+function SDHubImageInfoClearButton() {
+  let row = document.getElementById('sdhub-gallery-image-info-row');
+  let Cloned = document.getElementById('sd-hub-gallery-image-info-clear-button');
+  let ClearButton = document.querySelector('#SDHubimgInfoImage > div > div > div > button:nth-child(2)') || 
+                    document.querySelector('.gradio-container-4-40-0 #SDHubimgInfoImage > div > div > button');
+
+  if (ClearButton && !Cloned) {
+    let parent = ClearButton.parentElement;
+    ClearButton.style.display = 'none';
+
+    let btn = ClearButton.cloneNode(true);
+    btn.id = 'sd-hub-gallery-image-info-clear-button';
+    btn.style.display = 'flex';
+
+    parent.prepend(btn);
+
+    const closeRow = () => {
+      row.style.opacity = '';
+      document.body.classList.remove('no-scroll');
+      setTimeout(() => (ClearButton.click(), (row.style.display = ''), window.SDHubImageInfoRawOutput = ''), 200);
+    };
+
+    btn.onclick = (e) => (e.stopPropagation(), closeRow());
+    window.SDHubCloseImageInfoRow = closeRow;
   }
 }
