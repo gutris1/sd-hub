@@ -727,79 +727,6 @@ body.no-scroll {
   animation: undressBox 1s forwards ease-out;
 }
 
-#SDHubimgInfoModelOutput .sdhubimginfo-modeloutput-line {
-  display: flex;
-  padding: 0px;
-  margin-bottom: 5px;
-  border-radius: 5em;
-}
-
-#SDHubimgInfoModelOutput .sdhubimginfo-modeloutput-label,
-#SDHubimgInfoModelOutput .sdhubimginfo-modeloutput-hashes {
-  display: flex;
-  flex-wrap: wrap;
-  word-wrap: break-word;
-  white-space: normal;
-  box-sizing: border-box;
-  filter: drop-shadow(0 0 1px var(--primary-400));
-  box-shadow:
-    inset 0 0 3px 0px var(--primary-400),
-    0 0 1px 0px var(--primary-400);
-}
-
-#SDHubimgInfoModelOutput .sdhubimginfo-modeloutput-label {
-  width: 17%;
-  background-color: var(--input-background-fill);
-  font-size: 15px;
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
-  align-items: center;
-  justify-content: center;
-}
-
-#SDHubimgInfoModelOutput .sdhubimginfo-modeloutput-hashes {
-  width: 83%;
-  overflow-wrap: break-word;
-  column-gap: 7px;
-  row-gap: 0px;
-  border-left: 5px solid transparent;
-  border-top-right-radius: 1rem;
-  border-bottom-right-radius: 1rem;
-  padding-left: 10px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  align-items: flex-start;
-}
-
-.sdhubimginfo-nonlink {
-  font-size: 14px;
-  border: 1px solid transparent;
-  padding: 2px 3px;
-  margin: 3px 0;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow: hidden;
-}
-
-.sdhubimginfo-link {
-  font-size: 13px;
-  text-decoration: none;
-  border: 1px solid var(--primary-600);
-  transition: color 0.2s ease !important;
-  padding: 2px 3px;
-  margin: 3px 0;
-  background-color: var(--panel-background-fill);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 50ch;
-}
-
-.sdhubimginfo-link:hover {
-  color: var(--primary-400) !important;
-  border: 1px solid var(--link-text-color-hover);
-}
-
 #SDHubimgInfoModelOutput a {
   white-space: nowrap;
   font-weight: normal;
@@ -876,7 +803,7 @@ body.no-scroll {
   border-bottom-right-radius: 0.8rem;
 }
 
-.sdhubimginfo-copybuttons {
+#sdhub-tab .sdhubimginfo-copybuttons {
   display: block;
   color: var(--primary-400);
   font-size: 15px;
@@ -888,7 +815,14 @@ body.no-scroll {
   transition: color 0.3s ease;
 }
 
-.sdhubimginfo-copybuttons:hover {
+#SDHub-seedButton {
+  color: var(--primary-400);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+#sdhub-tab .sdhubimginfo-copybuttons:hover,
+#SDHub-seedButton:hover {
   color: var(--primary-600) !important;
 }
 
