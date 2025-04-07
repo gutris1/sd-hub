@@ -468,7 +468,7 @@ async function SDHubGallerySendImage(v) {
   await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
 
   const wait = setInterval(() => {
-    if (window.SDImageParserRawOutput?.trim()) {
+    if (window.SDHubImageInfoRawOutput?.trim()) {
       clearInterval(wait);
 
       const SendButton = document.querySelector(`#SDHubimgInfoSendButton > #${v}_tab`);
@@ -481,33 +481,6 @@ async function SDHubGallerySendImage(v) {
       }
     }
   }, 100);
-}
-
-function SDHubImageInfoClearButton() {
-  let row = document.getElementById('sdhub-gallery-image-info-row');
-  let Cloned = document.getElementById('sd-hub-gallery-image-info-clear-button');
-  let ClearButton = document.querySelector('#SDHubimgInfoImage > div > div > div > button:nth-child(2)') || 
-                    document.querySelector('.gradio-container-4-40-0 #SDHubimgInfoImage > div > div > button');
-
-  if (ClearButton && !Cloned) {
-    let parent = ClearButton.parentElement;
-    ClearButton.style.display = 'none';
-
-    let btn = ClearButton.cloneNode(true);
-    btn.id = 'sd-hub-gallery-image-info-clear-button';
-    btn.style.display = 'flex';
-
-    parent.prepend(btn);
-
-    const closeRow = () => {
-      row.style.opacity = '';
-      document.body.classList.remove('no-scroll');
-      setTimeout(() => (ClearButton.click(), (row.style.display = '')), 200);
-    };
-
-    btn.onclick = (e) => (e.stopPropagation(), closeRow());
-    window.SDHubCloseImageInfoRow = closeRow;
-  }
 }
 
 async function SDHubGalleryImageInfo(imgEL) {
@@ -539,8 +512,9 @@ async function SDHubGalleryImageInfo(imgEL) {
 }
 
 function SDHubGalleryTabEventListener(TabCon) {
-  TabCon.addEventListener('contextmenu', e => e.preventDefault());
+  let SDHubGalleryCMHover = null;
 
+  TabCon.addEventListener('contextmenu', e => e.preventDefault());
   TabCon.ondrag = TabCon.ondragend = TabCon.ondragstart = e => (e.stopPropagation(), e.preventDefault());
 
   TabCon.addEventListener('click', (e) => {
@@ -556,8 +530,6 @@ function SDHubGalleryTabEventListener(TabCon) {
   });
 
   TabCon.addEventListener('mouseenter', (e) => {
-    let SDHubGalleryCMHover = null;
-
     const Btn = e.target.closest('#SDHub-Gallery-Image-Context-Button');
     if (!Btn) return;
 
