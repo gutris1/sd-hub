@@ -19,12 +19,10 @@ let SDHubLangIndex = {
 
 let SDHubTranslations = {};
 
-onUiLoaded(function() {
-  SDHubTabLoaded(); SDHubTokenBlur(); SDHubEvents(); SDHubUITranslation(); onUiUpdate(SDHubTabChange);
-});
+onUiLoaded(() => (SDHubTabLoaded(), SDHubTokenBlur(), SDHubEvents(), SDHubUITranslation(), onUiUpdate(SDHubTabChange)));
 
 function SDHubTabChange() {
-  let row = document.getElementById('sdhub-gallery-image-info-row');
+  let infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
   let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
   let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
   let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
@@ -68,7 +66,7 @@ function SDHubTabChange() {
     if (id) id.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
     document.body.classList.remove('no-scroll');
-    if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
+    if (infoColumn?.style.display === 'flex') window.SDHubGalleryInfoClearImage();
   }
 }
 
