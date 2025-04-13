@@ -511,7 +511,7 @@ body.no-scroll {
   opacity: 0;
   overflow: hidden;
   backdrop-filter: blur(10px);
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-Control {
@@ -532,7 +532,7 @@ body.no-scroll {
   position: relative;
   opacity: 0;
   transform: translate(0px, 0px) scale(0);
-  transition: transform 0.3s ease, opacity 0.4s ease-out;
+  transition: transform 0.3s ease, opacity 0.1s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-img {
@@ -549,7 +549,7 @@ body.no-scroll {
   -webkit-user-select: none;
   background-color: #212121;
   transform: translate(0px, 0px) scale(1);
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transition: transform 0.4s ease, opacity 0.2s ease;
 }
 
 .sdhub-gallery-image-viewer-button {
