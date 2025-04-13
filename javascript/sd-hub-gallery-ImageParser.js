@@ -37,7 +37,6 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
   const SendButton = document.getElementById('SDHub-Gallery-Info-SendButton');
   const OutputPanel = document.getElementById('SDHub-Gallery-Info-Output-Panel');
-  const titlestyle = `display: block; margin-bottom: 2px; color: var(--primary-400);`;
 
   const titleEL = [
     { id: 'Prompt', label: 'prompt', title: 'copy_prompt' },
@@ -81,7 +80,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   let promptText = '';
   let negativePromptText = '';
   let paramsText = '';
-  let modelBox = '';
+  let modelOutput = '';
 
   function SDHubGalleryHTMLOutput(title, content) {
     const con = title === titleModels;
@@ -101,7 +100,8 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
       titlePrompt = '';
       SendButton.style.display = 'none';
-      outputHTML = SDHubGalleryHTMLOutput('', inputs);
+      const nothing = `<div class="sdhub-gallery-info-output-failed">${inputs}</div>`;
+      outputHTML = SDHubGalleryHTMLOutput('', nothing);
 
     } else if (inputs.trim().startsWith('OPPAI:')) {
       const sections = [{ title: titleEncrypt, content: EncryptInfo }, { title: titleSha, content: Sha256Info }];
@@ -134,57 +134,47 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
         paramsRAW = inputs.slice(stepsIndex).trim();
         paramsText = inputs.slice(stepsIndex).trim().replace(/,\s*(Lora hashes|TI hashes):\s*"[^"]+"/g, '').trim();
 
-        modelBox = `
-          <div id='SDHub-Gallery-Info-Model-Output' class='sdhub-gallery-info-modelBox'>
-            <svg xmlns='http://www.w3.org/2000/svg'x='0px' y='0px' width='100' height='100' viewBox='0 0 48 48' id='refresh-spinner'>
-              <path fill='var(--primary-400)' d='M8,24c0-8.8,7.2-16,16-16c1,0,2,0.1,3,0.3l0.7-3.9C26.5,4.1,25.3,4,24,4C12.9,4,4,13,4,24
-                c0,4.8,1.7,9.5,4.8,13.1l3-2.6C9.5,31.6,8,28,8,24z'/>
-              <path fill='var(--primary-400)' d='M39.5,11.3l-3.1,2.5C38.6,16.6,40,20.1,40,24c0,8.8-7.2,16-16,16c-1,0-2-0.1-3-0.3l-0.7,3.8
-                c1.3,0.2,2.5,0.3,3.7,0.3c11.1,0,20-8.9,20-20C44,19.4,42.4,14.8,39.5,11.3z'/>
-              <polygon fill='var(--primary-400)' points='31,7 44,8.7 33.3,19'/>
-              <polygon fill='var(--primary-400)' points='17,41 4,39.3 14.7,29'/>
-            </svg>
+        let Id = 'SDHub-Gallery-Info-Model-Output';
+        let display = 'sdhub-gallery-info-display-model-output';
+
+        modelOutput = `
+          <div id='${Id}' class='sdhub-gallery-info-modelBox'>
+            ${SDHubGallerySpinnerSVG.replace(/<svg\s+class=['"][^'"]*['"]/, '<svg id="SDHub-Gallery-Info-Spinner"')}
           </div>
         `;
 
-        setTimeout(() => {
-          const modelOutput = document.getElementById('SDHub-Gallery-Info-Model-Output');
-          if (modelOutput) {
-            const SDHubimgInfoModelBox = modelOutput.closest('.sdhub-gallery-info-output-section');
-            if (SDHubimgInfoModelBox) SDHubimgInfoModelBox.classList.add('sdhub-gallery-info-modelBox');
-            modelOutput.innerHTML = modelBox;
-          }
-        }, 0);
+        const modelBox = document.getElementById(Id);
+        if (modelBox) {
+          modelBox.closest('.sdhub-gallery-info-output-section').classList.add('sdhub-gallery-info-modelBox');
+          modelBox.innerHTML = modelOutput;
+        }
 
         setTimeout(async () => {
           const fetchTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 60000));
-
+          const modelBox = document.getElementById(Id);
           try {
             const fetchHash = await Promise.race([SDImageParserFetchModelOutput(paramsRAW), fetchTimeout]);
-            const modelOutput = document.getElementById('SDHub-Gallery-Info-Model-Output');
-            if (modelOutput) {
-              modelOutput.classList.add('sdhub-gallery-info-display-model-output');
-              modelOutput.innerHTML = fetchHash;
-              setTimeout(() => modelOutput.classList.remove('sdhub-gallery-info-display-model-output'), 2000);
-            }
+            modelBox.classList.add(display);
+            modelBox.innerHTML = fetchHash;
+            setTimeout(() => modelBox.classList.remove(display), 2000);
           } catch (error) {
-            if (error.message === 'Timeout') {
-              const modelOutput = document.getElementById('SDHub-Gallery-Info-Model-Output');
-              if (modelOutput) modelOutput.innerHTML = 'Failed to fetch...';
-            }
+            error.message === 'Timeout' && (modelBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>');
           }
         }, 500);
 
         if (hashesEX && hashesEX[1]) paramsText = paramsText.replace(hashesEX[0], '').trim();
         if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
-      } else paramsText = inputs.trim();
+
+      } else {
+        paramsText = inputs.trim();
+      }
 
       const sections = [
         { title: titlePrompt, content: promptText },
         { title: titleNegativePrompt, content: negativePromptText },
         { title: titleParams, content: paramsText },
         { title: titleSoftware, content: SoftwareInfo },
-        { title: titleModels, content: modelBox },
+        { title: titleModels, content: modelOutput },
         { title: titleEncrypt, content: EncryptInfo },
         { title: titleSha, content: Sha256Info },
         { title: titleSource, content: NaiSourceInfo }
