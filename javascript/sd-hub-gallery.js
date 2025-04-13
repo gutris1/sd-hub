@@ -12,10 +12,7 @@ const SDHubGalleryTabList = [
   'manual-save'
 ];
 
-onUiLoaded(function () {
-  let GalleryTab = document.getElementById('sdhub-gallery-tab');
-  GalleryTab && SDHubCreateGallery(GalleryTab);
-});
+onUiLoaded(SDHubCreateGallery);
 
 async function SDHubGalleryUpdateImageInput(input, path) {
   try {
@@ -618,25 +615,27 @@ async function SDHubGalleryDeletion() {
   requestAnimationFrame(() => (DelCon.style.opacity = '1', DelBox.style.transform = 'scale(1)'));
 }
 
-function SDHubCreateGallery(GalleryTab) {
-  const sendButton = document.getElementById('SDHub-Gallery-Info-SendButton');
-  sendButton?.querySelectorAll('#txt2img_tab, #img2img_tab').forEach(btn => {
-    btn.onclick = () => SDHubGallerySendButton(btn.id.replace('_tab', ''));
-  });
-
-  const Panel = document.getElementById('SDHub-Gallery-Info-Output-Panel');
-  const imgArea = document.createElement('div');
-  imgArea.id = 'SDHub-Gallery-Info-img-area'
-  imgArea.onclick = () => document.querySelector('#SDHub-Gallery-Info-Image img')?.click();
-  Panel.prepend(imgArea);
-
-  const input = document.querySelector('#SDHub-Gallery-Info-Image input');
-  const imgFrame = document.createElement('div');
-  imgFrame.id = 'SDHub-Gallery-Info-img-frame';
-  input?.parentNode?.insertBefore(imgFrame, input);
-
+function SDHubCreateGallery() {
+  const GalleryTab = document.getElementById('sdhub-gallery-tab');
   const SDHubGallery = document.getElementById('SDHubGallery');
-  if (SDHubGallery) {
+
+  if (GalleryTab && SDHubGallery) {
+    const sendButton = document.getElementById('SDHub-Gallery-Info-SendButton');
+    sendButton?.querySelectorAll('#txt2img_tab, #img2img_tab').forEach(btn => {
+      btn.onclick = () => SDHubGallerySendButton(btn.id.replace('_tab', ''));
+    });
+
+    const Panel = document.getElementById('SDHub-Gallery-Info-Output-Panel');
+    const imgArea = document.createElement('div');
+    imgArea.id = 'SDHub-Gallery-Info-img-area'
+    imgArea.onclick = () => document.querySelector('#SDHub-Gallery-Info-Image img')?.click();
+    Panel.prepend(imgArea);
+
+    const input = document.querySelector('#SDHub-Gallery-Info-Image input');
+    const imgFrame = document.createElement('div');
+    imgFrame.id = 'SDHub-Gallery-Info-img-frame';
+    input?.parentNode?.insertBefore(imgFrame, input);
+
     SDHubGallery.style.display = '';
     const DelCon = SDHubGallery.querySelector('#SDHub-Gallery-Delete-Container');
     const TabRow = SDHubGallery.querySelector('#SDHub-Gallery-Tab-Button-Row');
