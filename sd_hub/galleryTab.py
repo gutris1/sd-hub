@@ -11,8 +11,6 @@ from PIL import Image
 import gradio as gr
 import mimetypes
 import json
-import sys
-import os
 
 from sd_hub.paths import SDHubPaths
 
@@ -49,12 +47,6 @@ def Loadimgchest():
         return tuple(d.get(k, v) for k, v in zip(['privacy', 'nsfw', 'api'], default))
     return default
 
-def getCTimes(path: Path):
-    return (
-        path.stat().st_ctime_ns if sys.platform == 'win32'
-        else os.stat(path, follow_symlinks=True).st_ctime_ns
-    )
-
 def getThumbnail(path: Path, size=512, quality=80):
     try:
         img = Image.open(path)
@@ -79,25 +71,17 @@ def getImage():
         else:
             files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
 
-    files.sort(key=getCTimes)
+    files.sort(key=lambda p: p.stat().st_mtime_ns)
 
     for path in files:
         src = str(path.parent)
-        if src == opts.outdir_save:
-            query = '?save'
-        elif src == opts.outdir_init_images:
-            query = '?init'
-        elif path.parent in outdir_extras:
-            query = '?extras'
-        else:
-            query = ''
+        if src == opts.outdir_save: query = '?save'
+        elif src == opts.outdir_init_images: query = '?init'
+        elif path.parent in outdir_extras: query = '?extras'
+        else: query = ''
 
         getThumbnail(path)
-
-        results.append({
-            'path': f'{BASE}/image{quote(str(path.resolve()))}{query}',
-            'thumbnail': f'{BASE}/thumb/{quote(path.stem)}.webp'
-        })
+        results.append({'path': f'{BASE}/image{quote(str(path.resolve()))}{query}'})
 
     return results
 
@@ -198,37 +182,27 @@ def GalleryTab():
                     elem_classes='sdhub-buttons'
                 )
 
-        savebtn.click(
-            fn=Saveimgchest,
-            inputs=[privacyset, nsfwset, apibox],
-            outputs=[privacyset, nsfwset, apibox]
-        )
-
-        loadbtn.click(
-            fn=Loadimgchest,
-            inputs=[],
-            outputs=[privacyset, nsfwset, apibox]
-        )
+        savebtn.click(fn=Saveimgchest, inputs=[privacyset, nsfwset, apibox], outputs=[privacyset, nsfwset, apibox])
+        loadbtn.click(fn=Loadimgchest, inputs=[], outputs=[privacyset, nsfwset, apibox])
 
     with gr.TabItem('Gallery', elem_id='sdhub-gallery-tab'):
         with FormColumn(variant='compact', elem_id='SDHub-Gallery-Info-Column'):
             image = gr.Image(elem_id='SDHub-Gallery-Info-Image', type='pil', source='upload', show_label=False)
-            geninfo = gr.Textbox(elem_id='SDHub-Gallery-Info-GenInfo', visible=False)
+            image.change(fn=None, _js='() => { SDHubGalleryParser(); }')
 
             with FormRow(variant='compact', elem_id='SDHub-Gallery-Info-SendButton'):
                 buttons = tempe.create_buttons(['txt2img', 'img2img', 'inpaint', 'extras'])
 
             with FormColumn(variant='compact', elem_id='SDHub-Gallery-Info-Output-Panel'):
+                geninfo = gr.Textbox(elem_id='SDHub-Gallery-Info-GenInfo', visible=False)
                 gr.HTML(elem_id='SDHub-Gallery-Info-HTML')
 
             for tabname, button in buttons.items():
                 tempe.register_paste_params_button(
                     tempe.ParamBinding(
-                        paste_button=button, 
-                        tabname=tabname, 
-                        source_text_component=geninfo, 
+                        paste_button=button,
+                        tabname=tabname,
+                        source_text_component=geninfo,
                         source_image_component=image
                     )
                 )
-
-            image.change(fn=None, _js='() => { SDHubGalleryParser(); }')
