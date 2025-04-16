@@ -89,12 +89,10 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   }
 
   if (inputs === undefined || inputs === null || inputs.trim() === '') {
-    OutputPanel.style.transition = 'none';
     OutputPanel.classList.remove('sdhub-display-output-panel');
     SendButton.style.display = 'none';
 
   } else {
-    OutputPanel.style.transition = '';
     OutputPanel.classList.add('sdhub-display-output-panel');
 
     if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
