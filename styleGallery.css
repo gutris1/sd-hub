@@ -729,7 +729,7 @@ body.no-scroll {
   overflow-wrap: break-word;
   max-width: 100%;
   margin-top: 240px;
-  padding: 0 10px !important;
+  padding: 0 20px !important;
   border-radius: 0.8rem !important;
   position: relative;
   pointer-events: none;
@@ -749,7 +749,6 @@ body.no-scroll {
   display: flex;
   position: relative;
   z-index: 2;
-  top: 2px;
   font-weight: bold;
   cursor: default;
   width: max-content;
@@ -758,18 +757,18 @@ body.no-scroll {
   color: var(--primary-400);
   justify-content: flex-start;
   margin: 0;
-  border: 2px solid #000;
-  border-bottom: 0;
+  border: 0;
   border-radius: 0.5rem 0.5rem 0 0;
   padding: 4px 8px;
-  background: var(--input-background-fill);
+  background: var(--sdhub-gallery-output-bg);
+  filter: drop-shadow(0 0 5px var(--sdhub-gallery-output-bg));
   pointer-events: auto;
-  transition: 0.3s ease;
+  transition: 0.4s ease;
 }
 
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-copybutton {
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: 0.4s ease;
 }
 
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-copybutton:hover {
@@ -792,11 +791,12 @@ body.no-scroll {
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-wrapper {
   position: relative;
   z-index: 1;
-  border: 2px solid #000;
+  border: 0;
   border-radius: 0 0.5rem 0.5rem 0.5rem;
-  background: var(--input-background-fill);
+  background: var(--sdhub-gallery-output-bg);
+  filter: drop-shadow(0 0 5px var(--sdhub-gallery-output-bg));
   pointer-events: auto;
-  transition: 0.3s ease;
+  transition: 0.4s ease;
 }
 
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-content {
@@ -843,27 +843,22 @@ body.no-scroll {
 @keyframes pulseBorder2 {
   0% {
     border-color: transparent;
-    filter: drop-shadow(0 0 0 var(--primary-400));
     box-shadow: inset 0 0 0 0 transparent;
   }
   25% {
     border-color: var(--primary-400);
-    filter: drop-shadow(0 0 2px var(--primary-400));
-    box-shadow: inset 0 0 10px 0 var(--primary-400);
+    box-shadow: inset 0 0 15px 2px var(--primary-400)
   }
   50% {
     border-color: var(--primary-400);
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: inset 0 0 5px 0 var(--primary-400);
+    box-shadow: inset 0 0 3px 1px var(--primary-400)
   }
   75% {
     border-color: var(--primary-400);
-    filter: drop-shadow(0 0 2px var(--primary-400));
-    box-shadow: inset 0 0 10px 0 var(--primary-400);
+    box-shadow: inset 0 0 15px 2px var(--primary-400)
   }
   100% {
     border-color: transparent;
-    filter: drop-shadow(0 0 0 var(--primary-400));
     box-shadow: inset 0 0 0 0 transparent;
   }
 }
