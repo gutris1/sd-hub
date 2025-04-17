@@ -1,7 +1,7 @@
 async function SDHubGalleryParser() {
-  const RawOutput = gradioApp().querySelector('#SDHub-Gallery-Info-GenInfo textarea');
-  const HTMLPanel = gradioApp().getElementById('SDHub-Gallery-Info-HTML');
-  const ImagePanel = gradioApp().getElementById('SDHub-Gallery-Info-Image');
+  const RawOutput = document.querySelector('#SDHub-Gallery-Info-GenInfo textarea');
+  const HTMLPanel = document.getElementById('SDHub-Gallery-Info-HTML');
+  const ImagePanel = document.getElementById('SDHub-Gallery-Info-Image');
   const img = ImagePanel.querySelector('img');
 
   if (!img) {
@@ -83,23 +83,23 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   let modelOutput = '';
 
   function SDHubGalleryHTMLOutput(title, content) {
-    const con = title === titleModels;
+    const none = title === 'nothing', con = title === titleModels || none;
     const tent = con ? content : `<div class='sdhub-gallery-info-output-wrapper'><div class='sdhub-gallery-info-output-content'>${content}</div></div>`;
-    return `<div class='sdhub-gallery-info-output-section'>${title}${tent}</div>`;
+    return `<div class='sdhub-gallery-info-output-section'${none ? " style='height: 100%'" : ''}>${none ? '' : title}${tent}</div>`;
   }
 
   if (inputs === undefined || inputs === null || inputs.trim() === '') {
     OutputPanel.classList.remove('sdhub-display-output-panel');
-    SendButton.style.display = 'none';
+    SendButton.style.display = '';
 
   } else {
     OutputPanel.classList.add('sdhub-display-output-panel');
 
     if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
       titlePrompt = '';
-      SendButton.style.display = 'none';
-      const nothing = `<div class="sdhub-gallery-info-output-failed">${inputs}</div>`;
-      outputHTML = SDHubGalleryHTMLOutput('', nothing);
+      SendButton.style.display = '';
+      const none = `<div class='sdhub-gallery-info-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
+      outputHTML = SDHubGalleryHTMLOutput('nothing', none);
 
     } else if (inputs.trim().startsWith('OPPAI:')) {
       const sections = [{ title: titleEncrypt, content: EncryptInfo }, { title: titleSha, content: Sha256Info }];
@@ -190,7 +190,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 function SDHubGallerySendButton(Id) {
   let OutputRaw = window.SDHubGalleryInfoRawOutput;
   let ADmodel = OutputRaw?.includes('ADetailer model');
-  let cb = gradioApp().getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
+  let cb = document.getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
   if (ADmodel) cb?.checked === false && cb.click();
 }
 
@@ -229,6 +229,7 @@ function SDHubGalleryInfoClearButton() {
 
   if (ClearButton && !Cloned) {
     let parent = ClearButton.parentElement;
+    Object.assign(parent.style, { position: 'absolute', zIndex: 1, top: 0, right: 0, gap: 0 });
     ClearButton.style.display = 'none';
 
     let btn = ClearButton.cloneNode(true);
