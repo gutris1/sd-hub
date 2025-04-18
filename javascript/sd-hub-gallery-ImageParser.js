@@ -9,8 +9,7 @@ async function SDHubGalleryParser() {
     return;
   }
 
-  img.style.opacity = '1';
-  img.onload = SDHubGalleryInfoClearButton;
+  SDHubGalleryInfoClearButton();
   img.onclick = () => SDHubGalleryImageViewer('s');
 
   const output = await SDImageParser(img);
@@ -234,8 +233,6 @@ function SDHubGalleryInfoClearButton() {
 
     let btn = ClearButton.cloneNode(true);
     btn.id = 'SDHub-Gallery-Info-Clear-Button';
-    btn.style.display = 'flex';
-
     parent.prepend(btn);
 
     const clearImage = () => {
