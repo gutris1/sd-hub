@@ -20,7 +20,16 @@ def _SDHubReq():
     parser = Path(extensions_dir) / 'sd-image-parser'
 
     if not parser.exists():
+        exif = {
+            (parser / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
+            (parser / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
+        }
+
         subprocess.run(['git', 'clone', '-q', 'https://github.com/gutris1/sd-image-parser', str(parser)], check=True)
+
+        for files, url in exif.items():
+            if not files.exists():
+                files.write_bytes(urllib.request.urlopen(url).read())
 
     req = {
         (base / 'sd-hub-translations.xlsx'): 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
@@ -28,9 +37,9 @@ def _SDHubReq():
         (base / 'javascript/XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
     }
 
-    for f, u in req.items():
-        if not f.exists():
-            f.write_bytes(urllib.request.urlopen(u).read())
+    for files, url in req.items():
+        if not files.exists():
+            files.write_bytes(urllib.request.urlopen(url).read())
 
 def _sub(inputs):
     try:
