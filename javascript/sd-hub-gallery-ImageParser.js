@@ -24,7 +24,7 @@ async function SDHubGalleryParser() {
     const t = s.querySelector('.sdhub-gallery-info-output-title');
     const w = s.querySelector('.sdhub-gallery-info-output-wrapper');
     if (!t || !w) return;
-    w.onmouseenter = () => [t, w].forEach(x => x.style.background = 'var(--input-background-fill-hover)');
+    w.onmouseenter = () => [t, w].forEach(x => x.style.background = 'var(--input-background-fill)');
     w.onmouseleave = () => [t, w].forEach(x => x.style.background = '');
   });
 }
