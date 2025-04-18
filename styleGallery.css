@@ -604,16 +604,18 @@ body.no-scroll {
 
 #SDHub-Gallery-Info-Column {
   display: none;
+  position: fixed;
   gap: 0 !important;
   height: 100%;
-  left: 0;
-  top: 0;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: baseline;
   box-sizing: border-box;
   background: #000 !important;
   border-radius: 0;
   z-index: 99;
-  position: fixed;
-  justify-content: unset;
+  inset: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
@@ -623,7 +625,7 @@ body.no-scroll {
 
 #SDHub-Gallery-Info-Image {
   display: flex;
-  position: absolute;
+  position: static;
   height: 100% !important;
   width: 100%;
   align-items: center;
@@ -646,11 +648,9 @@ body.no-scroll {
   height: 100%;
   width: 100%;
   padding: 0;
-  top: 0;
-  opacity: 0;
+  inset: 0;
   user-select: none;
   -webkit-user-select: none;
-  transition: opacity 1s ease;
 }
 
 #SDHub-Gallery-Info-img-frame {
@@ -665,7 +665,8 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Info-Clear-Button {
-  position: absolute;
+  display: flex !important;
+  position: fixed;
   height: 60px;
   width: 60px;
   top: 2px;
@@ -730,18 +731,16 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Info-Output-Panel {
+  height: 100%;
+  position: relative;
   opacity: 0;
   pointer-events: none;
   gap: 0 !important;
-  transition: opacity 0.2s ease;
+  transition: opacity 1s ease;
 }
 
 #SDHub-Gallery-Info-Output-Panel.sdhub-display-output-panel {
   opacity: 1;
-}
-
-.gradio-container-4-40-0 #SDHub-Gallery-Info-Output-Panel {
-  margin-left: -10px;
 }
 
 #SDHub-Gallery-Info-img-area {
