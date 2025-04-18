@@ -205,7 +205,9 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     const processNext = async (index) => {
       if (index === total) {
         SDHubGalleryTabImageCounters();
-        if (imgPaths.length) SDHubGalleryImgChestUpload(imgPaths, imgNames);
+        if (imgNames.length === total) SDHubGalleryImgChestUpload(imgPaths, imgNames);
+        imgNames = [];
+        imgPaths = [];
         return;
       }
 
