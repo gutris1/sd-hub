@@ -393,6 +393,29 @@ body.no-scroll {
   }
 }
 
+.sdhub-gallery-img-copy {
+  transition: filter 0.4s ease;
+  animation: pulseImg 2s infinite;
+}
+
+@keyframes pulseImg {
+  0% {
+    filter: brightness(1) blur(0);
+  }
+  25% {
+    filter: brightness(0.5) blur(3px);
+  }
+  50% {
+    filter: brightness(1) blur(0);
+  }
+  75% {
+    filter: brightness(0.5) blur(3px);
+  }
+  100% {
+    filter: brightness(1) blur(0);
+  }
+}
+
 /* ############################################################################################################ */
 
 #SDHub-Gallery-ContextMenu {
