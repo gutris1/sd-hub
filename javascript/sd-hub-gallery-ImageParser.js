@@ -136,7 +136,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
         modelOutput = `
           <div id='${Id}' class='sdhub-gallery-info-modelBox'>
-            ${SDHubGallerySpinnerSVG.replace(/<svg\s+class=['"][^'"]*['"]/, '<svg id="SDHub-Gallery-Info-Spinner"')}
+            ${SDHubGallerySpinnerSVG.replace(/<svg\b([^>]*)>/, '<svg id="SDHub-Gallery-Info-Spinner" $1>')}
           </div>
         `;
 
