@@ -692,8 +692,8 @@ body.no-scroll {
   position: fixed;
   height: 60px;
   width: 60px;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   margin: 0;
   gap: 0;
   padding: 5px;
