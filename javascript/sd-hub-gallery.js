@@ -868,6 +868,7 @@ function SDHubGalleryCreateDeleteBox() {
   const Spinner = document.createElement('div');
   Spinner.id = 'SDHub-Gallery-Delete-Spinner';
   Spinner.innerHTML = SDHubGallerySpinnerSVG;
+  Spinner.querySelector('svg')?.classList.add('sdhub-gallery-spinner');
 
   const DelBox = document.createElement('div');
   DelBox.id = 'SDHub-Gallery-Delete-Box';
