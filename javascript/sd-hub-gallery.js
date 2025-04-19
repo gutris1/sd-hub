@@ -371,8 +371,9 @@ function SDHubGallerySubmenu() {
 }
 
 function SDHubGalleryKillContextMenu() {
+  SDHubGalleryCMRightClick = false;
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
-  Object.assign(GalleryCM.style, { transition: 'none', opacity: '', pointerEvents: '', transform: '' });
+  Object.assign(GalleryCM.style, { opacity: '', transition: 'none', pointerEvents: '', transform: '' });
 }
 
 function SDHubGalleryImageButtonEvents(imgBox) {
@@ -380,19 +381,11 @@ function SDHubGalleryImageButtonEvents(imgBox) {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
 
   Btn.addEventListener('mouseenter', (e) => {
-    if (GalleryCM.style.opacity === '1') {
-      SDHubGalleryCMRightClick ? SDHubGalleryKillContextMenu() : null;
-      if (!SDHubGalleryCMRightClick) return;
-    }
-
+    if (!SDHubGalleryCMRightClick && GalleryCM.style.opacity === '1' && GalleryCM.dataset.box === imgBox.id) return;
     const imgEL = imgBox.querySelector('img');
     SDHubGalleryCMRightClick = false;
-    GalleryCM.dataset.targetBtn = Btn;
+    GalleryCM.dataset.box = imgBox.id;
     SDHubGalleryContextMenu(e, imgEL);
-  });
-
-  GalleryCM.addEventListener('mouseleave', () => {
-    if (!GalleryCM.matches(':hover') && !SDHubGalleryCMRightClick) SDHubGalleryKillContextMenu();
   });
 }
 
@@ -415,6 +408,8 @@ async function SDHubGalleryContextButton(v) {
       break;
 
     case 'copy':
+      img?.classList.add('sdhub-gallery-img-copy');
+      setTimeout(() => img?.classList.remove('sdhub-gallery-img-copy'), 2000);
       const file = await SDHubGalleryCreateImageFile(path);
       if (file) await navigator.clipboard.write([new ClipboardItem({ [file.type]: file })]);
       break;
@@ -450,8 +445,8 @@ async function SDHubGallerySendImage(v) {
   SDHubGalleryKillContextMenu();
   window.SDHubCenterElement('Spinner');
 
-  infoColumn.style.display = 'flex'; infoColumn.style.pointerEvents = 'none';
-  DelCon.style.display = 'flex'; DelCon.style.opacity = '1'; Spinner.style.display = 'flex';
+  infoColumn.style.display = DelCon.style.display = Spinner.style.display = 'flex';
+  infoColumn.style.pointerEvents = 'none'; DelCon.style.opacity = '1';
 
   await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
 
@@ -463,8 +458,8 @@ async function SDHubGallerySendImage(v) {
       if (SendButton) {
         setTimeout(() => SendButton.click(), 1000);
         setTimeout(() => {
-          infoColumn.style.display = ''; infoColumn.style.pointerEvents = '';
-          DelCon.style.opacity = ''; DelCon.style.display = ''; Spinner.style.display = '';
+          infoColumn.style.display = infoColumn.style.pointerEvents = '';
+          DelCon.style.opacity = DelCon.style.display = Spinner.style.display = '';
         }, 1300);
       }
     }
@@ -515,19 +510,19 @@ function SDHubGalleryTabEventListener(TabCon) {
     }
   });
 
+  TabCon.addEventListener('contextmenu', (e) => {
+    const imgEL = e.target.closest('img');
+    if (!imgEL || !TabCon.contains(imgEL)) return SDHubGalleryKillContextMenu();
+    e.preventDefault(), SDHubGalleryCMRightClick = true, SDHubGalleryContextMenu(e, imgEL);
+  });
+
   TabCon.addEventListener('mousemove', (e) => {
     const isInsideCM = document.getElementById('SDHub-Gallery-ContextMenu')?.matches(':hover');
     const isInsideContainer = e.target.closest('.sdhub-gallery-image-container')?.matches(':hover');
 
     if (!isInsideCM && !isInsideContainer && !SDHubGalleryCMRightClick) {
-      SDHubGalleryKillContextMenu();
+      setTimeout(() => (SDHubGalleryKillContextMenu()), 100);
     }
-  });
-
-  TabCon.addEventListener('contextmenu', (e) => {
-    const imgEL = e.target.closest('img');
-    if (!imgEL || !TabCon.contains(imgEL)) return SDHubGalleryKillContextMenu();
-    e.preventDefault(), SDHubGalleryCMRightClick = true, SDHubGalleryContextMenu(e, imgEL);
   });
 }
 
@@ -552,7 +547,8 @@ async function SDHubGalleryDeletion() {
 
   Yes.onclick = async () => {
     Spinner.style.display = 'flex';
-    Object.assign(DelBox.style, { opacity: '0', transform: 'scale(1.5)' });
+    DelBox.style.opacity = '0';
+    DelBox.style.transform = 'scale(1.5)';
 
     try {
       const res = await fetch(`${SDHubGalleryBase}/delete`, {
@@ -569,14 +565,12 @@ async function SDHubGalleryDeletion() {
     } finally {
       SDHubGalleryTabImageCounters();
       setTimeout(() => {
-        DelCon.style.opacity = '';
-        Spinner.style.display = '';
+        DelCon.style.opacity = Spinner.style.display = '';
         document.body.classList.remove('no-scroll');
       }, 1000);
       setTimeout(() => {
-        DelCon.style.display = '';
-        DelBox.style.opacity = '';
-        DelBox.style.transform = '';
+        DelCon.style.display = DelBox.style.opacity = DelBox.style.transform = '';
+        Yes.onclick = null;
       }, 1100);
     }
   };
@@ -585,7 +579,10 @@ async function SDHubGalleryDeletion() {
     document.body.classList.remove('no-scroll');
     DelCon.style.opacity = '';
     DelBox.style.transform = 'scale(1.5)';
-    setTimeout(() => (DelCon.style.display = '', DelBox.style.transform = ''), 200);
+    setTimeout(() => {
+      DelCon.style.display = DelBox.style.transform = '';
+      DelCon.onclick = No.onclick = null;
+    }, 200);
   };
 
   requestAnimationFrame(() => (DelCon.style.opacity = '1', DelBox.style.transform = 'scale(1)'));
@@ -714,23 +711,6 @@ function SDHubGalleryDOMLoaded() {
 
   document.body.append(SDHubGallery);
 
-  document.addEventListener('click', (e) => {
-    const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
-    if (
-      GalleryCM?.style.opacity === '1' &&
-      !GalleryCM.contains(e.target) &&
-      !e.target.closest('.sdhub-gallery-image-button-contextmenu')
-    ) {
-      SDHubGalleryCMRightClick = false;
-      SDHubGalleryKillContextMenu();
-    }
-  });
-
-  document.addEventListener('contextmenu', (e) => {
-    const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
-    if (GalleryCM?.contains(e.target)) e.preventDefault();
-  });
-
   document.addEventListener('keydown', (e) => {
     const infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
     if (e.key === 'Escape' && infoColumn && window.getComputedStyle(infoColumn).display === 'flex') {
@@ -740,24 +720,24 @@ function SDHubGalleryDOMLoaded() {
     }
   });
 
-  window.SDHubCenterElement = (flag) => {
+  window.SDHubCenterElement = (target) => {
     const tab = document.getElementById('sdhub-gallery-tab');
     if (!tab || tab.style.display !== 'block') return;
 
-    const V = -200;
+    const V = window.matchMedia('(max-width: 600px)').matches ? -400 : -200;
     const W = window.innerHeight;
     const T = window.pageYOffset || document.documentElement.scrollTop;
 
-    let element = null;
-    if (flag === 'DelBox') {
-      element = document.getElementById('SDHub-Gallery-Delete-Box');
-    } else if (flag === 'Spinner') {
-      element = document.getElementById('SDHub-Gallery-Delete-Spinner');
+    let thing = null;
+    if (target === 'DelBox') {
+      thing = document.getElementById('SDHub-Gallery-Delete-Box');
+    } else if (target === 'Spinner') {
+      thing = document.getElementById('SDHub-Gallery-Delete-Spinner');
     }
 
-    if (element) {
-      const H = element.offsetHeight || 0;
-      element.style.top = `${T + (W - H) / 2 + V}px`;
+    if (thing) {
+      const H = thing.offsetHeight || 0;
+      thing.style.top = `${T + (W - H) / 2 + V}px`;
     }
   };
 
@@ -809,11 +789,17 @@ function SDHubGalleryCreateContextMenu() {
   `;
 
   document.addEventListener('wheel', (e) => {
-    if (GalleryCM.style.opacity === '1' && !GalleryCM.contains(e.target)) {
-      SDHubGalleryCMRightClick = false;
-      SDHubGalleryKillContextMenu();
-    }
+    if (GalleryCM.style.opacity === '1' && !GalleryCM.contains(e.target)) SDHubGalleryKillContextMenu();
   }, { passive: false });
+
+  document.addEventListener('click', (e) => {
+    let btn = '.sdhub-gallery-image-button-contextmenu';
+    if (GalleryCM?.style.opacity === '1' && !GalleryCM.contains(e.target) && !e.target.closest(btn)) SDHubGalleryKillContextMenu();
+  });
+
+  document.addEventListener('contextmenu', (e) => {
+    if (GalleryCM?.contains(e.target)) e.preventDefault();
+  });
 
   return GalleryCM;
 }
@@ -910,9 +896,7 @@ function SDHubGalleryCreateDeleteBox() {
   DelCon.append(DelBox, Spinner);
 
   document.addEventListener('keydown', ({ key }) => {
-    if (DelBox.style.transform === 'scale(1)') {
-      ({ y: Yes, n: No, Escape: No }[key]?.click());
-    }
+    if (DelBox.style.transform === 'scale(1)') ({ y: Yes, n: No, Escape: No }[key]?.click());
   });
 
   return DelCon;
