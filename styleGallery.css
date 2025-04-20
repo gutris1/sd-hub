@@ -393,7 +393,7 @@ body.no-scroll {
   }
 }
 
-.sdhub-gallery-img-copy {
+.sdhub-gallery-img-pulse {
   transition: filter 0.4s ease;
   animation: pulseImg 2s infinite;
 }
@@ -670,10 +670,12 @@ body.no-scroll {
   cursor: auto;
   height: 100%;
   width: 100%;
+  opacity: 0;
   padding: 0;
   inset: 0;
   user-select: none;
   -webkit-user-select: none;
+  transition: opacity 1s ease;
 }
 
 #SDHub-Gallery-Info-img-frame {
@@ -783,7 +785,7 @@ body.no-scroll {
   height: 100%;
   max-width: 100%;
   margin-top: 240px;
-  padding: 0 20px 10px 20px !important;
+  padding: 0 20px 20px 20px !important;
   border-radius: 0.8rem !important;
   pointer-events: none;
 }
@@ -791,7 +793,7 @@ body.no-scroll {
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-section {
   color: var(--output-text-color);
   border: 0;
-  margin-bottom: 8px;
+  margin-bottom: 1rem;
   background: transparent;
   filter: drop-shadow(0px 0px 4px #000);
   cursor: default;
@@ -860,29 +862,6 @@ body.no-scroll {
   cursor: default;
   border-radius: 0 0.5rem 0.5rem 0.5rem;
   transition: 0.3s ease;
-}
-
-#SDHub-Gallery-Info-Model-Output {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: auto;
-  height: auto;
-  cursor: default;
-  pointer-events: auto;
-  transition: 0.3s ease;
-}
-
-#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-section.sdhub-gallery-info-modelbox {
-  border: 0;
-  padding: 0;
-  background: 0;
-  transition: none;
-  box-shadow: none;
-}
-
-#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-section.sdhub-gallery-info-modelbox:hover {
-  background-color: transparent;
 }
 
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-display-model-output {
