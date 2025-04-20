@@ -360,7 +360,7 @@ function SDHubUITranslation() {
 
 async function SDHubRGBA() {
   const vars = [
-    { c: '--input-background-fill', to: '--sdhub-gallery-output-bg', a: 0.5 },
+    { c: '--input-background-fill', to: '--sdhub-gallery-output-bg', a: 0.6 },
   ];
 
   const css = await (await fetch('/theme.css')).text();
