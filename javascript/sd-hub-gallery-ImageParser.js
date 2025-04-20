@@ -11,6 +11,7 @@ async function SDHubGalleryParser() {
 
   SDHubGalleryInfoClearButton();
   img.onclick = () => SDHubGalleryImageViewer('s');
+  img.onload = () => img.style.opacity = '1';
 
   const output = await SDImageParser(img);
   RawOutput.value = output;
@@ -133,29 +134,20 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
         let Id = 'SDHub-Gallery-Info-Model-Output';
         let display = 'sdhub-gallery-info-display-model-output';
-
-        modelOutput = `
-          <div id='${Id}' class='sdhub-gallery-info-modelBox'>
-            ${SDHubGallerySpinnerSVG.replace(/<svg\b([^>]*)>/, '<svg id="SDHub-Gallery-Info-Spinner" $1>')}
-          </div>
-        `;
+        modelOutput = `<div id='${Id}'>${SDHubGallerySpinnerSVG.replace(/<svg\b([^>]*)>/, '<svg id="SDHub-Gallery-Info-Spinner" $1>')}</div>`;
 
         const modelBox = document.getElementById(Id);
-        if (modelBox) {
-          modelBox.closest('.sdhub-gallery-info-output-section').classList.add('sdhub-gallery-info-modelBox');
-          modelBox.innerHTML = modelOutput;
-        }
+        if (modelBox) modelBox.innerHTML = modelOutput;
 
         setTimeout(async () => {
-          const fetchTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 60000));
           const modelBox = document.getElementById(Id);
           try {
-            const fetchHash = await Promise.race([SDImageParserFetchModelOutput(paramsRAW), fetchTimeout]);
+            const links = await SDImageParserFetchModelOutput(paramsRAW);
             modelBox.classList.add(display);
-            modelBox.innerHTML = fetchHash;
+            modelBox.innerHTML = links;
             setTimeout(() => modelBox.classList.remove(display), 2000);
           } catch (error) {
-            error.message === 'Timeout' && (modelBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>');
+            modelBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>';
           }
         }, 500);
 
