@@ -22,7 +22,7 @@ let SDHubTranslations = {};
 onUiLoaded(() => {
   SDHubTabLoaded();
   SDHubTokenBlur();
-  SDHubEvents();
+  SDHubEventListener();
   SDHubUITranslation();
   onUiUpdate(SDHubTabChange);
 });
@@ -104,7 +104,7 @@ async function SDHubTabLoaded() {
   } catch (e) { console.error('Error loading info:', e); }
 }
 
-function SDHubEvents() {
+function SDHubEventListener() {
   const Tab = {
     shell: document.querySelector('#sdhub-shell-tab'),
     textEditor: document.querySelector('#sdhub-texteditor-tab')
@@ -136,11 +136,18 @@ function SDHubEvents() {
     }
   });
 
-  document.querySelectorAll('#sdhub-downloader-token1 input, #sdhub-downloader-token2 input, #sdhub-uploader-token input')
-    .forEach(input => {
+  const Inputs = {
+    token1: '#sdhub-downloader-token1 input',
+    token2: '#sdhub-downloader-token2 input',
+    token3: '#sdhub-uploader-token input'
+  };
+
+  Object.values(Inputs).forEach(el => {
+    document.querySelectorAll(el).forEach(input => {
       input.addEventListener('blur', () => input.value.trim() !== '' && (input.style.filter = 'blur(3px)'));
       input.addEventListener('focus', () => (input.style.filter = 'none'));
     });
+  });
 }
 
 async function SDHubTokenBlur() {
