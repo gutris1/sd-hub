@@ -389,10 +389,21 @@ function SDHubGalleryImageButtonEvents(imgBox) {
   });
 }
 
-async function SDHubGalleryContextButton(v) {
+function SDHubGalleryContextMenuImage() {
+  SDHubGalleryKillContextMenu();
+
   const path = window.SDHubImagePath;
   const img = document.querySelector(`img[data-image='${path}']`);
-  SDHubGalleryKillContextMenu();
+  if (!img) return { img: null, path };
+
+  img.classList.add('sdhub-gallery-img-pulse');
+  setTimeout(() => img.classList.remove('sdhub-gallery-img-pulse'), 2000);
+
+  return { img, path };
+}
+
+async function SDHubGalleryContextMenuButton(v) {
+  const { img, path } = SDHubGalleryContextMenuImage();
 
   switch (v) {
     case 'open':
@@ -408,8 +419,6 @@ async function SDHubGalleryContextButton(v) {
       break;
 
     case 'copy':
-      img?.classList.add('sdhub-gallery-img-copy');
-      setTimeout(() => img?.classList.remove('sdhub-gallery-img-copy'), 2000);
       const file = await SDHubGalleryCreateImageFile(path);
       if (file) await navigator.clipboard.write([new ClipboardItem({ [file.type]: file })]);
       break;
@@ -428,27 +437,29 @@ async function SDHubGalleryContextButton(v) {
   }
 }
 
-function SDHubGallerySendToUploader() {
-  const area = document.querySelector('#sdhub-uploader-inputs textarea');
-  const path = decodeURIComponent(window.SDHubImagePath.slice(`${SDHubGalleryBase}/image`.length));
-  area.value += area.value ? `\n${path}` : path;
-  updateInput(area);
-  SDHubGalleryKillContextMenu();
-}
-
 async function SDHubGallerySendImage(v) {
+  const { img, path } = SDHubGalleryContextMenuImage();
+
+  if (v === 'uploader') {
+    const area = document.querySelector('#sdhub-uploader-inputs textarea');
+    const imgPath = decodeURIComponent(path.slice(`${SDHubGalleryBase}/image`.length));
+    area.value += area.value ? `\n${imgPath}` : imgPath;
+    updateInput(area);
+    return;
+  }
+
   const infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
   const input = document.querySelector('#SDHub-Gallery-Info-Image input');
   const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
   const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
 
-  SDHubGalleryKillContextMenu();
   window.SDHubCenterElement('Spinner');
 
   infoColumn.style.display = DelCon.style.display = Spinner.style.display = 'flex';
-  infoColumn.style.pointerEvents = 'none'; DelCon.style.opacity = '1';
+  infoColumn.style.pointerEvents = 'none';
+  DelCon.style.opacity = '1';
 
-  await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
+  await SDHubGalleryUpdateImageInput(input, path);
 
   const wait = setInterval(() => {
     if (window.SDHubGalleryInfoRawOutput?.trim()) {
@@ -519,7 +530,6 @@ function SDHubGalleryTabEventListener(TabCon) {
   TabCon.addEventListener('mousemove', (e) => {
     const isInsideCM = document.getElementById('SDHub-Gallery-ContextMenu')?.matches(':hover');
     const isInsideContainer = e.target.closest('.sdhub-gallery-image-container')?.matches(':hover');
-
     if (!isInsideCM && !isInsideContainer && !SDHubGalleryCMRightClick) {
       setTimeout(() => (SDHubGalleryKillContextMenu()), 100);
     }
@@ -713,11 +723,14 @@ function SDHubGalleryDOMLoaded() {
 
   document.addEventListener('keydown', (e) => {
     const infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
-    if (e.key === 'Escape' && infoColumn && window.getComputedStyle(infoColumn).display === 'flex') {
-      const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
-      if (LightBox?.style.display === 'flex') return;
-      else e.stopPropagation(), e.preventDefault(), window.SDHubGalleryInfoClearImage();
-    }
+    const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+    if (infoColumn?.style.display !== 'flex' || LightBox?.style.display === 'flex') return;
+
+    const img = document.querySelector('#SDHub-Gallery-Info-Image img');
+    if (e.key === 'Escape' && img) { e.preventDefault(); window.SDHubGalleryInfoClearImage(); }
+
+    const scroll = e.key === 'ArrowUp' ? 0 : e.key === 'ArrowDown' ? infoColumn.scrollHeight : null;
+    if (scroll !== null) { e.preventDefault(); infoColumn.scrollTo({ top: scroll, behavior: 'smooth' }); }
   });
 
   window.SDHubCenterElement = (target) => {
@@ -755,19 +768,19 @@ function SDHubGalleryCreateContextMenu() {
   GalleryCM.classList.add('sdhub-gallery-cm-menu');
   GalleryCM.innerHTML = `
     <ul class='sdhub-gallery-cm-ul'>
-      <li onclick='SDHubGalleryContextButton("open")'>
+      <li onclick='SDHubGalleryContextMenuButton("open")'>
         <span>${SDHubGalleryOpenNewTabSVG} ${SDHubGetTranslation('open_new_tab')}</span>
       </li>
-      <li onclick='SDHubGalleryContextButton("download")'>
+      <li onclick='SDHubGalleryContextMenuButton("download")'>
         <span>${SDHubGalleryDLSVG} ${SDHubGetTranslation('download')}</span>
       </li>
-      <li onclick='SDHubGalleryContextButton("copy")'>
+      <li onclick='SDHubGalleryContextMenuButton("copy")'>
         <span>${SDHubGalleryCopySVG} ${SDHubGetTranslation('copy')}</span>
       </li>
-      <li onclick='SDHubGalleryContextButton("info")'>
+      <li onclick='SDHubGalleryContextMenuButton("info")'>
         <span>${SDHubGalleryImageInfoSVG} ${SDHubGetTranslation('image_info')}</span>
       </li>
-      <li onclick='SDHubGalleryContextButton("viewer")'>
+      <li onclick='SDHubGalleryContextMenuButton("viewer")'>
         <span>${SDHubGalleryImageSVG} ${SDHubGetTranslation('image_viewer')}</span>
       </li>
       <li class='sdhub-cm-sendto'>
@@ -778,11 +791,11 @@ function SDHubGalleryCreateContextMenu() {
             <li onclick='SDHubGallerySendImage("img2img")'>img2img</li>
             <li onclick='SDHubGallerySendImage("extras")'>extras</li>
             <li onclick='SDHubGallerySendImage("inpaint")'>inpaint</li>
-            <li onclick='SDHubGallerySendToUploader()'>${SDHubGetTranslation('uploader')}</li>
+            <li onclick='SDHubGallerySendImage("uploader")'>${SDHubGetTranslation('uploader')}</li>
           </ul>
         </div>
       </li>
-      <li onclick='SDHubGalleryContextButton("delete")'>
+      <li onclick='SDHubGalleryContextMenuButton("delete")'>
         <span>${SDHubGalleryDeleteSVG} ${SDHubGetTranslation('delete')}</span>
       </li>
     </ul>
