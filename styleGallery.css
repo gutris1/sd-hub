@@ -666,8 +666,8 @@ body.no-scroll {
   display: flex;
   position: fixed;
   object-fit: cover;
-  object-position: top;
-  cursor: auto;
+  object-position: center 10%;
+  cursor: default;
   height: 100%;
   width: 100%;
   opacity: 0;
@@ -756,11 +756,14 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Info-Output-Panel {
-  height: 100%;
+  display: flex;
   position: relative;
+  gap: 0 !important;
+  top: 0;
+  left: 0;
   opacity: 0;
   pointer-events: none;
-  gap: 0 !important;
+  background: transparent !important;
   transition: opacity 1s ease;
 }
 
@@ -780,9 +783,12 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Info-HTML {
+  display: flex;
+  flex-direction: column;
   position: relative;
   overflow-wrap: break-word;
   height: 100%;
+  gap: 1.5rem;
   max-width: 100%;
   margin-top: 240px;
   padding: 0 20px 20px 20px !important;
@@ -793,7 +799,7 @@ body.no-scroll {
 #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-section {
   color: var(--output-text-color);
   border: 0;
-  margin-bottom: 1rem;
+  margin: 0;
   background: transparent;
   filter: drop-shadow(0px 0px 4px #000);
   cursor: default;
