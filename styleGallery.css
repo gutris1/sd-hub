@@ -550,29 +550,33 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Image-Viewer-Wrapper {
-  height: 100%;
   display: flex;
   position: relative;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
   opacity: 0;
-  transform: translate(0px, 0px) scale(0);
-  transition: transform 0.3s ease, opacity 0.1s ease;
+  gap: 0;
+  transform: translate(0px, 0px) scale(0.5);
+  transition: transform 0.2s ease-out;
 }
 
 #SDHub-Gallery-Image-Viewer-img {
   display: flex;
+  position: relative;
+  object-fit: contain;
   align-self: center;
   width: auto;
   height: auto;
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
-  position: relative;
-  cursor: auto;
+  cursor: default;
   user-select: none;
   -webkit-user-select: none;
   background-color: #212121;
   transform: translate(0px, 0px) scale(1);
-  transition: transform 0.4s ease, opacity 0.2s ease;
+  transition: transform 0.2s ease-out;
 }
 
 .sdhub-gallery-image-viewer-button {
@@ -617,10 +621,44 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Image-Viewer-Close-Button {
+  display: flex !important;
+  position: absolute;
   top: 0;
   right: 0;
-  margin-right: 10px;
-  margin-top: 10px;
+  height: 60px;
+  width: 60px;
+  margin: 0;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0 0 0 1.5rem;
+  box-sizing: border-box;
+  pointer-events: auto;
+  color: var(--primary-400) !important;
+  background: var(--input-background-fill);
+  box-shadow: 0 0 7px 2px #000;
+  filter: none;
+  transition: 0.2s ease;
+}
+
+#SDHub-Gallery-Image-Viewer-Close-Button svg {
+  position: fixed;
+  top: 3px;
+  right: 3px;
+  width: 50px;
+  height: 50px;
+  transition: 0.2s ease;
+}
+
+#SDHub-Gallery-Image-Viewer-Close-Button:hover {
+  transform: scale(1);
+  background: red !important;
+  filter: drop-shadow(0 0 10px red);
+}
+
+#SDHub-Gallery-Image-Viewer-Close-Button:hover svg {
+  color: #fff;
+  filter: drop-shadow(0 0 2px #000);
 }
 
 /* ############################################################################################################ */
@@ -788,7 +826,7 @@ body.no-scroll {
   position: relative;
   overflow-wrap: break-word;
   height: 100%;
-  gap: 1.5rem;
+  gap: 1.2rem;
   max-width: 100%;
   margin-top: 240px;
   padding: 0 20px 20px 20px !important;
