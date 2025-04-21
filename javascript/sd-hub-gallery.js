@@ -614,6 +614,11 @@ function SDHubCreateGallery() {
     imgArea.onclick = () => document.querySelector('#SDHub-Gallery-Info-Image img')?.click();
     Panel.prepend(imgArea);
 
+    ['drop', 'dragover'].forEach(t => document.addEventListener(t, e => {
+      const E = e.target.id === imgArea.id || e.target.classList?.contains('sdhub-gallery-info-output-content');
+      E && (e.preventDefault(), e.stopPropagation());
+    }));
+
     const con = document.querySelector('#SDHub-Gallery-Info-Image > .image-container');
     con.append(Object.assign(document.createElement('div'), { id: 'SDHub-Gallery-Info-img-frame' }));
 
