@@ -87,7 +87,7 @@ async function SDHubGalleryLoadInitial() {
         }
 
         newImgBox.id = newId;
-        TabCon.append(newImgBox);
+        TabCon.prepend(newImgBox);
         SDHubGalleryImageButtonEvents(newImgBox);
 
         const img = newImgBox.querySelector('img');
@@ -234,7 +234,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     }
   }
 
-  imgBoxes.forEach(({ newImgBox, TabCon }) => { TabCon.append(newImgBox); });
+  imgBoxes.forEach(({ newImgBox, TabCon }) => { TabCon.prepend(newImgBox); });
 
   for (const { newImgBox, imgSrc, TabCon, TabBtn, counter } of imgBoxes) {
     SDHubGalleryImageButtonEvents(newImgBox);
