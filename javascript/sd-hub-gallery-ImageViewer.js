@@ -1,5 +1,6 @@
 function SDHubGalleryImageViewer(mode) {
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+  const Wrapper = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Wrapper');
   const NextBtn = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Next-Button');
   const PrevBtn = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Prev-Button');
 
@@ -463,13 +464,13 @@ function SDHubGallerySwitchImage() {
   SDHubGalleryImageViewerDisplayImage();
 }
 
-function SDHubGalleryPrevImage() {
+function SDHubGalleryNextImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex + 1) % window.SDHubImageList.length;
   SDHubGallerySwitchImage();
 }
 
-function SDHubGalleryNextImage() {
+function SDHubGalleryPrevImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex - 1 + window.SDHubImageList.length) % window.SDHubImageList.length;
   SDHubGallerySwitchImage();
