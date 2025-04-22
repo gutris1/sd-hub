@@ -118,8 +118,8 @@ body.no-scroll {
   gap: 1rem;
   overflow-y: auto !important;
   background: transparent;
-  flex-wrap: wrap-reverse;
-  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  flex-direction: row;
   transition: 0.5s ease-in-out;
   border: 0;
   margin: 0;
