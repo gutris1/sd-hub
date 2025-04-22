@@ -156,7 +156,7 @@ body.no-scroll {
   transition: 0.3s ease;
 }
 
-.sdhub-gallery-image-container:hover {
+#sdhub-gallery-tab .sdhub-gallery-image-container:hover {
   z-index: 2;
   box-shadow: 0 0 9px 0 var(--primary-400);
   filter: drop-shadow(0 0 1px var(--primary-400));
@@ -172,8 +172,8 @@ body.no-scroll {
   transition: transform 0.4s;
 }
 
-.sdhub-gallery-image-container:hover .sdhub-gallery-image {
-  transform: translate(0px, 16px) scale(1.2);
+#sdhub-gallery-tab .sdhub-gallery-image-container:hover .sdhub-gallery-image {
+  transform: translateY(15px) scale(1.2);
 }
 
 .sdhub-gallery-image-loading {
