@@ -89,13 +89,14 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   }
 
   if (inputs === undefined || inputs === null || inputs.trim() === '') {
-    OutputPanel.classList.remove('sdhub-display-output-panel');
+    OutputPanel.classList.remove('sdhub-display-output-panel', 'sdhub-display-output-fail');
     SendButton.style.display = '';
 
   } else {
     OutputPanel.classList.add('sdhub-display-output-panel');
 
     if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
+      OutputPanel.classList.add('sdhub-display-output-fail');
       titlePrompt = '';
       SendButton.style.display = '';
       const none = `<div class='sdhub-gallery-info-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
