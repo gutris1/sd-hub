@@ -7,6 +7,7 @@
   --sdhub-gallery-li-hover-background: #404040;
   --sdhub-gallery-li-hover-color: var(--background-fill-primary);
   --output-text-color: #fff;
+  --sdhub-gallery-img-size: 240px;
 }
 
 .dark {
@@ -113,8 +114,8 @@ body.no-scroll {
   display: none;
   max-height: calc(3* 17rem);
   width: 100%;
-  align-items: flex-end;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
   gap: 1rem;
   overflow-y: auto !important;
   background: transparent;
@@ -130,14 +131,15 @@ body.no-scroll {
 
 .sdhub-gallery-image-box {
   display: flex;
-  height: auto;
   width: auto;
+  height: auto;
   align-self: center;
-  flex-grow: 1;
   justify-content: center;
   align-items: center;
   border-radius: 0.6rem;
   position: relative;
+  flex-grow: 1;
+  flex-basis: 0;
 }
 
 .sdhub-gallery-image-container {
@@ -164,8 +166,8 @@ body.no-scroll {
 }
 
 #sdhub-gallery-tab .sdhub-gallery-image {
-  max-width: 240px;
-  max-height: 240px;
+  max-width: var(--sdhub-gallery-img-size);
+  max-height: var(--sdhub-gallery-img-size);
   object-fit: contain;
   user-select: none;
   -webkit-user-select: none;
@@ -286,14 +288,8 @@ body.no-scroll {
 }
 
 @media (max-width: 600px) {
-  .sdhub-gallery-image-box {
-    height: 220px;
-    width: 220px;
-  }
-
-  #sdhub-gallery-tab .sdhub-gallery-image {
-    max-width: 220px;
-    max-height: 220px;
+  :root {
+    --sdhub-gallery-img-size: 220px;
   }
 
   .sdhub-gallery-tab-container {
@@ -314,31 +310,20 @@ body.no-scroll {
 }
 
 @media (min-width: 1280px) {
-  #sdhub-gallery-tab .sdhub-gallery-image {
-    max-width: 210px;
-    max-height: 210px;
-  }
-
-  .sdhub-gallery-tab-container {
-    gap: 1.3rem;
+  :root {
+    --sdhub-gallery-img-size: 210px;
   }
 }
 
 @media (min-width: 1360px) {
-  #sdhub-gallery-tab .sdhub-gallery-image {
-    max-width: 240px;
-    max-height: 240px;
-  }
-
-  .sdhub-gallery-tab-container {
-    gap: 1.3rem;
+  :root {
+    --sdhub-gallery-img-size: 240px;
   }
 }
 
 @media (min-width: 1600px) {
-  #sdhub-gallery-tab .sdhub-gallery-image {
-    max-width: 270px;
-    max-height: 270px;
+  :root {
+    --sdhub-gallery-img-size: 270px;
   }
 
   .sdhub-gallery-tab-container {
@@ -347,9 +332,8 @@ body.no-scroll {
 }
 
 @media (min-width: 1920px) {
-  #sdhub-gallery-tab .sdhub-gallery-image {
-    max-width: 280px;
-    max-height: 280px;
+  :root {
+    --sdhub-gallery-img-size: 280px;
   }
 
   .sdhub-gallery-image-container:hover .sdhub-gallery-image-button-contextmenu {
@@ -364,9 +348,8 @@ body.no-scroll {
 }
 
 @media (min-width: 2560px) {
-  #sdhub-gallery-tab .sdhub-gallery-image {
-    max-width: 320px;
-    max-height: 320px;
+  :root {
+    --sdhub-gallery-img-size: 320px;
   }
 
   .sdhub-gallery-image-container:hover .sdhub-gallery-image-button-contextmenu {
@@ -546,7 +529,7 @@ body.no-scroll {
   opacity: 0;
   gap: 0;
   transform: translate(0px, 0px) scale(0.5);
-  transition: transform 0.2s ease-out;
+  transition: transform 0.2s ease-out, opacity 0.3s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-img {
