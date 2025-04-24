@@ -25,6 +25,13 @@ function SDHubGalleryImageViewerDisplayImage() {
   imgEL.src = window.SDHubImagePath;
   Wrapper.append(imgEL);
 
+  requestAnimationFrame(() => setTimeout(() => {
+    LightBox.style.opacity = '1';
+    Wrapper.style.transition = '';
+    Wrapper.style.transform = 'translate(0px, 0px) scale(1)';
+    Wrapper.style.opacity = '1';
+  }, 50));
+
   const imgState = {
     scale: 1, offsetX: 0, offsetY: 0, lastX: 0, lastY: 0, lastLen: 1, LastTouch: 0, LastZoom: 0,
     ZoomMomentum: 0, MoveMomentum: 0, SnapMouse: 20, SnapTouch: 10,
@@ -98,13 +105,6 @@ function SDHubGalleryImageViewerDisplayImage() {
 
   imgState.SDHubGalleryImageViewerimgReset();
   imgEL.ondrag = imgEL.ondragend = imgEL.ondragstart = (e) => { e.stopPropagation(); e.preventDefault(); };
-
-  requestAnimationFrame(() => {
-    LightBox.style.opacity = '1';
-    Wrapper.style.transition = '';
-    Wrapper.style.transform = 'translate(0px, 0px) scale(1)';
-    Wrapper.style.opacity = '1';
-  });
 
   let GropinTime = null;
   let Groped = false;
