@@ -779,6 +779,10 @@ body.no-scroll {
   opacity: 1;
 }
 
+#SDHub-Gallery-Info-Output-Panel.sdhub-display-output-fail {
+  height: 100%;
+}
+
 #SDHub-Gallery-Info-img-area {
   display: block;
   position: absolute;
