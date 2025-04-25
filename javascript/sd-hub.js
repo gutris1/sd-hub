@@ -197,6 +197,10 @@ function SDHubTextEditorGalleryScrollBar() {
       scrollbar-width: thin !important;
       scrollbar-color: var(--primary-400) transparent !important;
     }
+
+    #SDHub-Gallery-Image-Viewer {
+      backdrop-filter: none !important;
+    }
   `;
 
   const SBwebkit = `
