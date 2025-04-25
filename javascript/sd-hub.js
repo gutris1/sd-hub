@@ -368,14 +368,11 @@ async function SDHubRGBA() {
   ];
 
   const css = await (await fetch('/theme.css')).text();
-  const get = s => Object.fromEntries((css.match(new RegExp(`${s}\\s*{([^}]*)}`, 'm'))?.[1] || '')
-    .split(';').map(l => l.trim().split(':').map(s => s.trim())).filter(([k, v]) => k && v));
+  const get = s => Object.fromEntries((css.match(new RegExp(`${s}\\s*{([^}]*)}`, 'm'))?.[1] || '').split(';').map(l => l.trim().split(':').map(s => s.trim())).filter(([k, v]) => k && v));
   const toRGBA = (hex, a) => hex && /^#/.test(hex) ? `rgba(${hex.slice(1).match(/.{2}/g).map(v => parseInt(v, 16)).join(',')},${a})` : 'rgba(0,0,0,0)';
   const r = get(':root'), d = get('.dark'), S = document.createElement('style');
-  vars.forEach(({ c, to, a }) => {
-    S.textContent += `:root { ${to}: ${toRGBA(r[c], a)}; }\n.dark { ${to}: ${toRGBA(d[c], a)}; }\n`;
-  });
-  document.head.appendChild(S);
+  vars.forEach(({ c, to, a }) => { S.textContent += `:root { ${to}: ${toRGBA(r[c], a)}; }\n.dark { ${to}: ${toRGBA(d[c], a)}; }\n`; });
+  document.head.append(S);
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
