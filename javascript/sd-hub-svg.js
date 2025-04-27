@@ -176,3 +176,9 @@ var SDHubGalleryimgchestSVG = `
     </g>
   </svg>
 `;
+
+var SDHubGalleryTabScrollSVG = `
+  <svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
+    <polygon fill="currentColor" points="95.936,297.344 256,133.984 416.064,297.344 366.096,346.144 256,233.792 145.904,346.144"/>
+  </svg>
+`;
