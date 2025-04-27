@@ -135,12 +135,13 @@ body.no-scroll {
   background: transparent;
   flex-wrap: wrap;
   flex-direction: row;
-  transition: 0.5s ease-in-out;
   border: 0;
   margin: 0;
   border-radius: 0;
   padding: 10px;
   padding-top: 20px;
+  will-change: transform;
+  transition: none;
 }
 
 .sdhub-gallery-image-box {
@@ -419,6 +420,7 @@ body.no-scroll {
   z-index: 98;
   box-shadow: 0 0 10px 1px #000;
   transition: box-shadow 0.3s ease, transform 0.3s ease, filter 0.3s ease;
+  will-change: transform;
 }
 
 #SDHub-Gallery-Tab-Scroll:hover {
