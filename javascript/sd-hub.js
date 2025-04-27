@@ -18,6 +18,7 @@ let SDHubLangIndex = {
 };
 
 let SDHubTranslations = {};
+let SDHubGalleryArrowInitial;
 
 onUiLoaded(() => {
   SDHubTabLoaded();
@@ -50,6 +51,7 @@ function SDHubTabChange() {
   let GalleryTab = SelectedTab?.classList.contains('sdhub-tab-button-gallery');
 
   if (TextEditorTab || GalleryTab) {
+    (GalleryTab && !SDHubGalleryArrowInitial) && (window.SDHubGalleryTabArrow(), SDHubGalleryArrowInitial = true);
     if (Accordion) Accordion.style.display = 'none';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
@@ -204,27 +206,23 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   const SBwebkit = `
+    .sdhub-gallery-tab-container {
+      scrollbar-width: none !important;
+    }
+
     #sdhub-texteditor-editor::-webkit-scrollbar {
       width: 0.6rem !important;
       position: absolute !important;
       right: 4px !important;
     }
 
-    .sdhub-gallery-tab-container::-webkit-scrollbar {
-      width: 0.4rem !important;
-      position: absolute !important;
-      right: 4px !important;
-    }
-
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb,
-    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb {
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb {
       background: var(--primary-400) !important;
       border-radius: 30px !important;
       background-clip: padding-box !important;
     }
 
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover,
-    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb:hover {
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover {
       background: var(--primary-600) !important;
     }
 
@@ -232,12 +230,6 @@ function SDHubTextEditorGalleryScrollBar() {
       background: transparent !important;
       border-radius: 0px !important;
       margin: 2px 0 !important;
-    }
-
-    .sdhub-gallery-tab-container::-webkit-scrollbar-track {
-      background: transparent !important;
-      border-radius: 0px !important;
-      margin: 7px 0 !important;
     }
   `;
 
