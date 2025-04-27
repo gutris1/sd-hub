@@ -744,8 +744,8 @@ function SDHubGalleryDOMLoaded() {
   });
 
   window.SDHubCenterElement = (target) => {
-    const tab = document.getElementById('sdhub-gallery-tab');
-    if (!tab || tab.style.display !== 'block') return;
+    const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
+    if (DelCon.style.display !== 'flex') return;
 
     const V = window.matchMedia('(max-width: 600px)').matches ? -400 : -200;
     const W = window.innerHeight;
@@ -776,17 +776,19 @@ function SDHubGalleryArrowScroll(TabScroll) {
   let locked = false;
 
   window.SDHubGalleryTabArrow = function () {
+    const GalleryTab = document.getElementById('sdhub-gallery-tab');
     const TabWrap = document.getElementById('SDHub-Gallery-Tab-Wrapper');
     const Tab = TabWrap.querySelector('.sdhub-gallery-tab-container.active');
-    if (locked || !Tab || Tab.style.display !== 'flex') return;
+    if (locked || !Tab || Tab.style.display !== 'flex' || GalleryTab.style.display !== 'block') return;
 
-    const { TabTop, scrollHeight, clientHeight } = Tab;
-    const down = TabTop + clientHeight < scrollHeight - 5;
-    const up = TabTop > 5;
+    const { scrollTop, scrollHeight, clientHeight } = Tab;
+    const down = scrollTop + clientHeight < scrollHeight - 5;
+    const up = scrollTop > 5;
 
     TabScroll.style.display = down || up ? 'flex' : 'none';
     TabScroll.style.transform = down ? 'rotate(180deg)' : 'rotate(0deg)';
 
+    void TabWrap.offsetHeight;
     const TabRect = TabWrap.getBoundingClientRect();
     const bottomTab = TabRect.bottom <= window.innerHeight;
 
@@ -815,20 +817,7 @@ function SDHubGalleryArrowScroll(TabScroll) {
     const TabRect = TabWrap.getBoundingClientRect();
     const page = window.scrollY || document.documentElement.scrollTop;
     const target = bottomTab ? page + TabRect.top : page + TabRect.bottom - window.innerHeight;
-
     window.scrollTo({ top: target, behavior: 'smooth' });
-
-    setTimeout(() => {
-      const check = setInterval(() => {
-        const settled = bottomTab ? Tab.scrollTop <= 5 : Tab.scrollTop + Tab.clientHeight >= Tab.scrollHeight - 5;
-
-        if (settled) {
-          clearInterval(check);
-          locked = false;
-          window.SDHubGalleryTabArrow();
-        }
-      }, 50);
-    }, 200);
   });
 
   window.addEventListener('scroll', () => {
@@ -841,8 +830,13 @@ function SDHubGalleryArrowScroll(TabScroll) {
       window.SDHubGalleryTabArrow();
     } else {
       const TabRect = TabWrap.getBoundingClientRect();
-      const distance = window.innerHeight - TabRect.bottom;
-      TabScroll.style.bottom = `${Math.max(distance + 10, 10)}px`;
+      const bottomTab = TabRect.bottom <= window.innerHeight;
+      if (bottomTab) {
+        const distance = window.innerHeight - TabRect.bottom;
+        TabScroll.style.bottom = `${distance + 10}px`;
+      } else {
+        TabScroll.style.bottom = '10px';
+      }
     }
   });
 
