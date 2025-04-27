@@ -52,6 +52,7 @@ function SDHubTabChange() {
 
   if (TextEditorTab || GalleryTab) {
     (GalleryTab && !SDHubGalleryArrowInitial) && (window.SDHubGalleryTabArrow(), SDHubGalleryArrowInitial = true);
+    window.SDHubCenterElement('Spinner');
     if (Accordion) Accordion.style.display = 'none';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
@@ -62,6 +63,7 @@ function SDHubTabChange() {
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
   } else {
+    window.SDHubCenterElement('Spinner');
     if (Accordion) Accordion.style.display = 'block';
     let el = document.getElementById(Id);
     if (el) el.remove();
