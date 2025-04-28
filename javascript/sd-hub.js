@@ -18,6 +18,7 @@ let SDHubLangIndex = {
 };
 
 let SDHubTranslations = {};
+let SDHubGalleryArrowInitial;
 
 onUiLoaded(() => {
   SDHubTabLoaded();
@@ -29,11 +30,11 @@ onUiLoaded(() => {
 
 function SDHubTabChange() {
   let infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
-  let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
-  let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
-  let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
-  let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
-  let Id = 'sdHUBHidingScrollBar';
+  let Accordion = document.getElementById('sdhub-dataframe-accordion');
+  let MainTab = document.querySelector('#tabs > .tab-nav > button.selected');
+  let TabList = document.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
+  let SelectedTab = document.querySelector('#sdhub-tab > .tab-nav > button.selected');
+  let Id = 'SDHub-Hide-Scroll-Bar';
 
   if (TabList.length > 0) {
     TabList.forEach(button => {
@@ -50,6 +51,11 @@ function SDHubTabChange() {
   let GalleryTab = SelectedTab?.classList.contains('sdhub-tab-button-gallery');
 
   if (TextEditorTab || GalleryTab) {
+    if (GalleryTab) {
+      if (!SDHubGalleryArrowInitial) (window.SDHubGalleryTabArrow(), SDHubGalleryArrowInitial = true);
+      document.getElementById('footer').style.display = 'none';
+    }
+
     if (Accordion) Accordion.style.display = 'none';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
@@ -60,6 +66,7 @@ function SDHubTabChange() {
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
 
   } else {
+    if (!GalleryTab) document.getElementById('footer').style.display = '';
     if (Accordion) Accordion.style.display = 'block';
     let el = document.getElementById(Id);
     if (el) el.remove();
@@ -204,27 +211,23 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   const SBwebkit = `
+    .sdhub-gallery-tab-container {
+      scrollbar-width: none !important;
+    }
+
     #sdhub-texteditor-editor::-webkit-scrollbar {
-      width: 0.6rem !important;
+      width: 0.4rem !important;
       position: absolute !important;
       right: 4px !important;
     }
 
-    .sdhub-gallery-tab-container::-webkit-scrollbar {
-      width: 0.3rem !important;
-      position: absolute !important;
-      right: 4px !important;
-    }
-
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb,
-    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb {
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb {
       background: var(--primary-400) !important;
       border-radius: 30px !important;
       background-clip: padding-box !important;
     }
 
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover,
-    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb:hover {
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover {
       background: var(--primary-600) !important;
     }
 
@@ -232,12 +235,6 @@ function SDHubTextEditorGalleryScrollBar() {
       background: transparent !important;
       border-radius: 0px !important;
       margin: 2px 0 !important;
-    }
-
-    .sdhub-gallery-tab-container::-webkit-scrollbar-track {
-      background: transparent !important;
-      border-radius: 0px !important;
-      margin: 7px 0 !important;
     }
   `;
 
