@@ -194,7 +194,7 @@ body.no-scroll {
 .sdhub-gallery-tab-container {
   display: none;
   position: relative;
-  max-height: calc(3* 21rem);
+  max-height: 150vh;
   width: 100%;
   align-items: center;
   justify-content: center;
