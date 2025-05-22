@@ -54,6 +54,8 @@ function SDHubTabChange() {
     if (GalleryTab) {
       if (!SDHubGalleryArrowInitial) (window.SDHubGalleryTabArrow(), SDHubGalleryArrowInitial = true);
       document.getElementById('footer').style.display = 'none';
+    } else {
+      document.getElementById('footer').style.display = '';
     }
 
     if (Accordion) Accordion.style.display = 'none';
