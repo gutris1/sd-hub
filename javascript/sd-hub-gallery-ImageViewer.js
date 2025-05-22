@@ -480,9 +480,9 @@ function SDHubGalleryPrevImage() {
 }
 
 function SDHubGalleryOpenViewerFromButton(imgEL) {
-  const TabCon = imgEL.closest('.sdhub-gallery-tab-container');
+  const page = imgEL.closest('.gallery-page.selected-page');
   window.SDHubImagePath = imgEL.getAttribute('data-image');
-  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
+  window.SDHubImageList = [...page.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
   SDHubGalleryImageViewer('m');
 }
