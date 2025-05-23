@@ -2,15 +2,16 @@ import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
 from fastapi import FastAPI, responses, Request
 from datetime import datetime, timedelta
+from urllib.parse import quote, unquote
 from modules.scripts import basedir
 from modules.shared import opts
-from urllib.parse import quote
 from pathlib import Path
 from io import BytesIO
 from PIL import Image
 import gradio as gr
 import mimetypes
 import json
+import sys
 
 from sd_hub.paths import SDHubPaths
 
@@ -60,6 +61,10 @@ def getThumbnail(path: Path, size=512, quality=80):
         print(f'Error processing {path}: {e}')
         return None
 
+def getPath(path: Path) -> str:
+    p = path.resolve().as_posix() if sys.platform == 'win32' else str(path.resolve()).lstrip('/')
+    return quote(p)
+
 def getImage():
     dirs = [d for d in outpath if d.exists() and d.is_dir()]
     files = []
@@ -81,7 +86,7 @@ def getImage():
         else: query = ''
 
         getThumbnail(path)
-        results.append({'path': f'{BASE}/image{quote(str(path.resolve()))}{query}'})
+        results.append({'path': f'{BASE}/image/{getPath(path)}{query}'})
 
     return results
 
@@ -96,9 +101,9 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         imgs = getImage()
         return {'images': imgs}
 
-    @app.get(BASE + '/image{img:path}')
+    @app.get(BASE + '/image/{img:path}')
     async def sendImage(img: str):
-        fp = Path(img)
+        fp = Path(unquote(img))
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
