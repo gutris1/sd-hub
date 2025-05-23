@@ -480,7 +480,7 @@ function SDHubGalleryPrevImage() {
 }
 
 function SDHubGalleryOpenViewerFromButton(imgEL) {
-  const page = imgEL.closest('.gallery-page.selected-page');
+  const page = imgEL.closest('.sdhub-gallery-pages.selected-page');
   window.SDHubImagePath = imgEL.getAttribute('data-image');
   window.SDHubImageList = [...page.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
