@@ -1,7 +1,8 @@
+let SDHubGalleryBase = '/sd-hub-gallery';
 let SDHubGalleryTabImageIndex = 1;
 let SDHubGalleryCMRightClick = false;
 let SDHubGalleryNewImageSrc = new Set();
-let SDHubGalleryBase = '/sd-hub-gallery';
+let SDHubGalleryPageLimit = 100;
 
 const SDHubGalleryTabList = [
   'txt2img-images',
@@ -43,10 +44,8 @@ async function SDHubGalleryLoadInitial() {
 
     const imgBox = document.getElementById('SDHub-Gallery-Image-Box-0');
     const todayRegex = /^\d{4}-\d{2}-\d{2}$/;
-    const imagesPerPage = 40;
-    let selectedTab = false;
-
     const tabMap = new Map();
+    let selectedTab = false;
 
     for (let i = data.images.length - 1; i >= 0; i--) {
       let { path } = data.images[i];
@@ -63,9 +62,7 @@ async function SDHubGalleryLoadInitial() {
           if (parentFolder) {
             tabToUse = parentFolder;
             const tabName = `${pathParts[dateIndex - 1]} ${pathParts[dateIndex]}`;
-            if (!document.getElementById(`SDHub-Gallery-${tabToUse}-Tab-Container`)) {
-              SDHubGalleryCloneTab(tabToUse, tabName);
-            }
+            if (!document.getElementById(`SDHub-Gallery-${tabToUse}-Tab-Container`)) SDHubGalleryCloneTab(tabToUse, tabName);
           }
         }
       }
@@ -79,7 +76,7 @@ async function SDHubGalleryLoadInitial() {
       const wrapper = TabCon.querySelector('.sdhub-gallery-page-wrapper');
       const TabBtn = document.getElementById(`SDHub-Gallery-${tabName}-Tab-Button`);
       const Counter = document.getElementById(`SDHub-Gallery-${tabName}-Tab-Image-Counter`);
-      const totalPages = Math.ceil(images.length / imagesPerPage);
+      const totalPages = Math.ceil(images.length / SDHubGalleryPageLimit);
 
       for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         const page = document.createElement('div');
@@ -88,16 +85,14 @@ async function SDHubGalleryLoadInitial() {
         page.addEventListener('scroll', window.SDHubGalleryTabArrow);
 
         const pageImages = images.slice(
-          pageIndex * imagesPerPage,
-          pageIndex * imagesPerPage + imagesPerPage
+          pageIndex * SDHubGalleryPageLimit,
+          pageIndex * SDHubGalleryPageLimit + SDHubGalleryPageLimit
         );
 
         for (const { path } of pageImages) {
           const newImgBox = imgBox.cloneNode(true);
           let newId = `SDHub-Gallery-Image-Box-${SDHubGalleryTabImageIndex++}`;
-          while (document.getElementById(newId)) {
-            newId = `SDHub-Gallery-Image-Box-${SDHubGalleryTabImageIndex++}`;
-          }
+          while (document.getElementById(newId)) newId = `SDHub-Gallery-Image-Box-${SDHubGalleryTabImageIndex++}`;
 
           newImgBox.id = newId;
           SDHubGalleryImageButtonEvents(newImgBox);
@@ -141,23 +136,10 @@ async function SDHubGalleryLoadInitial() {
       if (wrapper) wrapper.style.height = '';
     }, 2000);
 
-
-
     console.log('SD-Hub Gallery Loaded');
   } catch (err) {
     console.error('Error in initial-load:', err);
   }
-}
-
-function SDHubGalleryPageListener(wrapper, tabName) {
-  const pageNav = wrapper.parentElement.querySelector('.sdhub-gallery-page-nav');
-  const prevBtn = pageNav?.querySelector('.sdhub-gallery-page-prev-button');
-  const nextBtn = pageNav?.querySelector('.sdhub-gallery-page-next-button');
-
-  if (!prevBtn || !nextBtn) return;
-
-  prevBtn.onclick = () => SDHubGallerySwitchPage(tabName, 'prev');
-  nextBtn.onclick = () => SDHubGallerySwitchPage(tabName, 'next');
 }
 
 function SDHubGalleryCloneTab(id, name) {
@@ -279,7 +261,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
   for (const { newImgBox, imgSrc, TabCon, TabBtn, counter } of imgBoxes) {
     SDHubGalleryImageButtonEvents(newImgBox);
     let newImg = newImgBox.querySelector('img');
-    let path = `${SDHubGalleryBase}/image${imgSrc}`;
+    let path = `${SDHubGalleryBase}/image/${encodeURIComponent(imgSrc)}`; 
     let name = path.split('/').pop().split('?')[0];
     let nameBox = newImgBox.querySelector('.sdhub-gallery-image-name');
     if (nameBox) nameBox.textContent = name;
@@ -483,7 +465,7 @@ async function SDHubGallerySendImage(v) {
 
   if (v === 'uploader') {
     const area = document.querySelector('#sdhub-uploader-inputs textarea');
-    const imgPath = decodeURIComponent(path.slice(`${SDHubGalleryBase}/image`.length));
+    const imgPath = decodeURIComponent(path.slice(`${SDHubGalleryBase}/image/`.length));
     area.value += area.value ? `\n${imgPath}` : imgPath;
     updateInput(area);
     return;
@@ -579,7 +561,7 @@ function SDHubGalleryTabEventListener(TabCon) {
 
 async function SDHubGalleryDeletion() {
   const imgEL = document.querySelector(`img[data-image='${window.SDHubImagePath}']`);
-  const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image`), '');
+  const path = decodeURIComponent(window.SDHubImagePath).replace(new RegExp(`^${SDHubGalleryBase}/image/`), '');
   const name = decodeURIComponent(window.SDHubImagePath.split('/').pop());
 
   const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
