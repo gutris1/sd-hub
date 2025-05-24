@@ -1,5 +1,6 @@
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
+from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, responses, Request
 from datetime import datetime, timedelta
 from urllib.parse import quote, unquote
@@ -10,7 +11,10 @@ from io import BytesIO
 from PIL import Image
 import gradio as gr
 import mimetypes
+import threading
+import asyncio
 import json
+import time
 import sys
 
 from sd_hub.paths import SDHubPaths
@@ -20,8 +24,10 @@ insecureENV = SDHubPaths.getENV()
 BASE = '/sd-hub-gallery'
 CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
-today = datetime.today().strftime("%Y-%m-%d")
+today = datetime.today().strftime('%Y-%m-%d')
 chest = Path(basedir()) / '.imgchest.json'
+imgList = []
+imgList_List = threading.Event()
 Thumbnails = {}
 
 sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
@@ -48,49 +54,79 @@ def Loadimgchest():
         return tuple(d.get(k, v) for k, v in zip(['privacy', 'nsfw', 'api'], default))
     return default
 
-def getThumbnail(path: Path, size=512, quality=80):
-    try:
-        img = Image.open(path)
-        img.thumbnail((size, size))
-        out = BytesIO()
-        img.save(out, format='WEBP', quality=quality)
-        thumb = out.getvalue()
-        Thumbnails[f'{path.stem}.webp'] = thumb
-        return thumb
-    except Exception as e:
-        print(f'Error processing {path}: {e}')
-        return None
-
-def getPath(path: Path) -> str:
+def getPath(path):
     p = path.resolve().as_posix() if sys.platform == 'win32' else str(path.resolve()).lstrip('/')
     return quote(p)
 
+def getThumbnail(fp, size=512):
+    def resize(path):
+        try:
+            if not path.exists():
+                return None
+
+            k = f'{path.stem}.jpeg'
+            if k in Thumbnails: return Thumbnails[k]
+
+            img = Image.open(path)
+            if img.format == 'JPEG': img.draft('RGB', (size, size))
+            if img.mode == 'RGBA': img = img.convert('RGB')
+
+            img.thumbnail((size, size), Image.BILINEAR)
+            out = BytesIO()
+            img.save(out, format='JPEG', quality=70)
+            thumb = out.getvalue()
+            Thumbnails[k] = thumb
+            return thumb
+
+        except Exception as e:
+            print(f'Thumb Error {path}: {e}')
+            return None
+
+    if isinstance(fp, list):
+        start = time.time()
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            list(executor.map(resize, fp))
+        print(f'total {len(fp)} for {time.time() - start:.2f} seconds.')
+        return None
+    else:
+        return resize(fp)
+
 def getImage():
-    dirs = [d for d in outpath if d.exists() and d.is_dir()]
-    files = []
-    results = []
+    def listing():
+        dirs = [d for d in outpath if d.exists() and d.is_dir()]
+        files = []
 
-    for d in dirs:
-        if d in outdir_extras:
-            files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
-        else:
-            files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
+        for d in dirs:
+            if d in outdir_extras:
+                files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
+            else:
+                files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
 
-    files.sort(key=lambda p: p.stat().st_mtime_ns)
+        files.sort(key=lambda p: p.stat().st_mtime_ns)
+        getThumbnail(files)
 
-    for path in files:
-        src = str(path.parent)
-        if src == opts.outdir_save: query = '?save'
-        elif src == opts.outdir_init_images: query = '?init'
-        elif path.parent in outdir_extras: query = '?extras'
-        else: query = ''
+        results = []
+        for path in files:
+            src = str(path.parent)
+            if src == opts.outdir_save: query = '?save'
+            elif src == opts.outdir_init_images: query = '?init'
+            elif path.parent in outdir_extras: query = '?extras'
+            else: query = ''
 
-        getThumbnail(path)
-        results.append({'path': f'{BASE}/image/{getPath(path)}{query}'})
+            results.append({'path': f'{BASE}/image/{getPath(path)}{query}'})
 
-    return results
+        global imgList
+        imgList_List.clear()
+        imgList.clear()
+        imgList.extend(results)
+        imgList_List.set()
+
+    threading.Thread(target=listing, daemon=True).start()
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
+    global imgList
+    getImage()
+
     headers = {
         'Cache-Control': 'public, max-age=31536000, immutable',
         'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
@@ -98,8 +134,12 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
     @app.get(BASE + '/initial')
     async def initialLoad():
-        imgs = getImage()
-        return {'images': imgs}
+        try:
+            r = await asyncio.to_thread(imgList_List.wait, 0.1)
+            if not r: return {'status': 'waiting'}
+            return {'images': imgList}
+        except Exception as e:
+            return responses.JSONResponse(status_code=500, content={'error': 'Server error', 'detail': str(e)})
 
     @app.get(BASE + '/image/{img:path}')
     async def sendImage(img: str):
@@ -110,20 +150,29 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     @app.get(BASE + '/thumb/{img}')
     async def sendThumb(img: str):
         thumb = Thumbnails.get(img)
-        return responses.Response(content=thumb, headers=headers, media_type='image/webp')
+        return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
 
     @app.post(BASE + '/getthumb')
     async def getThumb(req: Request):
         fp = Path((await req.json()).get('path'))
-        getThumbnail(fp)
-        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.webp'}
+        await asyncio.to_thread(getThumbnail, fp)
+        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.jpeg'}
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
-        fp = Path((await req.json()).get('path'))
-        if fp.exists():
-            fp.unlink()
-            return {'status': 'deleted'}
+        data = await req.json()
+        path = Path(data.get('path'))
+        thumb = Path(unquote(data.get('thumb', ''))).name
+
+        if path.exists():
+            try:
+                path.unlink()
+                Thumbnails.pop(thumb, None)
+                global imgList
+                imgList = [img for img in imgList if unquote(img['path'].split('/image/')[-1].split('?')[0]) != path.as_posix()]
+            except Exception as e:
+                return {'status': f'error: {e}'}
+        return {'status': 'deleted'}
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
