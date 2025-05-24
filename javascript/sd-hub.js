@@ -18,7 +18,7 @@ let SDHubLangIndex = {
 };
 
 let SDHubTranslations = {};
-let SDHubGalleryArrowInitial;
+let SDHubGalleryInitialrun;
 
 onUiLoaded(() => {
   SDHubTabLoaded();
@@ -30,7 +30,7 @@ onUiLoaded(() => {
 
 function SDHubTabChange() {
   let infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
-  let Accordion = document.getElementById('sdhub-dataframe-accordion');
+  let TagList = document.getElementById('sdhub-dataframe-accordion');
   let MainTab = document.querySelector('#tabs > .tab-nav > button.selected');
   let TabList = document.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
   let SelectedTab = document.querySelector('#sdhub-tab > .tab-nav > button.selected');
@@ -49,16 +49,11 @@ function SDHubTabChange() {
 
   let TextEditorTab = SelectedTab?.classList.contains('sdhub-tab-button-texteditor');
   let GalleryTab = SelectedTab?.classList.contains('sdhub-tab-button-gallery');
+  let footer = document.getElementById('footer');
 
   if (TextEditorTab || GalleryTab) {
-    if (GalleryTab) {
-      if (!SDHubGalleryArrowInitial) (window.SDHubGalleryTabArrow(), SDHubGalleryArrowInitial = true);
-      document.getElementById('footer').style.display = 'none';
-    } else {
-      document.getElementById('footer').style.display = '';
-    }
-
-    if (Accordion) Accordion.style.display = 'none';
+    TagList && (TagList.style.display = 'none');
+    if (footer) footer.style.display = GalleryTab ? 'none' : '';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
       Scrollbar.id = Id;
@@ -66,19 +61,17 @@ function SDHubTabChange() {
       document.head.appendChild(Scrollbar);
     }
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
-
   } else {
-    if (!GalleryTab) document.getElementById('footer').style.display = '';
-    if (Accordion) Accordion.style.display = 'block';
-    let el = document.getElementById(Id);
-    if (el) el.remove();
+    TagList && (TagList.style.display = '');
+    !GalleryTab && footer && (footer.style.display = '');
+    document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
     document.body.classList.remove('no-scroll');
   }
 
   if (MainTab?.textContent.trim() !== 'HUB') {
-    const id = document.getElementById(Id);
-    if (id) id.remove();
+    footer && (footer.style.display = '');
+    document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
     document.body.classList.remove('no-scroll');
     if (infoColumn?.style.display === 'flex') window.SDHubGalleryInfoClearImage();
