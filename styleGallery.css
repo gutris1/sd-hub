@@ -1,7 +1,7 @@
 .sdhub-gallery-page-wrapper {
   display: flex;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
   max-height: 100%;
   width: 100%;
   padding: 0;
@@ -13,18 +13,18 @@
   justify-content: center;
   height: 45px;
   width: 100%;
-  padding: 5px 0;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 0 10px 1px #000;
   gap: 20px;
+  padding: 5px 0;
+  border-radius: 0 0 1rem 1rem;
+  position: relative;
+  background: var(--sdhub-gallery-tab-background);
 }
 
 .sdhub-gallery-page-nav button {
   color: var(--primary-400);
   filter: brightness(0.5) drop-shadow(0 0 2px #000);
   pointer-events: none;
-  transition: filter 0.2s ease;
+  transition: filter 0.4s ease;
 }
 
 .sdhub-gallery-page-nav button > svg {
@@ -50,7 +50,7 @@
   border: 0;
   border-radius: 0.2rem;
   box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 5px 0 #000;
-  background: var(--sdhub-gallery-cm-background);
+  background: rgba(0, 0, 0, 0.7);
   text-align: center;
   color: var(--primary-400);
   cursor: default;
@@ -82,6 +82,21 @@
 
 .sdhub-gallery-pages.selected-page {
   display: flex;
+}
+
+#SDHub-Gallery-Page-Nav-Box {
+  display: flex;
+  position: absolute;
+  pointer-events: none;
+  bottom: 0;
+  z-index: 1;
+  gap: 0;
+  padding: 5px 0;
+  height: 45px;
+  width: 100%;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 0 7px 2px #707070;
+  background: transparent;
 }
 
 :root {
@@ -118,16 +133,14 @@ body.no-scroll {
 
 #sdhub-gallery-tab {
   border: 0;
-  margin: 10px 0px 0px;
+  margin: 18px 0px 0px;
   padding: 0;
   border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 0 7px 2px #000;
-  background: var(--sdhub-gallery-tab-background);
+  overflow: visible;
 }
 
 #SDHub-Gallery-Tab-Button-Row {
-  z-index: 1;
+  z-index: 2;
   height: 45px;
   position: relative;
   top: 0;
@@ -135,9 +148,11 @@ body.no-scroll {
   display: flex;
   justify-content: center;
   max-width: 100%;
-  background: transparent;
+  background: var(--sdhub-gallery-tab-background);
   padding: 5px;
-  box-shadow: 0 0 7px 2px #000;
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: 0 0 7px 2px #707070;
+  overflow: hidden;
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button {
@@ -162,10 +177,9 @@ body.no-scroll {
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button.selected {
   cursor: default;
-  font-weight: bold;
   color: var(--primary-400);
-  box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 5px 0 #000;
-  background: var(--sdhub-gallery-cm-background);
+  box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 5px 0 var(--primary-400);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
@@ -176,10 +190,11 @@ body.no-scroll {
 #SDHub-Gallery-Tab-Wrapper {
   display: block;
   position: relative;
+  z-index: 1;
   margin: 0;
-  overflow: hidden;
   padding: 0;
   background: transparent;
+  border-radius: 0 0 1rem 1rem;
 }
 
 #SDHub-Gallery-Tab-Scroll {
@@ -256,12 +271,13 @@ body.no-scroll {
   position: relative;
   height: 100%;
   width: 100%;
-  overflow: visible;
   background: transparent;
   flex-wrap: wrap;
   border: 0;
   margin: 0;
   padding: 0;
+  border-radius: 0 0 1rem 1rem;
+  overflow: hidden;
 }
 
 .sdhub-gallery-image-box {
@@ -1225,18 +1241,19 @@ body.no-scroll {
 /* ############################################################################################################ */
 
 #SDHub-Gallery-imgchest-Button {
-  position: absolute;
-  width: max-content;
   display: flex;
-  background: var(--background-fill-secondary);
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: max-content;
+  background: transparent;
   border-radius: 0.5em;
   padding: 1px;
   cursor: pointer;
   pointer-events: auto;
-  border: 1px solid var(--background-fill-secondary);
+  border: 1px solid transparent;
   margin: 0;
-  margin-top: 3px;
-  z-index: 50;
+  z-index: 3;
   transition: 0.4s ease;
 }
 
