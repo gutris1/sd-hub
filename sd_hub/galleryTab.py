@@ -15,7 +15,7 @@ import threading
 import asyncio
 import json
 import sys
-
+import time
 from sd_hub.paths import SDHubPaths
 
 insecureENV = SDHubPaths.getENV()
@@ -82,8 +82,10 @@ def getThumbnail(fp, size=512):
             return None
 
     if isinstance(fp, list):
+        start = time.time()
         with ThreadPoolExecutor(max_workers=8) as executor:
             list(executor.map(resize, fp))
+        print(f'SD-Hub : {time.time() - start:.1f}s ({len(fp)} thumbnails)')
         return None
     else:
         return resize(fp)
@@ -115,7 +117,6 @@ def getImage():
         imgList.clear()
         imgList.extend(results)
         imgList_List.set()
-        print("\n".join(map(str, imgList)))
 
     threading.Thread(target=listing, daemon=True).start()
 
@@ -174,7 +175,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
                 path.unlink()
                 Thumbnails.pop(thumb, None)
                 global imgList
-                imgList = [img for img in imgList if unquote(img['path'].split('/image/')[-1].split('?')[0]) != path.as_posix()]
+                imgList = [img for img in imgList if unquote(img['path'].split('/image=')[-1].split('?')[0]) != path.as_posix()]
             except Exception as e:
                 return {'status': f'error: {e}'}
         return {'status': 'deleted'}
