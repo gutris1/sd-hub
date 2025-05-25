@@ -14,7 +14,6 @@ import mimetypes
 import threading
 import asyncio
 import json
-import time
 import sys
 
 from sd_hub.paths import SDHubPaths
@@ -26,6 +25,7 @@ CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 today = datetime.today().strftime('%Y-%m-%d')
 chest = Path(basedir()) / '.imgchest.json'
+
 imgList = []
 imgList_List = threading.Event()
 Thumbnails = {}
@@ -55,14 +55,13 @@ def Loadimgchest():
     return default
 
 def getPath(path):
-    p = path.resolve().as_posix() if sys.platform == 'win32' else str(path.resolve()).lstrip('/')
+    p = path.resolve().as_posix() if sys.platform == 'win32' else str(path.resolve())
     return quote(p)
 
 def getThumbnail(fp, size=512):
     def resize(path):
         try:
-            if not path.exists():
-                return None
+            if not path.exists(): return None
 
             k = f'{path.stem}.jpeg'
             if k in Thumbnails: return Thumbnails[k]
@@ -83,10 +82,8 @@ def getThumbnail(fp, size=512):
             return None
 
     if isinstance(fp, list):
-        start = time.time()
         with ThreadPoolExecutor(max_workers=8) as executor:
             list(executor.map(resize, fp))
-        print(f'total {len(fp)} for {time.time() - start:.2f} seconds.')
         return None
     else:
         return resize(fp)
@@ -97,10 +94,8 @@ def getImage():
         files = []
 
         for d in dirs:
-            if d in outdir_extras:
-                files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
-            else:
-                files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
+            if d in outdir_extras: files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
+            else: files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
 
         files.sort(key=lambda p: p.stat().st_mtime_ns)
         getThumbnail(files)
@@ -113,13 +108,14 @@ def getImage():
             elif path.parent in outdir_extras: query = '?extras'
             else: query = ''
 
-            results.append({'path': f'{BASE}/image/{getPath(path)}{query}'})
+            results.append({'path': f'{BASE}/image={getPath(path)}{query}'})
 
         global imgList
         imgList_List.clear()
         imgList.clear()
         imgList.extend(results)
         imgList_List.set()
+        print("\n".join(map(str, imgList)))
 
     threading.Thread(target=listing, daemon=True).start()
 
@@ -141,11 +137,20 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         except Exception as e:
             return responses.JSONResponse(status_code=500, content={'error': 'Server error', 'detail': str(e)})
 
-    @app.get(BASE + '/image/{img:path}')
+    @app.get(BASE + '/image={img:path}')
     async def sendImage(img: str):
         fp = Path(unquote(img))
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
+
+    @app.post(BASE + '/newimage')
+    async def newImage(req: Request):
+        global imgList
+        data = await req.json()
+        paths = data.get('paths', [])
+        imgList.extend([{'path': p} for p in paths])
+        imgList_List.set()
+        return {'status': 'ok'}
 
     @app.get(BASE + '/thumb/{img}')
     async def sendThumb(img: str):
