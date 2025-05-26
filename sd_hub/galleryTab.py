@@ -154,7 +154,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         imgList_List.set()
         return {'status': 'ok'}
 
-    @app.get(BASE + '/thumb/{img}')
+    @app.get(BASE + '/thumb={img}')
     async def sendThumb(img: str):
         thumb = Thumbnails.get(img)
         return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
@@ -163,7 +163,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     async def getThumb(req: Request):
         fp = Path((await req.json()).get('path'))
         await asyncio.to_thread(getThumbnail, fp)
-        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.jpeg'}
+        return {'status': f'{BASE}/thumb={quote(fp.stem)}.jpeg'}
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
