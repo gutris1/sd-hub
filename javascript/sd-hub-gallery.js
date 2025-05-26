@@ -173,7 +173,7 @@ async function SDHubGalleryLoadInitial(retry = 500) {
 
         const img = newImgBox.querySelector('img');
         const name = path.split('/').pop().split('?')[0];
-        const thumb = `${SDHubGalleryBase}/thumb/${name.replace(/\.[^/.]+$/, '.jpeg')}`;
+        const thumb = `${SDHubGalleryBase}/thumb=${name.replace(/\.[^/.]+$/, '.jpeg')}`;
         const nameBox = newImgBox.querySelector('.sdhub-gallery-image-name');
 
         if (nameBox) nameBox.textContent = name;
@@ -676,7 +676,7 @@ async function SDHubGalleryDeletion() {
     DelBox.style.transform = 'scale(1.5)';
 
     try {
-      const thumb = `${SDHubGalleryBase}/thumb/${name.replace(/\.[^/.]+$/, '.jpeg')}`;
+      const thumb = `${SDHubGalleryBase}/thumb=${name.replace(/\.[^/.]+$/, '.jpeg')}`;
       const res = await fetch(`${SDHubGalleryBase}/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
