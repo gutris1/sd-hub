@@ -29,11 +29,10 @@
 
 #sdhub-tab > .tab-nav > button.selected {
   cursor: default;
-  color: var(--sdhub-tab-button-selected);
-  filter: drop-shadow(0 0 10px var(--primary-400));
-  box-shadow: 0 0 10px 1px var(--primary-400);
-  background: var(--button-primary-background-fill);
-  font-weight: bold;
+  color: var(--primary-400);
+  filter: drop-shadow(0 0 0 var(--primary-400));
+  box-shadow: inset 0 0 3px 1px var(--primary-400), 0 0 3px 1px var(--primary-400);
+  background: rgba(0, 0, 0, 0.7);
 }
 
 #sdhub-tab > .tab-nav > button:not(.selected) {
@@ -42,8 +41,7 @@
 
 #sdhub-tab > .tab-nav > button:not(.selected):hover {
   color: var(--primary-400);
-  filter: drop-shadow(0 0 10px var(--body-text-color-subdued));
-  box-shadow: 0 0 10px 1px var(--primary-400);
+  box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
 }
 
 #sdhub-downloader-tab,
