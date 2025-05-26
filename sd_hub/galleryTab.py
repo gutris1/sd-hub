@@ -16,6 +16,7 @@ import asyncio
 import json
 import sys
 import time
+
 from sd_hub.paths import SDHubPaths
 
 insecureENV = SDHubPaths.getENV()
@@ -82,10 +83,10 @@ def getThumbnail(fp, size=512):
             return None
 
     if isinstance(fp, list):
-        start = time.time()
+        #start = time.time()
         with ThreadPoolExecutor(max_workers=8) as executor:
             list(executor.map(resize, fp))
-        print(f'SD-Hub : {time.time() - start:.1f}s ({len(fp)} thumbnails)')
+        #print(f'SD-Hub : {time.time() - start:.1f}s ({len(fp)} thumbnails)')
         return None
     else:
         return resize(fp)
