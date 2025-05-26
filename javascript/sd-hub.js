@@ -53,6 +53,7 @@ function SDHubTabChange() {
 
   if (TextEditorTab || GalleryTab) {
     TagList && (TagList.style.display = 'none');
+    if (GalleryTab) window.SDHubGalleryArrowScrolling();
     if (footer) footer.style.display = GalleryTab ? 'none' : '';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
@@ -195,8 +196,8 @@ function SDHubTextEditorGalleryScrollBar() {
 
   const SBforFirefox = `
     #sdhub-texteditor-editor,
-    .sdhub-gallery-tab-container {
-      scrollbar-width: thin !important;
+    .sdhub-gallery-pages.selected-page {
+      scrollbar-width: none !important;
       scrollbar-color: var(--primary-400) transparent !important;
     }
 
@@ -206,7 +207,7 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   const SBwebkit = `
-    .sdhub-gallery-tab-container {
+    .sdhub-gallery-pages.selected-page {
       scrollbar-width: none !important;
     }
 
