@@ -31,8 +31,8 @@
   cursor: default;
   color: var(--primary-400);
   filter: drop-shadow(0 0 0 var(--primary-400));
-  box-shadow: inset 0 0 3px 1px var(--primary-400), 0 0 3px 1px var(--primary-400);
-  background: rgba(0, 0, 0, 0.7);
+  box-shadow: var(--sdhub-gallery-box-shadow-1);
+  background: rgba(0, 0, 0, 0.8);
 }
 
 #sdhub-tab > .tab-nav > button:not(.selected) {
