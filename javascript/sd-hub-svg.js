@@ -1,17 +1,14 @@
 var SDHubGalleryImageButtonSVG = `
   <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'
     width='30px' height='30px'>
-    <path d='M4 6H20M4 12H20M4 18H20' stroke='currentColor' stroke-width='2'
-      stroke-linecap='round' stroke-linejoin='round'/>
+    <path d='M4 6H20M4 12H20M4 18H20' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/>
   </svg>
 `;
 
 var SDHubGalleryDLSVG = `
   <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg'
     width='32' height='32' viewBox='0 0 32 32'>
-    <path fill='currentColor' stroke='currentColor' stroke-width='1.8'
-      d='M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10
-      l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z'/>
+    <path fill='currentColor' stroke='currentColor' stroke-width='1.8' d='M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10 l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z'/>
   </svg>
 `;
 
@@ -80,45 +77,38 @@ var SDHubGalleryDeleteSVG = `
 `;
 
 var SDHubGallerySpinnerSVG = `
-  <svg class='sdhub-gallery-spinner' xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
-    <path fill="currentColor"
-      d="M8,24c0-8.8,7.2-16,16-16c1,0,2,0.1,3,0.3l0.7-3.9C26.5,4.1,25.3,4,24,4C12.9,4,4,13,4,24
-      c0,4.8,1.7,9.5,4.8,13.1l3-2.6C9.5,31.6,8,28,8,24z"/>
-    <path fill="currentColor"
-      d="M39.5,11.3l-3.1,2.5C38.6,16.6,40,20.1,40,24c0,8.8-7.2,16-16,16c-1,0-2-0.1-3-0.3l-0.7,3.8
-      c1.3,0.2,2.5,0.3,3.7,0.3c11.1,0,20-8.9,20-20C44,19.4,42.4,14.8,39.5,11.3z"/>
-    <polygon fill="currentColor" points="31,7 44,8.7 33.3,19"/>
-    <polygon fill="currentColor" points="17,41 4,39.3 14.7,29"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
+    <path fill="currentColor" d="M 24.3 17.1 C 24.3 25.9 31.5 33.1 40.3 33.1 C 41.3 33.1 42.3 33 43.3 32.8 L 44 36.7 C 42.8 37 41.6 37.1 40.3 37.1 C 29.2 37.1
+      20.3 28.1 20.3 17.1 C 20.3 12.3 22 7.6 25.1 4 L 28.1 6.6 C 25.8 9.5 24.3 13.1 24.3 17.1 Z" style="transform-origin: 32.15px 20.55px;" transform="matrix(-1, 0, 0, -1, 0.000002, 0)"/>
+    <path fill="currentColor" d="M 23.2 43.8 L 20.1 41.3 C 22.3 38.5 23.7 35 23.7 31.1 C 23.7 22.3 16.5 15.1 7.7 15.1
+      C 6.7 15.1 5.7 15.2 4.7 15.4 L 4 11.6 C 5.3 11.4 6.5 11.3 7.7 11.3 C 18.8 11.3 27.7 20.2 27.7 31.3 C 27.7 35.7 26.1 40.3 23.2 43.8 Z"
+      style="transform-origin: 15.85px 27.55px;" transform="matrix(-1, 0, 0, -1, 0.000003, 0.000001)"/>
+    <polygon fill="currentColor" points="4 19 17 17.3 6.3 7" style="transform-origin: 10.5px 13px;" transform="matrix(-1, 0, 0, -1, -0.000003, 0.000001)"/>
+    <polygon fill="currentColor" points="44 29 31 30.7 41.7 41" style="transform-origin: 37.5px 35px;" transform="matrix(-1, 0, 0, -1, -0.000005, -0.000003)"/>
   </svg>
 `;
 
 var SDHubGalleryCloseButtonSVG = `
-  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-    width="32px" height="32px" viewBox="0 0 512 512">
-    <path fill="currentColor" d="M330.443 256l136.765-136.765c14.058-14.058 14.058-36.85
-      0-50.908l-23.535-23.535c-14.058-14.058-36.85-14.058-50.908 0L256 181.557L119.235
-      44.792c-14.058-14.058-36.85-14.058-50.908 0L44.792 68.327c-14.058 14.058-14.058
-      36.85 0 50.908L181.557 256L44.792 392.765c-14.058 14.058-14.058 36.85 0 50.908l23.535
-      23.535c14.058 14.058 36.85 14.058 50.908 0L256 330.443l136.765 136.765c14.058 14.058
-      36.85 14.058 50.908 0l23.535-23.535c14.058-14.058 14.058-36.85 0-50.908L330.443 256z"/>
+  <svg width="100%" height="100%" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"
+    stroke="currentColor" style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round;">
+    <g transform="matrix(1.14096,-0.140958,-0.140958,1.14096,-0.0559523,0.0559523)">
+      <path d="M18,6L6.087,17.913" style="fill: none; fill-rule: nonzero; stroke-width: 5px;"/>
+    </g>
+    <path d="M4.364,4.364L19.636,19.636" style="fill: none; fill-rule: nonzero; stroke-width: 5px;"/>
   </svg>
 `;
 
-var SDHubGalleryPrevButtonSVG = `
+var SDHubGalleryLeftArrowSVG = `
   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
     width="32px" height="32px" viewBox="0 0 24 24">
-    <path
-      d="m4.431 12.822 13 9A1 1 0 0 0 19 21V3a1
-      1 0 0 0-1.569-.823l-13 9a1.003 1.003 0 0 0 0 1.645z"/>
+    <path d="m4.431 12.822 13 9A1 1 0 0 0 19 21V3a1 1 0 0 0-1.569-.823l-13 9a1.003 1.003 0 0 0 0 1.645z"/>
   </svg>
 `;
 
-var SDHubGalleryNextButtonSVG = `
+var SDHubGalleryRightArrowSVG = `
   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
     width="32px" height="32px" viewBox="0 0 24 24">
-    <path
-      d="M5.536 21.886a1.004 1.004 0 0 0 1.033-.064l13-9a1
-      1 0 0 0 0-1.644l-13-9A1 1 0 0 0 5 3v18a1 1 0 0 0 .536.886z"/>
+    <path d="M5.536 21.886a1.004 1.004 0 0 0 1.033-.064l13-9a1 1 0 0 0 0-1.644l-13-9A1 1 0 0 0 5 3v18a1 1 0 0 0 .536.886z"/>
   </svg>
 `;
 
@@ -177,5 +167,11 @@ var SDHubGalleryimgchestSVG = `
       <path fill="#32090d" d="M 449.5,395.5 C 466.065,395.355 471.898,403.022 467,418.5C 464.9,421.467 462.066,423.3 458.5,424C 423.652,427.002 388.818,430.168
         354,433.5C 346.807,434.073 341.807,431.073 339,424.5C 336.821,416.025 339.654,409.858 347.5,406C 381.72,403.151 415.72,399.651 449.5,395.5 Z"/>
     </g>
+  </svg>
+`;
+
+var SDHubGalleryTabScrollSVG = `
+  <svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
+    <polygon fill="currentColor" points="95.936,297.344 256,133.984 416.064,297.344 366.096,346.144 256,233.792 145.904,346.144"/>
   </svg>
 `;

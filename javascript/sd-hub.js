@@ -1,6 +1,3 @@
-let FoxFire = /firefox/i.test(navigator.userAgent);
-let SDHubTranslations = {};
-
 let SDHubTabButtons = {
   'Downloader': 'sdhub-tab-button-downloader',
   'Uploader': 'sdhub-tab-button-uploader',
@@ -20,17 +17,24 @@ let SDHubLangIndex = {
   ru: 7
 };
 
-onUiLoaded(function() {
-  SDHubTabLoaded(); SDHubTokenBlur(); SDHubEvents(); SDHubUITranslation();
+let SDHubTranslations = {};
+let SDHubGalleryInitialrun;
+
+onUiLoaded(() => {
+  SDHubTabLoaded();
+  SDHubTokenBlur();
+  SDHubEventListener();
+  SDHubUITranslation();
+  onUiUpdate(SDHubTabChange);
 });
 
-onUiUpdate(function() {
-  let row = document.getElementById('sdhub-gallery-image-info-row');
-  let Accordion = gradioApp()?.querySelector('#sdhub-dataframe-accordion');
-  let MainTab = gradioApp()?.querySelector('#tabs > .tab-nav > button.selected');
-  let TabList = gradioApp()?.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
-  let SelectedTab = gradioApp()?.querySelector('#sdhub-tab > .tab-nav > button.selected');
-  let Id = 'sdHUBHidingScrollBar';
+function SDHubTabChange() {
+  let infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
+  let TagList = document.getElementById('sdhub-dataframe-accordion');
+  let MainTab = document.querySelector('#tabs > .tab-nav > button.selected');
+  let TabList = document.querySelectorAll('#sdhub-tab > .tab-nav > button') || [];
+  let SelectedTab = document.querySelector('#sdhub-tab > .tab-nav > button.selected');
+  let Id = 'SDHub-Hide-Scroll-Bar';
 
   if (TabList.length > 0) {
     TabList.forEach(button => {
@@ -45,9 +49,12 @@ onUiUpdate(function() {
 
   let TextEditorTab = SelectedTab?.classList.contains('sdhub-tab-button-texteditor');
   let GalleryTab = SelectedTab?.classList.contains('sdhub-tab-button-gallery');
+  let footer = document.getElementById('footer');
 
   if (TextEditorTab || GalleryTab) {
-    if (Accordion) Accordion.style.display = 'none';
+    TagList && (TagList.style.display = 'none');
+    if (GalleryTab) window.SDHubGalleryArrowScrolling();
+    if (footer) footer.style.display = GalleryTab ? 'none' : '';
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
       Scrollbar.id = Id;
@@ -55,23 +62,22 @@ onUiUpdate(function() {
       document.head.appendChild(Scrollbar);
     }
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
-
   } else {
-    if (Accordion) Accordion.style.display = 'block';
-    let el = document.getElementById(Id);
-    if (el) el.remove();
+    TagList && (TagList.style.display = '');
+    !GalleryTab && footer && (footer.style.display = '');
+    document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    if (!FoxFire) document.body.classList.remove('no-scroll');
+    document.body.classList.remove('no-scroll');
   }
 
   if (MainTab?.textContent.trim() !== 'HUB') {
-    const id = document.getElementById(Id);
-    if (id) id.remove();
+    footer && (footer.style.display = '');
+    document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    if (!FoxFire) document.body.classList.remove('no-scroll');
-    if (row?.style.display === 'flex') window.SDHubCloseImageInfoRow();
+    document.body.classList.remove('no-scroll');
+    if (infoColumn?.style.display === 'flex') window.SDHubGalleryInfoClearImage();
   }
-});
+}
 
 async function SDHubTabLoaded() {
   const titles = {
@@ -101,7 +107,7 @@ async function SDHubTabLoaded() {
   } catch (e) { console.error('Error loading info:', e); }
 }
 
-function SDHubEvents() {
+function SDHubEventListener() {
   const Tab = {
     shell: document.querySelector('#sdhub-shell-tab'),
     textEditor: document.querySelector('#sdhub-texteditor-tab')
@@ -133,11 +139,18 @@ function SDHubEvents() {
     }
   });
 
-  document.querySelectorAll('#sdhub-downloader-token1 input, #sdhub-downloader-token2 input, #sdhub-uploader-token input')
-    .forEach(input => {
+  const Inputs = {
+    token1: '#sdhub-downloader-token1 input',
+    token2: '#sdhub-downloader-token2 input',
+    token3: '#sdhub-uploader-token input'
+  };
+
+  Object.values(Inputs).forEach(el => {
+    document.querySelectorAll(el).forEach(input => {
       input.addEventListener('blur', () => input.value.trim() !== '' && (input.style.filter = 'blur(3px)'));
       input.addEventListener('focus', () => (input.style.filter = 'none'));
     });
+  });
 }
 
 async function SDHubTokenBlur() {
@@ -177,39 +190,40 @@ async function SDHubTextEditorInfo(flag) {
 }
 
 function SDHubTextEditorGalleryScrollBar() {
+  const FoxFire = /firefox/i.test(navigator.userAgent);
   const ScrollBAR = document.createElement('style');
   document.body.appendChild(ScrollBAR);
 
   const SBforFirefox = `
     #sdhub-texteditor-editor,
-    .sdhub-gallery-tab-container {
-      scrollbar-width: thin !important;
+    .sdhub-gallery-pages.selected-page {
+      scrollbar-width: none !important;
       scrollbar-color: var(--primary-400) transparent !important;
+    }
+
+    #SDHub-Gallery-Image-Viewer {
+      backdrop-filter: none !important;
     }
   `;
 
   const SBwebkit = `
-    #sdhub-texteditor-editor::-webkit-scrollbar {
-      width: 0.6rem !important;
-      position: absolute !important;
-      right: 4px !important;
+    .sdhub-gallery-pages.selected-page {
+      scrollbar-width: none !important;
     }
 
-    .sdhub-gallery-tab-container::-webkit-scrollbar {
+    #sdhub-texteditor-editor::-webkit-scrollbar {
       width: 0.4rem !important;
       position: absolute !important;
       right: 4px !important;
     }
 
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb,
-    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb {
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb {
       background: var(--primary-400) !important;
       border-radius: 30px !important;
       background-clip: padding-box !important;
     }
 
-    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover,
-    .sdhub-gallery-tab-container::-webkit-scrollbar-thumb:hover {
+    #sdhub-texteditor-editor::-webkit-scrollbar-thumb:hover {
       background: var(--primary-600) !important;
     }
 
@@ -217,12 +231,6 @@ function SDHubTextEditorGalleryScrollBar() {
       background: transparent !important;
       border-radius: 0px !important;
       margin: 2px 0 !important;
-    }
-
-    .sdhub-gallery-tab-container::-webkit-scrollbar-track {
-      background: transparent !important;
-      border-radius: 0px !important;
-      margin: 7px 0 !important;
     }
   `;
 
@@ -347,6 +355,19 @@ function SDHubUITranslation() {
   }
 }
 
+async function SDHubRGBA() {
+  const vars = [
+    { c: '--input-background-fill', to: '--sdhub-gallery-output-bg', a: 0.6 },
+  ];
+
+  const css = await (await fetch('/theme.css')).text();
+  const get = s => Object.fromEntries((css.match(new RegExp(`${s}\\s*{([^}]*)}`, 'm'))?.[1] || '').split(';').map(l => l.trim().split(':').map(s => s.trim())).filter(([k, v]) => k && v));
+  const toRGBA = (hex, a) => hex && /^#/.test(hex) ? `rgba(${hex.slice(1).match(/.{2}/g).map(v => parseInt(v, 16)).join(',')},${a})` : 'rgba(0,0,0,0)';
+  const r = get(':root'), d = get('.dark'), S = document.createElement('style');
+  vars.forEach(({ c, to, a }) => { S.textContent += `:root { ${to}: ${toRGBA(r[c], a)}; }\n.dark { ${to}: ${toRGBA(d[c], a)}; }\n`; });
+  document.head.append(S);
+}
+
 document.addEventListener('DOMContentLoaded', async function () {
   await new Promise(resolve => (function check() { window.XLSX ? resolve() : setTimeout(check, 50); })());
 
@@ -372,6 +393,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
       SDHubTextEditorGalleryScrollBar();
       SDHubGalleryDOMLoaded();
+      SDHubRGBA();
     }
   } catch (err) { console.error('XLSX Error:', err); }
 });

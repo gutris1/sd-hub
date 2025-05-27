@@ -1,14 +1,20 @@
 function SDHubGalleryImageViewer(mode) {
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
+  const NextBtn = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Next-Button');
+  const PrevBtn = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Prev-Button');
+
+  const show = mode === 's' ? 'none' : (window.SDHubImageList.length > 1 ? 'flex' : 'none');
+  [NextBtn.style.display, PrevBtn.style.display] = [show, show];
+  if (mode === 's') window.SDHubImageList = [window.SDHubImagePath];
+
   LightBox.style.display = 'flex';
   LightBox.focus();
 
   document.body.classList.add('no-scroll');
-  SDHubGalleryToggleNextPrev(mode);
-  SDHubGalleryImageViewerImage();
+  SDHubGalleryImageViewerDisplayImage();
 }
 
-function SDHubGalleryImageViewerImage() {
+function SDHubGalleryImageViewerDisplayImage() {
   const LightBox = document.getElementById('SDHub-Gallery-Image-Viewer');
   const Control = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Control');
   const Wrapper = LightBox.querySelector('#SDHub-Gallery-Image-Viewer-Wrapper');
@@ -16,34 +22,21 @@ function SDHubGalleryImageViewerImage() {
   const imgEL = document.createElement('img');
   imgEL.id = 'SDHub-Gallery-Image-Viewer-img';
   imgEL.src = window.SDHubImagePath;
-
   Wrapper.append(imgEL);
 
+  requestAnimationFrame(() => setTimeout(() => {
+    LightBox.style.opacity = '1';
+    Wrapper.style.transition = '';
+    Wrapper.style.transform = 'translate(0px, 0px) scale(1)';
+    Wrapper.style.opacity = '1';
+  }, 0));
+
   const imgState = {
-    scale: 1,
-    offsetX: 0,
-    offsetY: 0,
-    lastX: 0,
-    lastY: 0,
-    lastLen: 1,
-    LastTouch: 0,
-    ZoomMomentum: 0,
-    MoveMomentum: 0,
-    LastZoom: 0,
-    SnapMouse: 20,
-    SnapTouch: 10,
+    scale: 1, offsetX: 0, offsetY: 0, lastX: 0, lastY: 0, lastLen: 1, LastTouch: 0, LastZoom: 0,
+    ZoomMomentum: 0, MoveMomentum: 0, SnapMouse: 20, SnapTouch: 10,
 
     TouchGrass: {
-      touchScale: false,
-      last1X: 0,
-      last1Y: 0,
-      last2X: 0,
-      last2Y: 0,
-      delta1X: 0,
-      delta1Y: 0,
-      delta2X: 0,
-      delta2Y: 0,
-      scale: 1
+      touchScale: false, last1X: 0, last1Y: 0, last2X: 0, last2Y: 0, delta1X: 0, delta1Y: 0, delta2X: 0, delta2Y: 0, scale: 1
     },
 
     SDHubGalleryImageViewerSnapBack: function (imgEL, LightBox) {
@@ -53,10 +46,7 @@ function SDHubGalleryImageViewerImage() {
       const LightBoxH = LightBox.offsetHeight;
 
       if (this.scale <= 1) {
-        this.offsetX = 0;
-        this.offsetY = 0;
-        this.lastX = 0;
-        this.lastY = 0;
+        this.offsetX = this.offsetY = this.lastX = this.lastY = 0;
         return;
 
       } else if (imgELW <= LightBoxW && imgELH >= LightBoxH) {
@@ -90,38 +80,20 @@ function SDHubGalleryImageViewerImage() {
     },
 
     SDHubGalleryImageViewerimgReset: function() {
-      this.scale = 1;
-      this.offsetX = 0;
-      this.offsetY = 0;
-      this.lastX = 0;
-      this.lastY = 0;
-
+      this.scale = 1; this.offsetX = this.offsetY = this.lastX = this.lastY = 0;
       Object.assign(this.TouchGrass, {
-        touchScale: false,
-        last1X: 0,
-        last1Y: 0,
-        last2X: 0,
-        last2Y: 0,
-        delta1X: 0,
-        delta1Y: 0,
-        delta2X: 0,
-        delta2Y: 0,
-        scale: 1
+        touchScale: false, last1X: 0, last1Y: 0, last2X: 0, last2Y: 0, delta1X: 0, delta1Y: 0, delta2X: 0, delta2Y: 0, scale: 1
       });
 
-      imgEL.style.transition = '';
-      imgEL.style.transform = '';
+      imgEL.style.transition = imgEL.style.transform = '';
     },
 
     SDHubGalleryImageViewerCloseZoom: function () {
-      LightBox.style.opacity = '0';
+      LightBox.style.opacity = '';
 
       setTimeout(() => {
         LightBox.style.display = 'none';
-        Wrapper.style.transform = '';
-        Wrapper.style.opacity = '';
-        document.removeEventListener('mouseleave', MouseLeave);
-        document.removeEventListener('mouseup', MouseUp);
+        Wrapper.style.transform = Wrapper.style.opacity = '';
         document.getElementById('SDHub-Gallery-Image-Viewer-img')?.remove();
         document.body.classList.remove('no-scroll');
       }, 200);
@@ -129,23 +101,9 @@ function SDHubGalleryImageViewerImage() {
   };
 
   window.SDHubGalleryImageViewerCloseZoom = imgState.SDHubGalleryImageViewerCloseZoom;
-  window.SDHubGalleryImageViewerimgReset = imgState.SDHubGalleryImageViewerimgReset;
 
-  requestAnimationFrame(() => {
-    LightBox.style.opacity = '1';
-    Wrapper.style.transition = '';
-    Wrapper.style.transform = 'translate(0px, 0px) scale(1)';
-    Wrapper.style.opacity = '1';
-  });
-
-  imgEL.onload = function () {
-    imgState.SDHubGalleryImageViewerimgReset();
-  };
-
-  imgEL.ondrag = imgEL.ondragend = imgEL.ondragstart = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
+  imgState.SDHubGalleryImageViewerimgReset();
+  imgEL.ondrag = imgEL.ondragend = imgEL.ondragstart = (e) => { e.stopPropagation(); e.preventDefault(); };
 
   let GropinTime = null;
   let Groped = false;
@@ -209,7 +167,11 @@ function SDHubGalleryImageViewerImage() {
     }
   });
 
-  const MouseUp = (e) => {
+  window.SDHubMouse = window.SDHubMouse || {};
+  if (window.SDHubMouse.MouseUp) document.removeEventListener('mouseup', window.SDHubMouse.MouseUp);
+  if (window.SDHubMouse.MouseLeave) document.removeEventListener('mouseleave', window.SDHubMouse.MouseLeave);
+
+  window.SDHubMouse.MouseUp = (e) => {
     clearTimeout(GropinTime);
     if (!Groped && e.button === 0) {
       imgEL.onclick = (e) => (e.preventDefault(), imgState.SDHubGalleryImageViewerCloseZoom());
@@ -220,11 +182,11 @@ function SDHubGalleryImageViewerImage() {
     imgState.SDHubGalleryImageViewerSnapBack(imgEL, LightBox);
     Groped = false;
     imgEL.style.cursor = 'auto';
-    setTimeout(() => (imgEL.style.transition = 'transform 0s ease'), 100);
+    setTimeout(() => imgEL.style.transition = 'transform 0s ease', 100);
     Control.style.opacity = '';
   };
 
-  const MouseLeave = (e) => {
+  window.SDHubMouse.MouseLeave = (e) => {
     if (e.target !== LightBox && Groped) {
       imgState.SDHubGalleryImageViewerSnapBack(imgEL, LightBox);
       Groped = false;
@@ -232,6 +194,11 @@ function SDHubGalleryImageViewerImage() {
       Control.style.opacity = '';
     }
   };
+
+  setTimeout(() => {
+    document.addEventListener('mouseup', window.SDHubMouse.MouseUp);
+    document.addEventListener('mouseleave', window.SDHubMouse.MouseLeave);
+  }, 100);
 
   imgEL.addEventListener('wheel', (e) => {
     e.stopPropagation();
@@ -338,16 +305,9 @@ function SDHubGalleryImageViewerImage() {
   let lastDistance = 0;
   let lastScale = 1;
 
-  function SDHubGalleryImageViewerTouchDistance(touch1, touch2) {
-    return Math.hypot(
-      touch2.clientX - touch1.clientX,
-      touch2.clientY - touch1.clientY
-    );
-  }
+  const SDHubGalleryImageViewerTouchDistance = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
 
-  LightBox.addEventListener('touchmove', (e) => {
-    if (e.target !== imgEL) e.stopPropagation(), e.preventDefault();
-  });
+  LightBox.ontouchmove = (e) => e.target !== imgEL && (e.stopPropagation(), e.preventDefault());
 
   imgEL.addEventListener('touchstart', (e) => {
     e.stopPropagation();
@@ -390,8 +350,7 @@ function SDHubGalleryImageViewerImage() {
       const LightBoxH = LightBox.offsetHeight;
 
       if (imgState.scale <= 1) {
-        imgState.offsetX = 0;
-        imgState.offsetY = 0;
+        imgState.offsetX = imgState.offsetY = 0;
         imgEL.style.transform = `translate(0px, 0px) scale(${imgState.scale})`;
 
       } else if (imgELW <= LightBoxW && imgELH >= LightBoxH) {
@@ -446,8 +405,7 @@ function SDHubGalleryImageViewerImage() {
       const LightBoxH = LightBox.offsetHeight;
 
       if (imgState.scale <= 1) {
-        imgState.offsetX = 0;
-        imgState.offsetY = 0;
+        imgState.offsetX = imgState.offsetY = 0;
         imgEL.style.transform = `translate(0px, 0px) scale(${imgState.scale})`;
 
       } else if (imgELW <= LightBoxW && imgELH >= LightBoxH) {
@@ -498,60 +456,33 @@ function SDHubGalleryImageViewerImage() {
     if (e.targetTouches.length === 0) {
       if (MultiGrope) MultiGrope = false; imgState.TouchGrass.touchScale = false;
       imgState.SDHubGalleryImageViewerSnapBack(imgEL, LightBox);
-      setTimeout(() => {
-        imgState.TouchGrass.touchScale = false;
-      }, 10);
+      setTimeout(() => imgState.TouchGrass.touchScale = false, 10);
     }
   });
-
-  document.addEventListener('mouseleave', MouseLeave);
-  document.addEventListener('mouseup', MouseUp);
 }
 
-function SDHubGalleryImageViewerSwitchImage() {
-  const Wrapper = document.getElementById('SDHub-Gallery-Image-Viewer-Wrapper');
-  if (Wrapper) {
-    Wrapper.style.transition = 'none';
-    Wrapper.style.opacity = '0';
-    Wrapper.style.transform = 'translate(0px, 0px) scale(0)';
-    setTimeout(() => {
-      Wrapper.querySelector('#SDHub-Gallery-Image-Viewer-img')?.remove();
-      SDHubGalleryImageViewerImage();
-    }, 100);
-  }
+function SDHubGallerySwitchImage() {
+  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
+  document.getElementById('SDHub-Gallery-Image-Viewer-img')?.remove();
+  SDHubGalleryImageViewerDisplayImage();
 }
 
 function SDHubGalleryNextImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex + 1) % window.SDHubImageList.length;
-  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
-  SDHubGalleryImageViewerSwitchImage();
+  SDHubGallerySwitchImage();
 }
 
 function SDHubGalleryPrevImage() {
   if (window.SDHubImageList.length <= 1) return;
   window.SDHubImageIndex = (window.SDHubImageIndex - 1 + window.SDHubImageList.length) % window.SDHubImageList.length;
-  window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
-  SDHubGalleryImageViewerSwitchImage();
-}
-
-function SDHubGalleryToggleNextPrev(mode) {
-  const NextBtn = document.getElementById('SDHub-Gallery-Image-Viewer-Next-Button');
-  const PrevBtn = document.getElementById('SDHub-Gallery-Image-Viewer-Prev-Button');
-
-  if (mode === 's') {
-    NextBtn.style.display = PrevBtn.style.display = 'none';
-    window.SDHubImageList = [window.SDHubImagePath];
-  } else if (mode === 'm') {
-    const show = window.SDHubImageList.length > 1 ? 'flex' : 'none';
-    NextBtn.style.display = PrevBtn.style.display = show;
-  }
+  SDHubGallerySwitchImage();
 }
 
 function SDHubGalleryOpenViewerFromButton(imgEL) {
-  const TabCon = imgEL.closest('.sdhub-gallery-tab-container');
+  const page = imgEL.closest('.sdhub-gallery-pages.selected-page');
   window.SDHubImagePath = imgEL.getAttribute('data-image');
-  window.SDHubImageList = [...TabCon.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
+  window.SDHubImageList = [...page.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
   SDHubGalleryImageViewer('m');
 }
