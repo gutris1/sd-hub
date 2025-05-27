@@ -1182,7 +1182,7 @@ async function SDHubGalleryCreateimgChest(GalleryTab, TabRow, imgchestColumn) {
   imgchestButton.innerHTML = SDHubGalleryimgchestSVG;
   imgchestButton.prepend(imgchestColumn);
   GalleryTab.prepend(imgchestButton);
-  TabRow.style.paddingLeft = '50px';
+  TabRow.style.padding = '5px 50px 5px 50px';
 
   const checkboxInput = document.querySelector('#SDHub-Gallery-imgchest-Checkbox input');
   const checkboxSpan = document.querySelector('#SDHub-Gallery-imgchest-Checkbox span');
