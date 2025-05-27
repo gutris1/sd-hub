@@ -447,7 +447,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-Page-Nav-Box {
-  display: flex;
+  display: none;
   position: absolute;
   pointer-events: none;
   align-items: center;

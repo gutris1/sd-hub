@@ -39,10 +39,7 @@ outdir_samples = [Path(opts.outdir_samples) / today] if opts.outdir_samples else
 outdir_grids = [Path(opts.outdir_grids) / today] if opts.outdir_grids else []
 outdir_extras = [Path(opts.outdir_samples)] if opts.outdir_samples else []
 
-outpath = (
-    outdir_samples + outdir_grids + outdir_extras +
-    [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d]
-)
+outpath = (outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d])
 
 def Saveimgchest(privacy, nsfw, api):
     chest.write_text(json.dumps({'privacy': privacy, 'nsfw': nsfw, 'api': api}, indent=4))
