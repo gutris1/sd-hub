@@ -39,8 +39,7 @@ async function SDHubGalleryCreateImageFile(path) {
 }
 
 function SDHubGalleryCreateImagePages(wrapper, imageBoxes) {
-  let navBox = document.getElementById('SDHub-Gallery-Page-Nav-Box');
-  if (navBox) navBox.style.display = 'flex';
+  document.getElementById('SDHub-Gallery-Page-Nav-Box')?.style.display = 'flex';
 
   let existingPages = wrapper.querySelectorAll('.sdhub-gallery-pages');
   let totalPages = existingPages.length;
