@@ -8,6 +8,7 @@ texteditor-lastedit.txt
 .sd-hub-token.json
 .imgchest.json
 sd-hub-translations.xlsx
+gallery-setting.json
 
 sd_hub/hf-logo.svg
 sd_hub/__pycache__/

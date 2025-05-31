@@ -26,6 +26,7 @@ CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 today = datetime.today().strftime('%Y-%m-%d')
 chest = Path(basedir()) / '.imgchest.json'
+setting = Path(basedir()) / 'gallery-setting.json'
 
 imgList = []
 imgList_List = threading.Event()
@@ -151,7 +152,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         imgList_List.set()
         return {'status': 'ok'}
 
-    @app.get(BASE + '/thumb={img}')
+    @app.get(BASE + '/thumb/{img}')
     async def sendThumb(img: str):
         thumb = Thumbnails.get(img)
         return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
@@ -160,7 +161,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     async def getThumb(req: Request):
         fp = Path((await req.json()).get('path'))
         await asyncio.to_thread(getThumbnail, fp)
-        return {'status': f'{BASE}/thumb={quote(fp.stem)}.jpeg'}
+        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.jpeg'}
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
@@ -177,6 +178,25 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             except Exception as e:
                 return {'status': f'error: {e}'}
         return {'status': 'deleted'}
+
+    @app.get(BASE + '/loadsetting')
+    async def loadSetting():
+        if setting.exists():
+            return json.loads(setting.read_text(encoding='utf-8'))
+        return {
+            'images-per-page': 100,
+            'thumbnail-shape': 'Aspect Ratio',
+            'thumbnail-position': 'Center',
+            'thumbnail-layout': 'Masonry',
+            'thumbnail-size': 240,
+            'image-info-layout': 'Fullscreen'
+        }
+
+    @app.post(BASE + '/savesetting')
+    async def saveSetting(req: Request):
+        data = await req.json()
+        setting.write_text(json.dumps(data, indent=4), encoding='utf-8')
+        return {'status': 'saved'}
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
@@ -245,14 +265,15 @@ def GalleryTab():
         loadbtn.click(fn=Loadimgchest, inputs=[], outputs=[privacyset, nsfwset, apibox])
 
     with gr.TabItem('Gallery', elem_id='sdhub-gallery-tab'):
-        with FormColumn(variant='compact', elem_id='SDHub-Gallery-Info-Column'):
-            image = gr.Image(elem_id='SDHub-Gallery-Info-Image', type='pil', source='upload', show_label=False)
-            image.change(fn=None, _js='() => { SDHubGalleryParser(); }')
+        with FormRow(equal_height=False, elem_id='SDHub-Gallery-Info-Column'):
+            with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Info-Image-Column'):
+                image = gr.Image(elem_id='SDHub-Gallery-Info-Image', type='pil', source='upload', show_label=False)
+                image.change(fn=None, _js='() => { SDHubGalleryParser(); }')
 
-            with FormColumn(variant='compact', elem_id='SDHub-Gallery-Info-Output-Panel'):
                 with FormRow(variant='compact', elem_id='SDHub-Gallery-Info-SendButton'):
                     buttons = tempe.create_buttons(['txt2img', 'img2img', 'inpaint', 'extras'])
 
+            with FormColumn(variant='compact', scale=7, elem_id='SDHub-Gallery-Info-Output-Panel'):
                 geninfo = gr.Textbox(elem_id='SDHub-Gallery-Info-GenInfo', visible=False)
                 gr.HTML(elem_id='SDHub-Gallery-Info-HTML')
 

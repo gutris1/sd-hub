@@ -146,9 +146,11 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
             const links = await SDImageParserFetchModelOutput(paramsRAW);
             modelBox.classList.add(display);
             modelBox.innerHTML = links;
+            setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
             setTimeout(() => modelBox.classList.remove(display), 2000);
           } catch (error) {
             modelBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>';
+            setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
           }
         }, 500);
 
