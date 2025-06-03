@@ -244,7 +244,7 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-06-01  v9.1.1
+### 2025-06-01  v10
 - Fixed Gallery, faster loading, re-style etc.
 - Added paging to the Gallery, limiting to 100 images per page by default.
 - Use the arrow buttons at the bottom to navigate between pages, or use the left/right arrow keys on your keyboard.
