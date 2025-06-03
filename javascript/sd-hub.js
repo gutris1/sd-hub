@@ -18,7 +18,6 @@ let SDHubLangIndex = {
 };
 
 let SDHubTranslations = {};
-let SDHubGalleryInitialrun;
 
 onUiLoaded(() => {
   SDHubTabLoaded();
@@ -50,11 +49,14 @@ function SDHubTabChange() {
   let TextEditorTab = SelectedTab?.classList.contains('sdhub-tab-button-texteditor');
   let GalleryTab = SelectedTab?.classList.contains('sdhub-tab-button-gallery');
   let footer = document.getElementById('footer');
+  let repo = document.getElementById('sdhub-repo');
 
   if (TextEditorTab || GalleryTab) {
     TagList && (TagList.style.display = 'none');
-    if (GalleryTab) window.SDHubGalleryArrowScrolling();
-    if (footer) footer.style.display = GalleryTab ? 'none' : '';
+    if (GalleryTab) {
+      window.SDHubGalleryArrowScrolling();
+      if (repo || footer) repo.style.display = footer.style.display = 'none';
+    }
     if (!document.getElementById(Id)) {
       const Scrollbar = document.createElement('style');
       Scrollbar.id = Id;
@@ -64,14 +66,14 @@ function SDHubTabChange() {
     Object.assign(document.documentElement.style, { scrollbarWidth: 'none' });
   } else {
     TagList && (TagList.style.display = '');
-    !GalleryTab && footer && (footer.style.display = '');
+    if (!GalleryTab) if (repo || footer) repo.style.display = footer.style.display = '';
     document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
     document.body.classList.remove('no-scroll');
   }
 
   if (MainTab?.textContent.trim() !== 'HUB') {
-    footer && (footer.style.display = '');
+    if (footer) footer.style.display = '';
     document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
     document.body.classList.remove('no-scroll');
@@ -332,10 +334,10 @@ function SDHubUITranslation() {
     { element: '#sdhub-texteditor-save-button', key: 'save' },
     { element: '#sdhub-texteditor-inputs > label > input', key: 'file_path', spellcheck: false },
     { element: '#sdhub-shell-inputs > label > textarea', key: 'shell_cmd', spellcheck: false },
-    { element: '#SDHubimgInfoSendButton > #txt2img_tab', key: 'send_txt2img' },
-    { element: '#SDHubimgInfoSendButton > #img2img_tab', key: 'send_img2img' },
-    { element: '#SDHubimgInfoSendButton > #inpaint_tab', key: 'send_inpaint' },
-    { element: '#SDHubimgInfoSendButton > #extras_tab', key: 'send_extras' },
+    { element: '#SDHub-Gallery-Info-SendButton > #txt2img_tab', key: 'send_txt2img' },
+    { element: '#SDHub-Gallery-Info-SendButton > #img2img_tab', key: 'send_img2img' },
+    { element: '#SDHub-Gallery-Info-SendButton > #inpaint_tab', key: 'send_inpaint' },
+    { element: '#SDHub-Gallery-Info-SendButton > #extras_tab', key: 'send_extras' },
     { element: '#SDHub-Gallery-imgchest-API > label > input', spellcheck: false }
   ];
 
@@ -376,7 +378,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     const path = getRunningScript()?.match(/file=[^\/]+\/[^\/]+\//)?.[0];
     if (path) window.SDHubFilePath = path;
 
-    const res = await fetch(`${path}sd-hub-translations.xlsx`);
+    const res = await fetch(`${path}sd-hub-translations.xlsx?ts=${Date.now()}`);
     if (res.ok) {
       const book = XLSX.read(await res.arrayBuffer(), { type: 'array' });
       const data = XLSX.utils.sheet_to_json(book.Sheets[book.SheetNames[0]], { header: 1 });

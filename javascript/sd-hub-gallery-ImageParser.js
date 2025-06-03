@@ -21,11 +21,15 @@ async function SDHubGalleryParser() {
   HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
 
   document.querySelectorAll('.sdhub-gallery-info-output-section').forEach(s => {
+    const bg = 'var(--input-background-fill)';
     const t = s.querySelector('.sdhub-gallery-info-output-title');
     const w = s.querySelector('.sdhub-gallery-info-output-wrapper');
     if (!t || !w) return;
-    w.onmouseenter = () => [t, w].forEach(x => x.style.background = 'var(--input-background-fill)');
-    w.onmouseleave = () => [t, w].forEach(x => x.style.background = '');
+    const c = t.classList.contains('sdhub-gallery-info-copybutton');
+    w.onmouseenter = () => w.style.background = t.style.background = bg;
+    w.onmouseleave = () => w.style.background = t.style.background = '';
+    t.onmouseenter = () => !c ? (t.style.background = w.style.background = bg) : (w.style.background = bg);
+    t.onmouseleave = () => !c ? (t.style.background = w.style.background = '') : (w.style.background = '');
   });
 }
 
@@ -146,12 +150,11 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
             const links = await SDImageParserFetchModelOutput(paramsRAW);
             modelBox.classList.add(display);
             modelBox.innerHTML = links;
-            setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
             setTimeout(() => modelBox.classList.remove(display), 2000);
           } catch (error) {
             modelBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>';
-            setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
           }
+          setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
         }, 500);
 
         if (hashesEX && hashesEX[1]) paramsText = paramsText.replace(hashesEX[0], '').trim();

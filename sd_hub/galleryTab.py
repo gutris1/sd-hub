@@ -185,11 +185,13 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             return json.loads(setting.read_text(encoding='utf-8'))
         return {
             'images-per-page': 100,
-            'thumbnail-shape': 'Aspect Ratio',
-            'thumbnail-position': 'Center',
-            'thumbnail-layout': 'Masonry',
+            'thumbnail-shape': 'aspect_ratio',
+            'thumbnail-position': 'center',
+            'thumbnail-layout': 'masonry',
             'thumbnail-size': 240,
-            'image-info-layout': 'Fullscreen'
+            'show-filename': False,
+            'show-buttons': False,
+            'image-info-layout': 'fullscreen'
         }
 
     @app.post(BASE + '/savesetting')
