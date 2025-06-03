@@ -32,7 +32,6 @@ def _SDHubReq():
                 files.write_bytes(urllib.request.urlopen(url).read())
 
     req = {
-        (base / 'sd-hub-translations.xlsx'): 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
         (base / 'javascript/XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
         (base / 'javascript/XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
     }
