@@ -10,7 +10,7 @@ function SDHubGalleryImageViewer(mode) {
   LightBox.style.display = 'flex';
   LightBox.focus();
 
-  document.body.classList.add('no-scroll');
+  document.body.classList.add(SDHubBnS);
   SDHubGalleryImageViewerDisplayImage();
 }
 
@@ -95,7 +95,7 @@ function SDHubGalleryImageViewerDisplayImage() {
         LightBox.style.display = 'none';
         Wrapper.style.transform = Wrapper.style.opacity = '';
         document.getElementById('SDHub-Gallery-Image-Viewer-img')?.remove();
-        document.body.classList.remove('no-scroll');
+        document.body.classList.remove(SDHubBnS);
       }, 200);
     }
   };

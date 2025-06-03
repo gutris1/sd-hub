@@ -32,13 +32,8 @@
   background-size: 100%;
 }
 
-body.no-scroll {
+body.sdhub-body-no-scrolling {
   overflow: hidden;
-}
-
-.loading-blurry {
-  transition: 0.5s ease;
-  backdrop-filter: blur(5px);
 }
 
 #sdhub-gallery-tab {
@@ -1509,6 +1504,7 @@ body.no-scroll {
   z-index: 999;
   background: rgb(0 0 0 / 70%);
   transition: 0.3s ease;
+  outline: none;
 }
 
 #SDHub-Gallery-Setting-Box {

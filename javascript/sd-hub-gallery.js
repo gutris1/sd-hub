@@ -675,7 +675,7 @@ async function SDHubGalleryImageInfo(imgEL) {
     });
 
     await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
-    document.body.classList.add('no-scroll');
+    document.body.classList.add(SDHubBnS);
 
     const display = () => setTimeout(() => {
       infoColumn.style.opacity = '1';
@@ -702,7 +702,7 @@ async function SDHubGalleryDeletion() {
 
   DelCon.style.display = 'flex';
   Text.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
-  document.body.classList.add('no-scroll');
+  document.body.classList.add(SDHubBnS);
 
   window.SDHubCenterElement('DelBox');
   window.SDHubCenterElement('Spinner');
@@ -730,7 +730,7 @@ async function SDHubGalleryDeletion() {
       SDHubGalleryTabImageCounters();
       setTimeout(() => {
         DelCon.style.opacity = Spinner.style.display = '';
-        document.body.classList.remove('no-scroll');
+        document.body.classList.remove(SDHubBnS);
       }, 1000);
       setTimeout(() => {
         DelCon.style.display = DelBox.style.opacity = DelBox.style.transform = '';
@@ -740,7 +740,7 @@ async function SDHubGalleryDeletion() {
   };
 
   No.onclick = () => {
-    document.body.classList.remove('no-scroll');
+    document.body.classList.remove(SDHubBnS);
     DelCon.style.opacity = '';
     DelBox.style.transform = 'scale(1.5)';
     setTimeout(() => (DelCon.style.display = DelBox.style.transform = '', No.onclick = null), 200);
@@ -817,6 +817,7 @@ function SDHubGalleryDOMLoaded() {
 
   const Setting = document.createElement('div');
   Setting.id = 'SDHub-Gallery-Setting';
+  Setting.setAttribute('tabindex', '0');
 
   const SettingButton = document.createElement('div');
   SettingButton.id = 'SDHub-Gallery-Setting-Button';

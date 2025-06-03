@@ -1,3 +1,5 @@
+let SDHubBnS = 'sdhub-body-no-scrolling';
+
 let SDHubTabButtons = {
   'Downloader': 'sdhub-tab-button-downloader',
   'Uploader': 'sdhub-tab-button-uploader',
@@ -69,14 +71,14 @@ function SDHubTabChange() {
     if (!GalleryTab) if (repo || footer) repo.style.display = footer.style.display = '';
     document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
+    document.body.classList.remove(SDHubBnS);
   }
 
   if (MainTab?.textContent.trim() !== 'HUB') {
     if (footer) footer.style.display = '';
     document.getElementById(Id)?.remove();
     Object.assign(document.documentElement.style, { scrollbarWidth: '' });
-    document.body.classList.remove('no-scroll');
+    document.body.classList.remove(SDHubBnS);
     if (infoColumn?.style.display === 'flex') window.SDHubGalleryInfoClearImage();
   }
 }

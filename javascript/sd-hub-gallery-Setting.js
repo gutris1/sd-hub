@@ -237,29 +237,27 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   Setting.append(SettingBox);
 
   function killSetting() {
-    document.body.classList.remove('no-scroll');
+    document.body.classList.remove(SDHubBnS);
     SettingBox.style.transform = 'scale(1.5)';
     Setting.style.pointerEvents = 'none';
     Setting.style.opacity = SettingBox.style.opacity = SettingButton.style.transform = '';
     setTimeout(() => (Setting.style.display = SettingBox.style.transform = Setting.style.pointerEvents = ''), 300);
   }
 
-  document.addEventListener('contextmenu', e => Setting && !Setting.contains(e.target) && killSetting());
+  document.addEventListener('contextmenu', (e) => Setting && !Setting.contains(e.target) && killSetting());
 
-  document.addEventListener('click', (e) => {
-    if (SettingButton && Setting && SettingBox) {
-      if (SettingButton.contains(e.target) && window.getComputedStyle(Setting).display === 'none') {
-        SDHubGalleryApplySettings();
-        SettingButton.style.transform = 'rotate(-360deg)';
-        document.body.classList.add('no-scroll');
-        Setting.style.display = 'flex';
-        setTimeout(() => {
-          Setting.style.opacity = SettingBox.style.opacity = '1';
-          SettingBox.style.transform = 'scale(1)';
-        }, 50);
-      }
-    }
-  });
+  SettingButton.onclick = () => {
+    document.body.classList.add(SDHubBnS);
+    SettingButton.style.transform = 'rotate(-360deg)';
+    SDHubGalleryApplySettings();
+
+    Setting.style.display = 'flex';
+    Setting.focus();
+
+    setTimeout(() => (Setting.style.opacity = SettingBox.style.opacity = '1', SettingBox.style.transform = 'scale(1)'), 50);
+  };
+
+  Setting.onkeydown = (e) => { if (e.key === 'Escape') killSetting(); };
 
   const applySettings = () => {
     applyButton.onclick = null;

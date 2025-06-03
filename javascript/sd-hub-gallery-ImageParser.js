@@ -235,7 +235,7 @@ function SDHubGalleryInfoClearButton() {
 
     const clearImage = () => {
       infoColumn.style.opacity = '';
-      document.body.classList.remove('no-scroll');
+      document.body.classList.remove(SDHubBnS);
       setTimeout(() => (ClearButton.click(), (infoColumn.style.display = ''), window.SDHubGalleryInfoRawOutput = ''), 200);
     };
 
