@@ -9,8 +9,7 @@ And a simple Gallery for displaying your outputs with built-in image info and an
 - Downloading/Uploading/Archiving/Extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 
-- The UI uses JavaScript to read the [Excel](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx) file and translate any readable text based on the user's browser language.<br>
-Supported languages include:
+Supported languages:
   - English
   - Japanese (日本語)
   - Simplified Chinese (简体中文)
@@ -19,7 +18,7 @@ Supported languages include:
   - Korean (한국어)
   - Russian (Русский)
 
-- Support both <code>Windows</code> and <code>Unix</code>.
+Support both <code>Windows</code> and <code>Unix</code>.
 
 # Usage
 <details><summary> <h2>Downloader</h2> </summary><br>
@@ -247,8 +246,16 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 # Changelog
 ### 2025-06-01  v9.1.1
 - Fixed Gallery, faster loading, re-style etc.
-- Added paging to the Gallery, limiting to 100 images per page.
+- Added paging to the Gallery, limiting to 100 images per page by default.
 - Use the arrow buttons at the bottom to navigate between pages, or use the left/right arrow keys on your keyboard.
+- Added settings to change some layouts in the Gallery. The settings are saved and loaded automatically.
+- Press the [X] button in the top-right corner to exit the settings, or press ESC on your keyboard.
+
+
+<p align="left">
+  <img src="https://github.com/user-attachments/assets/57031a18-0d50-4447-b601-88b4b96c55f7", width=auto>
+  <img src="https://github.com/user-attachments/assets/ad5de5cb-1707-4ed8-bfb6-20c3fa5c0204", width=auto>
+</p>
 
 <details><summary>2025-04-01  v9.0.0</summary><br>
 
