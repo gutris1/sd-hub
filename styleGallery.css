@@ -1159,34 +1159,6 @@ body.sdhub-body-no-scrolling {
   overflow: hidden;
 }
 
-#SDHub-Gallery-Image-Info-Arrow.sdhub-gallery-arrowscroll-display {
-  pointer-events: auto;
-  animation: displayArrowScroll 0.4s ease forwards;
-}
-
-@keyframes displayArrowScroll {
-  0% {
-    transform: scale(0);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-#SDHub-Gallery-Image-Info-Arrow.sdhub-gallery-arrowscroll-close {
-  pointer-events: none;
-  animation: closeArrowScroll 0.4s ease forwards;
-}
-
-@keyframes closeArrowScroll {
-  0% {
-    transform: scale(1);
-  }
-  100% {
-    transform: scale(0);
-  }
-}
-
 /* ############################################################################################################ */
 
 #SDHub-Gallery-Delete-Container {
