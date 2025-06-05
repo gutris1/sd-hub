@@ -1840,33 +1840,41 @@ body.sdhub-body-no-scrolling {
   align-items: center;
   justify-content: center;
   height: 26px;
-  width: 60px;
+  width: 55px;
   margin: 0;
   border-radius: 25px;
-  border: 1px solid hsl(0deg 0% 45.7%);
-  box-shadow: inset 0 1px 4px 1px hsl(0deg 0% 0% / 91%), inset 0 2px 3px 1px hsl(0deg 0% 40.45% / 70%), 0 0 3px 0 hsl(0deg 0% 100% / 65%), 0 0 3px 0 hsl(0deg 0% 0%);
+  border: 0;
+  box-shadow: inset 0 1px 4px hsl(0deg 0% 0% / 84%),
+              inset 0 0 10px hsl(0deg 0% 35.82% / 46%),
+              0 0 0 1px hsla(0, 0%, 0%, .1),
+              0 0 5px 1px #000;
   cursor: pointer;
   appearance: none;
-  background-image: linear-gradient(hsl(0deg 0% 0% / 17%), hsla(0, 0%, 100%, 0.1)), linear-gradient(to right, hsl(113.85deg 100% 50%) 50%, hsl(0deg 100% 50%) 50%);
+  background-image: linear-gradient(hsla(0, 0%, 0%, .1), hsla(0, 0%, 100%, .1)),
+                    linear-gradient(to right, #00ff13 50%, #ff0000 50%);
   background-size: 100% 100%, 200% 100%;
   background-position: 0% 0, right center;
-  transition: 0.25s ease;
+  transition: .25s ease;
 }
 
 #SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input:after {
   content: '';
   display: flex;
   align-items: center;
-  height: 30px;
-  width: 30px;
+  height: 28px;
+  width: 28px;
   position: absolute;
   z-index: 1;
-  left: -2px;
+  left: 0;
   border-radius: 100%;
-  box-shadow: inset 0 1px 1px 1px hsl(0deg 0% 100%), inset 0 -1px 1px 1px hsl(0deg 0% 0% / 41%), 0 1px 3px 1px hsl(0deg 0% 0%), 0 0 2px hsl(0deg 0% 0%);
+  box-shadow: inset 0 1px 1px 1px hsla(0, 0%, 100%, 1),
+              inset 0 -1px 1px 1px hsla(0, 0%, 0%, .25),
+              0 1px 3px 1px hsla(0, 0%, 0%, .5),
+              0 0 2px hsl(0deg 0% 0% / 39%);
   cursor: pointer;
-  background: linear-gradient(180deg, rgb(137 137 137), #cccccc, #ffffff);
-  transition: 0.25s ease;
+  background-color: #eee;
+  background-image: linear-gradient(hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 0%, 0.1));
+  transition: .25s ease;
 }
 
 #SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input:checked {
@@ -1874,5 +1882,5 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input:checked::after {
-  left: 32px;
+  left: 27px;
 }
