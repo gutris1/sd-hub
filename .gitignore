@@ -3,11 +3,7 @@ __pycache__/
 *.gif
 *.jpg
 aria2c.exe
-texteditor-lastedit.txt
-.uploader-info.json
-.sd-hub-token.json
-.imgchest.json
-gallery-setting.json
+.sd-hub-config.json
 
 sd_hub/hf-logo.svg
 sd_hub/__pycache__/

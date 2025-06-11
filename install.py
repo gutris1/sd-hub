@@ -17,15 +17,15 @@ RST = '\033[0m'
 base = Path(__file__).parent
 
 def _SDHubReq():
-    parser = Path(extensions_dir) / 'sd-image-parser'
+    scr = Path(extensions_dir) / 'sd-image-scripts'
 
-    if not parser.exists():
+    if not scr.exists():
         exif = {
-            (parser / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-            (parser / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
+            (scr / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
+            (scr / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
         }
 
-        subprocess.run(['git', 'clone', '-q', 'https://github.com/gutris1/sd-image-parser', str(parser)], check=True)
+        subprocess.run(['git', 'clone', '-q', 'https://github.com/gutris1/sd-image-scripts', str(scr)], check=True)
 
         for files, url in exif.items():
             if not files.exists():

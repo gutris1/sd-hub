@@ -26,16 +26,22 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   }
 
   function createSelections({ id, labelText, options, selected, onChange }) {
-    const parent = createSettings('div', { id, class: `${SDHubClass}-box` });
+    const i = `${SDHubID}-${id}`;
+
+    const parent = createSettings('div', {
+      id: i,
+      class: `${SDHubClass}-box`,
+      title: SDHubGetTranslation(`${labelText}_title`),
+    });
 
     const label = createSettings('label', {
-      id: `${id}-Label`,
+      id: `${i}-Label`,
       class: `${SDHubClass}-label`,
       text: SDHubGetTranslation(labelText)
     });
 
     const wrapper = createSettings('div', {
-      id: `${id}-Wrapper`,
+      id: `${i}-Wrapper`,
       class: `${SDHubClass}-wrapper`
     });
 
@@ -44,7 +50,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     });
 
     const input = createSettings('input', {
-      id: `${id}-Input`,
+      id: `${i}-Input`,
       class: `${SDHubClass}-input`,
       value: selected,
       dataset: { selected: selected }
@@ -84,6 +90,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     return createSettings('div', {
       id: i,
       class: `${SDHubClass}-box`,
+      title: SDHubGetTranslation(`${labelText}_title`),
       children: [
         createSettings('label', {
           id: `${i}-Label`,
@@ -131,6 +138,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     return createSettings('div', {
       id: i,
       class: `${SDHubClass}-box`,
+      title: SDHubGetTranslation(`${labelText}_title`),
       children: [
         createSettings('label', {
           id: `${i}-Label`,
@@ -158,13 +166,33 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     });
   }
 
-  const SettingWrapper = createSettings('div', { id: `${SDHubID}-Wrapper` });
-  const ExitButton = createSettings('div', { id: `${SDHubID}-Exit-Button`, html: SDHubGalleryCloseButtonSVG, onclick: killSetting });
-  const SettingTitle = createSettings('div', {
-    id: `${SDHubID}-Title`,
-    html: `<span class="${SDHubClass}-title">${SDHubGetTranslation('setting_title')}</span>`
+  const SettingBox = createSettings('div', {
+    id: `${SDHubID}-Box`,
+    oncontextmenu: (e) => e.preventDefault()
   });
-  const SettingBox = createSettings('div', { id: `${SDHubID}-Box`, oncontextmenu: (e) => e.preventDefault() });
+
+  const SettingFrame = createSettings('div', {
+    id: `${SDHubID}-Frame`
+  });
+
+  const ExitButton = createSettings('div', {
+    id: `${SDHubID}-Exit-Button`,
+    html: SDHubGalleryCloseButtonSVG,
+    onclick: killSetting
+  });
+
+  const SettingWrapper = createSettings('div', {
+    id: `${SDHubID}-Wrapper`
+  });
+
+  const SettingTitle = createSettings('span', {
+    id: `${SDHubID}-Title`,
+    html: SDHubGetTranslation('setting_title')
+  });
+
+  const SettingSetting = createSettings('div', {
+    id: `${SDHubID}-Setting`
+  });
 
   const pageLimiter = createInputNumber({
     id: 'Page-Limiter',
@@ -175,7 +203,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   });
 
   const thumbnailShape = createSelections({
-    id: `${SDHubID}-Thumbnail-Shape`,
+    id: 'Thumbnail-Shape',
     labelText: 'thumbnail_shape',
     options: ['aspect_ratio', 'square'],
     selected: 'aspect_ratio',
@@ -183,14 +211,14 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   });
 
   const thumbnailPosition = createSelections({
-    id: `${SDHubID}-Thumbnail-Position`,
+    id: 'Thumbnail-Position',
     labelText: 'thumbnail_position',
     options: ['center', 'top'],
     selected: 'center'
   });
 
   const thumbnailLayout = createSelections({
-    id: `${SDHubID}-Thumbnail-Layout`,
+    id: 'Thumbnail-Layout',
     labelText: 'thumbnail_layout',
     options: ['masonry', 'uniform'],
     selected: 'masonry'
@@ -217,10 +245,10 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   });
 
   const imageInfoLayout = createSelections({
-    id: `${SDHubID}-Image-Info`,
+    id: 'Image-Info',
     labelText: 'image_info_layout',
-    options: ['fullscreen', 'side_by_side'],
-    selected: 'fullscreen'
+    options: ['full_width', 'side_by_side'],
+    selected: 'full_width'
   });
 
   const applyButton = createSettings('span', {
@@ -228,12 +256,13 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     text: SDHubGetTranslation('apply')
   });
 
-  SettingWrapper.append(
-    pageLimiter, thumbnailShape, thumbnailPosition, thumbnailLayout, thumbnailSize,
-    showFilename, showButtons, imageInfoLayout, applyButton
+  SettingSetting.append(
+    pageLimiter, thumbnailShape, thumbnailPosition, thumbnailLayout,
+    thumbnailSize, showFilename, showButtons, imageInfoLayout, applyButton
   );
 
-  SettingBox.append(SettingTitle, ExitButton, SettingWrapper);
+  SettingWrapper.append(SettingTitle, SettingSetting);
+  SettingBox.append(SettingFrame, ExitButton, SettingWrapper);
   Setting.append(SettingBox);
 
   function killSetting() {
@@ -302,8 +331,10 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     }).catch(console.error);
 
     const applied = `${SDHubClass}-applied`;
-    SettingBox.classList.add(applied);
-    setTimeout(() => (SettingBox.classList.remove(applied), applyButton.onclick = applySettings), 1000);
+    [SettingFrame, SettingBox].forEach(el => el.classList.add(applied));
+
+    setTimeout(() => [SettingFrame, SettingBox].forEach(el => el.classList.remove(applied)), 600);
+    setTimeout(() => applyButton.onclick = applySettings, 1000);
   };
 
   applyButton.onclick = applySettings;
@@ -391,18 +422,14 @@ function SDHubGalleryChangeSettings(
 
   if (thumbnailShape === 'square') {
     add(square, `
-      .sdhub-gallery-image-box {
-        max-width: var(--sdhub-gallery-img-size) !important;
-        max-height: var(--sdhub-gallery-img-size) !important;
-      }
-      #sdhub-gallery-tab .sdhub-gallery-image {
+      #SDHub-Gallery-Tab .sdhub-gallery-image {
         height: var(--sdhub-gallery-img-size) !important;
         width: var(--sdhub-gallery-img-size) !important;
         object-fit: cover !important;
       }
     `);
     add(thumbPos, `
-      #sdhub-gallery-tab .sdhub-gallery-image {
+      #SDHub-Gallery-Tab .sdhub-gallery-image {
         object-position: ${thumbnailPosition.toLowerCase()} !important;
       }
     `);
@@ -418,6 +445,7 @@ function SDHubGalleryChangeSettings(
           }
         `)
       : remove(uniform);
+    document.querySelectorAll(`style[id^="SDHub-Gallery-Thumbnail-Position-"]`).forEach(el => el.remove());
   }
 
   if (thumbnailSize) {
@@ -531,26 +559,6 @@ function SDHubGalleryChangeSettings(
           scrollbar-width: none;
         }
 
-        @media (max-width: 600px) {
-          #SDHub-Gallery-Info-Column {
-            overflow-y: auto !important;
-          }
-
-          #SDHub-Gallery-Info-Image-Column {
-            padding: 10px !important;
-            height: 70% !important;
-          }
-
-          #SDHub-Gallery-Info-SendButton {
-            padding: 15px !important;
-          }
-
-          #SDHub-Gallery-Info-Output-Panel {
-            max-height: max-content !important;
-            overflow: visible !important;
-          }
-        }
-
         #SDHub-Gallery-Info-img-area {
           display: none !important;
         }
@@ -571,12 +579,38 @@ function SDHubGalleryChangeSettings(
           background: var(--input-background-fill) !important;
           filter: unset !important;
         }
+
+        #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-failed {
+          position: relative !important;
+          margin-top: 5px !important;
+          bottom: unset !important;
+        }
+
+        @media (max-width: 600px) {
+          #SDHub-Gallery-Info-Column {
+            overflow-y: auto !important;
+          }
+
+          #SDHub-Gallery-Info-Image-Column {
+            padding: 10px !important;
+            height: 70% !important;
+          }
+
+          #SDHub-Gallery-Info-SendButton {
+            padding: 15px !important;
+          }
+
+          #SDHub-Gallery-Info-Output-Panel {
+            max-height: max-content !important;
+            overflow: visible !important;
+          }
+        }
       `)
     : remove('SDHub-Gallery-Image-Info-SideBySide');
 
   showFilename
     ? add('SDHub-Gallery-Show-Filename-ON', `
-        #sdhub-gallery-tab .sdhub-gallery-image-name {
+        #SDHub-Gallery-Tab .sdhub-gallery-image-name {
           background: rgba(0, 0, 0, 0.6) !important;
           visibility: visible !important;
           box-shadow: unset !important;

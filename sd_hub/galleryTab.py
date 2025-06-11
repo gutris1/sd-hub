@@ -17,6 +17,7 @@ import json
 import sys
 import time
 
+from sd_hub.infotext import config, LoadConfig
 from sd_hub.paths import SDHubPaths
 
 insecureENV = SDHubPaths.getENV()
@@ -25,8 +26,6 @@ BASE = '/sd-hub-gallery'
 CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 today = datetime.today().strftime('%Y-%m-%d')
-chest = Path(basedir()) / '.imgchest.json'
-setting = Path(basedir()) / 'gallery-setting.json'
 
 imgList = []
 imgList_List = threading.Event()
@@ -43,15 +42,16 @@ outdir_extras = [Path(opts.outdir_samples)] if opts.outdir_samples else []
 outpath = (outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d])
 
 def Saveimgchest(privacy, nsfw, api):
-    chest.write_text(json.dumps({'privacy': privacy, 'nsfw': nsfw, 'api': api}, indent=4))
+    data = LoadConfig()
+    data['imgChest'] = {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
+    config.write_text(json.dumps(data, indent=4), encoding='utf-8')
     yield gr.Radio.update(value=privacy), gr.Radio.update(value=nsfw), gr.TextArea.update(value=api)
 
 def Loadimgchest():
     default = ('Hidden', 'True', '')
-    if chest.exists():
-        d = json.loads(chest.read_text())
-        return tuple(d.get(k, v) for k, v in zip(['privacy', 'nsfw', 'api'], default))
-    return default
+    d = LoadConfig()
+    c = d.get('imgChest', {})
+    return tuple(c.get(k, v) for k, v in zip(['privacy', 'nsfw', 'api-key'], default))
 
 def getPath(path):
     p = path.resolve().as_posix() if sys.platform == 'win32' else str(path.resolve())
@@ -181,30 +181,32 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
     @app.get(BASE + '/loadsetting')
     async def loadSetting():
-        if setting.exists():
-            return json.loads(setting.read_text(encoding='utf-8'))
+        d = LoadConfig()
+        v = d.get('Gallery', {})
         return {
-            'images-per-page': 100,
-            'thumbnail-shape': 'aspect_ratio',
-            'thumbnail-position': 'center',
-            'thumbnail-layout': 'masonry',
-            'thumbnail-size': 240,
-            'show-filename': False,
-            'show-buttons': False,
-            'image-info-layout': 'fullscreen'
+            'images-per-page': v.get('images-per-page', 100),
+            'thumbnail-shape': v.get('thumbnail-shape', 'aspect_ratio'),
+            'thumbnail-position': v.get('thumbnail-position', 'center'),
+            'thumbnail-layout': v.get('thumbnail-layout', 'masonry'),
+            'thumbnail-size': v.get('thumbnail-size', 240),
+            'show-filename': v.get('show-filename', False),
+            'show-buttons': v.get('show-buttons', False),
+            'image-info-layout': v.get('image-info-layout', 'full_width'),
         }
 
     @app.post(BASE + '/savesetting')
     async def saveSetting(req: Request):
         data = await req.json()
-        setting.write_text(json.dumps(data, indent=4), encoding='utf-8')
+        d = LoadConfig()
+        d['Gallery'] = data
+        config.write_text(json.dumps(d, indent=4), encoding='utf-8')
         return {'status': 'saved'}
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
         async def imgChest():
             privacy, nsfw, api = Loadimgchest()
-            return {'privacy': privacy, 'nsfw': nsfw, 'api': api}
+            return {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
 
 def GalleryTab():
     if insecureENV:
@@ -266,7 +268,7 @@ def GalleryTab():
         savebtn.click(fn=Saveimgchest, inputs=[privacyset, nsfwset, apibox], outputs=[privacyset, nsfwset, apibox])
         loadbtn.click(fn=Loadimgchest, inputs=[], outputs=[privacyset, nsfwset, apibox])
 
-    with gr.TabItem('Gallery', elem_id='sdhub-gallery-tab'):
+    with gr.TabItem('Gallery', elem_id='SDHub-Gallery-Tab'):
         with FormRow(equal_height=False, elem_id='SDHub-Gallery-Info-Column'):
             with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Info-Image-Column'):
                 image = gr.Image(elem_id='SDHub-Gallery-Info-Image', type='pil', source='upload', show_label=False)

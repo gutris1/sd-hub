@@ -9,15 +9,12 @@ async function SDHubGalleryParser() {
     return;
   }
 
-  SDHubGalleryInfoClearButton();
   img.onclick = () => SDHubGalleryImageViewer('s');
   img.onload = () => img.style.opacity = '1';
 
-  const output = await SDImageParser(img);
-  RawOutput.value = output;
+  const output = await SharedImageParser(img);
+  window.SDHubGalleryInfoRawOutput = RawOutput.value = output;
   updateInput(RawOutput);
-  window.SDHubGalleryInfoRawOutput = output;
-  HTMLPanel.classList.add('prose');
   HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
 
   document.querySelectorAll('.sdhub-gallery-info-output-section').forEach(s => {
@@ -147,7 +144,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
         setTimeout(async () => {
           const modelBox = document.getElementById(Id);
           try {
-            const links = await SDImageParserFetchModelOutput(paramsRAW);
+            const links = await SharedModelsFetch(paramsRAW);
             modelBox.classList.add(display);
             modelBox.innerHTML = links;
             setTimeout(() => modelBox.classList.remove(display), 2000);
@@ -184,13 +181,6 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   return `${outputHTML}`;
 }
 
-function SDHubGallerySendButton(Id) {
-  let OutputRaw = window.SDHubGalleryInfoRawOutput;
-  let ADmodel = OutputRaw?.includes('ADetailer model');
-  let cb = document.getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
-  if (ADmodel) cb?.checked === false && cb.click();
-}
-
 function SDHubGalleryCopyButtonEvent(e) {
   let OutputRaw = window.SDHubGalleryInfoRawOutput;
 
@@ -218,28 +208,9 @@ function SDHubGalleryCopyButtonEvent(e) {
   }
 }
 
-function SDHubGalleryInfoClearButton() {
-  let infoColumn = document.getElementById('SDHub-Gallery-Info-Column');
-  let Cloned = document.getElementById('SDHub-Gallery-Info-Clear-Button');
-  let ClearButton = document.querySelector('#SDHub-Gallery-Info-Image > div > div > div > button:nth-child(2)') || 
-                    document.querySelector('.gradio-container-4-40-0 #SDHub-Gallery-Info-Image > div > div > button');
-
-  if (ClearButton && !Cloned) {
-    let parent = ClearButton.parentElement;
-    Object.assign(parent.style, { position: 'absolute', zIndex: 1, top: 0, right: 0, gap: 0 });
-    ClearButton.style.display = 'none';
-
-    let btn = ClearButton.cloneNode(true);
-    btn.id = 'SDHub-Gallery-Info-Clear-Button';
-    parent.prepend(btn);
-
-    const clearImage = () => {
-      infoColumn.style.opacity = '';
-      document.body.classList.remove(SDHubBnS);
-      setTimeout(() => (ClearButton.click(), (infoColumn.style.display = ''), window.SDHubGalleryInfoRawOutput = ''), 200);
-    };
-
-    btn.onclick = (e) => (e.stopPropagation(), clearImage());
-    window.SDHubGalleryInfoClearImage = clearImage;
-  }
+function SDHubGallerySendButton(Id) {
+  let OutputRaw = window.SDHubGalleryInfoRawOutput;
+  let ADmodel = OutputRaw?.includes('ADetailer model');
+  let cb = document.getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
+  if (ADmodel) cb?.checked === false && cb.click();
 }

@@ -1,11 +1,11 @@
 from modules.paths_internal import models_path, data_path, extensions_dir
 from modules.sd_models import model_path as ckpt_path
-from modules.shared import cmd_opts
+from modules.shared import cmd_opts, opts
 from pathlib import Path
 import os
 
 BLOCK = (
-    'Downloading/Uploading files from/to outside Models or Embeddings folders is blocked. '
+    'Downloading/Uploading/etc files from/to outside models/embeddings/outputs folders is blocked. '
     '\nAdd --enable-insecure-extension-access command line argument to proceed at your own risk.'
 )
 
@@ -50,25 +50,48 @@ class SDPathsSDHub:
 
     def SDHubCheckPaths(self, paths):
         paths = Path(paths).resolve()
+        outpath = []
 
-        if not any(dirs in paths.parents or paths == dirs for dirs in self.SDHubTagsList.values()):
+        try:
+            outdirs = [
+                'outdir_txt2img_samples', 'outdir_img2img_samples', 'outdir_extras_samples',
+                'outdir_txt2img_grids', 'outdir_img2img_grids',
+                'outdir_save', 'outdir_init_images',
+                'outdir_samples', 'outdir_grids'
+            ]
+
+            for attr in outdirs:
+                try:
+                    v = getattr(opts, attr, None)
+                    if isinstance(v, str) and v:
+                        outpath.append(Path(v).resolve())
+                except Exception:
+                    pass
+
+        except Exception as e:
+            print(f'Error outdir: {e}')
+            outpath = []
+
+        allowed = list(self.SDHubTagsList.values()) + outpath
+
+        if not any(d in paths.parents or paths == d for d in allowed):
             return False, f'{paths}\n\n{BLOCK}'
         return True, ''
 
     def SDHubTagsAndPaths(self):
-        return {tag.lower(): str(path) for tag, path in self.SDHubTagsList.items()}
+        return {t.lower(): str(p) for t, p in self.SDHubTagsList.items()}
 
     def getENV(self):
         if not INSECURE_ACCESS: return None
 
-        env_list = {
+        e = {
             'COLAB_JUPYTER_TOKEN': Path('/content'),
             'SAGEMAKER_INTERNAL_IMAGE_URI': Path('/home/studio-lab-user'),
             'KAGGLE_DATA_PROXY_TOKEN': Path('/kaggle/working'),
         }
 
-        for var, path in env_list.items():
-            if var in os.environ: return path.resolve()
+        for v, p in e.items():
+            if v in os.environ: return p.resolve()
         return None
 
 SDHubPaths = SDPathsSDHub(ROOT_PATH, MODELS_PATH)

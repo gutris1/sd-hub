@@ -1,14 +1,17 @@
+from modules.scripts import basedir
 from pathlib import Path
 import urllib.request
 import shutil
+import json
 import re
 
 from sd_hub.version import version
+print(f"\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m")
 
 blt = "<strong>•</strong>"
 
 dl_title = """
-<h3 id='sdhub-tab-title' class='sdhub-downloader-tab-title' style="
+<h3 class='sdhub-tab-title sdhub-downloader-tab-title' style="
     display: flex;
     align-items: center;
     justify-content: center;">
@@ -27,7 +30,7 @@ dl_title = """
 """
 
 dl_info = f"""
-<p id='sdhub-tab-info' class='sdhub-downloader-tab-info'>
+<p class='sdhub-tab-info sdhub-downloader-tab-info'>
   Enter your <strong>Huggingface Token</strong> with the role <strong>READ</strong> to download from your private repo. 
   Get one <a href="https://huggingface.co/settings/tokens" class="sdhub-link">Here</a><br>
   Enter your <strong>Civitai API Key</strong> if you encounter an Authorization failed error. Get your key 
@@ -61,7 +64,7 @@ def getUploaderSVG():
 uploaderSVG = getUploaderSVG()
 
 upl_title = f"""
-<h3 id='sdhub-tab-title' class='sdhub-uploader-tab-title' style="
+<h3 class='sdhub-tab-title sdhub-uploader-tab-title' style="
     display: flex; 
     flex-wrap: wrap; 
     align-items: center; 
@@ -73,7 +76,7 @@ upl_title = f"""
 """
 
 upl_info = """
-<p id='sdhub-tab-info' class='sdhub-uploader-tab-info'>
+<p class='sdhub-tab-info sdhub-uploader-tab-info'>
   <strong>Colab</strong>: /content/stable-diffusion-webui/model.safetensors<br>
   <strong>Kaggle</strong>: /kaggle/working/stable-diffusion-webui/model.safetensors<br>
   <strong>Sagemaker Studio Lab</strong>: /home/studio-lab-user/stable-diffusion-webui/model.safetensors<br>
@@ -86,7 +89,7 @@ upl_info = """
 """
 
 arc_info = """
-<p id='sdhub-tab-info' class='sdhub-archiver-tab-info'>
+<p class='sdhub-tab-info sdhub-archiver-tab-info'>
   <strong>Archive</strong> :<br>
   <a class="sdhub-nonlink">Name</a> Name for the compressed file (excluding the file extension)<br>
   <a class="sdhub-nonlink">Input Path</a> Path pointing a single file or folder containing multiple files<br>
@@ -103,11 +106,74 @@ arc_info = """
 """
 
 sdhub_repo = f"""
-<h4 id="sdhub-repo">
+<h4 id="SDHub-Repo">
   <a href="https://github.com/gutris1/sd-hub">
     SD-Hub • v{version}
   </a>
 </h4>
 """
 
-print(f"\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m")
+config = Path(basedir()) / '.sd-hub-config.json'
+
+def LoadConfig():
+    if config.exists():
+        try:
+            d = config.read_text(encoding='utf-8').strip()
+            return json.loads(d) if d else {}
+        except json.JSONDecodeError:
+            return {}
+    else:
+        return {}
+
+Keys = {
+    'write': ('huggingface-token-write', 'Huggingface Token (WRITE)'),
+    'read': ('huggingface-token-read', 'Huggingface Token (READ)'),
+    'civitai': ('civitai-api-key', 'Civitai API Key')
+}
+
+def LoadToken(Tab: str = 'all'):
+    i = {k[0]: (f'{k[1]} Loaded', f'{k[1]} Not Found') for k in Keys.values()}
+
+    try:
+        c = config.read_text(encoding='utf-8').strip()
+        d = json.loads(c) if c else {}
+        T = d.get('Token', {})
+    except FileNotFoundError:
+        return '', '', '', f'{config} Not Found.', f'{config} Not Found.'
+    except json.JSONDecodeError:
+        return '', '', '', f'{config} Invalid JSON.', f'{config} Invalid JSON.'
+
+    v = {k[0]: T.get(k[0], '') for k in Keys.values()}
+
+    if Tab == 'uploader':
+        r = [Keys['write'][0]]
+        v[Keys['read'][0]], v[Keys['civitai'][0]] = '', ''
+    elif Tab == 'downloader':
+        r = [Keys['read'][0], Keys['civitai'][0]]
+        v[Keys['write'][0]] = ''
+    else:
+        r = [k[0] for k in Keys.values()]
+
+    m = ', '.join(i[k][0] if v[k] else i[k][1] for k in r) or 'No Token Found.'
+    print(f'SD-Hub : {m}')
+
+    return v[Keys['write'][0]], v[Keys['read'][0]], v[Keys['civitai'][0]], m, config
+
+def SaveToken(token1=None, token2=None, token3=None):
+    v = LoadConfig()
+    T = v.get('Token', {})
+
+    s = []
+    i = {k[0]: k[1] for k in Keys.values()}
+
+    for k, t in zip([Keys['write'][0], Keys['read'][0], Keys['civitai'][0]], [token1, token2, token3]):
+        if t:
+            T[k] = t
+            s.append(i[k])
+
+    v['Token'] = T
+
+    m = ', '.join(s) if s else 'No Token Saved.'
+    config.write_text(json.dumps(v, indent=4), encoding='utf-8')
+
+    return f'{m}\nSaved To: {config}' if s else 'No Token Saved.'
