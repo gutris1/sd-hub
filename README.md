@@ -244,20 +244,20 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-06-01  v10
+### 2025-06-14 — v10
+- Tokens and any other auto-saved/loaded data are now stored in <code>.sd-hub-config.json</code>
 - Fixed Gallery, faster loading, re-style etc.
 - Added paging to the Gallery, limiting to 100 images per page by default.
 - Use the arrow buttons at the bottom to navigate between pages, or use the left/right arrow keys on your keyboard.
 - Added settings to change some layouts in the Gallery. The settings are saved and loaded automatically.
 - Press the [X] button in the top-right corner to exit the settings, or press ESC on your keyboard.
 
-
 <p align="left">
   <img src="https://github.com/user-attachments/assets/57031a18-0d50-4447-b601-88b4b96c55f7", width=auto>
-  <img src="https://github.com/user-attachments/assets/ad5de5cb-1707-4ed8-bfb6-20c3fa5c0204", width=auto>
+  <img src="https://github.com/user-attachments/assets/ae2f39da-98bc-4e95-9ebe-2871f06c0b2f", width=auto>
 </p>
 
-<details><summary>2025-04-01  v9.0.0</summary><br>
+<details><summary>2025-04-01 — v9.0.0</summary><br>
 
 - Fixed crashes on Firefox and other Gecko-based browsers.
 - Fixed the "Send to..." buttons in Gallery context menu or image info when running WebUI on mobile.
@@ -267,7 +267,7 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - Added SHIFT + scroll wheel to move images horizontally in the image viewer when the left/right edge exceeds the Lightbox.
 </details>
 
-<details><summary>2025-03-22  v8.8.8</summary><br>
+<details><summary>2025-03-22 — v8.8.8</summary><br>
 
 - Changed/Added function for Uploader Tab.
 ```python
@@ -290,18 +290,18 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 ```
 </details>
 
-<details><summary>2025-03-08  v8.0.0</summary><br>
+<details><summary>2025-03-08 — v8.0.0</summary><br>
   
 - UI translation based on browser language. Excel file for the translation [here](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx)
 </details>
 
-<details><summary>2025-02-17  v7.0.0</summary><br>
+<details><summary>2025-02-17 — v7.0.0</summary><br>
 
 - Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
 - Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
 </details>
 
-<details><summary>2024-12-30  v5.6.1</summary><br>
+<details><summary>2024-12-30 — v5.6.1</summary><br>
 
 - Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
 - Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
@@ -310,7 +310,7 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 </p>
 </details>
 
-<details><summary>2024-12-25  v5.5.5</summary><br>
+<details><summary>2024-12-25 — v5.5.5</summary><br>
 
 - Added security measures to restrict downloading, uploading, and compressing to the Models and Embeddings folders only when WebUI is run without <code>--enable-insecure-extension-access</code>.<br>
 - Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
@@ -319,28 +319,28 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - Relocated the token file to the extension folder and renamed it to <code>.sd-hub-token.json</code>.<br>
 </details>
 
-<details><summary>2024-09-30  v4.8.4</summary><br>
+<details><summary>2024-09-30 — v4.8.4</summary><br>
 
 - Gradio 4 Compatibility Update for Forge Webui.<br>
 </details>
 
-<details><summary>2024-07-21  v4.5.6</summary><br>
+<details><summary>2024-07-21 — v4.5.6</summary><br>
 
 - Added support for downloading from Civitai using webpage URLs directly.<br>
 ![image](https://github.com/user-attachments/assets/2cde28e1-e88b-45cf-aae4-88bf0bfcf17b)
 </details>
 
-<details><summary>2024-07-12  v4.4.4</summary><br>
+<details><summary>2024-07-12 — v4.4.4</summary><br>
 
 - Added support for Windows.
 </details>
 
-<details><summary>2024-07-03  v3.3.3</summary><br>
+<details><summary>2024-07-03 — v3.3.3</summary><br>
   
 - Added venv support.
 </details>
 
-<details><summary>2024-05-14  v3.2.1</summary><br>
+<details><summary>2024-05-14 — v3.2.1</summary><br>
 
 - Added an optional argument <code>-</code> for the Scrape button to filter specific extension instead of using the default extension list.
 ```python
@@ -354,7 +354,7 @@ $ext/sd-hub -- json txt py
 - Added a <code>Split by</code> radio button for the Archiver to split compressed files based on the total number of files if input is pointing to a folder.
 </details>
 
-<details><summary>2024-04-22  v2.0.2</summary><br>
+<details><summary>2024-04-22 — v2.0.2</summary><br>
 
 - Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.
 - Improved Compress and Decompress logic for Archiver.
