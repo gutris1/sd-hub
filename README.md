@@ -18,6 +18,8 @@ Supported languages:
   - Korean (한국어)
   - Russian (Русский)
 
+Language is automatically selected based on the browser’s language setting.
+
 Support both <code>Windows</code> and <code>Unix</code>.
 
 # Usage
