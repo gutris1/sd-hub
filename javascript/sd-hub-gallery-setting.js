@@ -279,6 +279,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     document.body.classList.add(SDHubBnS);
     SettingButton.style.transform = 'rotate(-360deg)';
     SDHubGalleryApplySettings();
+    SDHubGalleryKillContextMenu();
 
     Setting.style.display = 'flex';
     Setting.focus();
@@ -322,7 +323,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       SDHubGalleryLoadInitial();
     }
 
-    fetch(`${SDHubGalleryBase}/savesetting`, {
+    fetch(`${SDHubGalleryBase}/save-setting`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(window.SDHubGallerySettings)
@@ -341,7 +342,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
 }
 
 async function SDHubGalleryLoadSettings() {
-  const v = await (await fetch(`${SDHubGalleryBase}/loadsetting`)).json();
+  const v = await (await fetch(`${SDHubGalleryBase}/load-setting`)).json();
 
   const settings = [
     'images-per-page', 'thumbnail-shape', 'thumbnail-position', 'thumbnail-layout',

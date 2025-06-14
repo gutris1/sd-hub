@@ -31,154 +31,133 @@ async function SDHubGalleryParser() {
 }
 
 async function SDHubGalleryPlainTextToHTML(inputs) {
-  const EncryptInfo = window.SDImageParserEncryptInfo;
-  const Sha256Info = window.SDImageParserSha256Info;
-  const NaiSourceInfo = window.SDImageParserNaiSourceInfo;
-  const SoftwareInfo = window.SDImageParserSoftwareInfo;
+  const { SharedParserEncryptInfo: EncryptInfo, SharedParserSha256Info: Sha256Info, 
+          SharedParserNaiSourceInfo: NaiSourceInfo, SharedParserSoftwareInfo: SoftwareInfo
+        } = window;
 
   const SendButton = document.getElementById('SDHub-Gallery-Info-SendButton');
   const OutputPanel = document.getElementById('SDHub-Gallery-Info-Output-Panel');
 
-  const titleEL = [
-    { id: 'Prompt', label: 'prompt', title: 'copy_prompt' },
-    { id: 'NegativePrompt', label: 'negative_prompt', title: 'copy_negative_prompt' },
-    { id: 'Params', label: 'parameters', title: 'copy_parameters' },
-    { id: 'Encrypt', label: 'Encrypt' },
-    { id: 'Sha256', label: 'EncryptPwdSha' },
-    { id: 'Software', label: 'Software' },
-    { id: 'Source', label: 'Source' }
-  ];
+  const outputDisplay = 'sdhub-gallery-display-output-panel';
+  const outputFail = 'sdhub-gallery-display-output-fail';
 
-  const titles = {};
-
-  titleEL.forEach(({ id, label, title }) => {
-    const b = !!title;
-    const l = b ? SDHubGetTranslation(label) : label;
-    const t = b ? SDHubGetTranslation(title) : '';
-
-    const attr = [
-      b ? `id='SDHub-Gallery-Info-${id}-Button'` : '',
-      `class='sdhub-gallery-info-output-title${b ? ' sdhub-gallery-info-copybutton' : ''}'`,
-      b ? `title='${t}'` : '',
-      b ? `onclick='SDHubGalleryCopyButtonEvent(event)'` : ''
+  const createTitle = (id, label, copyBtn = false) => {
+    const l = copyBtn ? SDHubGetTranslation(label) : label;
+    const att = [
+      copyBtn && `id='SDHub-Gallery-Info-${id}-Button'`,
+      `class='sdhub-gallery-info-output-title${copyBtn ? ' sdhub-gallery-info-copybutton' : ''}'`,
+      copyBtn && `title='${SDHubGetTranslation(`copy_${label}`)}'`,
+      copyBtn && `onclick='SDHubGalleryCopyButtonEvent(event)'`
     ].filter(Boolean).join(' ');
+    return `<div ${att}>${l}</div>`;
+  };
 
-    titles[`title${id}`] = `<div ${attr}>${l}</div>`;
-  });
+  const titles = {
+    prompt: createTitle('Prompt', 'prompt', true),
+    negativePrompt: createTitle('NegativePrompt', 'negative_prompt', true),
+    params: createTitle('Params', 'parameters', true),
+    encrypt: createTitle('Encrypt', 'Encrypt'),
+    sha: createTitle('Sha256', 'EncryptPwdSha'),
+    software: createTitle('Software', 'Software'),
+    source: createTitle('Source', 'Source'),
+    models: ''
+  };
 
-  let titlePrompt = titles.titlePrompt;
-  let titleNegativePrompt = titles.titleNegativePrompt;
-  let titleParams = titles.titleParams;
-  let titleEncrypt = titles.titleEncrypt;
-  let titleSha = titles.titleSha256;
-  let titleSoftware = titles.titleSoftware;
-  let titleSource = titles.titleSource;
+  const createSection = (title, content) => {
+    if (!content?.trim()) return '';
+    const empty = title === 'nothing';
+    const wrapper = title !== titles.models && !empty;
+    const text = wrapper ? `<div class='sdhub-gallery-info-output-wrapper'><div class='sdhub-gallery-info-output-content'>${content}</div></div>` : content;
+    return `<div class='sdhub-gallery-info-output-section'${empty ? " style='height: 100%'" : ''}>${empty ? '' : title}${text}</div>`;
+  };
 
-  let titleModels = '';
-  let br = /\n/g;
+  if (!inputs?.trim()) {
+    OutputPanel.classList.remove(outputDisplay, outputFail);
+    SendButton.classList.remove(outputDisplay);
+    return '';
+  }
 
-  let outputHTML = '';
+  OutputPanel.classList.add(outputDisplay);
+
+  if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
+    OutputPanel.classList.add(outputFail);
+    SendButton.classList.remove(outputDisplay);
+    const failContent = `<div class='sdhub-gallery-info-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
+    return createSection('nothing', failContent);
+  }
+
+  if (inputs.trim().startsWith('OPPAI:')) {
+    let output = '';
+    if (EncryptInfo?.trim()) output += createSection(titles.encrypt, EncryptInfo);
+    if (Sha256Info?.trim()) output += createSection(titles.sha, Sha256Info);
+    output += createSection('', inputs);
+    return output;
+  }
+
+  SendButton.classList.add(outputDisplay);
+
+  let process = inputs
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/Seed:\s?(\d+),/gi, (_, seedNumber) => 
+      `<span id='SDHub-Gallery-Info-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`
+    );
+
+  const negativePromptIndex = process.indexOf('Negative prompt:');
+  const stepsIndex = process.indexOf('Steps:');
+  const hashesIndex = process.indexOf('Hashes:');
+
   let promptText = '';
   let negativePromptText = '';
   let paramsText = '';
   let modelOutput = '';
 
-  function SDHubGalleryHTMLOutput(title, content) {
-    const none = title === 'nothing', con = title === titleModels || none;
-    const tent = con ? content : `<div class='sdhub-gallery-info-output-wrapper'><div class='sdhub-gallery-info-output-content'>${content}</div></div>`;
-    return `<div class='sdhub-gallery-info-output-section'${none ? " style='height: 100%'" : ''}>${none ? '' : title}${tent}</div>`;
+  if (negativePromptIndex !== -1) promptText = process.substring(0, negativePromptIndex).trim();
+  else if (stepsIndex !== -1) promptText = process.substring(0, stepsIndex).trim();
+  else promptText = process.trim();
+
+  if (negativePromptIndex !== -1 && stepsIndex !== -1 && stepsIndex > negativePromptIndex) {
+    negativePromptText = process.slice(negativePromptIndex + 'Negative prompt:'.length, stepsIndex).trim();
   }
 
-  if (inputs === undefined || inputs === null || inputs.trim() === '') {
-    OutputPanel.classList.remove('sdhub-display-output-panel', 'sdhub-display-output-fail');
-    SendButton.style.display = '';
+  if (stepsIndex !== -1) {
+    const paramsRAW = process.slice(stepsIndex).trim();
+    paramsText = paramsRAW.replace(/,\s*(Lora hashes|TI hashes):\s*"[^"]+"/g, '').trim();
+
+    const hashes = process.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/);
+    if (hashes?.[1]) paramsText = paramsText.replace(hashes[0], '').trim();
+    if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
+
+    const modelId = 'SDHub-Gallery-Info-Model-Output';
+    modelOutput = `<div id='${modelId}'>${SDHubGallerySpinnerSVG.replace(/<svg\b([^>]*)>/, '<svg id="SDHub-Gallery-Info-Spinner" $1>')}</div>`;
+
+    const boxModels = document.getElementById(modelId);
+    if (boxModels) boxModels.innerHTML = modelOutput;
+
+    setTimeout(async () => {
+      const modelsBox = document.getElementById(modelId);
+      if (!modelsBox) return;
+
+      try {
+        const links = await SharedModelsFetch(paramsRAW);
+        modelsBox.classList.add('sdhub-gallery-info-display-model-output');
+        modelsBox.innerHTML = links;
+        setTimeout(() => modelsBox.classList.remove('sdhub-gallery-info-display-model-output'), 2000);
+      } catch (error) {
+        modelsBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>';
+      }
+      setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
+    }, 500);
 
   } else {
-    OutputPanel.classList.add('sdhub-display-output-panel');
-
-    if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
-      OutputPanel.classList.add('sdhub-display-output-fail');
-      titlePrompt = '';
-      SendButton.style.display = '';
-      const none = `<div class='sdhub-gallery-info-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
-      outputHTML = SDHubGalleryHTMLOutput('nothing', none);
-
-    } else if (inputs.trim().startsWith('OPPAI:')) {
-      const sections = [{ title: titleEncrypt, content: EncryptInfo }, { title: titleSha, content: Sha256Info }];
-      sections.forEach(section => {
-        if (section.content && section.content.trim() !== '') outputHTML += SDHubGalleryHTMLOutput(section.title, section.content);
-      });
-      outputHTML += SDHubGalleryHTMLOutput('', inputs);
-
-    } else {
-      SendButton.style.display = 'grid';
-      inputs = inputs.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(br, '<br>');
-      inputs = inputs.replace(/Seed:\s?(\d+),/gi, function(match, seedNumber) {
-        return `<span id='SDHub-Gallery-Info-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`;
-      });
-
-      const negativePromptIndex = inputs.indexOf('Negative prompt:');
-      const stepsIndex = inputs.indexOf('Steps:');
-      const hashesIndex = inputs.indexOf('Hashes:');
-
-      if (negativePromptIndex !== -1) promptText = inputs.substring(0, negativePromptIndex).trim();
-      else if (stepsIndex !== -1) promptText = inputs.substring(0, stepsIndex).trim();
-      else promptText = inputs.trim();
-
-      if (negativePromptIndex !== -1 && stepsIndex !== -1 && stepsIndex > negativePromptIndex) {
-        negativePromptText = inputs.slice(negativePromptIndex + 'Negative prompt:'.length, stepsIndex).trim();
-      }
-
-      if (stepsIndex !== -1) {
-        const hashesEX = inputs.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/);
-        paramsRAW = inputs.slice(stepsIndex).trim();
-        paramsText = inputs.slice(stepsIndex).trim().replace(/,\s*(Lora hashes|TI hashes):\s*"[^"]+"/g, '').trim();
-
-        let Id = 'SDHub-Gallery-Info-Model-Output';
-        let display = 'sdhub-gallery-info-display-model-output';
-        modelOutput = `<div id='${Id}'>${SDHubGallerySpinnerSVG.replace(/<svg\b([^>]*)>/, '<svg id="SDHub-Gallery-Info-Spinner" $1>')}</div>`;
-
-        const modelBox = document.getElementById(Id);
-        if (modelBox) modelBox.innerHTML = modelOutput;
-
-        setTimeout(async () => {
-          const modelBox = document.getElementById(Id);
-          try {
-            const links = await SharedModelsFetch(paramsRAW);
-            modelBox.classList.add(display);
-            modelBox.innerHTML = links;
-            setTimeout(() => modelBox.classList.remove(display), 2000);
-          } catch (error) {
-            modelBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>';
-          }
-          setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
-        }, 500);
-
-        if (hashesEX && hashesEX[1]) paramsText = paramsText.replace(hashesEX[0], '').trim();
-        if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
-
-      } else {
-        paramsText = inputs.trim();
-      }
-
-      const sections = [
-        { title: titlePrompt, content: promptText },
-        { title: titleNegativePrompt, content: negativePromptText },
-        { title: titleParams, content: paramsText },
-        { title: titleSoftware, content: SoftwareInfo },
-        { title: titleModels, content: modelOutput },
-        { title: titleEncrypt, content: EncryptInfo },
-        { title: titleSha, content: Sha256Info },
-        { title: titleSource, content: NaiSourceInfo }
-      ];
-
-      sections.forEach(section => {
-        if (section.content?.trim() !== '') outputHTML += SDHubGalleryHTMLOutput(section.title, section.content);
-      });
-    }
+    paramsText = process.trim();
   }
 
-  return `${outputHTML}`;
+  const sections = [
+    [titles.prompt, promptText], [titles.negativePrompt, negativePromptText], [titles.params, paramsText],
+    [titles.software, SoftwareInfo], [titles.models, modelOutput], [titles.encrypt, EncryptInfo],
+    [titles.sha, Sha256Info], [titles.source, NaiSourceInfo]
+  ];
+
+  return sections.filter(([_, content]) => content?.trim()).map(([title, content]) => createSection(title, content)).join('');
 }
 
 function SDHubGalleryCopyButtonEvent(e) {

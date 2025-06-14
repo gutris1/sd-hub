@@ -42,9 +42,9 @@ outdir_extras = [Path(opts.outdir_samples)] if opts.outdir_samples else []
 outpath = (outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d])
 
 def Saveimgchest(privacy, nsfw, api):
-    data = LoadConfig()
-    data['imgChest'] = {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
-    config.write_text(json.dumps(data, indent=4), encoding='utf-8')
+    d = LoadConfig()
+    d['imgChest'] = {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
+    config.write_text(json.dumps(d, indent=4), encoding='utf-8')
     yield gr.Radio.update(value=privacy), gr.Radio.update(value=nsfw), gr.TextArea.update(value=api)
 
 def Loadimgchest():
@@ -82,8 +82,8 @@ def getThumbnail(fp, size=512):
 
     if isinstance(fp, list):
         #start = time.time()
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            list(executor.map(resize, fp))
+        with ThreadPoolExecutor(max_workers=8) as exe:
+            list(exe.map(resize, fp))
         #print(f'SD-Hub : {time.time() - start:.1f}s ({len(fp)} thumbnails)')
         return None
     else:
@@ -143,7 +143,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
-    @app.post(BASE + '/newimage')
+    @app.post(BASE + '/new-image')
     async def newImage(req: Request):
         global imgList
         data = await req.json()
@@ -157,7 +157,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         thumb = Thumbnails.get(img)
         return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
 
-    @app.post(BASE + '/getthumb')
+    @app.post(BASE + '/get-thumb')
     async def getThumb(req: Request):
         fp = Path((await req.json()).get('path'))
         await asyncio.to_thread(getThumbnail, fp)
@@ -165,9 +165,9 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
     @app.post(BASE + '/delete')
     async def deleteImage(req: Request):
-        data = await req.json()
-        path = Path(data.get('path'))
-        thumb = Path(unquote(data.get('thumb', ''))).name
+        d = await req.json()
+        path = Path(d.get('path'))
+        thumb = Path(unquote(d.get('thumb', ''))).name
 
         if path.exists():
             try:
@@ -179,26 +179,27 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
                 return {'status': f'error: {e}'}
         return {'status': 'deleted'}
 
-    @app.get(BASE + '/loadsetting')
+    @app.get(BASE + '/load-setting')
     async def loadSetting():
         d = LoadConfig()
-        v = d.get('Gallery', {})
-        return {
-            'images-per-page': v.get('images-per-page', 100),
-            'thumbnail-shape': v.get('thumbnail-shape', 'aspect_ratio'),
-            'thumbnail-position': v.get('thumbnail-position', 'center'),
-            'thumbnail-layout': v.get('thumbnail-layout', 'masonry'),
-            'thumbnail-size': v.get('thumbnail-size', 240),
-            'show-filename': v.get('show-filename', False),
-            'show-buttons': v.get('show-buttons', False),
-            'image-info-layout': v.get('image-info-layout', 'full_width'),
+        default = {
+            'images-per-page': 100,
+            'thumbnail-shape': 'aspect_ratio',
+            'thumbnail-position': 'center',
+            'thumbnail-layout': 'masonry',
+            'thumbnail-size': 240,
+            'show-filename': False,
+            'show-buttons': False,
+            'image-info-layout': 'full_width',
         }
 
-    @app.post(BASE + '/savesetting')
+        return {**default, **d.get('Gallery', {})}
+
+    @app.post(BASE + '/save-setting')
     async def saveSetting(req: Request):
-        data = await req.json()
+        c = await req.json()
         d = LoadConfig()
-        d['Gallery'] = data
+        d['Gallery'] = c
         config.write_text(json.dumps(d, indent=4), encoding='utf-8')
         return {'status': 'saved'}
 

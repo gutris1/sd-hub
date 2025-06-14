@@ -36,7 +36,7 @@
 }
 
 #SDHub-Tab > .tab-nav > button:not(.selected) {
-  transition: 0.3s ease;
+  transition: .2s ease;
 }
 
 #SDHub-Tab > .tab-nav > button:not(.selected):hover {

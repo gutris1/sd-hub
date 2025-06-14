@@ -214,7 +214,8 @@ function SDHubTextEditorGalleryScrollBar() {
       scrollbar-color: var(--primary-400) transparent !important;
     }
 
-    #SDHub-Gallery-Image-Viewer {
+    #SDHub-Gallery-Image-Viewer,
+    #SDHub-Gallery-Delete-Container {
       backdrop-filter: none !important;
     }
   `;

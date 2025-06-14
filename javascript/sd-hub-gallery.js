@@ -2,7 +2,7 @@ let SDHubGalleryBase = '/sd-hub-gallery';
 let SDHubGalleryTabImageIndex = 1;
 let SDHubGalleryCMRightClick = false;
 let SDHubGalleryNewImageSrc = new Set();
-let SDHubGalleryPageLimit = 100;
+let SDHubGalleryPageLimit;
 let SDHubGalleryPageLocks = {};
 
 const SDHubGalleryTabList = [
@@ -404,7 +404,7 @@ async function SDHubGalleryGetNewImage(whichGallery) {
       let nameBox = newImgBox.querySelector('.sdhub-gallery-image-name');
       if (nameBox) nameBox.textContent = name;
 
-      const res = await fetch(`${SDHubGalleryBase}/getthumb`, {
+      const res = await fetch(`${SDHubGalleryBase}/get-thumb`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: imgSrc })
@@ -447,13 +447,13 @@ async function SDHubGalleryGetNewImage(whichGallery) {
   if (imgNames.length) {
     SDHubGalleryImgChestUpload(imgPaths, imgNames);
     try {
-      await fetch(`${SDHubGalleryBase}/newimage`, {
+      await fetch(`${SDHubGalleryBase}/new-image`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paths: imgPaths })
       });
     } catch (err) {
-      console.error('Failed to notify /newimage:', err);
+      console.error('Failed to notify /new-image:', err);
     }
   }
 
@@ -462,19 +462,15 @@ async function SDHubGalleryGetNewImage(whichGallery) {
 
 function SDHubGalleryContextMenu(e, imgEL) {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
+  const ul = GalleryCM.querySelector('ul');
   const page = imgEL.closest('.sdhub-gallery-pages.selected-page');
 
   window.SDHubImagePath = imgEL.getAttribute('data-image');
   window.SDHubImageList = [...page.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
   window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
 
-  Object.assign(GalleryCM.style, {
-    transition: 'none', left: '', right: '', top: '', bottom: '', opacity: '',
-    pointerEvents: 'none', transform: 'scale(0)', visibility: 'hidden',
-  });
-
-  GalleryCM.style.position = 'fixed';
-  GalleryCM.style.visibility = 'visible';
+  Object.assign(GalleryCM.style, { transition: 'none', left: '', right: '', top: '', bottom: '', transform: 'scale(0)', });
+  Object.assign(ul.style, { transition: 'none', opacity: '' });
 
   const menuWidth = GalleryCM.offsetWidth;
   const menuHeight = GalleryCM.offsetHeight;
@@ -485,41 +481,49 @@ function SDHubGalleryContextMenu(e, imgEL) {
   const spaceRight = viewportWidth - cursorX;
   const spaceBelow = viewportHeight - cursorY;
 
-  let posX, originX, posY, originY;
+  let posX, posY, originY;
 
-  posX = spaceRight >= menuWidth ? (originX = 'left', cursorX) : (originX = 'right', cursorX - menuWidth);
+  if (spaceRight >= menuWidth) {
+    posX = cursorX;
+  } else {
+    posX = viewportWidth - menuWidth - 5;
+  }
+
   posY = spaceBelow >= menuHeight ? (originY = 'top', cursorY) : (originY = 'bottom', cursorY - menuHeight);
 
-  GalleryCM.style.position = 'fixed';
   GalleryCM.style.left = `${posX}px`;
   GalleryCM.style.top = `${posY}px`;
 
   const bounds = GalleryCM.getBoundingClientRect();
 
-  bounds.right > viewportWidth && (GalleryCM.style.left = `${viewportWidth - menuWidth - 5}px`),
-  bounds.left < 0 && (GalleryCM.style.left = '5px'),
-  bounds.bottom > viewportHeight && (GalleryCM.style.top = `${viewportHeight - menuHeight - 5}px`),
+  bounds.right > viewportWidth && (GalleryCM.style.left = `${viewportWidth - menuWidth - 5}px`);
+  bounds.left < 0 && (GalleryCM.style.left = '5px');
+  bounds.bottom > viewportHeight && (GalleryCM.style.top = `${viewportHeight - menuHeight - 5}px`);
   bounds.top < 0 && (GalleryCM.style.top = '5px');  
 
-  GalleryCM.style.pointerEvents = 'auto';
-  GalleryCM.style.transformOrigin = `${originY} ${originX}`;
+  GalleryCM.style.transformOrigin = `${originY} left`;
 
   requestAnimationFrame(() => {
-    Object.assign(GalleryCM.style, { transition: '', transform: 'scale(1)', opacity: '1' });
-    setTimeout(() => SDHubGallerySubmenu(), 200);
+    Object.assign(GalleryCM.style, { transition: '', transform: 'scale(1)',});
+    Object.assign(ul.style, { transition: '', opacity: '1' });
+    setTimeout(() => SDHubGalleryContextSubmenu(), 310);
   });
 }
 
-function SDHubGallerySubmenu() {
-  const submenu = document.querySelector('.sdhub-gallery-cm-submenu');
-  const ul = document.querySelector('.sdhub-gallery-cm-submenu > ul');
-  const sendToButton = document.querySelector('.sdhub-cm-sendto');
+function SDHubGalleryContextSubmenu() {
+  const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
+  const submenu = GalleryCM.querySelector('.sdhub-gallery-cm-submenu');
+  const ul = submenu.querySelector('ul');
 
-  if (!submenu || !sendToButton) return;
+  const sendToButton = document.querySelector('#SDHub-Gallery-ContextMenu .sdhub-cm-sendto');
+  const sendToSubMenu = document.getElementById('SDHub-Gallery-ContextMenu-SubMenu-SendTo');
+
+  const parentRect = GalleryCM.getBoundingClientRect();
+  const buttonRect = sendToButton.getBoundingClientRect();
 
   const menuWidth = submenu.offsetWidth;
   const menuHeight = submenu.offsetHeight;
-  const buttonRect = sendToButton.getBoundingClientRect();
+
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
   const spaceOnRight = windowWidth - buttonRect.right;
@@ -537,17 +541,52 @@ function SDHubGallerySubmenu() {
     ? (submenu.style.left = '100%', ul.style.marginLeft = '10px', 'left')
     : (submenu.style.right = '100%', ul.style.marginRight = '10px', 'right');
 
-  Y = spaceBelow < menuHeight
-    ? (submenu.style.top = `-${menuHeight - 30}px`, 'bottom')
-    : (submenu.style.top = '0', 'top');
+  if (spaceBelow < menuHeight) {
+    const b = parentRect.bottom - buttonRect.bottom - 16;
+    submenu.style.top = `${b}px`;
+    Y = 'bottom';
+  } else {
+    const t = +(buttonRect.top - parentRect.top).toFixed(2);
+    submenu.style.top = `${t}px`;
+    Y = 'top';
+  }
 
   submenu.style.transformOrigin = `${Y} ${X}`;
+
+  let hover, show;
+
+  const display = () => {
+    clearTimeout(hover);
+    clearTimeout(show);
+    show = setTimeout(() => {
+      requestAnimationFrame(() => {
+        Object.assign(sendToSubMenu.style, { transform: 'scale(1)' });
+        Object.assign(ul.style, { opacity: '1' });
+        setTimeout(() => SDHubGalleryContextSubmenu(), 310);
+      });
+    }, 200);
+  };
+
+  const hide = () => {
+    clearTimeout(show);
+    hover = setTimeout(() => {
+      requestAnimationFrame(() => {
+        Object.assign(sendToSubMenu.style, { transform: '' });
+        Object.assign(ul.style, { opacity: '' });
+        setTimeout(() => SDHubGalleryContextSubmenu(), 310);
+      });
+    }, 100);
+  };
+
+  [sendToButton, sendToSubMenu].forEach(el => (el.onmouseenter = display, el.onmouseleave = hide));
 }
 
 function SDHubGalleryKillContextMenu() {
   SDHubGalleryCMRightClick = false;
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
-  Object.assign(GalleryCM.style, { opacity: '', transition: 'none', pointerEvents: '', transform: '' });
+  const ul = GalleryCM.querySelector('ul');
+  Object.assign(GalleryCM.style, { transition: 'none', transform: '' });
+  Object.assign(ul.style, { transition: 'none', opacity: '' });
 }
 
 function SDHubGalleryImageButtonEvents(imgBox) {
@@ -557,7 +596,7 @@ function SDHubGalleryImageButtonEvents(imgBox) {
   let hover = null;
 
   contextBtn.addEventListener('mouseenter', (e) => {
-    if (!SDHubGalleryCMRightClick && GalleryCM.style.opacity === '1' && GalleryCM.dataset.box === imgBox.id) return;
+    if (!SDHubGalleryCMRightClick && GalleryCM.style.transform === 'scale(1)' && GalleryCM.dataset.box === imgBox.id) return;
 
     hover = setTimeout(() => {
       const imgEL = imgBox.querySelector('img');
@@ -574,14 +613,15 @@ function SDHubGalleryImageButtonEvents(imgBox) {
 }
 
 function SDHubGalleryContextMenuImage() {
+  let pulse = 'sdhub-gallery-img-pulse';
   SDHubGalleryKillContextMenu();
 
   const path = window.SDHubImagePath;
   const img = document.querySelector(`img[data-image='${path}']`);
   if (!img) return { img: null, path };
 
-  img.classList.add('sdhub-gallery-img-pulse');
-  setTimeout(() => img.classList.remove('sdhub-gallery-img-pulse'), 2000);
+  img.classList.add(pulse);
+  setTimeout(() => img.classList.remove(pulse), 600);
 
   return { img, path };
 }
@@ -637,28 +677,32 @@ async function SDHubGallerySendImage(v) {
   const DelCon = document.getElementById('SDHub-Gallery-Delete-Container');
   const Spinner = document.getElementById('SDHub-Gallery-Delete-Spinner');
 
+  DelCon.style.display = 'flex';
   window.SDHubCenterElement('Spinner');
 
-  infoColumn.style.display = DelCon.style.display = Spinner.style.display = 'flex';
-  infoColumn.style.pointerEvents = 'none';
-  DelCon.style.opacity = '1';
+  if (input) {
+    requestAnimationFrame(() => {
+      Spinner.style.display = infoColumn.style.display = 'flex';
+      DelCon.style.opacity = '1'; infoColumn.style.pointerEvents = 'none';
+    });
 
-  await SDHubGalleryUpdateImageInput(input, path);
+    await SDHubGalleryUpdateImageInput(input, path);
 
-  const wait = setInterval(() => {
-    if (window.SDHubGalleryInfoRawOutput?.trim()) {
-      clearInterval(wait);
+    const wait = setInterval(() => {
+      if (window.SDHubGalleryInfoRawOutput?.trim()) {
+        clearInterval(wait);
 
-      const SendButton = document.querySelector(`#SDHub-Gallery-Info-SendButton > #${v}_tab`);
-      if (SendButton) {
-        setTimeout(() => SendButton.click(), 1000);
-        setTimeout(() => {
-          infoColumn.style.display = infoColumn.style.pointerEvents = '';
-          DelCon.style.opacity = DelCon.style.display = Spinner.style.display = '';
-        }, 1300);
+        const SendButton = document.querySelector(`#SDHub-Gallery-Info-SendButton > #${v}_tab`);
+        if (SendButton) {
+          setTimeout(() => SendButton.click(), 1000);
+          setTimeout(() => {
+            infoColumn.style.display = infoColumn.style.pointerEvents = '';
+            DelCon.style.opacity = DelCon.style.display = Spinner.style.display = '';
+          }, 1300);
+        }
       }
-    }
-  }, 100);
+    }, 100);
+  }
 }
 
 async function SDHubGalleryImageInfo(imgEL) {
@@ -716,9 +760,11 @@ async function SDHubGalleryDeletion() {
   window.SDHubCenterElement('Spinner');
 
   Yes.onclick = async () => {
-    Spinner.style.display = 'flex';
-    DelBox.style.opacity = '0';
-    DelBox.style.transform = 'scale(1.5)';
+    requestAnimationFrame(() => {
+      Spinner.style.display = 'flex';
+      DelBox.style.pointerEvents = DelBox.style.opacity = '';
+      DelBox.style.transform = 'scale(1.5)';
+    });
 
     try {
       const thumb = `${SDHubGalleryBase}/thumb/${name.replace(/\.[^/.]+$/, '.jpeg')}`;
@@ -736,12 +782,13 @@ async function SDHubGalleryDeletion() {
       console.error('Error deleting image:', err);
     } finally {
       SDHubGalleryTabImageCounters();
+      SDHubGalleryRePages();
       setTimeout(() => {
         DelCon.style.opacity = Spinner.style.display = '';
         document.body.classList.remove(SDHubBnS);
       }, 1000);
       setTimeout(() => {
-        DelCon.style.display = DelBox.style.opacity = DelBox.style.transform = '';
+        DelCon.style.display = DelBox.style.transform = '';
         Yes.onclick = null;
       }, 1100);
     }
@@ -749,12 +796,28 @@ async function SDHubGalleryDeletion() {
 
   No.onclick = () => {
     document.body.classList.remove(SDHubBnS);
-    DelCon.style.opacity = '';
+    DelCon.style.opacity = DelBox.style.opacity = DelBox.style.pointerEvents = '';
     DelBox.style.transform = 'scale(1.5)';
     setTimeout(() => (DelCon.style.display = DelBox.style.transform = '', No.onclick = null), 200);
   };
 
-  requestAnimationFrame(() => (DelCon.style.opacity = '1', DelBox.style.transform = 'scale(1)'));
+  requestAnimationFrame(() => {
+    DelCon.style.opacity = DelBox.style.opacity = '1';
+    DelBox.style.pointerEvents = 'auto';
+    DelBox.style.transform = 'scale(1)';
+  });
+}
+
+function SDHubGalleryRePages() {
+  const t = document.querySelector('.sdhub-gallery-tab-container.active');
+  const p = [...t.querySelectorAll('.sdhub-gallery-pages')] .sort((a, b) => a.dataset.page - b.dataset.page);
+
+  for (let i = 0; i < p.length - 1; i++) {
+    let w = p[i], n = p[i + 1];
+    while (w.children.length < SDHubGalleryPageLimit && n.children.length) w.prepend(n.lastElementChild);
+  }
+
+  for (let i = p.length - 1; i >= 0 && !p[i].children.length; i--) p[i].remove();
 }
 
 function SDHubCreateGallery() {
@@ -1130,29 +1193,31 @@ function SDHubGalleryCreateContextMenu() {
       </li>
       <li class='sdhub-cm-sendto'>
         <span>${SDHubGallerySendToSVG} ${SDHubGetTranslation('send_to')} ${submenuArrowSVG}</span>
-        <div id='SDHub-Gallery-ContextMenu-SubMenu' class='sdhub-gallery-cm-menu sdhub-gallery-cm-submenu'>
-          <ul class='sdhub-gallery-cm-ul'>
-            <li onclick='SDHubGallerySendImage("txt2img")'>txt2img</li>
-            <li onclick='SDHubGallerySendImage("img2img")'>img2img</li>
-            <li onclick='SDHubGallerySendImage("extras")'>extras</li>
-            <li onclick='SDHubGallerySendImage("inpaint")'>inpaint</li>
-            <li onclick='SDHubGallerySendImage("uploader")'>${SDHubGetTranslation('uploader')}</li>
-          </ul>
-        </div>
       </li>
       <li onclick='SDHubGalleryContextMenuButton("delete")'>
         <span>${SDHubGalleryDeleteSVG} ${SDHubGetTranslation('delete')}</span>
       </li>
     </ul>
+    <div id='SDHub-Gallery-ContextMenu-SubMenu-SendTo' class='sdhub-gallery-cm-menu sdhub-gallery-cm-submenu'>
+      <ul class='sdhub-gallery-cm-ul'>
+        <li onclick='SDHubGallerySendImage("txt2img")'>txt2img</li>
+        <li onclick='SDHubGallerySendImage("img2img")'>img2img</li>
+        <li onclick='SDHubGallerySendImage("extras")'>extras</li>
+        <li onclick='SDHubGallerySendImage("inpaint")'>inpaint</li>
+        <li onclick='SDHubGallerySendImage("uploader")'>${SDHubGetTranslation('uploader')}</li>
+      </ul>
+    </div>
   `;
 
   document.addEventListener('wheel', (e) => {
-    if (GalleryCM.style.opacity === '1' && !GalleryCM.contains(e.target)) SDHubGalleryKillContextMenu();
+    GalleryCM.style.transform === 'scale(1)'
+      ? GalleryCM.contains(e.target) ? e.preventDefault() : SDHubGalleryKillContextMenu()
+      : null;
   }, { passive: false });
 
   document.addEventListener('click', (e) => {
     let btn = '.sdhub-gallery-image-button-contextmenu';
-    if (GalleryCM?.style.opacity === '1' && !GalleryCM.contains(e.target) && !e.target.closest(btn)) SDHubGalleryKillContextMenu();
+    if (GalleryCM?.style.transform === 'scale(1)' && !GalleryCM.contains(e.target) && !e.target.closest(btn)) SDHubGalleryKillContextMenu();
   });
 
   document.addEventListener('contextmenu', (e) => {
