@@ -3,8 +3,12 @@ __pycache__/
 *.gif
 *.jpg
 aria2c.exe
+.sd-hub-config.json
+
 sd_hub/hf-logo.svg
-texteditor-lastedit.txt
-.uploader-info.json
-.sd-hub-token.json
-.imgchest.json
+sd_hub/__pycache__/
+
+scripts/__pycache__/
+
+javascript/XLSX-reader.js
+javascript/XLSX-reader-LICENSE

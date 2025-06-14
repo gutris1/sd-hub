@@ -62,12 +62,12 @@ def ShellLobby(inputs, box_state=gr.State()):
     return gr.update()
 
 def ShellTab():
-    with gr.TabItem('Shell', elem_id='sdhub-shell-tab'):
+    with gr.TabItem('Shell', elem_id='SDHub-Shell-Tab'):
         with FormRow():
             button = gr.Button(
                 '▶',
                 variant='primary',
-                elem_id='sdhub-shell-button'
+                elem_id='SDHub-Shell-Button'
             )
 
             inputs = gr.Textbox(
@@ -75,7 +75,7 @@ def ShellTab():
                 placeholder='press Shift + Enter to run command',
                 show_label=False,
                 scale=9,
-                elem_id='sdhub-shell-inputs',
+                elem_id='SDHub-Shell-Input',
                 elem_classes='sdhub-input'
             )
 
@@ -83,7 +83,7 @@ def ShellTab():
             gr.Button(
                 'hantu',
                 variant='primary',
-                elem_id='sdhub-shell-ghost-button',
+                elem_id='SDHub-Shell-Ghost-Button',
                 elem_classes='hide-this'
             )
 
@@ -92,7 +92,7 @@ def ShellTab():
                 interactive=False,
                 max_lines=21,
                 scale=9,
-                elem_id='sdhub-shell-output',
+                elem_id='SDHub-Shell-Output',
                 elem_classes='sdhub-output'
             )
 

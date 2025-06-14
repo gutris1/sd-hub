@@ -1,13 +1,12 @@
-from modules.ui_components import FormRow, FormColumn
-from modules.scripts import basedir
+from modules.ui_components import FormRow
 from pathlib import Path
 import gradio as gr
+import json
 
+from sd_hub.infotext import config, LoadConfig
 from sd_hub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
-LastEdit = Path(basedir()) / 'texteditor-lastedit.txt'
-
 Code = gr.Code.update
 Textbox = gr.Textbox.update
 
@@ -30,8 +29,8 @@ def LoadTextFile(fp):
     f = Path(fp)
     ext = f.suffix
 
-    if not fp or not Path(fp).exists() or Path(fp).suffix not in langs:
-        info = 'File Not Found' if not fp or not Path(fp).exists() else 'File Unsupported'
+    if not fp or not f.exists() or ext not in langs:
+        info = 'File Not Found' if not f.exists() else 'File Unsupported'
         yield Code(value='', label='', language=None), Textbox(value=info)
         return
 
@@ -47,27 +46,35 @@ def SaveTextFile(script, fp):
 
     f = Path(fp)
     f.write_text(script)
-    LastEdit.write_text(str(f))
 
+    v = LoadConfig()
+    v.setdefault('Text-Editor', {})
+    v['Text-Editor']['last-edit'] = str(f)
+
+    config.write_text(json.dumps(v, indent=4), encoding='utf-8')
     yield Textbox(value=fp), Textbox(value='Saved')
 
 def LoadInitial():
-    if LastEdit.exists():
-        f = Path(LastEdit.read_text())
+    v = LoadConfig()
+    last = v.get('Text-Editor', {}).get('last-edit', '')
+    f = Path(last)
+
+    if last and f.exists():
         ext = f.suffix
-        script = f.read_text()
-        syntax = langs[ext]
-        return Code(value=script, label=syntax, language=syntax), Textbox(value=str(f))
-    else:
-        return Code(value='', label='', language=None), Textbox(value='')
+        if ext in langs:
+            script = f.read_text()
+            syntax = langs[ext]
+            return Code(value=script, label=syntax, language=syntax), Textbox(value=str(f))
+
+    return Code(value='', label='', language=None), Textbox(value='')
 
 def TextEditorTab():
-    with gr.TabItem('Text Editor', elem_id='sdhub-texteditor-tab'):
-        with FormRow(elem_id='sdhub-texteditor-row'):
+    with gr.TabItem('Text Editor', elem_id='SDHub-Texteditor-Tab'):
+        with FormRow(elem_id='SDHub-Texteditor-Row'):
             saving = gr.Button(
                 'Save',
                 variant='primary',
-                elem_id='sdhub-texteditor-save-button',
+                elem_id='SDHub-Texteditor-Save-Button',
                 elem_classes='sdhub-buttons'
             )
 
@@ -77,7 +84,7 @@ def TextEditorTab():
                 max_lines=1,
                 placeholder='file path',
                 scale=9,
-                elem_id='sdhub-texteditor-inputs',
+                elem_id='SDHub-Texteditor-Input',
                 elem_classes='sdhub-input'
             )
 
@@ -86,13 +93,13 @@ def TextEditorTab():
                 interactive=False,
                 max_lines=1,
                 scale=1,
-                elem_id='sdhub-texteditor-info'
+                elem_id='SDHub-Texteditor-Info'
             )
 
             loading = gr.Button(
                 'Load',
                 variant='primary',
-                elem_id='sdhub-texteditor-load-button',
+                elem_id='SDHub-Texteditor-Load-Button',
                 elem_classes='sdhub-buttons'
             )
 
@@ -101,12 +108,12 @@ def TextEditorTab():
             label='',
             language=None,
             interactive=True,
-            elem_id='sdhub-texteditor-editor'
+            elem_id='SDHub-Texteditor-Editor'
         )
 
         js = """
             () => {
-                let info = document.querySelector('#sdhub-texteditor-info input')?.value;
+                let info = document.querySelector('#SDHub-Texteditor-Info input')?.value;
                 if (info) SDHubTextEditorInfo(info);
             }
         """
@@ -114,5 +121,5 @@ def TextEditorTab():
         loading.click(fn=LoadTextFile, inputs=inputs, outputs=[editor, info]).then(fn=None, _js=js)
         saving.click(fn=SaveTextFile, inputs=[editor, inputs], outputs=[inputs, info]).then(fn=None, _js=js)
 
-        initial = gr.Button(visible=False, elem_id='sdhub-texteditor-initial-load')
+        initial = gr.Button(visible=False, elem_id='SDHub-Texteditor-Initial-Load')
         initial.click(fn=LoadInitial, inputs=[], outputs=[editor, inputs])

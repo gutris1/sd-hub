@@ -29,16 +29,16 @@ def remove_readonly(func, path, exc_info):
 def scraping(input_string, token=None):
     _lines = input_string.split('\n')
     _outputs = []
-    _h = {"User-Agent": "Mozilla/5.0"}
-    
+    _h = {'User-Agent': 'Mozilla/5.0'}
+
     if tmp_dir.exists():
         if sys.platform == 'win32':
             shutil.rmtree(tmp_dir, onerror=remove_readonly)
         else:
-            os.system(f"rm -rf {tmp_dir}")
+            os.system(f'rm -rf {tmp_dir}')
 
     if not input_string.strip():
-        yield "Nothing To Scrape Here", True
+        yield 'Nothing To Scrape Here', True
 
     for line in _lines:
         url = line.strip()
@@ -51,7 +51,7 @@ def scraping(input_string, token=None):
                 continue
             elif '/tree/' not in url and '/resolve/' not in url:
                 _outputs.append(line)
-                yield "Input should be at least huggingface.co/username/repo/tree/main", True
+                yield 'Input should be at least huggingface.co/username/repo/tree/main', True
                 continue
 
             else:
@@ -65,17 +65,17 @@ def scraping(input_string, token=None):
                 if response.status_code == 401 and not token:
                     _outputs.append(line)
                     yield (
-                        f"{base_url}\n"
-                        f"{response.status_code} {response.reason}\n"
-                        "Please Enter your Huggingface Token with the role Read"
+                        f'{base_url}\n'
+                        f'{response.status_code} {response.reason}\n'
+                        'Please Enter your Huggingface Token with the role Read'
                     ), True
                     continue
 
                 if response.status_code != 200 and response.status_code != 401:
                     _outputs.append(line)
                     yield (
-                        f"{base_url}\n"
-                        f"{response.status_code} {response.reason}\n"
+                        f'{base_url}\n'
+                        f'{response.status_code} {response.reason}\n'
                     ), True
                     continue
 
@@ -90,14 +90,14 @@ def scraping(input_string, token=None):
                     _url = f"https://hf_user:{token}@huggingface.co/{_url.split('huggingface.co/')[1]}"
 
                 if _branch != 'main':
-                    subprocess.run(["git", "clone", "--no-checkout", "--depth=1", "-b", _branch, _url, tmp_dir],
-                                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(['git', 'clone', '--no-checkout', '--depth=1', '-b', _branch, _url, tmp_dir],
+                                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 else:
-                    subprocess.run(["git", "clone", "--no-checkout", "--depth=1", _url, tmp_dir],
+                    subprocess.run(['git', 'clone', '--no-checkout', '--depth=1', _url, tmp_dir],
                                 check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-                output = subprocess.run(["git", "--git-dir", tmp_dir / ".git", "ls-tree", "-r", _branch],
+                output = subprocess.run(['git', '--git-dir', tmp_dir / '.git', 'ls-tree', '-r', _branch],
                                         capture_output=True, text=True)
 
                 _file_list = output.stdout.split('\n')
@@ -111,7 +111,7 @@ def scraping(input_string, token=None):
                     if not _items:
                         continue
 
-                    _file = " ".join(_items.split()[3:])
+                    _file = ' '.join(_items.split()[3:])
                     _file_parts = _file.split('/')
 
                     if (
@@ -134,7 +134,7 @@ def scraping(input_string, token=None):
                                 if sys.platform == 'win32':
                                     shutil.rmtree(tmp_dir, onerror=remove_readonly)
                                 else:
-                                    os.system(f"rm -rf {tmp_dir}")
+                                    os.system(f'rm -rf {tmp_dir}')
 
         elif 'pastebin.com' in url:
             p_url = url.replace('pastebin.com', 'pastebin.com/raw')
@@ -143,8 +143,8 @@ def scraping(input_string, token=None):
             if not response.status_code == 200:
                 _outputs.append(line)
                 yield (
-                    f"{url}\n"
-                    f"{response.status_code} {response.reason}\n"
+                    f'{url}\n'
+                    f'{response.status_code} {response.reason}\n'
                 ), True
                 continue
 
@@ -166,7 +166,7 @@ def scraping(input_string, token=None):
                     _replaced = _replaced.replace(_tags, to_replace)
 
                 _outputs.append(_replaced)
-        
+
         else:
             if is_valid_url(url):
                 _outputs.append(line)
@@ -178,23 +178,23 @@ def scraping(input_string, token=None):
                 _outputs.append(line)
 
     yield '\n'.join(_outputs), False
-    
+
 def scraper(input_string, token, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     ngword = [
-        "Nothing",
-        "should be",
-        "Supported Domains"
+        'Nothing',
+        'should be',
+        'Supported Domains'
     ]
 
-    for _text, _flag in scraping(input_string, token):
-        if not _flag:
-            if any(k in _text for k in ngword):
-                yield _text, "\n".join(output_box)
+    for t, f in scraping(input_string, token):
+        if not f:
+            if any(k in t for k in ngword):
+                yield t, '\n'.join(output_box)
             else:
-                yield _text, "\n".join(output_box)
+                yield t, '\n'.join(output_box)
         else:
-            output_box.append(_text)
+            output_box.append(t)
 
     return gr.update(), gr.State(output_box)

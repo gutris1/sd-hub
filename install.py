@@ -1,3 +1,4 @@
+from modules.paths_internal import extensions_dir
 from importlib import metadata
 from packaging import version
 from pathlib import Path
@@ -16,18 +17,28 @@ RST = '\033[0m'
 base = Path(__file__).parent
 
 def _SDHubReq():
-    r = {
-        'sd-hub-translations.xlsx': 'https://huggingface.co/gutris1/sd-hub/resolve/main/sd-hub-translations.xlsx',
-        'javascript/exif-reader.js': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-        'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
-        'javascript/XLSX-reader.js': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-        'javascript/XLSX-reader-LICENSE': 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE'
+    scr = Path(extensions_dir) / 'sd-image-scripts'
+
+    if not scr.exists():
+        exif = {
+            (scr / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
+            (scr / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
+        }
+
+        subprocess.run(['git', 'clone', '-q', 'https://github.com/gutris1/sd-image-scripts', str(scr)], check=True)
+
+        for files, url in exif.items():
+            if not files.exists():
+                files.write_bytes(urllib.request.urlopen(url).read())
+
+    req = {
+        (base / 'javascript/XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+        (base / 'javascript/XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
     }
 
-    for f, u in r.items():
-        fp = base / f
-        if not fp.exists():
-            fp.write_bytes(urllib.request.urlopen(u).read())
+    for files, url in req.items():
+        if not files.exists():
+            files.write_bytes(urllib.request.urlopen(url).read())
 
 def _sub(inputs):
     try:

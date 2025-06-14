@@ -11,8 +11,7 @@ import time
 import sys
 import re
 
-from sd_hub.tokenizer import load_token, save_token
-from sd_hub.infotext import dl_title, dl_info
+from sd_hub.infotext import dl_title, dl_info, LoadToken, SaveToken
 from sd_hub.paths import SDHubPaths, BLOCK
 from sd_hub.scraper import scraper
 from sd_hub.version import xyz
@@ -92,28 +91,35 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
 
     elif 'civitai.com/models/' in url:
         try:
-            model_id, version_id = url.split('/models/')[1].split('/')[0], None
+            model_id = url.split('/models/')[1].split('/')[0]
             version_id = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
+            there = bool(version_id)
+
             api_url = (
                 f'https://civitai.com/api/v1/model-versions/{version_id}'
-                if version_id else f'https://civitai.com/api/v1/models/{model_id}'
+                if there else f'https://civitai.com/api/v1/models/{model_id}'
             )
 
-            res = requests.get(api_url)
-            res.raise_for_status()
-            data = res.json()
+            r = requests.get(api_url)
+            r.raise_for_status()
+            v = r.json()
 
-            if (early_access := data.get('earlyAccessEndsAt')):
-                model_page = f'https://civitai.com/models/{data.get("modelId")}?modelVersionId={data.get("id")}'
-                yield f'-> {model_page}\nThe model is in early access and requires payment for downloading.', False
+            earlyAccess = (
+                v.get('earlyAccessEndsAt') if there
+                else next((v for v in v.get('modelVersions', []) if v.get('availability') == 'EarlyAccess'), None)
+            )
+
+            if earlyAccess:
+                id = v.get('id') if there else earlyAccess.get('id')
+                page = url if there else f'https://civitai.com/models/{model_id}?modelVersionId={id}'
+                msg = f'{page}\n-> The model is in early access and requires payment for downloading.'
+                yield msg, False
                 return
 
-            url = (
-                f'{data.get("downloadUrl") or data.get("modelVersions", [{}])[0].get("downloadUrl", "")}?token={token3}'
-                if token3 else data.get("downloadUrl", "")
-            )
+            download = v.get('downloadUrl') or (v.get('modelVersions', [{}])[0].get('downloadUrl') if not there else '')
+            url = f'{download}?token={token3}' if token3 and download else download
             if not url:
-                yield f'Unable to find download URL for\n-> {url}\n', False
+                yield f'Unable to find download URL for\n-> {api_url}\n', False
                 return
 
         except requests.exceptions.RequestException as e:
@@ -129,7 +135,7 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         if not cmd_opts.enable_insecure_extension_access:
             allowed, err = SDHubPaths.SDHubCheckPaths(target_path)
             if not allowed:
-                yield err, False
+                yield err, True
                 return
             else:
                 aria2cmd.extend(['--allow-overwrite=true'])
@@ -257,6 +263,10 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
                 optional_path_raw = ' '.join(parts[1:]).strip()
 
             optional_path_raw = optional_path_raw.strip('"').strip("'")
+
+            if sys.platform == 'win32' and optional_path_raw:
+                optional_path_raw = Path(optional_path_raw).as_posix()
+
             optional_path = Path(optional_path_raw) if optional_path_raw else None
 
     if optional_path and optional_path.suffix:
@@ -333,29 +343,32 @@ def downloader(inputs, token2, token3, box_state=gr.State()):
         'fatal:'
     ]
 
-    yield 'Now Downloading...', ''
+    yield 'Downloading...', ''
 
-    for _text, _flag in lobby(inputs, token2, token3):
-        if not _flag:
-            if any(k in _text for k in ngword):
-                yield 'Error', '\n'.join([_text] + output_box)
+    for t, f in lobby(inputs, token2, token3):
+        if not f:
+            if any(k in t for k in ngword):
+                yield 'Error', '\n'.join([t] + output_box)
                 return gr.update(), gr.State(output_box)
 
-            if 'files from/to outside' in _text: 
-                yield 'Blocked', '\n'.join([_text] + output_box)
+            if 'files from/to outside' in t: 
+                yield 'Blocked', '\n'.join([t] + output_box)
                 assert not cmd_opts.disable_extension_access, BLOCK
 
-            yield _text, '\n'.join(output_box)
+            yield t, '\n'.join(output_box)
         else:
-            output_box.append(_text)
+            output_box.append(t)
 
     catcher = [
         'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL',
         'filename', 'Supported Domain:', '500 Server Error', 'fatal'
     ]
 
-    if any(k in w for k in catcher for w in output_box):
+    if any(w in l for w in catcher for l in output_box):
         yield 'Error', '\n'.join(output_box)
+    elif any(BLOCK in l for l in output_box):
+        yield 'Blocked', '\n'.join(output_box)
+        assert not cmd_opts.disable_extension_access, BLOCK
     else:
         yield 'Done', '\n'.join(output_box)
 
@@ -371,10 +384,10 @@ def read_txt(f, box):
     return '\n'.join(text_box)
 
 def DownloaderTab():
-    _, token2, token3, _, _ = load_token('downloader')
+    _, token2, token3, _, _ = LoadToken('downloader')
     TokenBlur = '() => { SDHubTokenBlur(); }'
 
-    with gr.TabItem('Downloader', elem_id='sdhub-downloader-tab'):
+    with gr.TabItem('Downloader', elem_id='SDHub-Downloader-Tab'):
         gr.HTML(dl_title)
 
         with FormRow():
@@ -389,7 +402,7 @@ def DownloaderTab():
                     max_lines=1,
                     placeholder='Your Huggingface Token here (role = READ)',
                     interactive=True,
-                    elem_id='sdhub-downloader-token1',
+                    elem_id='SDHub-Downloader-Token-1',
                     elem_classes='sdhub-input'
                 )
 
@@ -400,7 +413,7 @@ def DownloaderTab():
                     max_lines=1,
                     placeholder='Your Civitai API Key here',
                     interactive=True,
-                    elem_id='sdhub-downloader-token2',
+                    elem_id='SDHub-Downloader-Token-2',
                     elem_classes='sdhub-input'
                 )
 
@@ -409,7 +422,7 @@ def DownloaderTab():
                         value='SAVE',
                         variant='primary',
                         min_width=0,
-                        elem_id='sdhub-downloader-save-button',
+                        elem_id='SDHub-Downloader-Save-Button',
                         elem_classes='sdhub-buttons'
                     )
 
@@ -417,7 +430,7 @@ def DownloaderTab():
                         value='LOAD',
                         variant='primary',
                         min_width=0,
-                        elem_id='sdhub-downloader-load-button',
+                        elem_id='SDHub-Downloader-Load-Button',
                         elem_classes='sdhub-buttons'
                     )
 
@@ -425,16 +438,16 @@ def DownloaderTab():
             show_label=False,
             lines=5,
             placeholder='$tag\nURL',
-            elem_id='sdhub-downloader-inputs',
+            elem_id='SDHub-Downloader-Input',
             elem_classes='sdhub-input'
         )
 
-        with FormRow(elem_id='sdhub-downloader-button-row'):
+        with FormRow(elem_id='SDHub-Downloader-Button-Row'):
             with FormColumn(scale=1):
                 dl_dl = gr.Button(
                     'DOWNLOAD',
                     variant='primary',
-                    elem_id='sdhub-downloader-download-button',
+                    elem_id='SDHub-Downloader-Download-Button',
                     elem_classes='sdhub-buttons'
                 )
 
@@ -443,7 +456,7 @@ def DownloaderTab():
                     'Scrape',
                     variant='secondary',
                     min_width=0,
-                    elem_id='sdhub-downloader-scrape-button'
+                    elem_id='SDHub-Downloader-Scrape-Button'
                 )
 
                 dl_txt = gr.UploadButton(
@@ -452,7 +465,7 @@ def DownloaderTab():
                     file_count='single',
                     file_types=['.txt'],
                     min_width=0,
-                    elem_id='sdhub-downloader-txt-button'
+                    elem_id='SDHub-Downloader-Txt-Button'
                 )
 
             with FormColumn(scale=2, variant='compact'):
@@ -471,13 +484,13 @@ def DownloaderTab():
                 )
 
         dl_load.click(
-            fn=lambda: load_token('downloader'),
+            fn=lambda: LoadToken('downloader'),
             inputs=[],
             outputs=[dl_out2, dl_token1, dl_token2, dl_out2]
         ).then(fn=None, _js=TokenBlur)
 
         dl_save.click(
-            fn=lambda token2, token3: save_token(None, token2, token3),
+            fn=lambda token2, token3: SaveToken(None, token2, token3),
             inputs=[dl_token1, dl_token2],
             outputs=dl_out2
         ).then(fn=None, _js=TokenBlur)
@@ -489,9 +502,9 @@ def DownloaderTab():
             _js="""
                 () => {
                     let el = {
-                        input: '#sdhub-downloader-inputs textarea',
-                        token1: '#sdhub-downloader-token1 input',
-                        token2: '#sdhub-downloader-token2 input'
+                        input: '#SDHub-Downloader-Input textarea',
+                        token1: '#SDHub-Downloader-Token-1 input',
+                        token2: '#SDHub-Downloader-Token-2 input'
                     };
 
                     let v = Object.entries(el).map(([k, id]) => 

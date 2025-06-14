@@ -1,231 +1,352 @@
 :root {
   --sdhub-gallery-tab-background: var(--input-background-fill-hover);
-  --sdhub-gallery-img-button: #000;
-  --sdhub-gallery-cm-border: #000;
-  --sdhub-gallery-cm-background: #404040;
-  --sdhub-gallery-cm-arrow: var(--body-text-color);
-  --sdhub-gallery-li-hover-background: #404040;
-  --sdhub-gallery-li-hover-color: var(--background-fill-primary);
+  --sdhub-gallery-img-button: var(--background-fill-primary);
+  --sdhub-gallery-cm-ul-background: rgb(255 255 255 / 66%);
+  --sdhub-gallery-cm-ul-box-shadow: 0 0 1px 1px rgb(0 0 0 / 36%), 0 0 7px 1px rgb(0 0 0 / 57%), inset 0 0 10px 1px rgb(0 0 0 / 44%), inset 0 0 1px 1px rgb(198 198 198 / 49%);
+  --sdhub-gallery-cm-li-hover-background: rgb(0 0 0 / 67%);
+  --sdhub-gallery-cm-li-hover-color: var(--background-fill-primary);
+  --output-text-color: #fff;
+  --sdhub-gallery-img-size: 240px;
+  --sdhub-gallery-box-shadow-1: inset 0 0 3px 1px var(--primary-400), 0 0 2px 0 var(--primary-400), 0 0 5px 1px #000;
+  --sdhub-gallery-box-shadow-2: 0 0 5px 3px rgb(0 0 0 / 80%);
 }
 
 .dark {
   --sdhub-gallery-tab-background: var(--input-background-fill);
   --sdhub-gallery-img-button: var(--input-background-fill);
-  --sdhub-gallery-cm-border: #8c8c8c;
-  --sdhub-gallery-cm-background: #404040;
-  --sdhub-gallery-cm-arrow: var(--primary-400);
-  --sdhub-gallery-li-hover-background: #8c8c8c;
-  --sdhub-gallery-li-hover-color: var(--background-fill-primary);
+  --sdhub-gallery-cm-ul-background: rgb(0 0 0 / 60%);
+  --sdhub-gallery-cm-ul-box-shadow: 0 0 1px 1px rgb(148 148 148 / 60%), 0 0 10px 3px rgb(0 0 0 / 79%), inset 0 0 10px 0px rgb(0 0 0 / 40%), inset 0 0 10px 0px rgb(215 215 215 / 80%);
+  --sdhub-gallery-cm-li-hover-background: rgb(255 255 255 / 70%);
+  --sdhub-gallery-cm-li-hover-color: var(--background-fill-primary);
+  --output-text-color: var(--body-text-color);
+  --sdhub-gallery-box-shadow-2: 0 0 5px 3px rgb(208 208 208 / 44%);
 }
 
-body.no-scroll {
+.sdhub-clear-text {
+  color: transparent;
+  background: linear-gradient(to right, var(--body-text-color), var(--body-text-color));
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-size: 100%;
+}
+
+body.sdhub-body-no-scrolling {
   overflow: hidden;
 }
 
-.loading-blurry {
-  transition: 0.5s ease;
-  backdrop-filter: blur(5px);
+#SDHub-Gallery-Info-Image > div > div > div > button:nth-child(2),
+.gradio-container-4-40-0 #SDHub-Gallery-Info-Image > div > div > button {
+  display: none;
+}
+
+/* ############################################################################################################ */
+
+#SDHub-Gallery-Tab {
+  border: 0;
+  margin: 18px 0px 0px;
+  padding: 0;
+  border-radius: 1rem;
+  overflow: visible;
 }
 
 #SDHub-Gallery-Tab-Button-Row {
-  z-index: 5;
-  height: 45px;
+  display: none;
   position: relative;
   top: 0;
-  gap: 20px;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 5px;
+  z-index: 2;
+  flex-wrap: wrap;
+  height: auto;
   max-width: 100%;
-  border-radius: 1rem;
-  background: transparent;
-  padding: 5px;
+  gap: 20px;
+  padding: 5px 50px;
+  border-radius: 1rem 1rem 0 0;
+  justify-content: center;
+  background: var(--sdhub-gallery-tab-background);
+  box-shadow: var(--sdhub-gallery-box-shadow-2);
+  overflow: hidden;
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button {
   display: none;
+  outline: none;
   position: relative;
-  background: transparent;
-  color: var(--body-text-color);
-  transition: 0.4s ease;
-  border: 0;
-  border-radius: 100px;
-  text-align: center;
-  font-weight: normal;
-  font-size: 19px;
-  padding: 3px 15px;
-  max-width: 100%;
   justify-content: center;
   align-items: center;
   line-height: 1.3;
+  text-align: center;
+  font-weight: normal;
+  font-size: 18px;
   height: 35px;
+  max-width: 100%;
+  border: 0;
+  border-radius: 100px;
+  padding: 3px 15px;
+  background: transparent;
+  color: var(--body-text-color);
+  box-shadow: inset 0 0 5px 1px #000, 0 0 5px 0 #000;
+  transition: .3s ease;
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button.selected {
   cursor: default;
-  font-weight: bold;
-  color: var(--background-fill-primary);
-  filter: drop-shadow(0 0 10px var(--primary-400));
-  box-shadow: 0 0 10px 1px var(--primary-400);
-  background: var(--button-primary-background-fill);
+  color: var(--primary-400);
+  box-shadow: var(--sdhub-gallery-box-shadow-1);
+  filter: drop-shadow(0 0 0 var(--primary-400));
+  background: rgba(0, 0, 0, 0.8);
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
-  color: var(--primary-400);
-  filter: drop-shadow(0 0 10px var(--body-text-color));
-  box-shadow: 0 0 10px 1px var(--primary-400);
+  box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
 }
 
 #SDHub-Gallery-Tab-Wrapper {
-  margin: 0;
   display: block;
-  overflow: hidden;
-  padding: 5px 0;
-  border-radius: 1rem;
-  background: var(--sdhub-gallery-tab-background);
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0 0 1rem 1rem;
+}
+
+#SDHub-Gallery-Tab-Scroll {
+  display: flex;
+  position: fixed;
+  align-items: center;
+  justify-content: center;
+  right: 30px;
+  bottom: 16px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--primary-400);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  cursor: pointer;
+  z-index: 98;
+  box-shadow: 0 0 10px 1px #000;
+  transform: scale(0);
+  transition: opacity .3s ease, box-shadow .3s ease, transform .3s ease, filter .3s ease;
+}
+
+#SDHub-Gallery-Tab-Scroll:hover {
+  box-shadow: 0 0 7px 0 #000;
+  filter: drop-shadow(0 0 0 var(--primary-400));
+}
+
+#SDHub-Gallery-Tab-Scroll svg {
+  border-radius: 50%;
+  box-shadow: inset 0 0 10px 1px var(--primary-400);
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Tab-Scroll svg:hover {
+  box-shadow: inset 0 0 5px 1px var(--primary-400);
+  filter: drop-shadow(0 0 5px var(--primary-400));
+}
+
+#SDHub-Gallery-Tab-Scroll polygon {
+  fill: var(--primary-400);
+  filter: drop-shadow(0 0 20px var(--primary-400));
+  transform: scale(85%);
+  transform-origin: center;
+}
+
+#SDHub-Gallery-Tab-Scroll.sdhub-gallery-arrowscroll-display {
+  pointer-events: auto;
+  opacity: 1;
 }
 
 #SDHub-Gallery-Tab-Counter-Container {
   position: relative;
+  margin-left: 10px;
   z-index: 3;
 }
 
 .sdhub-gallery-tab-image-counter {
   display: none;
-  position: absolute;
-  top: -5px;
   max-width: max-content;
+  font-size: 14px;
   margin: 0;
-  padding: 0 12px;
-  border-bottom: 1px solid var(--background-fill-primary);
-  border-right: 1px solid var(--background-fill-primary);
-  border-top-left-radius: 1rem;
-  border-bottom-right-radius: 1rem;
-  background: var(--input-background-fill-hover);
-  pointer-events: none;
-  color: var(--body-text-color);
-  font-size: var(--block-info-text-size);
+  padding: 2px 12px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--primary-400);
+  background: rgba(0, 0, 0, 0.8);
+  pointer-events: auto;
+  cursor: default;
+  box-shadow: var(--sdhub-gallery-box-shadow-1);
+  filter: drop-shadow(0 0 0 var(--primary-400));
+  user-select: none;
+  -webkit-user-select: none;
+  transition: .4s ease;
 }
 
 .sdhub-gallery-tab-container {
-  max-height: calc(3* 17rem);
-  width: 100%;
   display: none;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  overflow-y: auto !important;
+  position: relative;
+  height: 100%;
+  width: 100%;
   background: transparent;
   flex-wrap: wrap;
-  transition: 0.5s ease-in-out;
   border: 0;
   margin: 0;
-  border-radius: 0;
-  padding: 25px 10px;
-  position: relative;
+  padding: 0;
+  border-radius: 0 0 1rem 1rem;
+  overflow: hidden;
 }
 
 .sdhub-gallery-image-box {
   display: flex;
-  height: 240px;
-  width: 240px;
+  flex-grow: 0;
+  flex-basis: 0;
+  align-self: center;
   justify-content: center;
   align-items: center;
-  border-radius: 0.6rem;
   position: relative;
+  height: auto;
+  width: auto;
+  max-height: var(--sdhub-gallery-img-size);
+  max-width: var(--sdhub-gallery-img-size);
+  border-radius: 0.6rem;
 }
 
-#SDHub-Gallery-Image-Container {
+.sdhub-gallery-image-container {
   display: flex;
-  z-index: 1;
-  border: 0;
-  position: relative;
-  overflow: hidden;
   align-self: center;
   align-items: center;
   justify-content: center;
-  border-radius: 0.5rem;
-  box-shadow: 0 0 3px 2px #000;
-  transition: 0.2s ease-in-out;
+  object-fit: none;
+  position: relative;
+  z-index: 1;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: 0 0 1px 1px #000;
+  transform: translate(0px, 0px) scale(1);
+  overflow: hidden;
+  transition: .3s ease;
 }
 
-#SDHub-Gallery-Image {
-  max-width: 240px;
-  max-height: 240px;
+#SDHub-Gallery-Tab .sdhub-gallery-image-container:hover {
+  z-index: 2;
+  box-shadow: 0 0 9px 0 var(--primary-400);
+  filter: drop-shadow(0 0 1px var(--primary-400));
+  border-color: var(--primary-400);
+}
+
+#SDHub-Gallery-Tab .sdhub-gallery-image {
+  max-width: var(--sdhub-gallery-img-size);
+  max-height: var(--sdhub-gallery-img-size);
   object-fit: contain;
   user-select: none;
   -webkit-user-select: none;
+  transform: scale(101.1%);
+  transform-origin: top;
+  transition: transform .6s ease, object-position .6s ease, filter .6s ease;
 }
 
-.sdhub-gallery-image-loading {
-  filter: blur(2px) brightness(0.5);
+#SDHub-Gallery-Tab .sdhub-gallery-image-container:hover .sdhub-gallery-image {
+  transform: scale(120%);
+}
+
+#SDHub-Gallery-Tab .sdhub-gallery-image-name {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 2px 6px 3px 50px;
+  border: 0;
+  width: 100%;
+  color: #fff;
+  font-size: 14px;
+  font-weight: normal;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  visibility: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  box-shadow: 0 0 2px 0 #000;
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateY(120%);
+  transition: .3s ease-in-out;
+}
+
+#SDHub-Gallery-Tab .sdhub-gallery-image-container:hover .sdhub-gallery-image-name {
+  visibility: visible;
+  transform: translateY(0);
 }
 
 .sdhub-gallery-image-button {
   display: flex;
+  position: absolute;
+  z-index: 50;
+  justify-content: flex-end;
   transform: scale(0);
   padding: 2px;
   border-radius: 0;
   color: var(--primary-400);
   background: var(--sdhub-gallery-img-button);
   box-shadow: 0 0 3px 1px #000;
+  visibility: hidden;
   cursor: pointer;
-  opacity: 0;
-  z-index: 50;
-  transition: 0.3s ease-in-out;
-  position: absolute;
-  justify-content: flex-end;
   box-sizing: border-box;
+  transition: .3s ease-in-out;
 }
 
-#SDHub-Gallery-Image-Context-Button {
+.sdhub-gallery-image-button-contextmenu {
   transform-origin: top right;
   border-bottom-left-radius: 15px;
   top: 0;
   right: 0;
 }
 
-#SDHub-Gallery-Image-Viewer-Button {
+.sdhub-gallery-image-button-imageviewer {
   transform-origin: bottom left;
   border-top-right-radius: 15px;
   bottom: 0;
   left: 0;
 }
 
-#SDHub-Gallery-Image-Context-Button svg {
+.sdhub-gallery-image-button-contextmenu svg {
   left: 1px;
   bottom: 1px;
   position: relative;
 }
 
-#SDHub-Gallery-Image-Viewer-Button svg {
+.sdhub-gallery-image-button-imageviewer svg {
   transform: scale(0.7);
   right: 1px;
   top: 1px;
   position: relative;
 }
 
-#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button,
-#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Viewer-Button {
-  opacity: 1;
+.sdhub-gallery-image-container:hover .sdhub-gallery-image-button-contextmenu,
+.sdhub-gallery-image-container:hover .sdhub-gallery-image-button-imageviewer {
+  visibility: visible;
   transform: scale(1);
   pointer-events: auto;
 }
 
-#SDHub-Gallery-Empty-Frame {
+.sdhub-gallery-image-emptyframe {
   display: block;
   position: absolute;
-  width: 105%;
-  height: 105%;
+  width: 100%;
+  height: 100%;
   border: 0;
-  opacity: 1;
   pointer-events: none;
+  visibility: hidden;
   overflow: hidden;
-  transition: 0.4s ease;
+  box-shadow: inset 0 0 1px 0 #000;
+  transition: .3s ease-in-out;
 }
 
-#SDHub-Gallery-Empty-Frame::before {
-  content: "";
+.sdhub-gallery-image-emptyframe::before {
+  content: '';
   position: absolute;
   inset: 0;
   background: inherit;
@@ -234,73 +355,17 @@ body.no-scroll {
   pointer-events: none;
 }
 
-#SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Empty-Frame {
-  box-shadow: inset 0 0 30px 20px #000;
-}
-
-#SDHub-Gallery-Image-Container:hover {
-  transform: scale(1.1);
-  z-index: 2;
-  box-shadow: 0 0 10px 1px var(--primary-400);
-  filter: drop-shadow(0 0 0 var(--primary-400));
+.sdhub-gallery-image-container:hover .sdhub-gallery-image-emptyframe {
+  box-shadow: inset 0 0 20px 5px #000;
+  filter: drop-shadow(0 0 1px #000);
+  visibility: visible;
 }
 
 #SDHub-Gallery-Image-Box-0 {
   display: none;
 }
 
-#sdhub-gallery-image-info {
-  position: fixed;
-  display: none;
-  top: 0;
-  left: 0;
-  margin: 0;
-  padding: 10px;
-  height: 100%;
-  width: 100%;
-  backdrop-filter: blur(3px);
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 5000;
-  overflow: auto;
-}
-
-#sdhub-gallery-image-info-img {
-  height: auto;
-  width: 100%;
-  object-fit: contain;
-  border-radius: 0.7rem;
-}
-
-#sdhub-gallery-image-info-row {
-  display: none;
-  height: 100%;
-  padding: 10px;
-  left: 0;
-  top: 0;
-  box-sizing: border-box;
-  background: var(--background-fill-primary);
-  z-index: 99;
-  position: fixed;
-  overflow: auto;
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
-
 @media (max-width: 600px) {
-  .sdhub-gallery-image-box {
-    height: 220px;
-    width: 220px;
-  }
-
-  #SDHub-Gallery-Image {
-    max-width: 220px;
-    max-height: 220px;
-  }
-
-  .sdhub-gallery-tab-container {
-    gap: 20px;
-  }
-
   #SDHub-Gallery-Tab-Button-Row {
     gap: 10px;
     justify-content: space-evenly;
@@ -314,135 +379,177 @@ body.no-scroll {
   }
 }
 
-@media (min-width: 1280px) {
-  .sdhub-gallery-image-box {
-    height: 210px;
-    width: 210px;
-  }
-
-  #SDHub-Gallery-Image {
-    max-width: 210px;
-    max-height: 210px;
-  }
-
-  .sdhub-gallery-tab-container {
-    gap: 1.3rem;
-  }
-}
-
-@media (min-width: 1360px) {
-  .sdhub-gallery-image-box {
-    height: 240px;
-    width: 240px;
-  }
-
-  #SDHub-Gallery-Image {
-    max-width: 240px;
-    max-height: 240px;
-  }
-
-  .sdhub-gallery-tab-container {
-    gap: 1.3rem;
-  }
-}
-
-@media (min-width: 1600px) {
-  .sdhub-gallery-image-box {
-    height: 270px;
-    width: 270px;
-  }
-
-  #SDHub-Gallery-Image {
-    max-width: 270px;
-    max-height: 270px;
-  }
-
-  .sdhub-gallery-tab-container {
-    gap: 1.5rem;
-  }
-}
-
 @media (min-width: 1920px) {
-  .sdhub-gallery-image-box {
-    height: 280px;
-    width: 280px;
-  }
-
-  #SDHub-Gallery-Image {
-    max-width: 280px;
-    max-height: 280px;
-  }
-
-  #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button {
+  .sdhub-gallery-image-container:hover .sdhub-gallery-image-button-contextmenu {
     opacity: 1;
     transform: scale(1.4);
     pointer-events: auto;
   }
-
-  .sdhub-gallery-tab-container {
-    gap: 2rem;
-  }
 }
 
 @media (min-width: 2560px) {
-  .sdhub-gallery-image-box {
-    height: 320px;
-    width: 320px;
-  }
-
-  #SDHub-Gallery-Image {
-    max-width: 320px;
-    max-height: 320px;
-  }
-
-  #SDHub-Gallery-Image-Container:hover #SDHub-Gallery-Image-Context-Button {
+  .sdhub-gallery-image-container:hover .sdhub-gallery-image-button-contextmenu {
     opacity: 1;
     transform: scale(1.5);
     pointer-events: auto;
   }
+}
 
-  .sdhub-gallery-tab-container {
-    gap: 2rem;
-  }
+.sdhub-gallery-img-pulse {
+  filter: brightness(0.5) blur(3px);
+}
+
+/* ############################################################################################################ */
+
+#SDHub-Gallery-Page-Nav-Box {
+  display: none;
+  position: absolute;
+  pointer-events: none;
+  align-items: center;
+  bottom: 0;
+  z-index: 1;
+  gap: 0;
+  padding: 5px;
+  height: 45px;
+  width: 100%;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: var(--sdhub-gallery-box-shadow-2);
+  background: transparent;
+}
+
+.sdhub-gallery-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 20px;
+  max-height: 100%;
+  width: 100%;
+  padding: 0;
+}
+
+.sdhub-gallery-page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 45px;
+  width: 100%;
+  gap: 20px;
+  padding: 5px 0;
+  border-radius: 0 0 1rem 1rem;
+  position: relative;
+  background: var(--sdhub-gallery-tab-background);
+}
+
+.sdhub-gallery-page-nav button {
+  color: var(--primary-400);
+  filter: brightness(0.5) drop-shadow(0 0 2px #000);
+  pointer-events: none;
+  outline: none;
+  transition: filter .4s ease;
+}
+
+.sdhub-gallery-page-nav button > svg {
+  width: 35px;
+  height: 35px;
+}
+
+.sdhub-gallery-page-nav button.btn-on {
+  filter: brightness(1) drop-shadow(0 0 2px #000);
+  pointer-events: auto;
+}
+
+.sdhub-gallery-page-nav button.btn-on:hover {
+  filter: brightness(1) drop-shadow(0 0 3px var(--primary-400)) drop-shadow(0 0 2px var(--primary-500));
+}
+
+.sdhub-gallery-page-indicator {
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  min-width: 58px;
+  margin: 0;
+  padding: 2px 12px;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: var(--sdhub-gallery-box-shadow-1);
+  filter: drop-shadow(0 0 0 var(--primary-400));
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--primary-400);
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.sdhub-gallery-pages {
+  display: none;
+  position: relative;
+  left: 0;
+  right: 0;
+  max-height: 150vh;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow-y: auto !important;
+  background: transparent;
+  flex-wrap: wrap;
+  flex-direction: row;
+  border: 0;
+  margin: 0;
+  border-radius: 0;
+  padding: 15px 10px;
+  opacity: 0.2;
+  will-change: transform;
+  transition: opacity .3s ease-out;
+}
+
+.sdhub-gallery-pages.selected-page {
+  display: flex;
 }
 
 /* ############################################################################################################ */
 
 #SDHub-Gallery-ContextMenu {
   display: block;
-  position: absolute;
-  pointer-events: none;
-  opacity: 0;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: fixed;
+  pointer-events: auto;
+  transition: transform .3s ease;
   transform: scale(0);
   z-index: 1000;
 }
 
 .sdhub-gallery-cm-ul {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
   width: max-content;
   list-style: none;
+  opacity: 0;
   margin: 0;
-  padding: 6px 0;
+  padding: 8px 0;
   font-family: var(--font);
   font-size: var(--body-text-size);
-  background: var(--background-fill-secondary);
   color: var(--body-text-color);
-  border-radius: 0.5rem;
-  box-shadow:
-    0 0 15px 2px #000,
-    0 0 10px 0px #000;
-  border: 1px solid var(--sdhub-gallery-cm-border);
+  background: var(--sdhub-gallery-cm-ul-background);
+  box-shadow: var(--sdhub-gallery-cm-ul-box-shadow);
+  border-radius: 10px;
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 30%));
+  backdrop-filter: blur(4px);
+  border: 0;
+  gap: 0;
+  cursor: pointer;
+  transition: opacity .3s ease;
 }
 
 #SDHub-Gallery-ContextMenu li {
   display: flex;
-  height: auto;
+  height: 30px;
   position: relative;
   justify-content: left;
   text-align: center;
   align-items: center;
   color: var(--body-text-color);
-  padding: 5px 10px;
+  padding: 0 10px;
   border-radius: 0;
 }
 
@@ -450,6 +557,7 @@ body.no-scroll {
   display: flex;
   justify-content: left;
   align-items: center;
+  margin-right: 15px;
 }
 
 .sdhub-cm-sendto {
@@ -461,30 +569,22 @@ body.no-scroll {
 
 .submenu-arrow {
   position: absolute;
-  right: 0;
+  right: 5px;
   margin-right: 0 !important;
-  transition: transform 0.3s ease;
-  color: var(--sdhub-gallery-cm-arrow) !important;
+  transition: transform .3s ease;
+  color: var(--body-text-color) !important;
 }
 
-#SDHub-Gallery-ContextMenu-SubMenu {
+#SDHub-Gallery-ContextMenu-SubMenu-SendTo {
   position: absolute;
   top: 0;
   height: auto;
-  opacity: 0;
   padding: 0;
-  pointer-events: none;
   background: transparent;
   border: 0;
   border-radius: 0;
   transform: scale(0);
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.sdhub-cm-sendto:hover #SDHub-Gallery-ContextMenu-SubMenu {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1);
+  transition: transform .3s ease;
 }
 
 .sdhub-gallery-cm-svg {
@@ -495,13 +595,12 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-ContextMenu li:hover {
-  background: var(--sdhub-gallery-li-hover-background);
-  color: var(--sdhub-gallery-li-hover-color);
-  cursor: pointer;
+  background: var(--sdhub-gallery-cm-li-hover-background);
+  color: var(--sdhub-gallery-cm-li-hover-color);
 }
 
-#SDHub-Gallery-ContextMenu li:hover .submenu-arrow {
-  color: var(--background-fill-primary) !important;
+#SDHub-Gallery-ContextMenu li.sdhub-cm-sendto:hover .submenu-arrow {
+  color: var(--primary-600) !important;
 }
 
 #SDHub-Gallery-ContextMenu li:hover .sdhub-gallery-cm-svg {
@@ -517,14 +616,14 @@ body.no-scroll {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.8);
   justify-content: center;
   align-items: center;
   z-index: 999999;
   opacity: 0;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  transition: opacity 0.4s ease;
+  backdrop-filter: blur(3px);
+  transition: opacity .3s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-Control {
@@ -536,57 +635,62 @@ body.no-scroll {
   display: flex;
   position: absolute;
   opacity: 1;
-  transition: opacity 0.2s ease;
+  transition: opacity .25s;
 }
 
 #SDHub-Gallery-Image-Viewer-Wrapper {
-  height: 100%;
   display: flex;
   position: relative;
-  opacity: 0;
-  transform: translate(0px, 0px) scale(0);
-  transition: transform 0.3s ease, opacity 0.4s ease;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  gap: 0;
+  transform: translate(0px, 0px) scale(0.7);
+  transition: transform .2s ease-out;
 }
 
 #SDHub-Gallery-Image-Viewer-img {
   display: flex;
+  position: relative;
+  object-fit: contain;
   align-self: center;
   width: auto;
   height: auto;
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain;
-  position: relative;
-  cursor: auto;
+  cursor: default;
   user-select: none;
   -webkit-user-select: none;
   background-color: #212121;
-  transform: translate(0px, 0px) scale(1);
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  transform: translate(0px, 0px) scale(1.0001);
+  transition: transform .2s ease-out;
+}
+
+#SDHub-Gallery-Image-Viewer-img.sdhub-gallery-img-0 {
+  opacity: 0;
 }
 
 .sdhub-gallery-image-viewer-button {
   display: flex;
+  position: absolute;
+  top: 50%;
   margin: 0;
   padding: 0;
-  pointer-events: auto;
-  cursor: pointer;
   border: 0;
   color: var(--primary-400);
   background: transparent;
-  position: absolute;
-  filter:
-    drop-shadow(0 0 4px rgba(0,0,0,1))
-    drop-shadow(0 0 4px rgba(0,0,0,0.2))
-    drop-shadow(0 0 4px rgba(0,0,0,0.2));
-  transition: 0.3s ease;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: .3s ease;
 }
 
 .sdhub-gallery-image-viewer-button svg {
-  filter:
-    drop-shadow(0 0 2px rgba(0,0,0,0.5))
-    drop-shadow(0 0 2px rgba(0,0,0,0.5))
-    drop-shadow(0 0 2px rgba(0,0,0,0.5));
+  filter: drop-shadow(0 0 4px rgb(0 0 0 / 60%))
+          drop-shadow(0 0 3px rgb(0 0 0 / 60%))
+          drop-shadow(0 0 2px rgb(0 0 0 / 90%));
+  width: 45px;
+  height: 45px;
 }
 
 .sdhub-gallery-image-viewer-button:hover {
@@ -597,308 +701,411 @@ body.no-scroll {
 #SDHub-Gallery-Image-Viewer-Next-Button {
   top: 50%;
   right: 0;
-  margin-right: 10px;
+  margin-right: 5px;
 }
 
 #SDHub-Gallery-Image-Viewer-Prev-Button {
   top: 50%;
   left: 0;
-  margin-left: 10px;
+  margin-left: 5px;
 }
 
 #SDHub-Gallery-Image-Viewer-Close-Button {
+  display: flex !important;
+  position: absolute;
   top: 0;
   right: 0;
-  margin-right: 10px;
-  margin-top: 10px;
+  height: 60px;
+  width: 60px;
+  margin: 0;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0 0 0 1.5rem;
+  box-sizing: border-box;
+  pointer-events: auto;
+  color: var(--primary-400) !important;
+  background: var(--input-background-fill);
+  box-shadow: 0 0 7px 2px #000;
+  filter: none;
+  transition: .2s ease;
+}
+
+#SDHub-Gallery-Image-Viewer-Close-Button svg {
+  position: fixed;
+  top: 3px;
+  right: 3px;
+  width: 50px;
+  height: 50px;
+  filter: drop-shadow(0 0 3px rgb(0 0 0 / 50%))
+          drop-shadow(0 0 2px rgb(0 0 0 / 50%))
+          drop-shadow(0 0 2px rgb(0 0 0 / 50%));
+  transition: .2s ease;
+}
+
+#SDHub-Gallery-Image-Viewer-Close-Button:hover {
+  transform: scale(1);
+  background: red !important;
+  filter: drop-shadow(0 0 10px red);
+}
+
+#SDHub-Gallery-Image-Viewer-Close-Button:hover svg {
+  color: #fff;
+}
+
+#SDHub-Gallery-Image-Viewer-Control.sdhub-gallery-pointer-events-none {
+  opacity: 0;
+}
+
+.sdhub-gallery-pointer-events-none * {
+  pointer-events: none !important;
 }
 
 /* ############################################################################################################ */
 
-#SDHubimgInfoImage {
-  height: unset !important;
-  min-height: min(160px, 100%) !important;
-  background: transparent;
-  border-radius: 0.8rem !important;
-  transition: 0.5s ease;
-  box-shadow: inset 0 0 10px 0.2em var(--primary-400) !important;
+#SDHub-Gallery-Info-Column {
+  display: none;
+  position: fixed;
+  gap: 0 !important;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: baseline;
+  box-sizing: border-box;
+  background: var(--input-background-fill-hover) !important;
+  border-radius: 0;
+  z-index: 99;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  opacity: 0;
+  transition: opacity .4s ease;
+  scrollbar-width: none;
 }
 
-#SDHubimgInfoImage img {
-  cursor: auto;
-  object-fit: contain;
-  max-width: 100%;
-  max-height: 100%;
-  border-top-right-radius: 1rem;
+#SDHub-Gallery-Info-Column > .form {
+  width: 100%;
+}
+
+#SDHub-Gallery-Info-Image {
+  display: flex;
+  position: static;
+  height: 100% !important;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex-grow: 3 !important;
+  flex: unset;
+  border: 2px solid #000 !important;
+  background: #000;
+  border-radius: 1rem !important;
+  overflow: hidden !important;
+}
+
+#SDHub-Gallery-Info-Image img {
+  display: flex;
+  position: fixed;
+  object-fit: cover;
+  object-position: center 10%;
+  cursor: default;
+  height: 100%;
+  width: 100%;
+  opacity: 0;
+  padding: 0;
+  inset: 0;
   user-select: none;
   -webkit-user-select: none;
+  transition: opacity 1s ease;
 }
 
-#sd-hub-gallery-image-info-clear-button {
-  transform: scale(2);
+#SDHub-Gallery-Info-img-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+  box-shadow: inset 0 0 10px 5px #000;
+  filter: drop-shadow(0 0 1px #000);
+}
+
+#SDHub-Gallery-Info-Clear-Button {
+  display: flex !important;
+  position: fixed;
+  z-index: 1;
+  height: 60px;
+  width: 60px;
+  top: 3px;
+  right: 3px;
   margin: 0;
-  padding: 2px;
   gap: 0;
-  border-radius: 0;
-  border-bottom-left-radius: 7px;
+  padding: 6px;
+  border-radius: 0 0 0 1.5rem;
   box-sizing: border-box;
   border: 0;
   color: var(--primary-400) !important;
   background: var(--input-background-fill);
-  box-shadow: 0 0 5px 1px #000;
-  transition: 0.3s ease;
-  display: none;
+  box-shadow: 0 0 5px 3px #000;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: .2s ease;
 }
 
-#sd-hub-gallery-image-info-clear-button > div {
+#SDHub-Gallery-Info-Clear-Button > div {
   position: relative;
-  padding: 1px;
+  width: 100%;
+  height: 100%;
   border: 0;
 }
 
-#sd-hub-gallery-image-info-clear-button path {
+#SDHub-Gallery-Info-Clear-Button svg {
+  filter:
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+
+#SDHub-Gallery-Info-Clear-Button path {
   stroke-width: 5px !important;
 }
 
-#sd-hub-gallery-image-info-clear-button:hover {
-  color: var(--primary-500) !important;
+#SDHub-Gallery-Info-Clear-Button:hover {
+  color: #fff !important;
+  background: red;
+  filter: drop-shadow(0 0 10px red);
 }
 
-#SDHubimgInfoHTML {
-  margin-left: 0.1rem !important;
-  overflow-wrap: break-word;
-  max-width: 100%;
-  margin-bottom: -0.5rem !important;
-  cursor: default;
-}
-
-#SDHubimgInfoOutputPanel {
+#SDHub-Gallery-Info-SendButton {
+  display: grid;
+  grid-template-columns: 1fr !important;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  width: max-content;
+  padding: 20px 0 0 20px !important;
   opacity: 0;
+  pointer-events: none;
+  transition: opacity 0s;
 }
 
-#SDHubimgInfoOutputPanel.show {
+#SDHub-Gallery-Info-SendButton.sdhub-gallery-display-output-panel {
   opacity: 1;
-  transition: opacity 0.2s ease;
+  pointer-events: auto;
+  transition: opacity .6s ease;
 }
 
-.gradio-container-4-40-0 #SDHubimgInfoOutputPanel {
-  margin-left: -10px;
+#SDHub-Gallery-Info-SendButton button {
+  border: 1px solid #000;
+  position: relative;
+  padding: 5px 20px;
+  border-radius: 1rem;
+  box-shadow: 0 0 7px 1px #000;
+  white-space: nowrap;
+  transition: .2s ease;
 }
 
-#SDHubimgInfoModelOutput {
-  width: auto;
-  height: auto;
-  background-color: transparent;
-  transition: all 0.3s ease;
+#SDHub-Gallery-Info-SendButton button:hover {
+  box-shadow: 0 0 5px 1px var(--primary-400);
+  filter: drop-shadow(0 0 5px var(--primary-400));
+  border-color: var(--background-fill-primary);
+  color: var(--background-fill-primary);
+  background: var(--button-primary-background-fill);
 }
 
-.SDHubimgInfoOutputSection {
-  padding-top: 5px;
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-bottom: 0px;
-  background: var(--input-background-fill);
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  margin-bottom: 8px;
-  box-shadow: var(--sdhub-box-shadow);
-  transition: all 0.3s ease;
+#SDHub-Gallery-Info-Output-Panel {
+  display: flex;
+  position: absolute;
+  gap: 0 !important;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 100%;
+  pointer-events: none;
+  background: transparent !important;
+  transition: opacity 1s ease;
 }
 
-.SDHubimgInfoOutputSection:hover {
-  background: var(--input-background-fill-hover);
+#SDHub-Gallery-Info-Output-Panel.sdhub-gallery-display-output-panel {
+  opacity: 1;
 }
 
-.SDHubimgInfoOutputSection.modelBox {
+#SDHub-Gallery-Info-Output-Panel.sdhub-gallery-display-output-fail {
+  height: 100%;
+}
+
+#SDHub-Gallery-Info-img-area {
+  display: block;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
   border: 0;
-  padding-top: 0;
-  padding-left: 0;
-  padding-right: 0;
-  box-shadow: none;
-  background-color: transparent;
-  transition: none;
+  opacity: 1;
+  pointer-events: auto;
 }
 
-.SDHubimgInfoOutputSection.modelBox:hover {
-  background-color: transparent;
+#SDHub-Gallery-Info-HTML {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-wrap: break-word;
+  height: 100%;
+  gap: 1.2rem;
+  max-width: 100%;
+  margin-top: 240px;
+  padding: 0 20px 20px 20px !important;
+  border-radius: 0.8rem !important;
+  pointer-events: none;
 }
 
-.SDHubimgInfoModelOutputReveal {
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-section {
+  color: var(--output-text-color);
+  border: 0;
+  margin: 0;
+  background: transparent;
+  filter: drop-shadow(0 0 4px #000);
+  cursor: default;
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-title {
+  display: flex;
+  position: relative;
+  z-index: 2;
+  font-weight: bold;
+  cursor: default;
+  width: max-content;
+  font-size: 16px;
+  text-align: center;
+  color: var(--primary-400);
+  justify-content: flex-start;
+  margin: 0;
+  border: 0;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 4px 10px;
+  background: var(--sdhub-gallery-output-bg);
+  filter: drop-shadow(0 0 5px var(--sdhub-gallery-output-bg));
+  pointer-events: auto;
+  transition: .4s ease;
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-copybutton {
+  cursor: pointer;
+  transition: .4s ease;
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-copybutton:hover {
+  color: var(--background-fill-primary);
+  background: var(--primary-400);
+  box-shadow: 0 0 5px 1px var(--primary-400);
+  filter: drop-shadow(0 0 9px var(--primary-400));
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-copybutton:hover #SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-wrapper {
+  background: var(--input-background-fill);
+}
+
+#SDHub-Gallery-Info-Seed-Button {
+  color: var(--primary-400);
+  cursor: pointer;
+  transition: color .3s ease;
+}
+
+#SDHub-Gallery-Info-Seed-Button:hover {
+  color: var(--primary-600) !important;
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-wrapper {
+  position: relative;
+  z-index: 1;
+  border: 0;
+  border-radius: 0 0.5rem 0.5rem 0.5rem;
+  background: var(--sdhub-gallery-output-bg);
+  filter: drop-shadow(0 0 5px var(--sdhub-gallery-output-bg));
+  pointer-events: auto;
+  transition: .4s ease;
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-content {
+  line-height: 1.7;
+  margin: 0;
+  padding: 5px 8px;
+  border: 1px solid transparent;
+  cursor: default;
+  border-radius: 0 0.5rem 0.5rem 0.5rem;
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-display-model-output {
   animation: undressBox 1s forwards ease-out;
 }
 
-#SDHubimgInfoModelOutput .output-line {
-  display: flex;
-  padding: 0px;
-  margin-bottom: 5px;
-  border-radius: 5em;
-}
-
-#SDHubimgInfoModelOutput .label, #SDHubimgInfoModelOutput .hashes {
-  display: flex;
-  flex-wrap: wrap;
-  word-wrap: break-word;
-  white-space: normal;
-  box-sizing: border-box;
-  filter: drop-shadow(0 0 1px var(--primary-400));
-  box-shadow:
-    inset 0 0 3px 0px var(--primary-400),
-    0 0 1px 0px var(--primary-400);
-}
-
-#SDHubimgInfoModelOutput .label {
-  width: 17%;
-  background-color: var(--input-background-fill);
-  font-size: 15px;
-  border-top-left-radius: 1rem;
-  border-bottom-left-radius: 1rem;
-  align-items: center;
-  justify-content: center;
-}
-
-#SDHubimgInfoModelOutput .hashes {
-  width: 83%;
-  overflow-wrap: break-word;
-  column-gap: 7px;
-  row-gap: 0px;
-  border-left: 5px solid transparent;
-  border-top-right-radius: 1rem;
-  border-bottom-right-radius: 1rem;
-  padding-left: 10px;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  align-items: flex-start;
-}
-
-.SDHubimgInfoModelOutputNonLink {
-  font-size: 14px;
-  border: 1px solid transparent;
-  padding: 2px 3px;
-  margin: 3px 0;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow: hidden;
-}
-
-.SDHubimgInfoModelOutputLink {
-  font-size: 13px;
-  text-decoration: none;
-  border: 1px solid var(--primary-600);
-  transition: color 0.2s ease !important;
-  padding: 2px 3px;
-  margin: 3px 0;
-  background-color: var(--panel-background-fill);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 50ch;
-}
-
-.SDHubimgInfoModelOutputLink:hover {
-  color: var(--primary-400) !important;
-  border: 1px solid var(--link-text-color-hover);
-}
-
-#SDHubimgInfoModelOutput a {
-  white-space: nowrap;
-  font-weight: normal;
-}
-
-.SDHubimgInfoBorderPulse {
+.sdhub-gallery-info-borderpulse {
   animation: pulseBorder2 2s infinite alternate forwards;
 }
 
 @keyframes pulseBorder2 {
   0% {
     border-color: transparent;
-    filter: drop-shadow(0 0 0 var(--primary-400));
     box-shadow: inset 0 0 0 0 transparent;
   }
   25% {
     border-color: var(--primary-400);
-    filter: drop-shadow(0 0 2px var(--primary-400));
-    box-shadow: inset 0 0 10px 0 var(--primary-400);
+    box-shadow: inset 0 0 15px 2px var(--primary-400)
   }
   50% {
     border-color: var(--primary-400);
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: inset 0 0 5px 0 var(--primary-400);
+    box-shadow: inset 0 0 3px 1px var(--primary-400)
   }
   75% {
     border-color: var(--primary-400);
-    filter: drop-shadow(0 0 2px var(--primary-400));
-    box-shadow: inset 0 0 10px 0 var(--primary-400);
+    box-shadow: inset 0 0 15px 2px var(--primary-400)
   }
   100% {
     border-color: transparent;
-    filter: drop-shadow(0 0 0 var(--primary-400));
     box-shadow: inset 0 0 0 0 transparent;
-    
   }
 }
 
-#SDHubimgInfoSendButton {
-  display: none;
-  margin-top: 0.2rem !important;
-  grid-template-columns: 1fr 1fr !important;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 0 !important;
+#SDHub-Gallery-Info-Output-Panel .sdhub-gallery-info-output-failed {
+  display: flex;
+  width: 100%;
+  pointer-events: auto;
+  padding: 5px 10px;
+  color: var(--output-text-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 0 10px 0 rgba(255, 255, 255, 0.1), 0 0 5px 0 rgba(255, 255, 255, 0.2), inset 0 0 5px 0 rgba(255, 255, 255, 0.2);
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
+  background: rgba(0, 0, 0, 0.3);
 }
 
-#SDHubimgInfoSendButton button {
-  padding: 0.4rem;
-  box-shadow: var(--sdhub-box-shadow);
-  background: var(--sdhub-secondary-button-background);
-  transition: 0.2s ease;
-}
-
-#SDHubimgInfoSendButton button:hover {
-  z-index: 5;
-  color: var(--background-fill-primary);
-  box-shadow: 0 0 10px 1px var(--primary-400), 0 0 20px 2px var(--primary-400);
-  background: var(--button-primary-background-fill);
-}
-
-#SDHubimgInfoSendButton button:nth-child(1) {
-  border-top-left-radius: 0.8rem;
-}
-
-#SDHubimgInfoSendButton button:nth-child(2) {
-  border-top-right-radius: 0.8rem;
-}
-
-#SDHubimgInfoSendButton button:nth-child(3) {
-  border-bottom-left-radius: 0.8rem;
-}
-
-#SDHubimgInfoSendButton button:nth-child(4) {
-  border-bottom-right-radius: 0.8rem;
-}
-
-.SDHubimgInfoButtons {
-  transition: color 0.3s ease;
-}
-
-.SDHubimgInfoButtons:hover {
-  color: var(--primary-600) !important;
-}
-
-#refresh-spinner {
+#SDHub-Gallery-Info-Spinner {
   margin: 0 auto;
-  animation: spinner 1s linear infinite;
+  animation: spinner 1.5s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(0,0,0,0.7));
+}
+
+#SDHub-Gallery-Info-Spinner path,
+#SDHub-Gallery-Info-Spinner polygon {
+  fill: var(--primary-400);
 }
 
 .sdhub-gallery-spinner {
-  animation: spinner 1s linear infinite;
+  animation: spinner 1.5s linear infinite;
 }
 
 @keyframes spinner {
   0% {
-    transform: rotate(360deg);
+    transform: rotate(0deg);
   }
   100% {
-    transform: rotate(0deg);
+    transform: rotate(360deg);
   }
 }
 
@@ -911,6 +1118,43 @@ body.no-scroll {
     opacity: 1;
     filter: blur(0px);
   }
+}
+
+#SDHub-Gallery-Image-Info-Arrow {
+  display: flex;
+  position: fixed;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  right: 30px;
+  bottom: 16px;
+  height: auto;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  z-index: 1;
+  cursor: pointer;
+  box-shadow: 0 0 10px 0 #000;
+  color: var(--primary-400);
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(0);
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Image-Info-Arrow svg {
+  height: 45px;
+  width: 45px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 10px 1px var(--primary-400);
+  filter: drop-shadow(0 0 1px var(--primary-400));
+  overflow: hidden;
+}
+
+#SDHub-Gallery-Image-Info-Arrow polygon {
+  transform: scale(85%);
+  transform-origin: center;
 }
 
 /* ############################################################################################################ */
@@ -927,9 +1171,10 @@ body.no-scroll {
   border-radius: 1rem;
   justify-content: center;
   align-items: center;
-  z-index: 10000;
+  align-self: flex-start;
+  z-index: 3;
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity .3s ease;
 }
 
 #SDHub-Gallery-Delete-Spinner {
@@ -938,7 +1183,7 @@ body.no-scroll {
   position: absolute;
   color: var(--primary-400);
   pointer-events: none;
-  transition: 0.3s ease;
+  transition: .3s ease;
   filter:
     drop-shadow(0 0 10px rgba(0, 0, 0, 0.6))
     drop-shadow(0 0 1px var(--primary-400))
@@ -952,34 +1197,37 @@ body.no-scroll {
 #SDHub-Gallery-Delete-Box {
   border: 0;
   position: absolute;
-  width: 300px;
-  background: var(--background-fill-secondary);
+  min-width: 300px;
+  max-width: 50%;
+  word-break: break-word;
   padding: 20px;
-  border-radius: 0.5rem;
+  border-radius: 1rem;
   text-align: center;
   box-shadow: 0 0 10px 2px var(--primary-400);
-  transform: scale(0);
-  opacity: 1;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+  background: var(--background-fill-secondary);
+  transform: scale(0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .3s ease-out, opacity .3s ease-out;
 }
 
 #SDHub-Gallery-Delete-Text {
   margin: 0 0 30px;
-  font-size: 20px;
+  font-size: 16px;
   color: var(--body-text-color);
   pointer-events: none;
 }
 
 #SDHub-Gallery-Delete-ButtonRow {
-  position: relative;
   display: flex;
-  justify-content: center;
-  gap: 100px;
+  position: relative;
+  justify-content: space-around;
+  gap: 30%;
 }
 
 .sdhub-gallery-delete-button {
   display: flex;
-  width: 100%;
+  width: 100px;
   height: 100%;
   padding: 1px;
   border: 0;
@@ -993,34 +1241,42 @@ body.no-scroll {
   justify-content: center;
   align-items: center;
   box-shadow: 0 0 10px 2px #000;
-  transition: 0.4s ease;
+  transition: .4s ease;
   font-weight: bold;
 }
 
 .sdhub-gallery-delete-button:hover {
   transform: scale(1.2);
-  filter: drop-shadow(0 0 5px var(--primary-500));
-  box-shadow: 0 0 10px 1px var(--primary-500);
   color: var(--body-text-color);
-  background: var(--button-primary-background-fill-hover);
+}
+
+#SDHub-Gallery-Delete-Yes:hover {
+  box-shadow: 0 0 10px 1px var(--primary-500);
+  background: var(--primary-500);
+}
+
+#SDHub-Gallery-Delete-No:hover {
+  box-shadow: 0 0 10px 1px #ff0000;
+  background: #ff0000;
 }
 
 /* ############################################################################################################ */
 
 #SDHub-Gallery-imgchest-Button {
-  position: absolute;
-  width: max-content;
   display: flex;
-  background: var(--background-fill-secondary);
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: max-content;
+  background: transparent;
   border-radius: 0.5em;
   padding: 1px;
   cursor: pointer;
   pointer-events: auto;
-  border: 1px solid var(--background-fill-secondary);
+  border: 1px solid transparent;
   margin: 0;
-  margin-top: 3px;
-  z-index: 50;
-  transition: 0.4s ease;
+  z-index: 3;
+  transition: .4s ease;
 }
 
 #SDHub-Gallery-imgchest-Button svg {
@@ -1052,7 +1308,7 @@ body.no-scroll {
   background: var(--background-fill-primary);
   opacity: 0;
   transform: scale(0);
-  transition: transform 0.4s ease, opacity 0.3s ease;
+  transition: transform .4s ease, opacity .3s ease;
   gap: 5px;
   overflow: hidden;
 }
@@ -1064,7 +1320,7 @@ body.no-scroll {
 }
 
 .sdhub-gallery-imgchest-info {
-  transition: 0.6s ease;
+  transition: .6s ease;
 }
 
 .sdhub-gallery-imgchest-info:hover {
@@ -1076,7 +1332,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Checkbox input {
-  transition: 0.7s ease;
+  transition: .7s ease;
   cursor: pointer;
   height: 30px;
   padding: 5px;
@@ -1087,7 +1343,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Checkbox span {
-  transition: 0.7s ease;
+  transition: .7s ease;
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:not(:checked):hover {
@@ -1095,7 +1351,7 @@ body.no-scroll {
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:checked {
-  transition: 0.4s ease;
+  transition: .4s ease;
   background: var(--button-primary-background-fill);
 }
 
@@ -1130,7 +1386,7 @@ body.no-scroll {
 #SDHub-Gallery-imgchest-NSFW label,
 #SDHub-Gallery-imgchest-NSFW input,
 #SDHub-Gallery-imgchest-API input {
-  transition: 0.4s ease;
+  transition: .4s ease;
 }
 
 #SDHub-Gallery-imgchest-Privacy input, 
@@ -1154,7 +1410,7 @@ body.no-scroll {
   min-width: 185px;
   padding: 4px 0;
   font-size: 18px;
-  transition: 0.4s ease;
+  transition: .4s ease;
 }
 
 #SDHub-Gallery-imgchest-Save-Button:hover,
@@ -1170,4 +1426,503 @@ body.no-scroll {
   #SDHub-Gallery-imgchest-Load-Button {
     min-width: 100px;
   }
+}
+
+/* ############################################################################################################ */
+
+#SDHub-Gallery-Setting-Button {
+  display: flex;
+  position: absolute;
+  z-index: 3;
+  top: 3px;
+  right: 5px;
+  cursor: pointer;
+  pointer-events: auto;
+  height: 38px;
+  width: 38px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  transition: 1s ease;
+}
+
+#SDHub-Gallery-Setting-Button:hover {
+  transform: rotate(-360deg);
+}
+
+#SDHub-Gallery-Setting-Button svg {
+  height: 38px;
+  width: 38px;
+  filter: drop-shadow(0 0 2px #000);
+}
+
+#SDHub-Gallery-Setting-Button path {
+  fill: var(--primary-400);
+}
+
+#SDHub-Gallery-Setting {
+  display: none;
+  position: fixed;
+  align-items: center;
+  justify-content: center;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  opacity: 0;
+  z-index: 999;
+  background: rgb(0 0 0 / 70%);
+  transition: .4s ease;
+  outline: none;
+}
+
+#SDHub-Gallery-Setting-Box {
+  display: flex;
+  position: absolute;
+  height: auto;
+  width: auto;
+  border: 1px solid var(--primary-400);
+  border-radius: 1rem;
+  opacity: 0;
+  padding: 0;
+  box-shadow: inset 0 0 0 0 var(--primary-400), 0 0 10px 3px var(--primary-400);
+  background: var(--sdhub-gallery-tab-background);
+  transform: scale(0.5);
+  transition: transform .3s ease-out, opacity .3s ease-out, box-shadow .6s ease;
+  overflow: hidden;
+}
+
+#SDHub-Gallery-Setting-Box.sdhub-gallery-setting-applied {
+  box-shadow: inset 0 0 30px 10px var(--primary-400),
+              0 0 10px 3px var(--primary-400);
+}
+
+#SDHub-Gallery-Setting-Frame {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 1rem;
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: inset 0 0 7px 1px #000, 0 0 6px 2px var(--primary-400);
+  filter: drop-shadow(0 0 6px #000);
+  transition: box-shadow .6s ease;
+}
+
+#SDHub-Gallery-Setting-Frame.sdhub-gallery-setting-applied {
+  box-shadow: inset 0 0 1px 0 var(--primary-400),
+              0 0 6px 2px var(--primary-400);
+}
+
+#SDHub-Gallery-Setting-Exit-Button {
+  display: flex;
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  right: 0;
+  height: 45px;
+  width: 45px;
+  margin: 0;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0 1rem 0 1rem;
+  box-sizing: border-box;
+  pointer-events: auto;
+  color: var(--primary-500) !important;
+  background: var(--input-background-fill);
+  box-shadow: 0 0 7px 2px #000;
+  filter: none;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+#SDHub-Gallery-Setting-Exit-Button svg {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 35px;
+  height: 35px;
+  filter: drop-shadow(0 0 2px rgb(0 0 0 / 60%))
+          drop-shadow(0 0 1px rgb(0 0 0 / 60%))
+          drop-shadow(0 0 1px rgb(0 0 0 / 90%));
+  transition: .2s ease;
+}
+
+#SDHub-Gallery-Setting-Exit-Button:hover {
+  background: red !important;
+  filter: drop-shadow(0 0 3px red);
+}
+
+#SDHub-Gallery-Setting-Exit-Button:hover svg {
+  color: #fff;
+}
+
+#SDHub-Gallery-Setting-Wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 10px;
+  height: max-content;
+  width: 100%;
+  min-width: 500px;
+  max-height: 97vh;
+  gap: 7px;
+  overflow-y: auto;
+}
+
+#SDHub-Gallery-Setting-Title {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: auto;
+  padding: 0;
+  font-family: 'Times New Roman', serif;
+  font-size: 30px;
+  font-weight: bold;
+  text-align: center;
+  color: transparent;
+  background: linear-gradient(to right, var(--body-text-color), var(--primary-500), var(--body-text-color));
+  background-size: 800% 500%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: .5s;
+}
+
+#SDHub-Gallery-Setting-Title:hover {
+  filter: drop-shadow(0 0 7px var(--primary-400));
+  animation: slideBG 10s linear infinite;
+}
+
+@keyframes slideBG {
+  0% { background-position: 0% 800%; }
+  100% { background-position: -800% 0%; }
+}
+
+#SDHub-Gallery-Setting-Setting {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 60px 10px 20px 10px;
+  height: 100%;
+  width: 100%;
+  gap: 7px;
+}
+
+#SDHub-Gallery-Setting-Setting .sdhub-gallery-setting-input-number {
+  display: inline-flex;
+  outline: none;
+  line-height: 1.5;
+  font-size: 16px;
+  align-items: center;
+  text-align: center;
+  min-height: 26px;
+  height: auto;
+  width: 10ch;
+  padding: 0 10px;
+  border: 1px solid var(--primary-500);
+  border-radius: 100px;
+  box-shadow: inset 0 0 10px 2px var(--primary-500),
+              0 0 1px 1px var(--primary-500);
+  background: var(--input-background-fill);
+  appearance: textfield;
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Setting-Thumbnail-Size-Wrapper input {
+  width: 8ch !important;
+}
+
+#SDHub-Gallery-Setting-Setting .sdhub-gallery-setting-input-number:hover {
+  box-shadow: inset 0 0 2px 0 var(--primary-500),
+              0 0 1px 1px var(--primary-500);
+  background: var(--input-background-fill-hover);
+}
+
+#SDHub-Gallery-Setting-Setting .sdhub-gallery-setting-input-number:focus {
+  box-shadow: inset 0 0 2px 0 var(--primary-400),
+              0 0 7px 2px var(--primary-500);
+  background: var(--input-background-fill-hover);
+}
+
+#SDHub-Gallery-Setting-Thumbnail-Position-Wrapper {
+  pointer-events: none;
+  filter: brightness(0.3);
+  opacity: 0.5;
+  transition: opacity .3s ease, filter .3s ease;
+}
+
+#SDHub-Gallery-Setting-Thumbnail-Position-Wrapper.sdhub-gallery-setting-active {
+  pointer-events: auto;
+  filter: brightness(1);
+  opacity: 1;
+}
+
+#SDHub-Gallery-Setting-Thumbnail-Layout-Wrapper {
+  pointer-events: auto;
+  filter: brightness(1);
+  opacity: 1;
+  transition: opacity .3s ease, filter .3s ease;
+}
+
+#SDHub-Gallery-Setting-Thumbnail-Layout-Wrapper.sdhub-gallery-setting-disable {
+  pointer-events: none;
+  filter: brightness(0.3);
+  opacity: 0.5;
+}
+
+.sdhub-gallery-setting-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-weight: normal;
+  color: var(--body-text-color);
+  max-width: 550px;
+  width: 100%;
+  padding: 5px;
+  border-radius: 1.1rem;
+  gap: 10px;
+  box-shadow: 0 0 3px 1px #000;
+  box-sizing: border-box;
+  background: var(--panel-background-fill);
+}
+
+.sdhub-gallery-setting-input {
+  display: none;
+}
+
+.sdhub-gallery-setting-label {
+  display: flex;
+  position: relative;
+  justify-content: flex-start;
+  left: 0;
+  width: 100%;
+  min-width: 200px;
+  max-width: 250px;
+  padding-left: 5px;
+  word-break: break-word;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.sdhub-gallery-setting-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  flex-direction: row;
+  position: relative;
+  width: 100%;
+  max-width: 250px;
+}
+
+.sdhub-gallery-setting-wrapper-selection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: max-content;
+  width: max-content;
+  max-width: 100%;
+  border-radius: 1.1rem;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: 0 0 5px 1px #000;
+}
+
+.sdhub-gallery-setting-wrapper-selection > :nth-child(1):not(input) {
+  border-top-left-radius: 1.1rem;
+  border-bottom-left-radius: 1.1rem;
+}
+
+.sdhub-gallery-setting-wrapper-selection > :nth-child(2):not(input) {
+  border-top-right-radius: 1.1rem;
+  border-bottom-right-radius: 1.1rem;
+}
+
+.sdhub-gallery-setting-selection {
+    display: inline-flex;
+    z-index: 1;
+    line-height: 1.5;
+    align-items: center;
+    text-align: center;
+    font-size: 14px;
+    min-height: 26px;
+    width: max-content;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    background: var(--input-background-fill);
+    cursor: pointer;
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    transition: .2s ease;
+}
+
+.sdhub-gallery-setting-selection.sdhub-gallery-setting-selected {
+  color: var(--background-fill-primary);
+  background: var(--primary-500);
+  box-shadow: 0 0 5px 1px var(--primary-500);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 50%);
+  z-index: 2;
+}
+
+.sdhub-gallery-setting-selection:not(.sdhub-gallery-setting-selected):hover {
+  box-shadow: 0 0 5px 1px var(--primary-500),
+              inset 0 0 7px 1px var(--primary-500);
+  border-color: var(--primary-500);
+}
+
+.sdhub-gallery-setting-wrapper-switch {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: max-content;
+  width: max-content;
+  max-width: 100%;
+  border-radius: 100px;
+  gap: 0;
+  padding: 0;
+  border: 0;
+  color: transparent;
+  box-shadow: 0 0 5px 1px #000;
+}
+
+.sdhub-gallery-setting-switch {
+  display: inline-flex;
+  z-index: 1;
+  line-height: 1.5;
+  align-items: center;
+  text-align: center;
+  font-size: 14px;
+  min-height: 30px;
+  width: max-content;
+  margin: 0;
+  padding: 0 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+#SDHub-Gallery-Setting .sdhub-gallery-setting-wrapper-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 26px;
+  width: max-content;
+}
+
+#SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  width: 55px;
+  margin: 0;
+  border-radius: 25px;
+  border: 0;
+  box-shadow: inset 0 1px 4px hsl(0deg 0% 0% / 84%),
+              inset 0 0 10px hsl(0deg 0% 35.82% / 46%),
+              0 0 0 1px hsla(0, 0%, 0%, .1),
+              0 0 5px 1px #000;
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(hsla(0, 0%, 0%, .1), hsla(0, 0%, 100%, .1)),
+                    linear-gradient(to right, #00ff13 50%, #ff0000 50%);
+  background-size: 100% 100%, 200% 100%;
+  background-position: 0% 0, right center;
+  transition: .25s ease;
+}
+
+#SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input:after {
+  content: '';
+  display: flex;
+  align-items: center;
+  height: 28px;
+  width: 28px;
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  border-radius: 100%;
+  box-shadow: inset 0 1px 1px 1px hsla(0, 0%, 100%, 1),
+              inset 0 -1px 1px 1px hsla(0, 0%, 0%, .25),
+              0 1px 3px 1px hsla(0, 0%, 0%, .5),
+              0 0 2px hsl(0deg 0% 0% / 39%);
+  cursor: pointer;
+  background-color: #eee;
+  background-image: linear-gradient(hsla(0, 0%, 100%, 0.1), hsla(0, 0%, 0%, 0.1));
+  transition: .25s ease;
+}
+
+#SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input:checked {
+  background-position: 0% 0, left center;
+}
+
+#SDHub-Gallery-Setting .sdhub-gallery-setting-checkbox-input:checked::after {
+  left: 27px;
+}
+
+#SDHub-Gallery-Setting-Apply-Button {
+  display: flex;
+  position: relative;
+  align-self: center;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  text-align: center;
+  height: 50px;
+  width: 100px;
+  padding: 4px 8px;
+  margin-top: 13px;
+  margin-bottom: -7px;
+  border: 2px solid var(--primary-500);
+  border-radius: 1rem;
+  background: transparent;
+  color: var(--body-text-color);
+  cursor: pointer;
+  box-shadow: inset 0 0 15px 3px var(--primary-500);
+  user-select: none;
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Setting-Apply-Button:hover {
+  color: var(--background-fill-primary);
+  background: var(--primary-500);
+  box-shadow: inset 0 0 2px 0 var(--primary-400), 0 0 7px 2px var(--primary-500);
+  text-shadow: 0 1px 0 rgb(0 0 0 / 50%);
+}
+
+#SDHub-Gallery-Setting-Apply-Button.sdhub-gallery-setting-applied {
+  color: var(--body-text-color);
+  box-shadow: 0 0 3px 1px #000;
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+#SDHub-Gallery-Setting-Setting > a {
+  pointer-events: auto;
+  position: absolute;
+  bottom: 0;
+  right: 5px;
+  font-size: 14px;
+  color: var(--body-text-color);
+  background: transparent;
+  filter: drop-shadow(0 0 5px var(--primary-400));
+  transition: .3s ease;
+}
+
+#SDHub-Gallery-Setting-Setting > a:hover {
+  color: var(--primary-500);
+  filter: drop-shadow(0 0 5px var(--primary-400));
 }

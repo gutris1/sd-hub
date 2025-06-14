@@ -9,8 +9,7 @@ And a simple Gallery for displaying your outputs with built-in image info and an
 - Downloading/Uploading/Archiving/Extracting files from/to outside Models or Embeddings folders is blocked.<br>
 Add <code>--enable-insecure-extension-access</code> command line argument to proceed at your own risk.<br>
 
-- The UI uses JavaScript to read the [Excel](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx) file and translate any readable text based on the user's browser language.<br>
-Supported languages include:
+Supported languages:
   - English
   - Japanese (日本語)
   - Simplified Chinese (简体中文)
@@ -19,7 +18,9 @@ Supported languages include:
   - Korean (한국어)
   - Russian (Русский)
 
-- Support both <code>Windows</code> and <code>Unix</code>.
+Language is automatically selected based on the browser’s language setting.
+
+Support both <code>Windows</code> and <code>Unix</code>.
 
 # Usage
 <details><summary> <h2>Downloader</h2> </summary><br>
@@ -216,27 +217,34 @@ $ckpt
 
 <details><summary> <h2>Gallery</h2> </summary><br>
 
-<p><img src="https://github.com/user-attachments/assets/0df71fe8-dcc6-4947-99ea-cb71fe0046ea", max-width=1000px></p>
+<p><img src="https://github.com/user-attachments/assets/86112ae4-7698-4ad1-a6ef-01869fcedf09", max-width=1000px></p>
 
 inspired by [IIB](https://github.com/zanllp/sd-webui-infinite-image-browsing)<br>
 a simple gallery to display your outputs.<br>
-it's not as advanced as IIB, you can't add folders and browse images in here.<br>
+it's not as advanced as IIB, you can't add folders and browse images here.<br>
 
-- Left-click on an image to show an image info.<br>
-  - Left-clicking on the image will open the image viewer.
-  - Press ESC to exit.
-<p><img src="https://github.com/user-attachments/assets/13547409-916c-430c-9b08-86523f511eda", max-width=1000px></p>
+Each Tab has its own pagination, with a default limit of 100 images per page (you can change this in Settings).<br>
+Use the arrow buttons at the bottom to navigate between pages (if available), or use the left/right arrow keys on your keyboard.<br>
+
+- Click the gear icon on the right to open Settings and change the layout of certain elements.
+  - Press [X] in the top-right or ESC to close Settings.
+<p><img src="https://github.com/user-attachments/assets/11f9c838-891e-494c-97d5-5275f04fb93b", max-width=1000px></p>
+
+- Left-click on an image to open the image info.<br>
+  - left-click the image inside the image info to open the image viewer.
+  - Press [X] in the top-right or ESC to close image info.
+<p><img src="https://github.com/user-attachments/assets/62a9f988-a190-4970-b0dc-446eaa051380", max-width=1000px></p>
 
 - Right-click on an image to open a context menu.<br>
-<p><img src="https://github.com/user-attachments/assets/903aae36-649b-44b4-9ea7-833e1cfd3d12", max-width=1000px></p>
+<p><img src="https://github.com/user-attachments/assets/57152ccd-293f-418c-840b-1a1ecdc6ae55", max-width=1000px></p>
 
-- Hover over an image will reveal an image viewer button in the bottom left and a context menu button on the top right.<br>
-<p><img src="https://github.com/user-attachments/assets/1f407ac0-1901-491e-aee4-868b78e39024", max-width=1000px></p>
+- Hovering over an image will reveal the image viewer button in the bottom-left and a context menu button in the top-right (which also opens on hover).<br>
+<p><img src="https://github.com/user-attachments/assets/e2b6d93a-cbd4-44d3-a59b-f4350c96cf1a", max-width=1000px></p>
 
 - Left-click on the bottom left button to open an image viewer.
-  - Use the left or right arrow key to navigate between images.
-  - Press ESC to exit.
-<p><img src="https://github.com/user-attachments/assets/10bdf1c1-42d7-4e8b-86b1-8578bef5a799", max-width=1000px></p>
+  - Use left/right arrow keys to navigate between images.
+  - Press [X] in the top-right or ESC to close image viewer.
+<p><img src="https://github.com/user-attachments/assets/2cd39ac5-2cbd-438c-9222-6362cff97445", max-width=1000px></p>
 
 </details>
 
@@ -245,15 +253,30 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-04-01  v9.0.0
+### 2025-06-14 — v10
+- Tokens and any other auto-saved/loaded data are now stored in <code>.sd-hub-config.json</code>
+- Fixed Gallery, faster loading, re-style etc.
+- Added paging to the Gallery, limiting to 100 images per page by default.
+- Use the arrow buttons at the bottom to navigate between pages, or use the left/right arrow keys on your keyboard.
+- Added settings to change some layouts in the Gallery. The settings are saved and loaded automatically.
+- Press the [X] button in the top-right corner or ESC on your keyboard to exit the settings.
+
+<p align="left">
+  <img src="https://github.com/user-attachments/assets/57031a18-0d50-4447-b601-88b4b96c55f7", width=auto>
+  <img src="https://github.com/user-attachments/assets/ae2f39da-98bc-4e95-9ebe-2871f06c0b2f", width=auto>
+</p>
+
+<details><summary>2025-04-01 — v9.0.0</summary><br>
+
 - Fixed crashes on Firefox and other Gecko-based browsers.
 - Fixed the "Send to..." buttons in Gallery context menu or image info when running WebUI on mobile.
 - Optimized Gallery to display the scaled-down image (around 30kb/image), only fetching the full-size file when needed.
 - Added a "Copy" button to the Gallery context menu to copy image. (This copies the image itself, not the file, all image tags will be lost when pasted, just like the browser's "Copy Image" context menu.)
 - Added CTRL + scroll wheel (or Cmd + scroll wheel on macOS) to move images horizontally in the image viewer when the top/bottom edge exceeds the Lightbox.
 - Added SHIFT + scroll wheel to move images horizontally in the image viewer when the left/right edge exceeds the Lightbox.
+</details>
 
-<details><summary>2025-03-22  v8.8.8</summary><br>
+<details><summary>2025-03-22 — v8.8.8</summary><br>
 
 - Changed/Added function for Uploader Tab.
 ```python
@@ -276,18 +299,18 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 ```
 </details>
 
-<details><summary>2025-03-08  v8.0.0</summary><br>
+<details><summary>2025-03-08 — v8.0.0</summary><br>
   
 - UI translation based on browser language. Excel file for the translation [here](https://huggingface.co/gutris1/sd-hub/blob/main/sd-hub-translations.xlsx)
 </details>
 
-<details><summary>2025-02-17  v7.0.0</summary><br>
+<details><summary>2025-02-17 — v7.0.0</summary><br>
 
 - Added a simple gallery under the Gallery tab to display outputs with image info and a viewer.
 - Added Text Editor and Shell tab, available only when running WebUI on online services like Google Colab, Kaggle, etc.
 </details>
 
-<details><summary>2024-12-30  v5.6.1</summary><br>
+<details><summary>2024-12-30 — v5.6.1</summary><br>
 
 - Added a function to zip the entire outputs folder, under Zip Outputs accordion of the Archiver tab.<br>
 - Only available when running WebUI with <code>--enable-insecure-extension-access</code> command line argument.<br>
@@ -296,7 +319,7 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 </p>
 </details>
 
-<details><summary>2024-12-25  v5.5.5</summary><br>
+<details><summary>2024-12-25 — v5.5.5</summary><br>
 
 - Added security measures to restrict downloading, uploading, and compressing to the Models and Embeddings folders only when WebUI is run without <code>--enable-insecure-extension-access</code>.<br>
 - Added a click event listener to the Gradio DataFrame in Tag List to automatically copy the table text, making it easier to copy especially for mobile users.<br>
@@ -305,28 +328,28 @@ it's not as advanced as IIB, you can't add folders and browse images in here.<br
 - Relocated the token file to the extension folder and renamed it to <code>.sd-hub-token.json</code>.<br>
 </details>
 
-<details><summary>2024-09-30  v4.8.4</summary><br>
+<details><summary>2024-09-30 — v4.8.4</summary><br>
 
 - Gradio 4 Compatibility Update for Forge Webui.<br>
 </details>
 
-<details><summary>2024-07-21  v4.5.6</summary><br>
+<details><summary>2024-07-21 — v4.5.6</summary><br>
 
 - Added support for downloading from Civitai using webpage URLs directly.<br>
 ![image](https://github.com/user-attachments/assets/2cde28e1-e88b-45cf-aae4-88bf0bfcf17b)
 </details>
 
-<details><summary>2024-07-12  v4.4.4</summary><br>
+<details><summary>2024-07-12 — v4.4.4</summary><br>
 
 - Added support for Windows.
 </details>
 
-<details><summary>2024-07-03  v3.3.3</summary><br>
+<details><summary>2024-07-03 — v3.3.3</summary><br>
   
 - Added venv support.
 </details>
 
-<details><summary>2024-05-14  v3.2.1</summary><br>
+<details><summary>2024-05-14 — v3.2.1</summary><br>
 
 - Added an optional argument <code>-</code> for the Scrape button to filter specific extension instead of using the default extension list.
 ```python
@@ -340,7 +363,7 @@ $ext/sd-hub -- json txt py
 - Added a <code>Split by</code> radio button for the Archiver to split compressed files based on the total number of files if input is pointing to a folder.
 </details>
 
-<details><summary>2024-04-22  v2.0.2</summary><br>
+<details><summary>2024-04-22 — v2.0.2</summary><br>
 
 - Added Scrape Button to return a list of Resolve URL from Huggingface repository, and Pastebin.
 - Improved Compress and Decompress logic for Archiver.
