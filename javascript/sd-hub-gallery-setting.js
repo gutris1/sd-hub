@@ -319,8 +319,26 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
 
     if (pageLimiter !== SDHubGalleryPageLimit) {
       SDHubGalleryPageLimit = pageLimiter;
-      document.querySelectorAll('.sdhub-gallery-pages')?.forEach(p => p.remove());
-      SDHubGalleryLoadInitial();
+      const navBox = document.getElementById('SDHub-Gallery-Page-Nav-Box');
+      navBox.style.display = '';
+
+      const TabButtonRow = document.getElementById('SDHub-Gallery-Tab-Button-Row');
+      TabButtonRow.style.display = '';
+      TabButtonRow.querySelectorAll('.sdhub-gallery-tab-button').forEach(btn => {
+        btn.style.display = '';
+        btn.classList.remove('selected');
+      });
+
+      const TabWrap = document.getElementById('SDHub-Gallery-Tab-Wrapper');
+      TabWrap.querySelectorAll('.sdhub-gallery-tab-image-counter').forEach(c => c.style.display = '');
+
+      TabWrap.querySelectorAll('.sdhub-gallery-tab-container').forEach(con => {
+        con.style.display = '';
+        con.classList.remove('active');
+        con.querySelectorAll('.sdhub-gallery-pages')?.forEach(p => p.remove());
+      });
+
+      setTimeout(() => SDHubGalleryLoadInitial(), 0);
     }
 
     fetch(`${SDHubGalleryBase}/save-setting`, {
