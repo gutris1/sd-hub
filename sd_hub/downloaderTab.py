@@ -80,51 +80,52 @@ def gdrown(url, target_path=None, fn=None):
 def ariari(url, target_path=None, fn=None, token2=None, token3=None):
     aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
 
-    if any(domain in url for domain in ['huggingface.co', 'gitHub.com']):
-        url = url.replace('/blob/', '/raw/' if 'gitHub.com' in url else '/resolve/')
-
+    if any(domain in url for domain in ['huggingface.co', 'github.com']):
+        url = url.replace('/blob/', '/raw/' if 'github.com' in url else '/resolve/')
         if 'huggingface.co' in url and token2:
-            aria2cmd.extend([
-                '--header=User-Agent: Mozilla/5.0',
-                f'--header=Authorization: Bearer {token2}'
-            ])
+            aria2cmd.extend(['--header=User-Agent: Mozilla/5.0', f'--header=Authorization: Bearer {token2}'])
 
-    elif 'civitai.com/models/' in url:
-        try:
-            model_id = url.split('/models/')[1].split('/')[0]
-            version_id = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
-            there = bool(version_id)
+    elif 'civitai.com' in url:
+        input_url = url
+        url = url.split('?token=')[0] if '?token=' in url else url
+        url = url.replace('?type=', f'?token={token3}&type=') if '?type=' in url else f'{url}?token={token3}'
 
-            api_url = (
-                f'https://civitai.com/api/v1/model-versions/{version_id}'
-                if there else f'https://civitai.com/api/v1/models/{model_id}'
-            )
+        if 'civitai.com/models/' in url:
+            try:
+                model_id = url.split('/models/')[1].split('/')[0]
+                version_id = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
+                there = bool(version_id)
 
-            r = requests.get(api_url)
-            r.raise_for_status()
-            v = r.json()
+                api_url = (
+                    f'https://civitai.com/api/v1/model-versions/{version_id}'
+                    if there else f'https://civitai.com/api/v1/models/{model_id}'
+                )
 
-            earlyAccess = (
-                v.get('earlyAccessEndsAt') if there
-                else next((v for v in v.get('modelVersions', []) if v.get('availability') == 'EarlyAccess'), None)
-            )
+                r = requests.get(api_url)
+                r.raise_for_status()
+                v = r.json()
 
-            if earlyAccess:
-                id = v.get('id') if there else earlyAccess.get('id')
-                page = url if there else f'https://civitai.com/models/{model_id}?modelVersionId={id}'
-                msg = f'{page}\n-> The model is in early access and requires payment for downloading.'
-                yield msg, False
+                earlyAccess = (
+                    v.get('earlyAccessEndsAt') if there
+                    else next((v for v in v.get('modelVersions', []) if v.get('availability') == 'EarlyAccess'), None)
+                )
+
+                if earlyAccess:
+                    id = v.get('id') if there else earlyAccess.get('id')
+                    page = input_url if there else f'https://civitai.com/models/{model_id}?modelVersionId={id}'
+                    msg = f'{page}\n-> The model is in early access and requires payment for downloading.'
+                    yield msg, False
+                    return
+
+                download = v.get('downloadUrl') or (v.get('modelVersions', [{}])[0].get('downloadUrl') if not there else '')
+                url = f'{download}?token={token3}' if token3 and download else download
+                if not url:
+                    yield f'Unable to find download URL for\n-> {api_url}\n', False
+                    return
+
+            except requests.exceptions.RequestException as e:
+                yield f'{str(e)}\n', True
                 return
-
-            download = v.get('downloadUrl') or (v.get('modelVersions', [{}])[0].get('downloadUrl') if not there else '')
-            url = f'{download}?token={token3}' if token3 and download else download
-            if not url:
-                yield f'Unable to find download URL for\n-> {api_url}\n', False
-                return
-
-        except requests.exceptions.RequestException as e:
-            yield f'{str(e)}\n', True
-            return
 
     aria2cmd.extend([
         '--console-log-level=error', '--stderr=true', '--summary-interval=1',
