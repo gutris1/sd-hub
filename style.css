@@ -43,6 +43,10 @@
   box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
 }
 
+#SDHub-Tab .sdhub-row {
+  gap: .5em;
+}
+
 #SDHub-Downloader-Tab,
 #SDHub-Uploader-Tab,
 #SDHub-Archiver-Tab,
@@ -75,8 +79,9 @@
   max-width: max-content;
 }
 
-#SDHub-Downloader-Input {
-  margin-top: 10px;
+#SDHub-Tab #SDHub-Downloader-Preview-Checkbox {
+  justify-content: flex-start;
+  margin-left: 10px;
 }
 
 #SDHub-Downloader-Scrape-Button,

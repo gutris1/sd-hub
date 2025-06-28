@@ -159,14 +159,14 @@ def LoadToken(Tab: str = 'all'):
 
     return v[Keys['write'][0]], v[Keys['read'][0]], v[Keys['civitai'][0]], m, config
 
-def SaveToken(token1=None, token2=None, token3=None):
+def SaveToken(HFW=None, HFR=None, CAK=None):
     v = LoadConfig()
     T = v.get('Token', {})
 
     s = []
     i = {k[0]: k[1] for k in Keys.values()}
 
-    for k, t in zip([Keys['write'][0], Keys['read'][0], Keys['civitai'][0]], [token1, token2, token3]):
+    for k, t in zip([Keys['write'][0], Keys['read'][0], Keys['civitai'][0]], [HFW, HFR, CAK]):
         if t:
             T[k] = t
             s.append(i[k])

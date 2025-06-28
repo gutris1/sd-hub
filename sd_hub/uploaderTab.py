@@ -262,7 +262,7 @@ def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
         return {'username': user, 'repository': repo, 'branch': branch}
 
 def UploaderTab():
-    token1, _, _, _, _ = LoadToken('uploader')
+    HFW, _, _, _, _ = LoadToken('uploader')
     TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Uploader', elem_id='SDHub-Uploader-Tab'):
@@ -274,19 +274,19 @@ def UploaderTab():
 
             with FormColumn(scale=3):
                 gr.Textbox(visible=False, max_lines=1)
-                upl_token = gr.TextArea(
-                    value=token1,
+                token_box = gr.TextArea(
+                    value=HFW,
                     label='Huggingface Token (WRITE)',
                     lines=1,
                     max_lines=1,
                     placeholder='Your Huggingface Token here (role = WRITE)',
                     interactive=True,
-                    elem_id='SDHub-Uploader-Token',
+                    elem_id='SDHub-Uploader-HFW',
                     elem_classes='sdhub-input'
                 )
 
                 with FormRow():
-                    upl_save = gr.Button(
+                    save_button = gr.Button(
                         value='SAVE',
                         variant='primary',
                         min_width=0,
@@ -294,7 +294,7 @@ def UploaderTab():
                         elem_classes='sdhub-buttons'
                     )
 
-                    upl_load = gr.Button(
+                    load_button = gr.Button(
                         value='LOAD',
                         variant='primary',
                         min_width=0,
@@ -343,7 +343,7 @@ def UploaderTab():
                 elem_classes='hide-this'
             )
 
-        upl_inputs = gr.Textbox(
+        input_box = gr.Textbox(
             show_label=False,
             lines=5,
             placeholder='Input File Path',
@@ -353,7 +353,7 @@ def UploaderTab():
 
         with FormRow(elem_id='SDHub-Uploader-Button-Row'):
             with FormColumn(scale=1):
-                upl_btn = gr.Button(
+                upload_button = gr.Button(
                     'UPLOAD',
                     variant='primary',
                     elem_id='SDHub-Uploader-Upload-Button',
@@ -364,34 +364,30 @@ def UploaderTab():
                 gr.Button('hantu', variant='primary', elem_classes='hide-this')
 
             with FormColumn(scale=2, variant='compact'):
-                upl_output1 = gr.Textbox(
+                output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,
                     max_lines=1,
                     elem_classes='sdhub-output'
                 )
 
-                upl_output2 = gr.Textbox(
+                output_2 = gr.Textbox(
                     show_label=False,
                     interactive=False,
                     lines=5,
                     elem_classes='sdhub-output'
                 )
 
-        upl_load.click(
-            fn=lambda: LoadToken('uploader'),
-            inputs=[],
-            outputs=[upl_token, upl_output2, upl_output2, upl_output2]
+        load_button.click(
+            fn=lambda: LoadToken('uploader'), inputs=[], outputs=[token_box, output_2, output_2, output_2]
         ).then(fn=None, _js=TokenBlur)
 
-        upl_save.click(
-            fn=lambda token1: SaveToken(token1, None, None),
-            inputs=[upl_token],
-            outputs=upl_output2
+        save_button.click(
+            fn=lambda HFW: SaveToken(HFW, None, None), inputs=[token_box], outputs=output_2
         ).then(fn=None, _js=TokenBlur)
 
-        upl_btn.click(
+        upload_button.click(
             fn=uploader,
-            inputs=[upl_inputs, user_box, repo_box, branch_box, upl_token, repo_radio, gr.State()],
-            outputs=[upl_output1, upl_output2]
+            inputs=[input_box, user_box, repo_box, branch_box, token_box, repo_radio, gr.State()],
+            outputs=[output_1, output_2]
         )

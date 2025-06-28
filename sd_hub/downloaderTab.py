@@ -3,13 +3,17 @@ from modules.scripts import basedir
 from modules.shared import cmd_opts
 from urllib.parse import urlparse
 from pathlib import Path
+from PIL import Image
 import gradio as gr
 import subprocess
 import requests
 import shlex
 import time
+import json
 import sys
 import re
+import io
+import os
 
 from sd_hub.infotext import dl_title, dl_info, LoadToken, SaveToken
 from sd_hub.paths import SDHubPaths, BLOCK
@@ -77,55 +81,8 @@ def gdrown(url, target_path=None, fn=None):
 
     p.wait()
 
-def ariari(url, target_path=None, fn=None, token2=None, token3=None):
+def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
     aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
-
-    if any(domain in url for domain in ['huggingface.co', 'github.com']):
-        url = url.replace('/blob/', '/raw/' if 'github.com' in url else '/resolve/')
-        if 'huggingface.co' in url and token2:
-            aria2cmd.extend(['--header=User-Agent: Mozilla/5.0', f'--header=Authorization: Bearer {token2}'])
-
-    elif 'civitai.com' in url:
-        input_url = url
-        url = url.split('?token=')[0] if '?token=' in url else url
-        url = url.replace('?type=', f'?token={token3}&type=') if '?type=' in url else f'{url}?token={token3}'
-
-        if 'civitai.com/models/' in url:
-            try:
-                model_id = url.split('/models/')[1].split('/')[0]
-                version_id = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
-                there = bool(version_id)
-
-                api_url = (
-                    f'https://civitai.com/api/v1/model-versions/{version_id}'
-                    if there else f'https://civitai.com/api/v1/models/{model_id}'
-                )
-
-                r = requests.get(api_url)
-                r.raise_for_status()
-                v = r.json()
-
-                earlyAccess = (
-                    v.get('earlyAccessEndsAt') if there
-                    else next((v for v in v.get('modelVersions', []) if v.get('availability') == 'EarlyAccess'), None)
-                )
-
-                if earlyAccess:
-                    id = v.get('id') if there else earlyAccess.get('id')
-                    page = input_url if there else f'https://civitai.com/models/{model_id}?modelVersionId={id}'
-                    msg = f'{page}\n-> The model is in early access and requires payment for downloading.'
-                    yield msg, False
-                    return
-
-                download = v.get('downloadUrl') or (v.get('modelVersions', [{}])[0].get('downloadUrl') if not there else '')
-                url = f'{download}?token={token3}' if token3 and download else download
-                if not url:
-                    yield f'Unable to find download URL for\n-> {api_url}\n', False
-                    return
-
-            except requests.exceptions.RequestException as e:
-                yield f'{str(e)}\n', True
-                return
 
     aria2cmd.extend([
         '--console-log-level=error', '--stderr=true', '--summary-interval=1',
@@ -146,6 +103,55 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
         aria2cmd.extend(['-d', target_path])
 
     fn and aria2cmd.extend(['-o', fn])
+
+    if any(domain in url for domain in ['huggingface.co', 'github.com']):
+        civitai = False
+        url = url.replace('/blob/', '/raw/' if 'github.com' in url else '/resolve/')
+        if 'huggingface.co' in url and HFR:
+            aria2cmd.extend(['--header=User-Agent: Mozilla/5.0', f'--header=Authorization: Bearer {HFR}'])
+
+    elif 'civitai.com' in url:
+        civitai = True
+        input_url = url
+
+        url = url.split('?token=')[0] if '?token=' in url else url
+
+        try:
+            if 'civitai.com/api/download/models/' in url:
+                versionId = url.split('models/')[1].split('/')[0].split('?')[0]
+                api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+
+            elif 'civitai.com/models/' in url:
+                modelId = url.split('models/')[1].split('/')[0].split('?')[0]
+                versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
+
+                if versionId:
+                    api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+                else:
+                    api_url = f'https://civitai.com/api/v1/models/{modelId}'
+
+            r = requests.get(api_url)
+            r.raise_for_status()
+            j = r.json()
+
+            msg = civitai_earlyAccess(j)
+            if msg: yield msg; return
+
+            civitai_infotags(j, target_path, fn)
+            preview = civitai_preview(j, target_path, fn)
+
+            url = j.get('downloadUrl')
+            url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
+            print(url)
+
+            if not url:
+                yield f'Unable to find download URL for\n-> {input_url}\n', False
+                return
+
+        except requests.exceptions.RequestException as e:
+            yield f'{str(e)}\n', True
+            return
+
     aria2cmd.append(url)
 
     p = subprocess.Popen(
@@ -195,6 +201,9 @@ def ariari(url, target_path=None, fn=None, token2=None, token3=None):
             if '|' in lines and (pipe := lines.split('|')) and len(pipe) > 3:
                 yield f'Saved To: {pipe[3].strip()}', True
 
+        if civitai and preview:
+            yield preview, False
+
     p.wait()
 
 def get_fn(url):
@@ -205,6 +214,86 @@ def get_fn(url):
     else:
         fn = Path(fn_fn.path).name
         return fn
+
+def resize(b):
+    img = Image.open(io.BytesIO(b))
+    w, h = img.size
+    s = (512, int(h * 512 / w)) if w > h else (int(w * 512 / h), 512)
+    out = io.BytesIO()
+    img.resize(s, Image.LANCZOS).save(out, format='PNG')
+    out.seek(0)
+    return out
+
+def civitai_preview(j, p, fn):
+    encrypt = 'COLAB_JUPYTER_TOKEN' in os.environ
+    if encrypt:
+        try:
+            import sd_image_encryption  # type: ignore
+        except ImportError as e:
+            err = f"{str(e)}\nimage preview skipped\nInstall https://github.com/gutris1/sd-image-encryption extension or you'll get banned by Kaggle."
+            print(err)
+            return err
+
+    v = j['modelVersions'][0] if 'modelVersions' in j else j
+    images = v.get('images', [])
+    name = fn or v.get('files', [{}])[0].get('name')
+    path = Path(p) / f'{Path(name).stem}.preview.png'
+    if path.exists(): return
+
+    preview = next((img.get('url', '') for img in images if not img.get('url', '').lower().endswith(('.mp4', '.gif'))), None)
+    if not preview: return
+
+    r = requests.get(preview, headers={'User-Agent': 'Mozilla/5.0'}).content
+    resized = resize(r)
+
+    if encrypt:
+        img = Image.open(resized)
+        info = img.info or {}
+        if not all(t in info for t in ['Encrypt', 'EncryptPwdSha']):
+            sd_image_encryption.EncryptedImage.from_image(img).save(path)
+    else:
+        path.write_bytes(resized.read())
+
+def civitai_infotags(j, p, fn):
+    if 'modelVersions' in j:
+        modelId = j.get('id')
+        v = j['modelVersions'][0]
+        modelVersionId = v.get('id')
+    else:
+        v = j
+        modelId = v.get('modelId')
+        modelVersionId = v.get('id')
+
+    name = fn or v.get('files', [{}])[0].get('name')
+    info = Path(p) / f'{Path(name).stem}.json'
+    if info.exists(): return
+
+    sha256 = v.get('files', [{}])[0].get('hashes', {}).get('SHA256')
+    data = {
+        'activation text': ', '.join(v.get('trainedWords', [])),
+        'modelId': modelId,
+        'modelVersionId': modelVersionId,
+        'sha256': sha256
+    }
+
+    info.write_text(json.dumps(data, indent=4))
+
+def civitai_earlyAccess(j):
+    v = None
+
+    if 'modelVersions' in j:
+        v = next((v for v in j.get('modelVersions', []) if v.get('availability') == 'EarlyAccess'), None)
+        model_id = j.get('id')
+    elif j.get('earlyAccessEndsAt'):
+        v = j
+        model_id = j.get('modelId')
+
+    if v:
+        version_id = v.get('id')
+        page = f'https://civitai.com/models/{model_id}?modelVersionId={version_id}'
+        return f'{page}\n-> The model is in early access and requires payment for downloading.', False
+
+    return None
 
 def url_check(url):
     try:
@@ -286,7 +375,7 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
 
     return target_path, url, fn, None
 
-def lobby(command, token2=None, token3=None):
+def lobby(command, HFR=None, CAK=None):
     if not command.strip():
         yield 'Nothing To See Here.', True
         return
@@ -327,12 +416,12 @@ def lobby(command, token2=None, token3=None):
             url,
             target_path,
             fn,
-            token2,
-            token3
+            HFR,
+            CAK
         ):
             yield output
 
-def downloader(inputs, token2, token3, box_state=gr.State()):
+def downloader(inputs, HFR, CAK, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     ngword = [
@@ -346,7 +435,7 @@ def downloader(inputs, token2, token3, box_state=gr.State()):
 
     yield 'Downloading...', ''
 
-    for t, f in lobby(inputs, token2, token3):
+    for t, f in lobby(inputs, HFR, CAK):
         if not f:
             if any(k in t for k in ngword):
                 yield 'Error', '\n'.join([t] + output_box)
@@ -361,7 +450,7 @@ def downloader(inputs, token2, token3, box_state=gr.State()):
             output_box.append(t)
 
     catcher = [
-        'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL',
+        'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL', 'banned by Kaggle',
         'filename', 'Supported Domain:', '500 Server Error', 'fatal'
     ]
 
@@ -385,7 +474,7 @@ def read_txt(f, box):
     return '\n'.join(text_box)
 
 def DownloaderTab():
-    _, token2, token3, _, _ = LoadToken('downloader')
+    _, HFR, CAK, _, _ = LoadToken('downloader')
     TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Downloader', elem_id='SDHub-Downloader-Tab'):
@@ -396,30 +485,30 @@ def DownloaderTab():
                 gr.HTML(dl_info)
 
             with FormColumn(scale=3):
-                dl_token1 = gr.TextArea(
-                    value=token2,
+                token_1 = gr.TextArea(
+                    value=HFR,
                     label='Huggingface Token (READ)',
                     lines=1,
                     max_lines=1,
                     placeholder='Your Huggingface Token here (role = READ)',
                     interactive=True,
-                    elem_id='SDHub-Downloader-Token-1',
+                    elem_id='SDHub-Downloader-HFR',
                     elem_classes='sdhub-input'
                 )
 
-                dl_token2 = gr.TextArea(
-                    value=token3,
+                token_2 = gr.TextArea(
+                    value=CAK,
                     label='Civitai API Key',
                     lines=1,
                     max_lines=1,
                     placeholder='Your Civitai API Key here',
                     interactive=True,
-                    elem_id='SDHub-Downloader-Token-2',
+                    elem_id='SDHub-Downloader-CAK',
                     elem_classes='sdhub-input'
                 )
 
-                with FormRow():
-                    dl_save = gr.Button(
+                with FormRow(elem_classes='sdhub-row'):
+                    save_button = gr.Button(
                         value='SAVE',
                         variant='primary',
                         min_width=0,
@@ -427,7 +516,7 @@ def DownloaderTab():
                         elem_classes='sdhub-buttons'
                     )
 
-                    dl_load = gr.Button(
+                    load_button = gr.Button(
                         value='LOAD',
                         variant='primary',
                         min_width=0,
@@ -435,7 +524,13 @@ def DownloaderTab():
                         elem_classes='sdhub-buttons'
                     )
 
-        dl_input = gr.Textbox(
+        civitai_preview_checkbox = gr.Checkbox(
+            label='Civitai Preview',
+            elem_id='SDHub-Downloader-Preview-Checkbox',
+            elem_classes='sdhub-checkbox'
+        )
+
+        input_box = gr.Textbox(
             show_label=False,
             lines=5,
             placeholder='$tag\nURL',
@@ -444,79 +539,65 @@ def DownloaderTab():
         )
 
         with FormRow(elem_id='SDHub-Downloader-Button-Row'):
-            with FormColumn(scale=1):
-                dl_dl = gr.Button(
+            with FormColumn(scale=1), FormRow(elem_classes='sdhub-row'):
+                download_button = gr.Button(
                     'DOWNLOAD',
                     variant='primary',
                     elem_id='SDHub-Downloader-Download-Button',
                     elem_classes='sdhub-buttons'
                 )
 
-            with FormColumn(scale=1), FormRow(variant='compact'):
-                dl_scrape = gr.Button(
-                    'Scrape',
-                    variant='secondary',
-                    min_width=0,
-                    elem_id='SDHub-Downloader-Scrape-Button'
-                )
+                with FormRow(variant='compact'):
+                    scrape_button = gr.Button(
+                        'Scrape',
+                        variant='secondary',
+                        min_width=0,
+                        elem_id='SDHub-Downloader-Scrape-Button'
+                    )
 
-                dl_txt = gr.UploadButton(
-                    label='Insert TXT',
-                    variant='secondary',
-                    file_count='single',
-                    file_types=['.txt'],
-                    min_width=0,
-                    elem_id='SDHub-Downloader-Txt-Button'
-                )
+                    txt_button = gr.UploadButton(
+                        label='Insert TXT',
+                        variant='secondary',
+                        file_count='single',
+                        file_types=['.txt'],
+                        min_width=0,
+                        elem_id='SDHub-Downloader-Txt-Button'
+                    )
 
-            with FormColumn(scale=2, variant='compact'):
-                dl_out1 = gr.Textbox(
+            with FormColumn(scale=1):
+                output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,
                     max_lines=1,
                     elem_classes='sdhub-output'
                 )
 
-                dl_out2 = gr.TextArea(
+                output_2 = gr.TextArea(
                     show_label=False,
                     interactive=False,
                     lines=5,
                     elem_classes='sdhub-output'
                 )
 
-        dl_load.click(
-            fn=lambda: LoadToken('downloader'),
-            inputs=[],
-            outputs=[dl_out2, dl_token1, dl_token2, dl_out2]
+        load_button.click(
+            fn=lambda: LoadToken('downloader'), inputs=[], outputs=[output_2, token_1, token_2, output_2]
         ).then(fn=None, _js=TokenBlur)
 
-        dl_save.click(
-            fn=lambda token2, token3: SaveToken(None, token2, token3),
-            inputs=[dl_token1, dl_token2],
-            outputs=dl_out2
+        save_button.click(
+            fn=lambda HFR, CAK: SaveToken(None, HFR, CAK), inputs=[token_1, token_2], outputs=output_2
         ).then(fn=None, _js=TokenBlur)
 
-        dl_dl.click(
-            fn=downloader,
-            inputs=[dl_input, dl_token1, dl_token2, gr.State()],
-            outputs=[dl_out1, dl_out2],
+        download_button.click(
+            fn=downloader, inputs=[input_box, token_1, token_2, gr.State()], outputs=[output_1, output_2],
             _js="""
                 () => {
-                    let el = {
-                        input: '#SDHub-Downloader-Input textarea',
-                        token1: '#SDHub-Downloader-Token-1 input',
-                        token2: '#SDHub-Downloader-Token-2 input'
-                    };
-
-                    let v = Object.entries(el).map(([k, id]) => 
-                        document.querySelector(id)?.value || ''
-                    );
-
+                    let el = {input: '#SDHub-Downloader-Input textarea', token1: '#SDHub-Downloader-HFR input', token2: '#SDHub-Downloader-CAK input'};
+                    let v = Object.entries(el).map(([k, id]) => document.querySelector(id)?.value || '');
                     window.SDHubDownloaderInputsValue = v[0];
                     return [...v, null];
                 }
             """
         ).then(fn=None, _js='() => { SDHubDownloader(); }')
 
-        dl_txt.upload(fn=read_txt, inputs=[dl_txt, dl_input], outputs=dl_input)
-        dl_scrape.click(fn=scraper, inputs=[dl_input, dl_token1, gr.State()], outputs=[dl_input, dl_out2])
+        txt_button.upload(fn=read_txt, inputs=[txt_button, input_box], outputs=input_box)
+        scrape_button.click(fn=scraper, inputs=[input_box, token_1, gr.State()], outputs=[input_box, output_2])
