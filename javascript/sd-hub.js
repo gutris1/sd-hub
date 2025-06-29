@@ -141,9 +141,9 @@ function SDHubEventListener() {
   });
 
   const Inputs = {
-    token1: '#SDHub-Downloader-Token-1 input',
-    token2: '#SDHub-Downloader-Token-2 input',
-    token3: '#SDHub-Uploader-Token input'
+    token1: '#SDHub-Downloader-HFR input',
+    token2: '#SDHub-Downloader-CAK input',
+    token3: '#SDHub-Uploader-HFW input'
   };
 
   Object.values(Inputs).forEach(el => {
@@ -155,7 +155,7 @@ function SDHubEventListener() {
 }
 
 async function SDHubTokenBlur() {
-  ['#SDHub-Downloader-Token-1 input', '#SDHub-Downloader-Token-2 input', '#SDHub-Uploader-Token input']
+  ['#SDHub-Downloader-HFR input', '#SDHub-Downloader-CAK input', '#SDHub-Uploader-HFW input']
     .forEach(id => {
       const el = document.querySelector(id);
       if (el) el.style.filter = el.value.trim() ? 'blur(3px)' : 'none';
@@ -305,18 +305,18 @@ function SDHubUITranslation() {
     { element: '.sdhub-downloader-tab-info', key: 'downloader_tab_info', inner: true },
     { element: '.sdhub-uploader-tab-info', key: 'uploader_tab_info', inner: true },
     { element: '.sdhub-archiver-tab-info', key: 'archiver_tab_info', inner: true },
-    { element: '#SDHub-Downloader-Token-1 > label > span', key: 'huggingface_token_read' },
-    { element: '#SDHub-Downloader-Token-1 > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
-    { element: '#SDHub-Downloader-Token-2 > label > span', key: 'civitai_api_key' },
-    { element: '#SDHub-Downloader-Token-2 > label > input', key: 'civitai_api_key_placeholder', spellcheck: false },
+    { element: '#SDHub-Downloader-HFR > label > span', key: 'huggingface_token_read' },
+    { element: '#SDHub-Downloader-HFR > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
+    { element: '#SDHub-Downloader-CAK > label > span', key: 'civitai_api_key' },
+    { element: '#SDHub-Downloader-CAK > label > input', key: 'civitai_api_key_placeholder', spellcheck: false },
     { element: '#SDHub-Downloader-Input > label > textarea', spellcheck: false },
     { element: '#SDHub-Downloader-Download-Button', key: 'download' },
     { element: '#SDHub-Downloader-Scrape-Button', key: 'scrape' },
     { element: '#SDHub-Downloader-Txt-Button', key: 'insert_txt' },
     { element: '#SDHub-Downloader-Load-Button', key: 'load' },
     { element: '#SDHub-Downloader-Save-Button', key: 'save' },
-    { element: '#SDHub-Uploader-Token > label > span', key: 'huggingface_token_write' },
-    { element: '#SDHub-Uploader-Token > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
+    { element: '#SDHub-Uploader-HFW > label > span', key: 'huggingface_token_write' },
+    { element: '#SDHub-Uploader-HFW > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
     { element: '#SDHub-Uploader-Input > label > textarea', key: 'input_path', spellcheck: false },
     { element: '#SDHub-Uploader-Upload-Button', key: 'upload' },
     { element: '#SDHub-Uploader-Load-Button', key: 'load' },
