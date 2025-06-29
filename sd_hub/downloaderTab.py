@@ -91,54 +91,55 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         aria2cmd.extend(['-d', fp])
 
     fn and aria2cmd.extend(['-o', fn])
+    j = None
 
-    if any(domain in url for domain in ['huggingface.co', 'github.com']):
-        civitai = False
-        url = url.replace('/blob/', '/raw/' if 'github.com' in url else '/resolve/')
-        if 'huggingface.co' in url:
-            url = url.split('?')[0]
-            if HFR: aria2cmd.extend(['--header=User-Agent: Mozilla/5.0', f'--header=Authorization: Bearer {HFR}'])
+    if 'github.com' in url:
+        url = url.replace('/blob/', '/raw/')
+
+    elif 'huggingface.co' in url:
+        url = url.split('?')[0]
+        h = {'User-Agent': 'Mozilla/5.0', **({'Authorization': f'Bearer {HFR}'} if HFR else {})}
+        t = re.search(r'oid sha256:([a-fA-F0-9]{64})', requests.get(re.sub(r'/(resolve|blob)/', '/raw/', url), headers=h).text)
+        if t:
+            sha256 = t.group(1)
+            api_url = f'https://civitai.com/api/v1/model-versions/by-hash/{sha256}'
+            j = requests.get(api_url).json()
+            r = next((f for f in j.get('files', []) if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()), None)
+            if not r: j = None
+
+        url = url.replace('/blob/', '/resolve/')
+        aria2cmd.extend([f'--header={k}: {v}' for k, v in h.items()])
 
     elif 'civitai.com' in url:
-        civitai = True
         input_url = url
-        j = None
-
         url = url.split('?token=')[0] if '?token=' in url else url
 
-        try:
-            if 'civitai.com/api/download/models/' in url:
-                use_input = True
-                versionId = url.split('models/')[1].split('/')[0].split('?')[0]
+        if 'civitai.com/api/download/models/' in url:
+            use_input = True
+            versionId = url.split('models/')[1].split('/')[0].split('?')[0]
+            api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+
+        elif 'civitai.com/models/' in url:
+            use_input = False
+            modelId = url.split('models/')[1].split('/')[0].split('?')[0]
+            versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
+
+            if versionId:
                 api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+            else:
+                api_url = f'https://civitai.com/api/v1/models/{modelId}'
 
-            elif 'civitai.com/models/' in url:
-                use_input = False
-                modelId = url.split('models/')[1].split('/')[0].split('?')[0]
-                versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
+        j = requests.get(api_url).json()
 
-                if versionId:
-                    api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
-                else:
-                    api_url = f'https://civitai.com/api/v1/models/{modelId}'
+        msg = civitai_earlyAccess(j)
+        if msg: yield msg; return
 
-            r = requests.get(api_url)
-            r.raise_for_status()
-            j = r.json()
-
-            msg = civitai_earlyAccess(j)
-            if msg: yield msg; return
-
-            url = input_url if use_input else (j.get('modelVersions', [{}])[0] if 'modelVersions' in j else j).get('downloadUrl')
-            if not url:
-                yield f'Unable to find download URL for\n-> {input_url}\n', False
-                return
-
-            url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
-
-        except requests.exceptions.RequestException as e:
-            yield f'{str(e)}\n', True
+        url = input_url if use_input else (j.get('modelVersions', [{}])[0] if 'modelVersions' in j else j).get('downloadUrl')
+        if not url:
+            yield f'Unable to find download URL for\n-> {input_url}\n', False
             return
+
+        url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
 
     aria2cmd.append(url)
     p = subprocess.Popen(aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
@@ -183,7 +184,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
             if '|' in lines and (pipe := lines.split('|')) and len(pipe) > 3:
                 yield f'Saved To: {pipe[3].strip()}', True
 
-            if civitai and j:
+            if j:
                 civitai_infotags(j, fp, fn)
                 if preview and (img := civitai_preview(j, fp, fn)): yield img, False
 

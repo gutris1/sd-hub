@@ -120,16 +120,22 @@ async function SDHubTabLoaded() {
 
 function SDHubEventListener() {
   const Tab = {
+    downloader: document.getElementById('SDHub-Downloader-Tab'),
+    uploader: document.getElementById('SDHub-Uploader-Tab'),
     shell: document.getElementById('SDHub-Shell-Tab'),
     textEditor: document.getElementById('SDHub-Texteditor-Tab')
   };
 
   const Button = {
+    downloader: document.getElementById('SDHub-Downloader-Download-Button'),
+    uploader: document.getElementById('SDHub-Uploader-Upload-Button'),
     shell: document.getElementById('SDHub-Shell-Button'),
     textEditor: document.getElementById('SDHub-Texteditor-Save-Button')
   };
 
   document.addEventListener('keydown', (e) => {
+    if (Tab.downloader?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.downloader?.click();
+    if (Tab.uploader?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.uploader?.click();
     if (Tab.shell?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.shell?.click();
     if (Tab.textEditor?.style.display === 'block' && e.ctrlKey && e.key === 's') (e.preventDefault(), Button.textEditor?.click());
   });
