@@ -253,7 +253,17 @@ Use the arrow buttons at the bottom to navigate between pages (if available), or
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-06-14 — v10
+### 2025-06-30 — v11
+- Added function for Downloader Tab to automatically create model info tags when the source is Civitai.
+- And a checkbox to optionally download the model preview.
+- if the source is Huggingface, the SHA256 will be used to match and fetch the correct model info tags and preview from Civitai. Needs a Huggingface read token if the model is private.
+
+<p align="left">
+  <img src="https://github.com/user-attachments/assets/338198eb-7180-44a2-988a-d25df64961eb", width=100%>
+</p>
+
+<details><summary>2025-06-14 — v10</summary><br>
+
 - Tokens and any other auto-saved/loaded data are now stored in <code>.sd-hub-config.json</code>
 - Fixed Gallery, faster loading, re-style etc.
 - Added paging to the Gallery, limiting to 100 images per page by default.
@@ -265,6 +275,7 @@ Use the arrow buttons at the bottom to navigate between pages (if available), or
   <img src="https://github.com/user-attachments/assets/57031a18-0d50-4447-b601-88b4b96c55f7", width=auto>
   <img src="https://github.com/user-attachments/assets/ae2f39da-98bc-4e95-9ebe-2871f06c0b2f", width=auto>
 </p>
+</details>
 
 <details><summary>2025-04-01 — v9.0.0</summary><br>
 
