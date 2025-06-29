@@ -205,8 +205,8 @@
 
 #SDHub-Tab .sdhub-input textarea:focus,
 #SDHub-Tab .sdhub-input input:focus {
-  filter: drop-shadow(0 0 1px var(--primary-400)) blur(0px) !important;
-  box-shadow: 0 0 10px 1px var(--primary-400);
+  filter: drop-shadow(0 0 0 var(--primary-400)) blur(0px) !important;
+  box-shadow: 0 0 3px 1px var(--primary-400), inset 0 0 1px 1px var(--primary-400);
 }
 
 #SDHub-Tab .sdhub-radio input:checked,

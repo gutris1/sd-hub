@@ -23,7 +23,7 @@ from sd_hub.version import xyz
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
 
-KAGGLE = 'COLAB_JUPYTER_TOKEN' in os.environ
+KAGGLE = 'KAGGLE_DATA_PROXY_TOKEN' in os.environ
 
 def gitclown(url, fp):
     cmd = ['git', 'clone'] + shlex.split(url)
@@ -34,9 +34,7 @@ def gitclown(url, fp):
         git_output.append(output)
         yield output, False
 
-    for line in git_output:
-        yield line, True
-
+    for line in git_output: yield line, True
     p.wait()
 
 def gdrown(url, fp=None, fn=None):
@@ -97,8 +95,9 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
     if any(domain in url for domain in ['huggingface.co', 'github.com']):
         civitai = False
         url = url.replace('/blob/', '/raw/' if 'github.com' in url else '/resolve/')
-        if 'huggingface.co' in url and HFR:
-            aria2cmd.extend(['--header=User-Agent: Mozilla/5.0', f'--header=Authorization: Bearer {HFR}'])
+        if 'huggingface.co' in url:
+            url = url.split('?')[0]
+            if HFR: aria2cmd.extend(['--header=User-Agent: Mozilla/5.0', f'--header=Authorization: Bearer {HFR}'])
 
     elif 'civitai.com' in url:
         civitai = True
@@ -109,10 +108,12 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
 
         try:
             if 'civitai.com/api/download/models/' in url:
+                use_input = True
                 versionId = url.split('models/')[1].split('/')[0].split('?')[0]
                 api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
 
             elif 'civitai.com/models/' in url:
+                use_input = False
                 modelId = url.split('models/')[1].split('/')[0].split('?')[0]
                 versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
 
@@ -128,12 +129,12 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
             msg = civitai_earlyAccess(j)
             if msg: yield msg; return
 
-            url = j.get('downloadUrl')
-            url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
-
+            url = input_url if use_input else (j.get('modelVersions', [{}])[0] if 'modelVersions' in j else j).get('downloadUrl')
             if not url:
                 yield f'Unable to find download URL for\n-> {input_url}\n', False
                 return
+
+            url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
 
         except requests.exceptions.RequestException as e:
             yield f'{str(e)}\n', True
@@ -269,7 +270,6 @@ def civitai_earlyAccess(j):
 
 def url_check(url):
     try:
-        url_parsed = urlparse(url)
         supported = {
             'civitai.com',
             'huggingface.co',
@@ -277,11 +277,9 @@ def url_check(url):
             'drive.google.com'
         }
 
-        if not (url_parsed.scheme and url_parsed.netloc):
-            return False, 'Invalid URL.'
-
-        if url_parsed.netloc not in supported:
-            return False, f'Supported Domain:\n' + '\n'.join(supported)
+        url_parsed = urlparse(url)
+        if not (url_parsed.scheme and url_parsed.netloc): return False, 'Invalid URL.'
+        if url_parsed.netloc not in supported: return False, f'Supported Domain:\n' + '\n'.join(supported)
 
         return True, ''
     except Exception as e:
@@ -310,49 +308,44 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
             cp = full_path
         else:
             return None, None, None, f'{tags_key}\nInvalid Tag.'
+
         return cp, None, None, None
 
     parts = shlex.split(url_line)
     url = parts[0].strip()
 
     if not (ext_tag and github_repo):
-        is_valid, err = url_check(url)
-        if not is_valid:
-            return None, None, None, err
+        allowed, err = url_check(url)
+        if not allowed: return None, None, None, err
 
-    optional_path = optional_fn = None
+    op = ofn = None
 
     if len(parts) > 1:
         if ext_tag and github_repo:
             url = ' '.join(parts).strip()
         else:
             if '=' in parts:
-                dash_index = parts.index('=')
-                optional_path_raw = ' '.join(parts[1:dash_index]).strip()
-                optional_fn = ' '.join(parts[dash_index + 1:]).strip()
+                dash = parts.index('=')
+                rop = ' '.join(parts[1:dash]).strip()
+                ofn = ' '.join(parts[dash + 1:]).strip()
             else:
-                optional_path_raw = ' '.join(parts[1:]).strip()
+                rop = ' '.join(parts[1:]).strip()
 
-            optional_path_raw = optional_path_raw.strip('"').strip("'")
+            rop = rop.strip('"').strip("'")
+            if sys.platform == 'win32' and rop: rop = Path(rop).as_posix()
+            op = Path(rop) if rop else None
 
-            if sys.platform == 'win32' and optional_path_raw:
-                optional_path_raw = Path(optional_path_raw).as_posix()
+    if op and op.suffix: return None, None, None, f'{op}\nOutput path is not a path.'
 
-            optional_path = Path(optional_path_raw) if optional_path_raw else None
-
-    if optional_path and optional_path.suffix:
-        return None, None, None, f'{optional_path}\nOutput path is not a path.'
-
-    if optional_fn:
-        optional_fn_path = Path(optional_fn)
+    if ofn:
+        optional_fn_path = Path(ofn)
         if not optional_fn_path.suffix:
-            return None, None, None, f'{optional_fn}\nOutput filename is missing its extension.'
+            return None, None, None, f'{ofn}\nOutput filename is missing its extension.'
 
-    fp = optional_path if optional_path else cp
-    if fp is None or not fp.exists():
-        return None, None, None, f'{fp}\nDoes not exist.'
+    fp = op if op else cp
+    if fp is None or not fp.exists(): return None, None, None, f'{fp}\nDoes not exist.'
 
-    fn = get_fn(url) if not optional_fn else optional_fn
+    fn = get_fn(url) if not ofn else ofn
 
     return fp, url, fn, None
 
@@ -393,8 +386,7 @@ def lobby(command, HFR=None, CAK=None, preview=None):
                 yield msg, err
             continue
 
-        for output in ariari(url, fp, fn, HFR, CAK, preview):
-            yield output
+        for output in ariari(url, fp, fn, HFR, CAK, preview): yield output
 
 def downloader(inputs, HFR, CAK, preview, box_state=gr.State()):
     output_box = box_state if box_state else []
@@ -566,7 +558,13 @@ def DownloaderTab():
             fn=downloader, inputs=[input_box, token_1, token_2, preview, gr.State()], outputs=[output_1, output_2],
             _js="""
                 () => {
-                    let el = {input: '#SDHub-Downloader-Input textarea', token1: '#SDHub-Downloader-HFR input', token2: '#SDHub-Downloader-CAK input'};
+                    let el = {
+                        input_box: '#SDHub-Downloader-Input textarea',
+                        token_1: '#SDHub-Downloader-HFR input',
+                        token_2: '#SDHub-Downloader-CAK input',
+                        preview: '#SDHub-Downloader-Preview-Checkbox input'
+                    };
+
                     let v = Object.entries(el).map(([k, id]) => document.querySelector(id)?.value || '');
                     window.SDHubDownloaderInputsValue = v[0];
                     return [...v, null];
