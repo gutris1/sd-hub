@@ -557,18 +557,17 @@ def DownloaderTab():
         download_button.click(
             fn=downloader, inputs=[input_box, token_1, token_2, preview, gr.State()], outputs=[output_1, output_2],
             _js="""
-                () => {
-                    let el = {
-                        input_box: '#SDHub-Downloader-Input textarea',
-                        token_1: '#SDHub-Downloader-HFR input',
-                        token_2: '#SDHub-Downloader-CAK input',
-                        preview: '#SDHub-Downloader-Preview-Checkbox input'
-                    };
+            () => {
+                let v = [
+                    '#SDHub-Downloader-Input textarea',
+                    '#SDHub-Downloader-HFR input',
+                    '#SDHub-Downloader-CAK input',
+                    '#SDHub-Downloader-Preview-Checkbox input'
+                ].map(s => { let e = document.querySelector(s); return e?.type === 'checkbox' ? e.checked : e?.value });
 
-                    let v = Object.entries(el).map(([k, id]) => document.querySelector(id)?.value || '');
-                    window.SDHubDownloaderInputsValue = v[0];
-                    return [...v, null];
-                }
+                window.SDHubDownloaderInputsValue = v[0];
+                return [...v, null];
+            }
             """
         ).then(fn=None, _js='() => { SDHubDownloader(); }')
 

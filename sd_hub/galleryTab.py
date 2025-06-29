@@ -251,7 +251,7 @@ def GalleryTab():
                 elem_classes='sdhub-input'
             )
 
-            with FormRow():
+            with FormRow(elem_classes='sdhub-row'):
                 savebtn = gr.Button(
                     'Save',
                     variant='primary',
