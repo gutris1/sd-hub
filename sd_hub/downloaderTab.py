@@ -23,15 +23,11 @@ from sd_hub.version import xyz
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
 
-def gitclown(url, target_path):
+KAGGLE = 'COLAB_JUPYTER_TOKEN' in os.environ
+
+def gitclown(url, fp):
     cmd = ['git', 'clone'] + shlex.split(url)
-
-    p = subprocess.Popen(
-        cmd, cwd=str(target_path),
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        bufsize=1, text=True
-    )
-
+    p = subprocess.Popen(cmd, cwd=str(fp), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
     git_output = []
 
     for output in iter(p.stdout.readline, ''):
@@ -43,21 +39,15 @@ def gitclown(url, target_path):
 
     p.wait()
 
-def gdrown(url, target_path=None, fn=None):
+def gdrown(url, fp=None, fn=None):
     gfolder = 'drive.google.com/drive/folders' in url
     cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
     cmd = cli + ['--fuzzy', url]
     fn and cmd.extend(['-O', fn])
     gfolder and cmd.append('--folder')
 
-    cwd = target_path if target_path else Path.cwd()
-
-    p = subprocess.Popen(
-        cmd, cwd=cwd,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        bufsize=1, text=True
-    )
-
+    cwd = fp if fp else Path.cwd()
+    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
     gdown_output, gdown_progress, starting_line, failure = '', None, time.time(), False
 
     while (output := p.stdout.readline()):  
@@ -77,11 +67,11 @@ def gdrown(url, target_path=None, fn=None):
         if lines.startswith('To:'):
             completed = re.search(r'[^/]*$', lines)
             if completed:
-                yield f'Saved To: {target_path}/{completed.group()}', True
+                yield f'Saved To: {fp}/{completed.group()}', True
 
     p.wait()
 
-def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
+def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
     aria2cmd = [aria2cexe] if sys.platform == 'win32' else xyz('aria2c')
 
     aria2cmd.extend([
@@ -89,9 +79,9 @@ def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
         '-c', '-x16', '-s16', '-k1M', '-j5'
     ])
 
-    if target_path:
+    if fp:
         if not cmd_opts.enable_insecure_extension_access:
-            allowed, err = SDHubPaths.SDHubCheckPaths(target_path)
+            allowed, err = SDHubPaths.SDHubCheckPaths(fp)
             if not allowed:
                 yield err, True
                 return
@@ -100,7 +90,7 @@ def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
         else:
             aria2cmd.extend(['--allow-overwrite=true'])
 
-        aria2cmd.extend(['-d', target_path])
+        aria2cmd.extend(['-d', fp])
 
     fn and aria2cmd.extend(['-o', fn])
 
@@ -113,6 +103,7 @@ def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
     elif 'civitai.com' in url:
         civitai = True
         input_url = url
+        j = None
 
         url = url.split('?token=')[0] if '?token=' in url else url
 
@@ -137,12 +128,8 @@ def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
             msg = civitai_earlyAccess(j)
             if msg: yield msg; return
 
-            civitai_infotags(j, target_path, fn)
-            preview = civitai_preview(j, target_path, fn)
-
             url = j.get('downloadUrl')
             url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
-            print(url)
 
             if not url:
                 yield f'Unable to find download URL for\n-> {input_url}\n', False
@@ -153,13 +140,7 @@ def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
             return
 
     aria2cmd.append(url)
-
-    p = subprocess.Popen(
-        aria2cmd,
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        bufsize=1, text=True
-    )
-
+    p = subprocess.Popen(aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
     aria2_output, break_line, error = '', False, False
 
     while (output := p.stdout.readline()):
@@ -201,32 +182,23 @@ def ariari(url, target_path=None, fn=None, HFR=None, CAK=None):
             if '|' in lines and (pipe := lines.split('|')) and len(pipe) > 3:
                 yield f'Saved To: {pipe[3].strip()}', True
 
-        if civitai and preview:
-            yield preview, False
+            if civitai and j:
+                civitai_infotags(j, fp, fn)
+                if preview and (img := civitai_preview(j, fp, fn)): yield img, False
 
     p.wait()
 
-def get_fn(url):
-    fn_fn = urlparse(url)
-
-    if 'civitai.com' in fn_fn.netloc or 'drive.google.com' in fn_fn.netloc:
-        return None
-    else:
-        fn = Path(fn_fn.path).name
-        return fn
-
-def resize(b):
-    img = Image.open(io.BytesIO(b))
-    w, h = img.size
-    s = (512, int(h * 512 / w)) if w > h else (int(w * 512 / h), 512)
-    out = io.BytesIO()
-    img.resize(s, Image.LANCZOS).save(out, format='PNG')
-    out.seek(0)
-    return out
+def resizer(b, size=512):
+    i = Image.open(io.BytesIO(b))
+    w, h = i.size
+    s = (size, int(h * size / w)) if w > h else (int(w * size / h), size)
+    o = io.BytesIO()
+    i.resize(s, Image.LANCZOS).save(o, format='PNG')
+    o.seek(0)
+    return o
 
 def civitai_preview(j, p, fn):
-    encrypt = 'COLAB_JUPYTER_TOKEN' in os.environ
-    if encrypt:
+    if KAGGLE:
         try:
             import sd_image_encryption  # type: ignore
         except ImportError as e:
@@ -244,9 +216,9 @@ def civitai_preview(j, p, fn):
     if not preview: return
 
     r = requests.get(preview, headers={'User-Agent': 'Mozilla/5.0'}).content
-    resized = resize(r)
+    resized = resizer(r)
 
-    if encrypt:
+    if KAGGLE:
         img = Image.open(resized)
         info = img.info or {}
         if not all(t in info for t in ['Encrypt', 'EncryptPwdSha']):
@@ -315,7 +287,16 @@ def url_check(url):
     except Exception as e:
         return False, str(e)
 
-def process_inputs(url_line, current_path, ext_tag, github_repo):
+def get_fn(url):
+    fn_fn = urlparse(url)
+
+    if 'civitai.com' in fn_fn.netloc or 'drive.google.com' in fn_fn.netloc:
+        return None
+    else:
+        fn = Path(fn_fn.path).name
+        return fn
+
+def process_inputs(url_line, cp, ext_tag, github_repo):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
         return None, None, None, 'Invalid usage, Tag should start with $'
 
@@ -326,10 +307,10 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
         base_path = tag_tag.get(tags_key)
         if base_path is not None:
             full_path = Path(base_path, subfolder) if subfolder else Path(base_path)
-            current_path = full_path
+            cp = full_path
         else:
             return None, None, None, f'{tags_key}\nInvalid Tag.'
-        return current_path, None, None, None
+        return cp, None, None, None
 
     parts = shlex.split(url_line)
     url = parts[0].strip()
@@ -367,20 +348,20 @@ def process_inputs(url_line, current_path, ext_tag, github_repo):
         if not optional_fn_path.suffix:
             return None, None, None, f'{optional_fn}\nOutput filename is missing its extension.'
 
-    target_path = optional_path if optional_path else current_path
-    if target_path is None or not target_path.exists():
-        return None, None, None, f'{target_path}\nDoes not exist.'
+    fp = optional_path if optional_path else cp
+    if fp is None or not fp.exists():
+        return None, None, None, f'{fp}\nDoes not exist.'
 
     fn = get_fn(url) if not optional_fn else optional_fn
 
-    return target_path, url, fn, None
+    return fp, url, fn, None
 
-def lobby(command, HFR=None, CAK=None):
+def lobby(command, HFR=None, CAK=None, preview=None):
     if not command.strip():
         yield 'Nothing To See Here.', True
         return
 
-    current_path = None
+    cp = None
     urls = [url_line for url_line in command.strip().split('\n') if url_line.strip()]
 
     if len(urls) == 1 and urls[0].startswith('$'):
@@ -391,37 +372,31 @@ def lobby(command, HFR=None, CAK=None):
     github_repo = any('github.com' in url_line and not Path(urlparse(url_line).path).suffix for url_line in urls)
 
     for url_line in urls:
-        target_path, url, fn, error = process_inputs(url_line, current_path, ext_tag, github_repo)
+        fp, url, fn, error = process_inputs(url_line, cp, ext_tag, github_repo)
 
         if error:
             yield error, True
             return
 
         if not url:
-            current_path = target_path
+            cp = fp
             continue
 
         if ext_tag and github_repo:
             if cmd_opts.enable_insecure_extension_access:
-                for msg, err in gitclown(url, target_path):
+                for msg, err in gitclown(url, fp):
                     yield msg, err
                 continue
 
         if 'drive.google' in url:
-            for msg, err in gdrown(url, target_path, fn):
+            for msg, err in gdrown(url, fp, fn):
                 yield msg, err
             continue
 
-        for output in ariari(
-            url,
-            target_path,
-            fn,
-            HFR,
-            CAK
-        ):
+        for output in ariari(url, fp, fn, HFR, CAK, preview):
             yield output
 
-def downloader(inputs, HFR, CAK, box_state=gr.State()):
+def downloader(inputs, HFR, CAK, preview, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     ngword = [
@@ -435,7 +410,7 @@ def downloader(inputs, HFR, CAK, box_state=gr.State()):
 
     yield 'Downloading...', ''
 
-    for t, f in lobby(inputs, HFR, CAK):
+    for t, f in lobby(inputs, HFR, CAK, preview):
         if not f:
             if any(k in t for k in ngword):
                 yield 'Error', '\n'.join([t] + output_box)
@@ -524,7 +499,7 @@ def DownloaderTab():
                         elem_classes='sdhub-buttons'
                     )
 
-        civitai_preview_checkbox = gr.Checkbox(
+        preview = gr.Checkbox(
             label='Civitai Preview',
             elem_id='SDHub-Downloader-Preview-Checkbox',
             elem_classes='sdhub-checkbox'
@@ -588,7 +563,7 @@ def DownloaderTab():
         ).then(fn=None, _js=TokenBlur)
 
         download_button.click(
-            fn=downloader, inputs=[input_box, token_1, token_2, gr.State()], outputs=[output_1, output_2],
+            fn=downloader, inputs=[input_box, token_1, token_2, preview, gr.State()], outputs=[output_1, output_2],
             _js="""
                 () => {
                     let el = {input: '#SDHub-Downloader-Input textarea', token1: '#SDHub-Downloader-HFR input', token2: '#SDHub-Downloader-CAK input'};
