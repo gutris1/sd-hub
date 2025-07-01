@@ -103,7 +103,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         if t:
             sha256 = t.group(1)
             api_url = f'https://civitai.com/api/v1/model-versions/by-hash/{sha256}'
-            j = requests.get(api_url).json()
+            j = requests.get(api_url, headers=civitai_headers()).json()
             r = next((f for f in j.get('files', []) if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()), None)
             if not r: j = None
 
@@ -129,7 +129,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
             else:
                 api_url = f'https://civitai.com/api/v1/models/{modelId}'
 
-        j = requests.get(api_url).json()
+        j = requests.get(api_url, headers=civitai_headers()).json()
 
         msg = civitai_earlyAccess(j)
         if msg: yield msg; return
@@ -199,6 +199,9 @@ def resizer(b, size=512):
     o.seek(0)
     return o
 
+def civitai_headers():
+    return {'User-Agent': 'CivitaiLink:Automatic1111'}
+
 def civitai_preview(j, p, fn):
     if KAGGLE:
         try:
@@ -217,7 +220,7 @@ def civitai_preview(j, p, fn):
     preview = next((img.get('url', '') for img in images if not img.get('url', '').lower().endswith(('.mp4', '.gif'))), None)
     if not preview: return
 
-    r = requests.get(preview, headers={'User-Agent': 'Mozilla/5.0'}).content
+    r = requests.get(preview, headers=civitai_headers()).content
     resized = resizer(r)
 
     if KAGGLE:
@@ -232,17 +235,15 @@ def civitai_infotags(j, p, fn):
     if 'modelVersions' in j:
         modelId = j.get('id')
         v = j['modelVersions'][0]
-        modelVersionId = v.get('id')
     else:
         v = j
         modelId = v.get('modelId')
-        modelVersionId = v.get('id')
 
     name = fn or v.get('files', [{}])[0].get('name')
     info = Path(p) / f'{Path(name).stem}.json'
     if info.exists(): return
  
-    base_model = {
+    baseList = {
         'SD 1': 'SD1',
         'SD 1.5': 'SD1',
         'SD 2': 'SD2',
@@ -254,9 +255,9 @@ def civitai_infotags(j, p, fn):
 
     data = {
         'activation text': ', '.join(v.get('trainedWords', [])),
-        'sd version': next((s for k, s in base_model.items() if k in v['baseModel']), ''),
+        'sd version': next((s for k, s in baseList.items() if k in v['baseModel']), ''),
         'modelId': modelId,
-        'modelVersionId': modelVersionId,
+        'modelVersionId': v.get('id'),
         'sha256': v.get('files', [{}])[0].get('hashes', {}).get('SHA256')
     }
 
@@ -267,14 +268,14 @@ def civitai_earlyAccess(j):
 
     if 'modelVersions' in j:
         v = next((v for v in j.get('modelVersions', []) if v.get('availability') == 'EarlyAccess'), None)
-        model_id = j.get('id')
+        modelId = j.get('id')
     elif j.get('earlyAccessEndsAt'):
         v = j
-        model_id = j.get('modelId')
+        modelId = v.get('modelId')
 
     if v:
-        version_id = v.get('id')
-        page = f'https://civitai.com/models/{model_id}?modelVersionId={version_id}'
+        modelVersionId = v.get('id')
+        page = f'https://civitai.com/models/{modelId}?modelVersionId={modelVersionId}'
         return f'{page}\n-> The model is in early access and requires payment for downloading.', False
 
     return None
