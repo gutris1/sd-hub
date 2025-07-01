@@ -242,7 +242,7 @@ def civitai_infotags(j, p, fn):
     name = fn or v.get('files', [{}])[0].get('name')
     info = Path(p) / f'{Path(name).stem}.json'
     if info.exists(): return
- 
+
     baseList = {
         'SD 1': 'SD1',
         'SD 1.5': 'SD1',
