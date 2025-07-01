@@ -241,13 +241,23 @@ def civitai_infotags(j, p, fn):
     name = fn or v.get('files', [{}])[0].get('name')
     info = Path(p) / f'{Path(name).stem}.json'
     if info.exists(): return
+ 
+    base_model = {
+        'SD 1': 'SD1',
+        'SD 1.5': 'SD1',
+        'SD 2': 'SD2',
+        'SD 3': 'SD3',
+        'SDXL': 'SDXL',
+        'Pony': 'SDXL',
+        'Illustrious': 'SDXL',
+    }
 
-    sha256 = v.get('files', [{}])[0].get('hashes', {}).get('SHA256')
     data = {
         'activation text': ', '.join(v.get('trainedWords', [])),
+        'sd version': next((s for k, s in base_model.items() if k in v['baseModel']), ''),
         'modelId': modelId,
         'modelVersionId': modelVersionId,
-        'sha256': sha256
+        'sha256': v.get('files', [{}])[0].get('hashes', {}).get('SHA256')
     }
 
     info.write_text(json.dumps(data, indent=4))
