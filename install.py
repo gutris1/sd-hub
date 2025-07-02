@@ -125,7 +125,7 @@ def _install_req_2():
         }
 
         env = next((envs for envs, var in env_list.items() if var in os.environ), 'Unknown')
-        pkg_cmds = {'apt': 'update', 'conda': '--version'}
+        pkg_cmds = {'apt': '--version', 'conda': '--version'}
         pv_lz4 = {'pv': '-V', 'lz4': '-V'}
 
         if env in ['Colab', 'Kaggle'] and _sub(['apt', pkg_cmds['apt']]):
