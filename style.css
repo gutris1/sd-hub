@@ -1,5 +1,5 @@
 :root {
-  --sdhub-box-shadow: 0 0 5px 0 #000;
+  --sdhub-box-shadow: 0 0 1px 1px #000;
   --sdhub-box-shadow-radio-label: inset 0 0 5px 0 #000;
   --SDHub-Tab-button-selected: var(--button-primary-text-color);
   --sdhub-secondary-button-background: var(--input-background-fill-hover);
@@ -29,10 +29,10 @@
 
 #SDHub-Tab > .tab-nav > button.selected {
   cursor: default;
-  color: var(--primary-400);
   filter: drop-shadow(0 0 0 var(--primary-400));
   box-shadow: var(--sdhub-gallery-box-shadow-1);
-  background: rgba(0, 0, 0, 0.8);
+  color: var(--sdhub-gallery-items-color);
+  background: var(--sdhub-gallery-items-background);
 }
 
 #SDHub-Tab > .tab-nav > button:not(.selected) {
@@ -81,7 +81,9 @@
 
 #SDHub-Tab #SDHub-Downloader-Preview-Checkbox {
   justify-content: flex-start;
+  width: max-content;
   margin-left: 10px;
+  margin-bottom: 5px;
 }
 
 #SDHub-Downloader-Scrape-Button,
@@ -118,7 +120,6 @@
   color: var(--primary-500);
 }
 
-#SDHub-Tab .sdhub-buttons:hover,
 #SDHub-Shell-Button:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
@@ -134,7 +135,7 @@
 }
 
 #SDHub-Tab .sdhub-checkbox label {
-  gap: 20px;
+  gap: 1rem;
 }
 
 #SDHub-Tab .sdhub-checkbox input {
@@ -184,11 +185,11 @@
 #SDHub-Shell-Button,
 #SDHub-Tab .sdhub-accordion {
   transition:
-    box-shadow 0.4s ease,
-    filter 0.4s ease,
-    border-color 0.3s ease,
-    background-color 0.3s ease,
-    color 0.5s ease;
+    box-shadow .4s ease,
+    filter .4s ease,
+    border-color .3s ease,
+    background-color .3s ease,
+    color .5s ease;
 }
 
 #SDHub-Tab .sdhub-buttons {
@@ -201,12 +202,23 @@
   justify-content: center;
   padding: 0;
   font-size: 17px;
+  box-shadow: var(--sdhub-box-shadow);
+}
+
+#SDHub-Tab .sdhub-buttons:hover {
+  filter: drop-shadow(0 0 5px var(--primary-500));
+  box-shadow: var(--sdhub-box-shadow), 0 0 10px 1px var(--primary-500);
+  color: var(--body-text-color-subdued);
+  background: var(--button-primary-background-fill-hover);
 }
 
 #SDHub-Tab .sdhub-input textarea:focus,
 #SDHub-Tab .sdhub-input input:focus {
-  filter: drop-shadow(0 0 0 var(--primary-400)) blur(0px) !important;
   box-shadow: 0 0 3px 1px var(--primary-400), inset 0 0 1px 1px var(--primary-400);
+}
+
+#SDHub-Tab .sdhub-input input:hover {
+  filter: none !important;
 }
 
 #SDHub-Tab .sdhub-radio input:checked,
@@ -246,7 +258,8 @@
 .gradio-container-4-40-0 #SDHub-Downloader-Button-Row,
 .gradio-container-4-40-0 #SDHub-Uploader-Button-Row,
 .gradio-container-4-40-0 #SDHub-Uploader-Input {
-  margin-top: -10px;
+  margin-top: -8px;
+  gap: 8px;
 }
 
 .gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {

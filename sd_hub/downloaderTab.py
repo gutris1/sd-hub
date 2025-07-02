@@ -99,13 +99,17 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
     elif 'huggingface.co' in url:
         url = url.split('?')[0]
         h = {'User-Agent': 'Mozilla/5.0', **({'Authorization': f'Bearer {HFR}'} if HFR else {})}
-        t = re.search(r'oid sha256:([a-fA-F0-9]{64})', requests.get(re.sub(r'/(resolve|blob)/', '/raw/', url), headers=h).text)
-        if t:
-            sha256 = t.group(1)
-            api_url = f'https://civitai.com/api/v1/model-versions/by-hash/{sha256}'
-            j = requests.get(api_url, headers=civitai_headers()).json()
-            r = next((f for f in j.get('files', []) if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()), None)
-            if not r: j = None
+        ext = ['.safetensors', '.pt', '.pth']
+
+        if fn and Path(fn).suffix.lower() in ext:
+            response = requests.get(re.sub(r'/(resolve|blob)/', '/raw/', url), headers=h)
+            t = re.search(r'oid sha256:([a-fA-F0-9]{64})', response.text)
+            if t:
+                sha256 = t.group(1)
+                api_url = f'https://civitai.com/api/v1/model-versions/by-hash/{sha256}'
+                j = requests.get(api_url, headers=civitai_headers()).json()
+                r = next((f for f in j.get('files', []) if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()), None)
+                if not r: j = None
 
         url = url.replace('/blob/', '/resolve/')
         aria2cmd.extend([f'--header={k}: {v}' for k, v in h.items()])
@@ -298,13 +302,9 @@ def url_check(url):
         return False, str(e)
 
 def get_fn(url):
-    fn_fn = urlparse(url)
-
-    if 'civitai.com' in fn_fn.netloc or 'drive.google.com' in fn_fn.netloc:
+    if any(x in url for x in ['civitai.com', 'drive.google.com']):
         return None
-    else:
-        fn = Path(fn_fn.path).name
-        return fn
+    return Path(urlparse(url).path).name
 
 def process_inputs(url_line, cp, ext_tag, github_repo):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
