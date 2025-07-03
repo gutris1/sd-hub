@@ -386,6 +386,7 @@ $ext/sd-hub -- json txt py
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
 [etherealxx](https://github.com/etherealxx) Thanks for the [inspiration](https://github.com/etherealxx/batchlinks-webui)<br>
 Thanks to my Discord friends [DEX-1101](https://github.com/DEX-1101), [VeonN4](https://github.com/VeonN4), [kokomif](https://github.com/kokomif), for always being there in the middle of the night.<br>
+Thanks to [w-e-w](https://github.com/w-e-w) for helping me and making the public release for Windows possible.<br>
+Thanks to [zanllp](https://github.com/zanllp) for the inspiration behind the Infinite Image Browsing extension, which led to my simple Gallery Tab.<br>
+Thanks to [viyiviyi](https://github.com/viyiviyi) for the zooming scripts in the image viewer which were taken from [here](https://github.com/gutris1/sd-image-scripts), a modified version of the scripts from [here](https://github.com/viyiviyi/stable-diffusion-webui-zoomimage)<br>
 Especially to [cupang-afk](https://github.com/cupang-afk), who helped me a lot with Python, thank you.<br>
-Thanks to [zanllp](https://github.com/zanllp) for the inspiration.<br>
-Thanks to [viyiviyi](https://github.com/viyiviyi) for the zooming scripts in the image viewer which were taken from [here](https://github.com/gutris1/sd-image-viewer), a modified version of the scripts from [here](https://github.com/viyiviyi/stable-diffusion-webui-zoomimage)
