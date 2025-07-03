@@ -120,16 +120,22 @@ async function SDHubTabLoaded() {
 
 function SDHubEventListener() {
   const Tab = {
+    downloader: document.getElementById('SDHub-Downloader-Tab'),
+    uploader: document.getElementById('SDHub-Uploader-Tab'),
     shell: document.getElementById('SDHub-Shell-Tab'),
     textEditor: document.getElementById('SDHub-Texteditor-Tab')
   };
 
   const Button = {
+    downloader: document.getElementById('SDHub-Downloader-Download-Button'),
+    uploader: document.getElementById('SDHub-Uploader-Upload-Button'),
     shell: document.getElementById('SDHub-Shell-Button'),
     textEditor: document.getElementById('SDHub-Texteditor-Save-Button')
   };
 
   document.addEventListener('keydown', (e) => {
+    if (Tab.downloader?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.downloader?.click();
+    if (Tab.uploader?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.uploader?.click();
     if (Tab.shell?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.shell?.click();
     if (Tab.textEditor?.style.display === 'block' && e.ctrlKey && e.key === 's') (e.preventDefault(), Button.textEditor?.click());
   });
@@ -141,9 +147,9 @@ function SDHubEventListener() {
   });
 
   const Inputs = {
-    token1: '#SDHub-Downloader-Token-1 input',
-    token2: '#SDHub-Downloader-Token-2 input',
-    token3: '#SDHub-Uploader-Token input'
+    token1: '#SDHub-Downloader-HFR input',
+    token2: '#SDHub-Downloader-CAK input',
+    token3: '#SDHub-Uploader-HFW input'
   };
 
   Object.values(Inputs).forEach(el => {
@@ -152,10 +158,26 @@ function SDHubEventListener() {
       input.addEventListener('focus', () => (input.style.filter = 'none'));
     });
   });
+
+  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
+  archiveBtn.onclick = async () => extractBtn.classList.add('sdhub-button-disabled');
+
+  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  extractBtn.onclick = async () => archiveBtn.classList.add('sdhub-button-disabled');
+
+  document.querySelectorAll('#SDHub-Tab .sdhub-accordion > .label-wrap').forEach(label => {
+    label.onclick = () => {
+      const accordion = label.parentElement;
+      setTimeout(() => {
+        const open = label.classList.contains('open');
+        accordion.classList.toggle('sdhub-accordion-open', open);
+      }, 0);
+    };
+  });
 }
 
 async function SDHubTokenBlur() {
-  ['#SDHub-Downloader-Token-1 input', '#SDHub-Downloader-Token-2 input', '#SDHub-Uploader-Token input']
+  ['#SDHub-Downloader-HFR input', '#SDHub-Downloader-CAK input', '#SDHub-Uploader-HFW input']
     .forEach(id => {
       const el = document.querySelector(id);
       if (el) el.style.filter = el.value.trim() ? 'blur(3px)' : 'none';
@@ -180,6 +202,16 @@ async function SDHubDownloader() {
     const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
     if (Tag.test(inputs)) buttons.forEach(id => document.getElementById(id)?.click());
   });
+}
+
+async function SDHubArchiver(flag) {
+  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
+  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+
+  if (flag === 'finish') {
+    archiveBtn.classList.remove('sdhub-button-disabled');
+    extractBtn.classList.remove('sdhub-button-disabled');
+  }
 }
 
 async function SDHubTextEditorInfo(flag) {
@@ -305,18 +337,18 @@ function SDHubUITranslation() {
     { element: '.sdhub-downloader-tab-info', key: 'downloader_tab_info', inner: true },
     { element: '.sdhub-uploader-tab-info', key: 'uploader_tab_info', inner: true },
     { element: '.sdhub-archiver-tab-info', key: 'archiver_tab_info', inner: true },
-    { element: '#SDHub-Downloader-Token-1 > label > span', key: 'huggingface_token_read' },
-    { element: '#SDHub-Downloader-Token-1 > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
-    { element: '#SDHub-Downloader-Token-2 > label > span', key: 'civitai_api_key' },
-    { element: '#SDHub-Downloader-Token-2 > label > input', key: 'civitai_api_key_placeholder', spellcheck: false },
+    { element: '#SDHub-Downloader-HFR > label > span', key: 'huggingface_token_read' },
+    { element: '#SDHub-Downloader-HFR > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
+    { element: '#SDHub-Downloader-CAK > label > span', key: 'civitai_api_key' },
+    { element: '#SDHub-Downloader-CAK > label > input', key: 'civitai_api_key_placeholder', spellcheck: false },
     { element: '#SDHub-Downloader-Input > label > textarea', spellcheck: false },
     { element: '#SDHub-Downloader-Download-Button', key: 'download' },
     { element: '#SDHub-Downloader-Scrape-Button', key: 'scrape' },
     { element: '#SDHub-Downloader-Txt-Button', key: 'insert_txt' },
     { element: '#SDHub-Downloader-Load-Button', key: 'load' },
     { element: '#SDHub-Downloader-Save-Button', key: 'save' },
-    { element: '#SDHub-Uploader-Token > label > span', key: 'huggingface_token_write' },
-    { element: '#SDHub-Uploader-Token > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
+    { element: '#SDHub-Uploader-HFW > label > span', key: 'huggingface_token_write' },
+    { element: '#SDHub-Uploader-HFW > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
     { element: '#SDHub-Uploader-Input > label > textarea', key: 'input_path', spellcheck: false },
     { element: '#SDHub-Uploader-Upload-Button', key: 'upload' },
     { element: '#SDHub-Uploader-Load-Button', key: 'load' },

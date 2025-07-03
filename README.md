@@ -26,9 +26,8 @@ Support both <code>Windows</code> and <code>Unix</code>.
 <details><summary> <h2>Downloader</h2> </summary><br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/b38ce6c3-230d-4d45-bc7e-8b638b872ac0", width=1000px>
+  <img src="https://github.com/user-attachments/assets/7668ed6b-77c1-44a9-a47a-d19561f01399", width=1000px>
 </p>
-
 
 ### ● Downloader Input
 Similar to [batchlink](https://github.com/etherealxx/batchlinks-webui), you use tag then URL:
@@ -43,13 +42,18 @@ For available tags, refer to the <code>Tag List</code> at the bottom of the exte
 
 - Click on the table row, tag or path to automatically copy its text.<br>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/0bf7bc74-35b5-4569-ac85-8f7ac44b1acb", width=1000px>
+  <img src="https://github.com/user-attachments/assets/06b11389-08d3-4765-95e4-cb870dd71c21", width=1000px>
 </p>
 
 - For <code>Civitai</code> you can use the webpage URL directly.<br>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/f0600bc8-d18d-45ad-bf3a-aeb252d8f17c", width=1000px>
 </p>
+
+Will automatically create model info tags when the source is Civitai.<br>
+Enable the <code>Civitai Preview</code> checkbox to also download the model preview if the source is Civitai.<br>
+If the source is Huggingface, the SHA256 will be used to match and fetch the info tags and preview from Civitai when possible. Needs a Huggingface read token if the model is private.<br>
+
 
 - Basic input.
 ```python
@@ -81,7 +85,7 @@ https://civitai.com/models/643227?modelVersionId=811710 /content/A1111/models/St
 ```
 
 ● Token box<br>
-![token](https://github.com/gutris1/sd-hub/assets/132797949/b95fe024-0cde-4462-8ca1-3e6df2b10cc3)<br>
+![token](https://github.com/user-attachments/assets/e4e93a3b-425a-4cc6-b5c1-f3101ba78723)<br>
 
 Enter your Huggingface token with the role READ to download from your private repo, get one [Here](https://huggingface.co/settings/tokens).<br>
 Enter your Civitai API key if you encounter an Authorization failed error. Get your key [Here](https://civitai.com/user/account).<br>
@@ -133,7 +137,7 @@ This allows you to upload a <code>.txt</code> file from your device and add its 
 <details><summary> <h2>Uploader</h2> </summary><br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/df368836-2a44-4f5a-a0de-212b22910310", width=1000px>
+  <img src="https://github.com/user-attachments/assets/918bffac-92ec-4c9d-9d40-3e5a5530d801", width=1000px>
 </p>
 
 ### ● Uploader Input
@@ -180,10 +184,8 @@ Token = Obtain your huggingface token with the role WRITE from [Here](https://hu
 <details><summary> <h2>Archiver</h2> </summary><br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/07959d71-f7d5-4eec-b40d-907f21f48e63", width=1000px>
+  <img src="https://github.com/user-attachments/assets/38b7bbd0-efb6-4229-817f-553606741fc5", width=1000px>
 </p>
-
-
 
 <code>Supported Format: tar.lz4 tar.gz zip</code>
 
@@ -253,7 +255,17 @@ Use the arrow buttons at the bottom to navigate between pages (if available), or
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-06-14 — v10
+### 2025-06-30 — v11
+- Added function for Downloader Tab to automatically create model info tags when the source is Civitai.
+- And a checkbox to optionally download the model preview.
+- If the source is Huggingface, the SHA256 will be used to match and fetch the info tags and preview from Civitai when possible. Needs a Huggingface read token if the model is private.
+
+<p align="left">
+  <img src="https://github.com/user-attachments/assets/338198eb-7180-44a2-988a-d25df64961eb", width=100%>
+</p>
+
+<details><summary>2025-06-14 — v10</summary><br>
+
 - Tokens and any other auto-saved/loaded data are now stored in <code>.sd-hub-config.json</code>
 - Fixed Gallery, faster loading, re-style etc.
 - Added paging to the Gallery, limiting to 100 images per page by default.
@@ -265,6 +277,7 @@ Use the arrow buttons at the bottom to navigate between pages (if available), or
   <img src="https://github.com/user-attachments/assets/57031a18-0d50-4447-b601-88b4b96c55f7", width=auto>
   <img src="https://github.com/user-attachments/assets/ae2f39da-98bc-4e95-9ebe-2871f06c0b2f", width=auto>
 </p>
+</details>
 
 <details><summary>2025-04-01 — v9.0.0</summary><br>
 
@@ -373,6 +386,7 @@ $ext/sd-hub -- json txt py
 [camenduru](https://github.com/camenduru) Thanks for the [extension](https://github.com/camenduru/stable-diffusion-webui-huggingface)<br>
 [etherealxx](https://github.com/etherealxx) Thanks for the [inspiration](https://github.com/etherealxx/batchlinks-webui)<br>
 Thanks to my Discord friends [DEX-1101](https://github.com/DEX-1101), [VeonN4](https://github.com/VeonN4), [kokomif](https://github.com/kokomif), for always being there in the middle of the night.<br>
+Thanks to [w-e-w](https://github.com/w-e-w) for helping me and making the public release for Windows possible.<br>
+Thanks to [zanllp](https://github.com/zanllp) for the inspiration behind the Infinite Image Browsing extension, which led to my simple Gallery Tab.<br>
+Thanks to [viyiviyi](https://github.com/viyiviyi) for the zooming scripts in the image viewer which were taken from [here](https://github.com/gutris1/sd-image-scripts), a modified version of the scripts from [here](https://github.com/viyiviyi/stable-diffusion-webui-zoomimage)<br>
 Especially to [cupang-afk](https://github.com/cupang-afk), who helped me a lot with Python, thank you.<br>
-Thanks to [zanllp](https://github.com/zanllp) for the inspiration.<br>
-Thanks to [viyiviyi](https://github.com/viyiviyi) for the zooming scripts in the image viewer which were taken from [here](https://github.com/gutris1/sd-image-viewer), a modified version of the scripts from [here](https://github.com/viyiviyi/stable-diffusion-webui-zoomimage)

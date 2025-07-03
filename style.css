@@ -1,19 +1,18 @@
 :root {
-  --sdhub-box-shadow: 0 0 5px 0 #000;
-  --sdhub-box-shadow-radio-label: inset 0 0 5px 0 #000;
-  --SDHub-Tab-button-selected: var(--button-primary-text-color);
+  --sdhub-border-color: #000;
+  --sdhub-box-shadow: 0 0 1px 1px var(--sdhub-border-color);
+  --sdhub-box-shadow-radio-label: inset 0 0 5px 0 var(--sdhub-border-color);
+  --sdhub-box-shadow-primary: inset 0 0 10px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
   --sdhub-secondary-button-background: var(--input-background-fill-hover);
-  --sdhub-radio-input-not-checked: drop-shadow(0 0 2px #000);
-  --sdhub-accordion-border: 1px solid #000;
+  --sdhub-radio-input-not-checked: drop-shadow(0 0 2px var(--sdhub-border-color));
 }
 
 .dark {
-  --sdhub-box-shadow: none;
+  --sdhub-border-color: #303030;
+  --sdhub-box-shadow: 0 0 1px 1px transparent;
   --sdhub-box-shadow-radio-label: none;
-  --SDHub-Tab-button-selected: var(--background-fill-primary);
   --sdhub-secondary-button-background: var(--button-secondary-background-fill);
   --sdhub-radio-input-not-checked: drop-shadow(0 0 2px transparent);
-  --sdhub-accordion-border: 1px solid var(--block-border-color);
 }
 
 #SDHub-Tab > .tab-nav {
@@ -23,24 +22,63 @@
 }
 
 #SDHub-Tab > .tab-nav > button {
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 100px;
+  transition: .3s ease;
 }
 
 #SDHub-Tab > .tab-nav > button.selected {
   cursor: default;
-  color: var(--primary-400);
   filter: drop-shadow(0 0 0 var(--primary-400));
-  box-shadow: var(--sdhub-gallery-box-shadow-1);
-  background: rgba(0, 0, 0, 0.8);
-}
-
-#SDHub-Tab > .tab-nav > button:not(.selected) {
-  transition: .2s ease;
+  border-color: var(--primary-400);
+  box-shadow: inset 0 0 10px 2px var(--primary-500), 0 0 5px 1px var(--primary-500);
+  color: var(--sdhub-gallery-items-color);
 }
 
 #SDHub-Tab > .tab-nav > button:not(.selected):hover {
-  box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
+  color: var(--primary-500);
+}
+
+#SDHub-Tab .hide-this {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#SDHub-Tab .sdhub-row {
+  gap: .5em;
+}
+
+#SDHub-Tab .sdhub-button-row-1 {
+  flex-grow: 1;
+}
+
+#SDHub-Tab .sdhub-button-row-2 {
+  flex-grow: 2;
+}
+
+#SDHub-Tab .sdhub-buttons {
+  position: relative;
+  height: 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 17px;
+  box-shadow: var(--sdhub-box-shadow);
+}
+
+#SDHub-Tab .sdhub-buttons:hover {
+  filter: drop-shadow(0 0 5px var(--primary-500));
+  box-shadow: var(--sdhub-box-shadow), 0 0 10px 1px var(--primary-500);
+  color: var(--body-text-color-subdued);
+  background: var(--button-primary-background-fill-hover);
+}
+
+#SDHub-Tab .sdhub-button-disabled {
+  pointer-events: none;
+  filter: brightness(0.6);
 }
 
 #SDHub-Downloader-Tab,
@@ -58,14 +96,6 @@
   padding: 10px 0px 0px;
 }
 
-.hide-this {
-  visibility: hidden !important;
-}
-
-#SDHub-Archiver-Tab .arc-row {
-  margin-top: -9px !important;
-}
-
 #SDHub-Archiver-Radio-Row > .form {
   gap: 2rem;
 }
@@ -75,8 +105,10 @@
   max-width: max-content;
 }
 
-#SDHub-Downloader-Input {
-  margin-top: 10px;
+#SDHub-Tab #SDHub-Downloader-Preview-Checkbox {
+  justify-content: flex-start;
+  width: max-content;
+  margin: 5px 0 5px 10px;
 }
 
 #SDHub-Downloader-Scrape-Button,
@@ -113,7 +145,6 @@
   color: var(--primary-500);
 }
 
-#SDHub-Tab .sdhub-buttons:hover,
 #SDHub-Shell-Button:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
   box-shadow: 0 0 10px 1px var(--primary-500);
@@ -124,12 +155,13 @@
 #SDHub-Tab .sdhub-checkbox {
   display: flex;
   margin: 0;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+  margin-left: 3rem;
 }
 
 #SDHub-Tab .sdhub-checkbox label {
-  gap: 20px;
+  gap: 1rem;
 }
 
 #SDHub-Tab .sdhub-checkbox input {
@@ -162,8 +194,7 @@
 #SDHub-Tab .sdhub-input input,
 #SDHub-Tab .sdhub-radio input,
 #SDHub-Tab .sdhub-output input,
-#SDHub-Tab .sdhub-output textarea,
-#SDHub-Tab .sdhub-accordion {
+#SDHub-Tab .sdhub-output textarea {
   box-shadow: var(--sdhub-box-shadow);
 }
 
@@ -176,32 +207,22 @@
 #SDHub-Tab .sdhub-input input,
 #SDHub-Tab .sdhub-radio label,
 #SDHub-Tab .sdhub-radio input,
-#SDHub-Shell-Button,
-#SDHub-Tab .sdhub-accordion {
+#SDHub-Shell-Button {
   transition:
-    box-shadow 0.4s ease,
-    filter 0.4s ease,
-    border-color 0.3s ease,
-    background-color 0.3s ease,
-    color 0.5s ease;
-}
-
-#SDHub-Tab .sdhub-buttons {
-  position: relative;
-  height: 40px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  font-size: 17px;
+    box-shadow .4s ease,
+    filter .4s ease,
+    border-color .3s ease,
+    background-color .3s ease,
+    color .5s ease;
 }
 
 #SDHub-Tab .sdhub-input textarea:focus,
 #SDHub-Tab .sdhub-input input:focus {
-  filter: drop-shadow(0 0 1px var(--primary-400)) blur(0px) !important;
-  box-shadow: 0 0 10px 1px var(--primary-400);
+  box-shadow: 0 0 3px 1px var(--primary-400), inset 0 0 1px 1px var(--primary-400);
+}
+
+#SDHub-Tab .sdhub-input input:hover {
+  filter: none !important;
 }
 
 #SDHub-Tab .sdhub-radio input:checked,
@@ -241,11 +262,25 @@
 .gradio-container-4-40-0 #SDHub-Downloader-Button-Row,
 .gradio-container-4-40-0 #SDHub-Uploader-Button-Row,
 .gradio-container-4-40-0 #SDHub-Uploader-Input {
-  margin-top: -10px;
+  margin-top: -8px;
+  gap: 8px;
 }
 
 .gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {
   overflow: hidden;
+}
+
+#SDHub-Uploader-Username-Box,
+#SDHub-Uploader-Repo-Box {
+  max-width: 240px;
+}
+
+#SDHub-Uploader-Branch-Box {
+  max-width: min(160px, 100%);
+}
+
+#SDHub-Uploader-Radio-Box {
+  max-width: max-content;
 }
 
 .gradio-container-4-40-0 #SDHub-Uploader-Radio-Box .svelte-1kzox3m,
@@ -315,7 +350,8 @@
 }
 
 #SDHub-Tab .sdhub-accordion {
-  border: var(--sdhub-accordion-border) !important;
+  border: 1px solid var(--sdhub-border-color) !important;
+  transition: .3s ease;
 }
 
 #SDHub-Tab .sdhub-accordion > .label-wrap {
@@ -327,10 +363,10 @@
   margin-top: 8px;
 }
 
-#SDHub-Tab .sdhub-accordion:has(> .open),
-#SDHub-Tab .sdhub-accordion:hover:not(:has(> .open)) {
-  border: 1px solid var(--primary-500) !important;
-  box-shadow: 0 0 10px 1px var(--primary-400);
+#SDHub-Tab .sdhub-accordion:hover,
+#SDHub-Tab .sdhub-accordion.sdhub-accordion-open {
+  border-color: var(--primary-400) !important;
+  box-shadow: var(--sdhub-box-shadow-primary);
 }
 
 #SDHub-Tag-Dataframe tbody {
@@ -344,7 +380,7 @@
 
 #SDHub-Tag-Dataframe td:hover {
   filter: drop-shadow(0 0 5px var(--primary-400));
-  box-shadow: 0 0 10px 1px var(--primary-400);
+  box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 10px 1px var(--primary-400);
   color: var(--background-fill-primary);
   background: var(--button-primary-background-fill);
 }
@@ -369,39 +405,32 @@
 
 #SDHub-Tag-Dataframe td.pulse-td {
   animation: pulse-td-box 2s alternate forwards;
-  animation-timing-function: ease;
 }
 
 @keyframes pulse-td-box {
   0% {
     filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: 0 0 10px 1px var(--primary-400);
+    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 10px 1px var(--primary-400);
     color: var(--background-fill-primary);
     background: var(--button-primary-background-fill);
   }
-  25% {
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: 0 0 3px 1px var(--primary-400);
+  33% {
+    filter: drop-shadow(0 0 0 transparent);
+    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 0 0 var(--primary-400);
     color: var(--body-text-color);
     background: transparent;
   }
-  50% {
+  66% {
     filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: 0 0 10px 1px var(--primary-400);
+    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 10px 1px var(--primary-400);
     color: var(--background-fill-primary);
     background: var(--button-primary-background-fill);
-  }
-  75% {
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: 0 0 3px 1px var(--primary-400);
-    color: var(--body-text-color);
-    background: transparent;
   }
   100% {
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: 0 0 10px 1px var(--primary-400);
-    color: var(--background-fill-primary);
-    background: var(--button-primary-background-fill);
+    filter: drop-shadow(0 0 0 transparent);
+    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 0 0 var(--primary-400);
+    color: var(--body-text-color);
+    background: transparent;
   }
 }
 
