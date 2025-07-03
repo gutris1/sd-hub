@@ -345,18 +345,20 @@ def UploaderTab():
         )
 
         with FormRow(elem_id='SDHub-Uploader-Button-Row'):
-            with FormColumn(scale=1), FormRow(elem_classes='sdhub-row'):
-                upload_button = gr.Button(
-                    'UPLOAD',
-                    variant='primary',
-                    elem_id='SDHub-Uploader-Upload-Button',
-                    elem_classes='sdhub-buttons'
-                )
+            with FormColumn(scale=6):
+                with FormRow(elem_classes='sdhub-row'):
+                    with FormRow(elem_classes='sdhub-button-row-1'):
+                        upload_button = gr.Button(
+                            'UPLOAD',
+                            variant='primary',
+                            elem_id='SDHub-Uploader-Upload-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-                with FormRow(variant='compact'):
-                    gr.Button('hantu', variant='primary', elem_classes='hide-this')
+                    with FormRow(elem_classes='sdhub-button-row-2'):
+                        gr.Button('hantu', variant='primary', elem_classes='hide-this')
 
-            with FormColumn(scale=1, variant='compact'):
+            with FormColumn(scale=4):
                 output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,

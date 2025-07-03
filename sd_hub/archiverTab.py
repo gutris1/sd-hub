@@ -1,4 +1,4 @@
-from modules.ui_components import FormRow
+from modules.ui_components import FormRow, FormColumn
 from modules.shared import cmd_opts
 from pathlib import Path
 from tqdm import tqdm
@@ -10,7 +10,7 @@ import sys
 import os
 
 if sys.platform == 'win32':
-    import tarfile, gzip, lz4.frame
+    import tarfile, gzip, lz4.frame # type: ignore
 else:
     import pty
 
@@ -233,7 +233,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
 
         yield f'Saved To: {output_zip}', True
 
-def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by):
+def path_archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by):
     input_path = input_path.strip('"').strip("'")
     output_path = output_path.strip('"').strip("'")
 
@@ -282,10 +282,10 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
             yield f'{output_path}\nOutput Path is not a directory.', True
             return
 
-        if not mkdir_cb1 and not output_path_obj.exists():
+        if not archiver_mkdir and not output_path_obj.exists():
             yield f'{output_path_obj}\ndoes not exist', True
             return
-        elif mkdir_cb1:
+        elif archiver_mkdir:
             output_path_obj.mkdir(parents=True, exist_ok=True)
 
         if not cmd_opts.enable_insecure_extension_access:
@@ -305,7 +305,7 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
     else:
         select_arc = {'zip': _zip, 'tar.gz': tar_tar, 'tar.lz4': tar_tar}
 
-    arc_select = select_arc.get(arc_format)
+    arc_select = select_arc.get(archiver_format)
 
     split_dict = {'None': 0, '2': 2, '3': 3, '4': 4, '5': 5}
     split_by = split_dict.get(split_by, 0)
@@ -315,15 +315,15 @@ def path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, spli
         file_name,
         output_path, 
         input_type,
-        format_type=arc_format.split('.')[-1],
+        format_type=archiver_format.split('.')[-1],
         split_by=split_by
     ):
         yield output
 
-def archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by, box_state=gr.State()):
+def archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by, box_state=gr.State()):
     output_box = box_state if box_state else []
 
-    for t, f in path_archive(input_path, file_name, output_path, arc_format, mkdir_cb1, split_by):
+    for t, f in path_archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by):
         if not f:
             yield t, '\n'.join(output_box)
         else:
@@ -471,7 +471,7 @@ def extraction(input_path, output_path, format_type):
     if is_done:
         yield f'Extracted To: {output_path}', True
 
-def path_extract(input_path, output_path, mkdir_cb2):
+def path_extract(input_path, output_path, extractor_mkdir):
     input_path = input_path.strip('"').strip("'")
     output_path = output_path.strip('"').strip("'")
 
@@ -520,10 +520,10 @@ def path_extract(input_path, output_path, mkdir_cb2):
             yield f'{output_path}\nOutput Path is not a directory.', True
             return
 
-        if not mkdir_cb2 and not output_path_obj.exists():
+        if not extractor_mkdir and not output_path_obj.exists():
             yield f'{output_path_obj}\ndoes not exist', True
             return
-        elif mkdir_cb2:
+        elif extractor_mkdir:
             output_path_obj.mkdir(parents=True, exist_ok=True)
 
         if not cmd_opts.enable_insecure_extension_access:
@@ -546,10 +546,10 @@ def path_extract(input_path, output_path, mkdir_cb2):
     for output in ext_func(input_path, output_path, format_type):
         yield output
 
-def extract(input_path, output_path, mkdir_cb2, box_state=gr.State()):
+def extract(input_path, output_path, extractor_mkdir, box_state=gr.State()):
     output_box = box_state if box_state else []
 
-    for t, f in path_extract(input_path, output_path, mkdir_cb2):
+    for t, f in path_extract(input_path, output_path, extractor_mkdir):
         if not f:
             yield t, '\n'.join(output_box)
         else:
@@ -577,12 +577,12 @@ def ArchiverTab():
         ):
             gr.HTML(arc_info)
 
-        if SDHubPaths.getENV():
-            from sd_hub.zipoutputs import ZipOutputs; ZipOutputs()
+        if SDHubPaths.getENV(): from sd_hub.zipoutputs import ZipOutputs; ZipOutputs()
 
         gr.HTML("""<h3 style='font-size: 17px;' id='SDHub-Archiver-Archive-Title'>Archive</h3>""")
+
         with FormRow(elem_id='SDHub-Archiver-Radio-Row'):
-            arc_format = gr.Radio(
+            archiver_format = gr.Radio(
                 ['tar.lz4', 'tar.gz', 'zip'],
                 value='tar.lz4',
                 label='Format',
@@ -592,7 +592,7 @@ def ArchiverTab():
                 elem_classes='sdhub-radio'
             )
 
-            arc_split = gr.Radio(
+            archiver_split = gr.Radio(
                 ['None', '2', '3', '4', '5'],
                 value='None',
                 label='Split by',
@@ -602,57 +602,57 @@ def ArchiverTab():
                 elem_classes='sdhub-radio'
             )
 
+        archiver_name = gr.Textbox(
+            max_lines=1,
+            placeholder='Name',
+            show_label=False,
+            elem_id='SDHub-Archiver-Archive-Input-Name',
+            elem_classes='sdhub-input'
+        )
+
+        archiver_input = gr.Textbox(
+            max_lines=1,
+            placeholder='Input Path',
+            show_label=False,
+            elem_id='SDHub-Archiver-Archive-Input-Path',
+            elem_classes='sdhub-input'
+        )
+
+        archiver_output = gr.Textbox(
+            max_lines=1,
+            placeholder='Output Path',
+            show_label=False,
+            elem_id='SDHub-Archiver-Archive-Output-Path',
+            elem_classes='sdhub-input'
+        )
+
         with FormRow():
-            arc_name = gr.Textbox(
-                max_lines=1,
-                placeholder='Name',
-                show_label=False,
-                elem_id='SDHub-Archiver-Archive-Input-Name',
-                elem_classes='sdhub-input'
-            )
+            with FormColumn(scale=6):
+                with FormRow(elem_classes='sdhub-row'):
+                    with FormRow(elem_classes='sdhub-button-row-1'):
+                        archiver_button = gr.Button(
+                            'Compress',
+                            variant='primary',
+                            elem_id='SDHub-Archiver-Archive-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-        with gr.Column(elem_classes='arc-row'):
-            arc_in = gr.Textbox(
-                max_lines=1,
-                placeholder='Input Path',
-                show_label=False,
-                elem_id='SDHub-Archiver-Archive-Input-Path',
-                elem_classes='sdhub-input'
-            )
+                    with FormRow(elem_classes='sdhub-button-row-2'):
+                        archiver_mkdir = gr.Checkbox(
+                            label='Create Directory',
+                            elem_id='SDHub-Archiver-Archive-Checkbox',
+                            elem_classes='sdhub-checkbox'
+                        )
 
-            arc_out = gr.Textbox(
-                max_lines=1,
-                placeholder='Output Path',
-                show_label=False,
-                elem_id='SDHub-Archiver-Archive-Output-Path',
-                elem_classes='sdhub-input'
-            )
-
-        with gr.Row(elem_classes='arc-row'):
-            with gr.Column():
-                with gr.Row():
-                    arc_run = gr.Button(
-                        'Compress',
-                        variant='primary',
-                        elem_id='SDHub-Archiver-Archive-Button',
-                        elem_classes='sdhub-buttons'
-                    )
-
-                    mkdir_cb1 = gr.Checkbox(
-                        label='Create Directory',
-                        elem_id='SDHub-Archiver-Archive-Checkbox',
-                        elem_classes='sdhub-checkbox'
-                    )
-
-            with gr.Column():
-                arc_output1 = gr.Textbox(
+            with FormColumn(scale=4):
+                archiver_output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,
                     max_lines=1,
                     elem_classes='sdhub-output'
                 )
 
-                arc_output2 = gr.Textbox(
+                archiver_output_2 = gr.Textbox(
                     show_label=False,
                     interactive=False,
                     lines=5,
@@ -660,7 +660,8 @@ def ArchiverTab():
                 )
 
         gr.HTML("""<h3 style='font-size: 17px;' id='SDHub-Archiver-Extract-Title'>Extract</h3>""")
-        extr_in = gr.Textbox(
+
+        extractor_input = gr.Textbox(
             max_lines=1,
             placeholder='Input Path',
             show_label=False,
@@ -668,7 +669,7 @@ def ArchiverTab():
             elem_classes='sdhub-input'
         )
 
-        extr_out = gr.Textbox(
+        extractor_output = gr.Textbox(
             max_lines=1,
             placeholder='Output Path',
             show_label=False,
@@ -676,33 +677,35 @@ def ArchiverTab():
             elem_classes='sdhub-input'
         )
 
-        with gr.Row(elem_classes='arc-row'):
-            with gr.Column():
-                with gr.Row():
-                    extr_btn = gr.Button(
-                        'Decompress',
-                        variant='primary',
-                        elem_id='SDHub-Archiver-Extract-Button',
-                        elem_classes='sdhub-buttons'
-                    )
+        with FormRow():
+            with FormColumn(scale=6):
+                with FormRow(elem_classes='sdhub-row'):
+                    with FormRow(elem_classes='sdhub-button-row-1'):
+                        extractor_button = gr.Button(
+                            'Decompress',
+                            variant='primary',
+                            elem_id='SDHub-Archiver-Extract-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-                    mkdir_cb2 = gr.Checkbox(
-                        label='Create Directory',
-                        elem_id='SDHub-Archiver-Extract-Checkbox',
-                        elem_classes='sdhub-checkbox'
-                    )
+                    with FormRow(elem_classes='sdhub-button-row-2'):
+                        extractor_mkdir = gr.Checkbox(
+                            label='Create Directory',
+                            elem_id='SDHub-Archiver-Extract-Checkbox',
+                            elem_classes='sdhub-checkbox'
+                        )
 
-            with gr.Column():
+            with FormColumn(scale=4):
                 gr.Textbox(show_label=False, max_lines=1, elem_classes='hide-this')
 
-        arc_run.click(
+        archiver_button.click(
             fn=archive,
-            inputs=[arc_in, arc_name, arc_out, arc_format, mkdir_cb1, arc_split, gr.State()],
-            outputs=[arc_output1, arc_output2]
-        )
+            inputs=[archiver_input, archiver_name, archiver_output, archiver_format, archiver_mkdir, archiver_split, gr.State()],
+            outputs=[archiver_output_1, archiver_output_2]
+        ).then(fn=None, _js='() => { SDHubArchiver("finish"); }')
 
-        extr_btn.click(
+        extractor_button.click(
             fn=extract,
-            inputs=[extr_in, extr_out, mkdir_cb2, gr.State()],
-            outputs=[arc_output1, arc_output2]
-        )
+            inputs=[extractor_input, extractor_output, extractor_mkdir, gr.State()],
+            outputs=[archiver_output_1, archiver_output_2]
+        ).then(fn=None, _js='() => { SDHubArchiver("finish"); }')

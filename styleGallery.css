@@ -1292,7 +1292,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-imgchest-Button:hover {
   border: 1px solid var(--primary-400) !important;
-  filter: drop-shadow(0 0 10px var(--primary-400));
+  filter: drop-shadow(0 0 1px var(--primary-400));
   box-shadow: 0 0 10px 1px var(--primary-400);
   background: var(--primary-400) !important;
 }
@@ -1308,14 +1308,18 @@ body.sdhub-body-no-scrolling {
   max-width: 500px;
   flex-grow: 1;
   min-width: min(320px, 100%);
-  border: 0;
-  box-shadow: 0 0 6px 2px var(--primary-400);
+  border: 1px solid var(--primary-400);
+  box-shadow: var(--sdhub-box-shadow-primary);
   background: var(--background-fill-primary);
   opacity: 0;
   transform: scale(0);
   transition: transform .4s ease, opacity .3s ease;
-  gap: 8px;
+  gap: 5px;
   overflow: hidden;
+}
+
+#SDHub-Gallery-imgchest-Column > .form {
+  gap: 10px;
 }
 
 #SDHub-Gallery-imgchest-Info {
@@ -1324,11 +1328,7 @@ body.sdhub-body-no-scrolling {
   color: var(--body-text-color);
 }
 
-.sdhub-gallery-imgchest-info {
-  transition: .6s ease;
-}
-
-.sdhub-gallery-imgchest-info:hover {
+#SDHub-Gallery-imgchest-Info > .sdhub-gallery-imgchest-info:hover {
   color: var(--primary-400) !important;
 }
 
@@ -1337,7 +1337,6 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-imgchest-Checkbox input {
-  transition: .7s ease;
   cursor: pointer;
   height: 30px;
   padding: 5px;
@@ -1348,22 +1347,18 @@ body.sdhub-body-no-scrolling {
   box-shadow: var(--sdhub-box-shadow);
 }
 
-#SDHub-Gallery-imgchest-Checkbox span {
-  transition: .7s ease;
-}
-
 #SDHub-Gallery-imgchest-Checkbox input:not(:checked):hover {
   box-shadow: var(--sdhub-box-shadow), inset 0 0 10px 3px var(--primary-400);
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:checked {
-  transition: .4s ease;
+  box-shadow: var(--sdhub-box-shadow);
   background: var(--button-primary-background-fill);
 }
 
 #SDHub-Gallery-imgchest-Checkbox input:checked:hover {
   filter: drop-shadow(0 0 5px var(--primary-500));
-  box-shadow: 0 0 10px 1px var(--primary-500);
+  box-shadow: var(--sdhub-box-shadow), 0 0 10px 1px var(--primary-500);
   color: var(--body-text-color);
   background: var(--button-primary-background-fill-hover);
 }
@@ -1387,11 +1382,14 @@ body.sdhub-body-no-scrolling {
   cursor: auto;
 }
 
+#SDHub-Gallery-imgchest-Checkbox input,
+#SDHub-Gallery-imgchest-Checkbox span,
 #SDHub-Gallery-imgchest-Privacy label,
 #SDHub-Gallery-imgchest-Privacy input,
 #SDHub-Gallery-imgchest-NSFW label,
 #SDHub-Gallery-imgchest-NSFW input,
-#SDHub-Gallery-imgchest-API input {
+#SDHub-Gallery-imgchest-API input,
+#SDHub-Gallery-imgchest-Info > .sdhub-gallery-imgchest-info {
   transition: .4s ease;
 }
 

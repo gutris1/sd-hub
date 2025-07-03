@@ -158,6 +158,22 @@ function SDHubEventListener() {
       input.addEventListener('focus', () => (input.style.filter = 'none'));
     });
   });
+
+  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
+  archiveBtn.onclick = async () => extractBtn.classList.add('sdhub-button-disabled');
+
+  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  extractBtn.onclick = async () => archiveBtn.classList.add('sdhub-button-disabled');
+
+  document.querySelectorAll('#SDHub-Tab .sdhub-accordion > .label-wrap').forEach(label => {
+    label.onclick = () => {
+      const accordion = label.parentElement;
+      setTimeout(() => {
+        const open = label.classList.contains('open');
+        accordion.classList.toggle('sdhub-accordion-open', open);
+      }, 0);
+    };
+  });
 }
 
 async function SDHubTokenBlur() {
@@ -186,6 +202,16 @@ async function SDHubDownloader() {
     const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
     if (Tag.test(inputs)) buttons.forEach(id => document.getElementById(id)?.click());
   });
+}
+
+async function SDHubArchiver(flag) {
+  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
+  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+
+  if (flag === 'finish') {
+    archiveBtn.classList.remove('sdhub-button-disabled');
+    extractBtn.classList.remove('sdhub-button-disabled');
+  }
 }
 
 async function SDHubTextEditorInfo(flag) {

@@ -27,21 +27,20 @@ def is_that_tag(output_path):
 
 def zipping(file_name, output_path, mkdir_zip):
     resolved, err = is_that_tag(output_path)
-    if err:
-        yield err, True
-        return
+    if err: yield err, True; return
 
     out = resolved if resolved else Path(data_path)
     fn = Path(file_name.strip()) if file_name else 'ZipOutputs'
 
     if not mkdir_zip:
-        if not out.exists():
-            yield f'{out}\nOutput path does not exist.', True
-            return
+        if not out.exists(): yield f'{out}\nOutput path does not exist.', True; return
     else:
         out.mkdir(parents=True, exist_ok=True)
 
     zip_in = opts.outdir_samples or Path(data_path) / 'outputs'
+    if not zip_in.exists(): yield f'{zip_in} not found', True; return
+    if not any(zip_in.iterdir()): yield f'{zip_in} is empty', True; return
+
     zip_out = out / f'{fn}.zip'
     counter = 1
     while zip_out.exists():
@@ -67,8 +66,7 @@ def zipping(file_name, output_path, mkdir_zip):
                     with open(file_to_compress, 'rb') as f:
                         while True:
                             chunk = f.read(chunk_size)
-                            if not chunk:
-                                break
+                            if not chunk: break
 
                             zipf.writestr(str(file_to_compress.relative_to(zip_in)), chunk)
                             pbar.update(len(chunk))
@@ -86,7 +84,7 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
         else:
             output_box.append(t)
 
-    cc = ['not', 'Missing', 'Invalid']
+    cc = ['not', 'Missing', 'Invalid', 'is empty']
 
     if any(aa in bb for aa in cc for bb in output_box):
         yield 'Error', '\n'.join(output_box)
@@ -96,55 +94,54 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     return gr.update(), gr.State(output_box)
 
 def ZipOutputs():
-    with gr.Accordion('Zip Outputs', open=False, elem_id='SDHub-Archiver-ZipOutputs-Accordion', elem_classes='sdhub-accordion'), FormRow():
-        with FormColumn():
-            zip_name = gr.Textbox(
-                max_lines=1,
-                placeholder='ZIP Name (default to ZipOutputs if empty)',
-                show_label=False,
-                elem_id='SDHub-Archiver-ZipOutputs-Input-Name',
-                elem_classes='sdhub-input'
-            )
-
-            zip_out = gr.Textbox(
-                max_lines=1,
-                placeholder='ZIP Output Path (default to WebUI root if empty)',
-                show_label=False,
-                elem_id='SDHub-Archiver-ZipOutputs-Output-Path',
-                elem_classes='sdhub-input'
-            )
-
-            with FormRow():
-                zip_run = gr.Button(
-                    'Zip Zip',
-                    variant='primary',
-                    elem_id='SDHub-Archiver-ZipOutputs-Button',
-                    elem_classes='sdhub-buttons'
+    with gr.Accordion('Zip Outputs', open=False, elem_id='SDHub-Archiver-ZipOutputs-Accordion', elem_classes='sdhub-accordion'):
+        with FormRow():
+            with FormColumn(scale=6):
+                zip_name = gr.Textbox(
+                    max_lines=1,
+                    placeholder='ZIP Name (default to ZipOutputs if empty)',
+                    show_label=False,
+                    elem_id='SDHub-Archiver-ZipOutputs-Input-Name',
+                    elem_classes='sdhub-input'
                 )
 
-                mkdir_zip = gr.Checkbox(
-                    label='Create Directory',
-                    elem_id='SDHub-Archiver-ZipOutputs-Checkbox',
-                    elem_classes='sdhub-checkbox'
+                zip_out = gr.Textbox(
+                    max_lines=1,
+                    placeholder='ZIP Output Path (default to WebUI root if empty)',
+                    show_label=False,
+                    elem_id='SDHub-Archiver-ZipOutputs-Output-Path',
+                    elem_classes='sdhub-input'
                 )
 
-        with FormColumn():
-            zip_output1 = gr.Textbox(
-                show_label=False,
-                interactive=False,
-                max_lines=1,
-                elem_classes='sdhub-output'
-            )
+                with FormRow(elem_classes='sdhub-row'):
+                    with FormRow(elem_classes='sdhub-button-row-1'):
+                        zip_run = gr.Button(
+                            'Zip Zip',
+                            variant='primary',
+                            elem_id='SDHub-Archiver-ZipOutputs-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-            zip_output2 = gr.Textbox(
-                show_label=False,
-                interactive=False,
-                lines=5,
-                elem_classes='sdhub-output'
-            )
+                    with FormRow(elem_classes='sdhub-button-row-2'):
+                        mkdir_zip = gr.Checkbox(
+                            label='Create Directory',
+                            elem_id='SDHub-Archiver-ZipOutputs-Checkbox',
+                            elem_classes='sdhub-checkbox'
+                        )
 
-        zip_run.click(
-            fn=zipzip,
-            inputs=[zip_name, zip_out, mkdir_zip, gr.State()],
-            outputs=[zip_output1, zip_output2]
-        )
+            with FormColumn(scale=4):
+                zip_output1 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    max_lines=1,
+                    elem_classes='sdhub-output'
+                )
+
+                zip_output2 = gr.Textbox(
+                    show_label=False,
+                    interactive=False,
+                    lines=5,
+                    elem_classes='sdhub-output'
+                )
+
+        zip_run.click(fn=zipzip, inputs=[zip_name, zip_out, mkdir_zip, gr.State()], outputs=[zip_output1, zip_output2])

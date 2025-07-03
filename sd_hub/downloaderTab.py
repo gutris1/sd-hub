@@ -52,9 +52,7 @@ def gdrown(url, fp=None, fn=None):
         gdown_output += output  
         failure |= 'Failed to retrieve file url' in output  
         gdown_progress = output.strip() if re.search(r'\d{1,3}%', output) else gdown_progress  
-        if gdown_progress and time.time() - starting_line >= 1:  
-            yield gdown_progress, False  
-            starting_line = time.time()
+        if gdown_progress and time.time() - starting_line >= 1: yield gdown_progress, False; starting_line = time.time()
 
     if failure:
         failed = gdown_output.find('Failed to retrieve file url')
@@ -64,8 +62,7 @@ def gdrown(url, fp=None, fn=None):
     for lines in gdown_output.split('\n'):
         if lines.startswith('To:'):
             completed = re.search(r'[^/]*$', lines)
-            if completed:
-                yield f'Saved To: {fp}/{completed.group()}', True
+            if completed: yield f'Saved To: {fp}/{completed.group()}', True
 
     p.wait()
 
@@ -80,17 +77,14 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
     if fp:
         if not cmd_opts.enable_insecure_extension_access:
             allowed, err = SDHubPaths.SDHubCheckPaths(fp)
-            if not allowed:
-                yield err, True
-                return
-            else:
-                aria2cmd.extend(['--allow-overwrite=true'])
-        else:
-            aria2cmd.extend(['--allow-overwrite=true'])
+            if not allowed: yield err, True; return
+            else: aria2cmd.extend(['--allow-overwrite=true'])
+        else: aria2cmd.extend(['--allow-overwrite=true'])
 
         aria2cmd.extend(['-d', fp])
 
     fn and aria2cmd.extend(['-o', fn])
+
     j = None
 
     if 'github.com' in url:
@@ -128,10 +122,8 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
             modelId = url.split('models/')[1].split('/')[0].split('?')[0]
             versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
 
-            if versionId:
-                api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
-            else:
-                api_url = f'https://civitai.com/api/v1/models/{modelId}'
+            if versionId: api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+            else: api_url = f'https://civitai.com/api/v1/models/{modelId}'
 
         j = requests.get(api_url, headers=civitai_headers()).json()
 
@@ -139,11 +131,10 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         if msg: yield msg; return
 
         url = input_url if use_input else (j.get('modelVersions', [{}])[0] if 'modelVersions' in j else j).get('downloadUrl')
-        if not url:
-            yield f'Unable to find download URL for\n-> {input_url}\n', False
-            return
+        if not url: yield f'Unable to find download URL for\n-> {input_url}\n', False; return
 
         url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
+        aria2cmd.extend([f'--header={k}: {v}' for k, v in civitai_headers().items()])
 
     aria2cmd.append(url)
     p = subprocess.Popen(aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
@@ -518,32 +509,34 @@ def DownloaderTab():
         )
 
         with FormRow(elem_id='SDHub-Downloader-Button-Row'):
-            with FormColumn(scale=1), FormRow(elem_classes='sdhub-row'):
-                download_button = gr.Button(
-                    'DOWNLOAD',
-                    variant='primary',
-                    elem_id='SDHub-Downloader-Download-Button',
-                    elem_classes='sdhub-buttons'
-                )
+            with FormColumn(scale=6):
+                with FormRow(elem_classes='sdhub-row'):
+                    with FormRow(elem_classes='sdhub-button-row-1'):
+                        download_button = gr.Button(
+                            'DOWNLOAD',
+                            variant='primary',
+                            elem_id='SDHub-Downloader-Download-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-                with FormRow(variant='compact'):
-                    scrape_button = gr.Button(
-                        'Scrape',
-                        variant='secondary',
-                        min_width=0,
-                        elem_id='SDHub-Downloader-Scrape-Button'
-                    )
+                    with FormRow(variant='compact', elem_classes='sdhub-button-row-2'):
+                        scrape_button = gr.Button(
+                            'Scrape',
+                            variant='secondary',
+                            min_width=0,
+                            elem_id='SDHub-Downloader-Scrape-Button'
+                        )
 
-                    txt_button = gr.UploadButton(
-                        label='Insert TXT',
-                        variant='secondary',
-                        file_count='single',
-                        file_types=['.txt'],
-                        min_width=0,
-                        elem_id='SDHub-Downloader-Txt-Button'
-                    )
+                        txt_button = gr.UploadButton(
+                            label='Insert TXT',
+                            variant='secondary',
+                            file_count='single',
+                            file_types=['.txt'],
+                            min_width=0,
+                            elem_id='SDHub-Downloader-Txt-Button'
+                        )
 
-            with FormColumn(scale=1):
+            with FormColumn(scale=4):
                 output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,
