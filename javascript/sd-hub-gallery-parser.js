@@ -1,8 +1,8 @@
 async function SDHubGalleryParser() {
-  const RawOutput = document.querySelector('#SDHub-Gallery-Info-GenInfo textarea');
-  const HTMLPanel = document.getElementById('SDHub-Gallery-Info-HTML');
-  const ImagePanel = document.getElementById('SDHub-Gallery-Info-Image');
-  const img = ImagePanel.querySelector('img');
+  const RawOutput = document.querySelector(`#${SDHubiI}-Geninfo textarea`),
+        HTMLPanel = document.getElementById(`${SDHubiI}-HTML`),
+        ImagePanel = document.getElementById(`${SDHubiI}-img`),
+        img = ImagePanel.querySelector('img');
 
   if (!img) {
     HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML('');
@@ -13,16 +13,16 @@ async function SDHubGalleryParser() {
   img.onload = () => img.style.opacity = '1';
 
   const output = await SharedImageParser(img);
-  window.SDHubGalleryInfoRawOutput = RawOutput.value = output;
+  window.SDHubGalleryImageInfoRaw = RawOutput.value = output;
   updateInput(RawOutput);
   HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
 
-  document.querySelectorAll('.sdhub-gallery-info-output-section').forEach(s => {
-    const bg = 'var(--input-background-fill)';
-    const t = s.querySelector('.sdhub-gallery-info-output-title');
-    const w = s.querySelector('.sdhub-gallery-info-output-wrapper');
+  document.querySelectorAll(`.${sdhubii}-output-section`).forEach(s => {
+    const bg = 'var(--input-background-fill)',
+          t = s.querySelector(`.${sdhubii}-output-title`),
+          w = s.querySelector(`.${sdhubii}-output-wrapper`);
     if (!t || !w) return;
-    const c = t.classList.contains('sdhub-gallery-info-copybutton');
+    const c = t.classList.contains(`${sdhubii}-copybutton`);
     w.onmouseenter = () => w.style.background = t.style.background = bg;
     w.onmouseleave = () => w.style.background = t.style.background = '';
     t.onmouseenter = () => !c ? (t.style.background = w.style.background = bg) : (w.style.background = bg);
@@ -33,19 +33,19 @@ async function SDHubGalleryParser() {
 async function SDHubGalleryPlainTextToHTML(inputs) {
   const { SharedParserEncryptInfo: EncryptInfo, SharedParserSha256Info: Sha256Info, 
           SharedParserNaiSourceInfo: NaiSourceInfo, SharedParserSoftwareInfo: SoftwareInfo
-        } = window;
+        } = window,
 
-  const SendButton = document.getElementById('SDHub-Gallery-Info-SendButton');
-  const OutputPanel = document.getElementById('SDHub-Gallery-Info-Output-Panel');
+        SendButton = document.getElementById(`${SDHubiI}-SendButton`),
+        OutputPanel = document.getElementById(`${SDHubiI}-Output-Panel`),
 
-  const outputDisplay = 'sdhub-gallery-display-output-panel';
-  const outputFail = 'sdhub-gallery-display-output-fail';
+        outputDisplay = 'sdhub-gallery-display-output-panel',
+        outputFail = 'sdhub-gallery-display-output-fail';
 
   const createTitle = (id, label, copyBtn = false) => {
-    const l = copyBtn ? SDHubGetTranslation(label) : label;
-    const att = [
-      copyBtn && `id='SDHub-Gallery-Info-${id}-Button'`,
-      `class='sdhub-gallery-info-output-title${copyBtn ? ' sdhub-gallery-info-copybutton' : ''}'`,
+    const l = copyBtn ? SDHubGetTranslation(label) : label,
+          att = [
+      copyBtn && `id='${SDHubiI}-${id}-Button'`,
+      `class='${sdhubii}-output-title${copyBtn ? ` ${sdhubii}-copybutton` : ''}'`,
       copyBtn && `title='${SDHubGetTranslation(`copy_${label}`)}'`,
       copyBtn && `onclick='SDHubGalleryCopyButtonEvent(event)'`
     ].filter(Boolean).join(' ');
@@ -65,10 +65,10 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
   const createSection = (title, content) => {
     if (!content?.trim()) return '';
-    const empty = title === 'nothing';
-    const wrapper = title !== titles.models && !empty;
-    const text = wrapper ? `<div class='sdhub-gallery-info-output-wrapper'><div class='sdhub-gallery-info-output-content'>${content}</div></div>` : content;
-    return `<div class='sdhub-gallery-info-output-section'${empty ? " style='height: 100%'" : ''}>${empty ? '' : title}${text}</div>`;
+    const empty = title === 'nothing',
+          wrapper = title !== titles.models && !empty,
+          text = wrapper ? `<div class='${sdhubii}-output-wrapper'><div class='${sdhubii}-output-content'>${content}</div></div>` : content;
+    return `<div class='${sdhubii}-output-section'${empty ? " style='height: 100%'" : ''}>${empty ? '' : title}${text}</div>`;
   };
 
   if (!inputs?.trim()) {
@@ -82,7 +82,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
     OutputPanel.classList.add(outputFail);
     SendButton.classList.remove(outputDisplay);
-    const failContent = `<div class='sdhub-gallery-info-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
+    const failContent = `<div class='${sdhubii}-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
     return createSection('nothing', failContent);
   }
 
@@ -98,17 +98,14 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
   let process = inputs
     .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/Seed:\s?(\d+),/gi, (_, seedNumber) => 
-      `<span id='SDHub-Gallery-Info-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`
+      `<span id='${SDHubiI}-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`
     );
 
-  const negativePromptIndex = process.indexOf('Negative prompt:');
-  const stepsIndex = process.indexOf('Steps:');
-  const hashesIndex = process.indexOf('Hashes:');
+  const negativePromptIndex = process.indexOf('Negative prompt:'),
+        stepsIndex = process.indexOf('Steps:'),
+        hashesIndex = process.indexOf('Hashes:');
 
-  let promptText = '';
-  let negativePromptText = '';
-  let paramsText = '';
-  let modelOutput = '';
+  let promptText = '', negativePromptText = '', paramsText = '', modelOutput = '';
 
   if (negativePromptIndex !== -1) promptText = process.substring(0, negativePromptIndex).trim();
   else if (stepsIndex !== -1) promptText = process.substring(0, stepsIndex).trim();
@@ -126,8 +123,8 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     if (hashes?.[1]) paramsText = paramsText.replace(hashes[0], '').trim();
     if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
 
-    const modelId = 'SDHub-Gallery-Info-Model-Output';
-    modelOutput = `<div id='${modelId}'>${SDHubGallerySpinnerSVG.replace(/<svg\b([^>]*)>/, '<svg id="SDHub-Gallery-Info-Spinner" $1>')}</div>`;
+    const modelId = `${SDHubiI}-Model-Output`;
+    modelOutput = `<div id='${modelId}'>${SDHubGallerySVG_Spinner.replace(/<svg\b([^>]*)>/, `<svg id='${SDHubiI}-Spinner' $1>`)}</div>`;
 
     const boxModels = document.getElementById(modelId);
     if (boxModels) boxModels.innerHTML = modelOutput;
@@ -138,13 +135,13 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
       try {
         const links = await SharedModelsFetch(paramsRAW);
-        modelsBox.classList.add('sdhub-gallery-info-display-model-output');
+        modelsBox.classList.add(`${sdhubii}-display-model-output`);
         modelsBox.innerHTML = links;
-        setTimeout(() => modelsBox.classList.remove('sdhub-gallery-info-display-model-output'), 2000);
+        setTimeout(() => modelsBox.classList.remove(`${sdhubii}-display-model-output`), 2000);
       } catch (error) {
-        modelsBox.innerHTML = '<div class="sdhub-gallery-info-output-failed">Failed to fetch...</div>';
+        modelsBox.innerHTML = `<div class='${sdhubii}-output-failed'>Failed to fetch...</div>`;
       }
-      setTimeout(() => window.SDHubGalleryImageInfoArrowScrolling(), 0);
+      setTimeout(() => window.SDHubGalleryImageInfoArrowUpdate(), 0);
     }, 500);
 
   } else {
@@ -161,26 +158,26 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 }
 
 function SDHubGalleryCopyButtonEvent(e) {
-  let OutputRaw = window.SDHubGalleryInfoRawOutput;
+  let OutputRaw = window.SDHubGalleryImageInfoRaw;
 
   const CopyText = (text, target) => {
-    const content = target.closest('.sdhub-gallery-info-output-section')?.querySelector('.sdhub-gallery-info-output-content');
-    content?.classList.add('sdhub-gallery-info-borderpulse');
-    setTimeout(() => content?.classList.remove('sdhub-gallery-info-borderpulse'), 2000);
+    const content = target.closest(`.${sdhubii}-output-section`)?.querySelector(`.${sdhubii}-output-content`);
+    content?.classList.add(`${sdhubii}-borderpulse`);
+    setTimeout(() => content?.classList.remove(`${sdhubii}-borderpulse`), 2000);
     navigator.clipboard.writeText(text);
   };
 
   if (e.target?.id) {
-    const { id } = e.target;
-    const stepsStart = OutputRaw.indexOf('Steps:');
-    const negStart = OutputRaw.indexOf('Negative prompt:');
-    const seedMatch = OutputRaw.match(/Seed:\s?(\d+),/i);
+    const { id } = e.target,
+          stepsStart = OutputRaw.indexOf('Steps:'),
+          negStart = OutputRaw.indexOf('Negative prompt:'),
+          seedMatch = OutputRaw.match(/Seed:\s?(\d+),/i);
 
     const text = {
-      'SDHub-Gallery-Info-Prompt-Button': () => OutputRaw.substring(0, [negStart, stepsStart].find(i => i !== -1) || OutputRaw.length).trim(),
-      'SDHub-Gallery-Info-NegativePrompt-Button': () => negStart !== -1 && stepsStart > negStart ? OutputRaw.slice(negStart + 16, stepsStart).trim() : null,
-      'SDHub-Gallery-Info-Params-Button': () => stepsStart !== -1 ? OutputRaw.slice(stepsStart).trim() : null,
-      'SDHub-Gallery-Info-Seed-Button': () => seedMatch?.[1]?.trim() || null
+      [`${SDHubiI}-Prompt-Button`]: () => OutputRaw.substring(0, [negStart, stepsStart].find(i => i !== -1) || OutputRaw.length).trim(),
+      [`${SDHubiI}-NegativePrompt-Button`]: () => negStart !== -1 && stepsStart > negStart ? OutputRaw.slice(negStart + 16, stepsStart).trim() : null,
+      [`${SDHubiI}-Params-Button`]: () => stepsStart !== -1 ? OutputRaw.slice(stepsStart).trim() : null,
+      [`${SDHubiI}-Seed-Button`]: () => seedMatch?.[1]?.trim() || null
     }[id]?.();
 
     if (text) CopyText(text, e.target);
@@ -188,8 +185,8 @@ function SDHubGalleryCopyButtonEvent(e) {
 }
 
 function SDHubGallerySendButton(Id) {
-  let OutputRaw = window.SDHubGalleryInfoRawOutput;
-  let ADmodel = OutputRaw?.includes('ADetailer model');
-  let cb = document.getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
+  let OutputRaw = window.SDHubGalleryImageInfoRaw,
+      ADmodel = OutputRaw?.includes('ADetailer model'),
+      cb = document.getElementById(`script_${Id}_adetailer_ad_main_accordion-visible-checkbox`);
   if (ADmodel) cb?.checked === false && cb.click();
 }

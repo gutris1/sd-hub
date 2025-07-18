@@ -1,18 +1,18 @@
-var SDHubGalleryImageButtonSVG = `
+var SDHubGallerySVG_ImageButton = `
   <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'
     width='30px' height='30px'>
     <path d='M4 6H20M4 12H20M4 18H20' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/>
   </svg>
 `;
 
-var SDHubGalleryDLSVG = `
+var SDHubGallerySVG_Download = `
   <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg'
     width='32' height='32' viewBox='0 0 32 32'>
     <path fill='currentColor' stroke='currentColor' stroke-width='1.8' d='M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10 l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z'/>
   </svg>
 `;
 
-var SDHubGalleryCopySVG = `
+var SDHubGallerySVG_Copy = `
   <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'
     width='30px' height='30px' viewBox='0 0 24 24' fill='transparent'>
     <rect x='4.758' y='0.768' width='18.475' height='18.475' rx='2' ry='2'/>
@@ -23,14 +23,14 @@ var SDHubGalleryCopySVG = `
   </svg>
 `;
 
-var SDHubGalleryARRSVG = `
+var SDHubGallerySVG_SubArrow = `
   <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs">
     <path d="M9 18l6-6-6-6"/>
   </svg>
 `;
 
-var SDHubGalleryImageSVG = `
+var SDHubGallerySVG_Image = `
   <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="transparent"
     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" transform="scale(0.85)">
     <rect x="0.802" y="0.846" width="22.352" height="22.352" rx="2" ry="2"/>
@@ -39,7 +39,7 @@ var SDHubGalleryImageSVG = `
   </svg>
 `;
 
-var SDHubGalleryImageInfoSVG = `
+var SDHubGallerySVG_ImageInfo = `
   <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none">
     <path d="M7 9H17M7 13H17M21 20L17.6757 18.3378C17.4237 18.2118 17.2977 18.1488 17.1656 18.1044C17.0484
       18.065 16.9277 18.0365 16.8052 18.0193C16.6672 18 16.5263 18 16.2446 18H6.2C5.07989 18 4.51984 18 4.09202
@@ -50,7 +50,7 @@ var SDHubGalleryImageInfoSVG = `
   </svg>
 `;
 
-var SDHubGalleryOpenNewTabSVG = `
+var SDHubGallerySVG_OpenInNewTab = `
   <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none" >
     <path d="M20 4L12 12M20 4V8.5M20 4H15.5M19 12.5V16.8C19 17.9201 19 18.4802 18.782 18.908C18.5903 19.2843 18.2843 19.5903
       17.908 19.782C17.4802 20 16.9201 20 15.8 20H7.2C6.0799 20 5.51984 20 5.09202 19.782C4.71569 19.5903 4.40973 19.2843 4.21799
@@ -59,13 +59,17 @@ var SDHubGalleryOpenNewTabSVG = `
   </svg>
 `;
 
-var SDHubGallerySendToSVG = `
-  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="32px" height="32px" viewBox="0 0 16 16" transform="scale(0.8)">
-    <path d="M0 0h4v4H0V0zm0 6h4v4H0V6zm0 6h4v4H0v-4zM6 0h4v4H6V0zm0 6h4v4H6V6zm0 6h4v4H6v-4zm6-12h4v4h-4V0zm0 6h4v4h-4V6zm0 6h4v4h-4v-4z" fill-rule="evenodd"/>
+var SDHubGallerySVG_SendTo = `
+  <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" fill="currentColor" width="32px" height="32px" viewBox="0 0 16 16">
+    <path d="M 1.436 1.436 L 4.717 1.436 L 4.717 4.719 L 1.436 4.719 L 1.436 1.436 Z M 1.436 6.359 L 4.717 6.359 L 4.717 9.641 L 1.436 9.641
+      L 1.436 6.359 Z M 1.436 11.283 L 4.717 11.283 L 4.717 14.564 L 1.436 14.564 L 1.436 11.283 Z M 6.358 1.436 L 9.64 1.436 L 9.64 4.719
+      L 6.358 4.719 L 6.358 1.436 Z M 6.358 6.359 L 9.64 6.359 L 9.64 9.641 L 6.358 9.641 L 6.358 6.359 Z M 6.358 11.283 L 9.64 11.283 L 9.64 14.564
+      L 6.358 14.564 L 6.358 11.283 Z M 11.281 1.436 L 14.564 1.436 L 14.564 4.719 L 11.281 4.719 L 11.281 1.436 Z M 11.281 6.359 L 14.564 6.359
+      L 14.564 9.641 L 11.281 9.641 L 11.281 6.359 Z M 11.281 11.283 L 14.564 11.283 L 14.564 14.564 L 11.281 14.564 L 11.281 11.283 Z" fill-rule="evenodd"/>
   </svg>
 `;
 
-var SDHubGalleryDeleteSVG = `
+var SDHubGallerySVG_Delete = `
   <svg class='sdhub-gallery-cm-svg' xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none">
     <path d="M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132
       14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013
@@ -76,7 +80,7 @@ var SDHubGalleryDeleteSVG = `
   </svg>
 `;
 
-var SDHubGallerySpinnerSVG = `
+var SDHubGallerySVG_Spinner = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="100" height="100">
     <path fill="currentColor" d="M 24.3 17.1 C 24.3 25.9 31.5 33.1 40.3 33.1 C 41.3 33.1 42.3 33 43.3 32.8 L 44 36.7 C 42.8 37 41.6 37.1 40.3 37.1 C 29.2 37.1
       20.3 28.1 20.3 17.1 C 20.3 12.3 22 7.6 25.1 4 L 28.1 6.6 C 25.8 9.5 24.3 13.1 24.3 17.1 Z" style="transform-origin: 32.15px 20.55px;" transform="matrix(-1, 0, 0, -1, 0.000002, 0)"/>
@@ -88,7 +92,7 @@ var SDHubGallerySpinnerSVG = `
   </svg>
 `;
 
-var SDHubGalleryCloseButtonSVG = `
+var SDHubGallerySVG_Cross = `
   <svg width="100%" height="100%" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" xml:space="preserve"
     stroke="currentColor" style="fill-rule: evenodd; clip-rule: evenodd; stroke-linecap: round; stroke-linejoin: round;">
     <g transform="matrix(1.14096,-0.140958,-0.140958,1.14096,-0.0559523,0.0559523)">
@@ -98,21 +102,21 @@ var SDHubGalleryCloseButtonSVG = `
   </svg>
 `;
 
-var SDHubGalleryLeftArrowSVG = `
+var SDHubGallerySVG_LeftArrow = `
   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
     width="32px" height="32px" viewBox="0 0 24 24">
     <path d="m4.431 12.822 13 9A1 1 0 0 0 19 21V3a1 1 0 0 0-1.569-.823l-13 9a1.003 1.003 0 0 0 0 1.645z"/>
   </svg>
 `;
 
-var SDHubGalleryRightArrowSVG = `
+var SDHubGallerySVG_RightArrow = `
   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
     width="32px" height="32px" viewBox="0 0 24 24">
     <path d="M5.536 21.886a1.004 1.004 0 0 0 1.033-.064l13-9a1 1 0 0 0 0-1.644l-13-9A1 1 0 0 0 5 3v18a1 1 0 0 0 .536.886z"/>
   </svg>
 `;
 
-var SDHubGalleryimgchestSVG = `
+var SDHubGallerySVG_ImgChest = `
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
     <g transform="matrix(0.90471, 0, 0, 0.90471, 1.866445, -5.640391)">
       <path fill="#33090d" d="M 471.5,50.5 C 475.852,53.8648 480.519,57.0315 485.5,60C 491.389,66.0575 497.389,71.8908
@@ -170,20 +174,61 @@ var SDHubGalleryimgchestSVG = `
   </svg>
 `;
 
-var SDHubGalleryTabScrollSVG = `
+var SDHubGallerySVG_ArrowScroll = `
   <svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
     <polygon fill="currentColor" points="95.936,214.656 256,378.016 416.064,214.656 366.096,165.856 256,278.208 145.904,165.856"/>
   </svg>
 `;
 
-var SDHubGallerySettingSVG = `
+var SDHubGallerySVG_Setting = `
   <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" height="100%" width="100%" viewBox="0 0 32 32">
-    <path
-      d="M27.758,10.366 l-1-1.732 c-0.552-0.957-1.775-1.284-2.732-0.732 L23.5,8.206 C21.5,9.36,19,7.917,19,5.608 V5 c0-1.105-0.895-2-2-2 h-2 c-1.105,0-2,0.895-2,2 v0.608 c0,2.309-2.5,3.753-4.5,2.598 L7.974,7.902
-      C7.017,7.35,5.794,7.677,5.242,8.634 l-1,1.732 c-0.552,0.957-0.225,2.18,0.732,2.732 L5.5,13.402 c2,1.155,2,4.041,0,5.196 l-0.526,0.304 c-0.957,0.552-1.284,1.775-0.732,2.732 l1,1.732 c0.552,0.957,1.775,1.284,2.732,0.732
-      L8.5,23.794 c2-1.155,4.5,0.289,4.5,2.598 V27 c0,1.105,0.895,2,2,2 h2 c1.105,0,2-0.895,2-2 v-0.608 c0-2.309,2.5-3.753,4.5-2.598 l0.526,0.304 c0.957,0.552,2.18,0.225,2.732-0.732 l1-1.732 c0.552-0.957,0.225-2.18-0.732-2.732
-      L26.5,18.598 c-2-1.155-2-4.041,0-5.196 l0.526-0.304 C27.983,12.546,28.311,11.323,27.758,10.366 z M16,20 a4,4 0 1,1 0,-8 a4,4 0 1,1 0,8 z"
-      fill="transparent" stroke="" stroke-width="2"
-    />
+    <path d="M27.758,10.366 l-1-1.732 c-0.552-0.957-1.775-1.284-2.732-0.732 L23.5,8.206 C21.5,9.36,19,7.917,19,5.608 V5 c0-1.105-0.895-2-2-2 h-2
+      c-1.105,0-2,0.895-2,2 v0.608 c0,2.309-2.5,3.753-4.5,2.598 L7.974,7.902 C7.017,7.35,5.794,7.677,5.242,8.634 l-1,1.732 c-0.552,0.957-0.225,2.18,0.732,2.732
+      L5.5,13.402 c2,1.155,2,4.041,0,5.196 l-0.526,0.304 c-0.957,0.552-1.284,1.775-0.732,2.732 l1,1.732 c0.552,0.957,1.775,1.284,2.732,0.732 L8.5,23.794
+      c2-1.155,4.5,0.289,4.5,2.598 V27 c0,1.105,0.895,2,2,2 h2 c1.105,0,2-0.895,2-2 v-0.608 c0-2.309,2.5-3.753,4.5-2.598 l0.526,0.304 c0.957,0.552,2.18,0.225,2.732-0.732
+      l1-1.732 c0.552-0.957,0.225-2.18-0.732-2.732 L26.5,18.598 c-2-1.155-2-4.041,0-5.196 l0.526-0.304 C27.983,12.546,28.311,11.323,27.758,10.366 z
+      M16,20 a4,4 0 1,1 0,-8 a4,4 0 1,1 0,8 z" fill="transparent" stroke="" stroke-width="2"/>
+  </svg>
+`;
+
+// ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————— //
+var SDHubGallerySVG_MultiBox = `
+  <path d="M 7.207 7.22 L 7.207 4.167 C 7.207 2.94 8.202 1.945 9.429 1.945 L 19.833 1.945 C 21.06 1.945 22.055 2.94 22.055 4.167 L 22.055 14.571
+    C 22.055 15.797 21.06 16.792 19.833 16.792 L 16.824 16.792 M 4.136 7.226 L 14.54 7.226 C 15.767 7.226 16.762 8.221 16.762 9.448 L 16.762 19.852
+    C 16.762 21.078 15.767 22.073 14.54 22.073 L 4.136 22.073 C 2.909 22.073 1.9140000000000001 21.078 1.9140000000000001 19.852 L 1.9140000000000001
+    9.448 C 1.9140000000000001 8.221 2.909 7.226 4.136 7.226 Z" stroke="currentColor" fill="transparent" stroke-width="2"/>
+`;
+
+var SDHubGallerySVG_MultiSelect = `
+  <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    ${SDHubGallerySVG_MultiBox}
+    <path d="M 8.126 18.573 L 4.153 14.601 L 5.742 13.012 L 8.126 15.396 L 12.892 10.629 L 14.48 12.218 L 8.126 18.573 Z" stroke="transparent" fill="currentColor"/>
+  </svg>
+`;
+
+var SDHubGallerySVG_MultiUnselect = `
+  <svg width="32px" height="32px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    ${SDHubGallerySVG_MultiBox}
+    <path d="M 13.521 10.484 L 5.378 18.627 M 13.519 18.627 L 5.378 10.484" stroke="currentColor" stroke-width="2"/>
+  </svg>
+`;
+
+// ———————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————— //
+var SDHubGallerySVG_SelectBorder = `
+  <path d="M 6.093 2.288 L 23.908 2.288 C 26.007 2.288 27.713 3.992 27.713 6.092 L 27.713 23.908 C 27.713 26.005 26.007 27.711 23.908 27.711 L 6.093 27.711
+    C 3.993 27.711 2.288 26.005 2.288 23.908 L 2.288 6.092 C 2.288 3.992 3.993 2.288 6.093 2.288 Z" fill="transparent" stroke-width="2" fill-rule="evenodd"/>
+`;
+
+var SDHubGallerySVG_SelectImage = `
+  <svg class="sdhub-select-svg" width="32px" height="32px" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="transparent">
+    ${SDHubGallerySVG_SelectBorder}
+    <path d="M 13.123 21.263 L 6.857 14.999 L 9.363 12.494 L 13.123 16.253 L 20.638 8.736 L 23.142 11.242 L 13.123 21.263 Z" stroke="transparent" fill="currentColor"/>
+  </svg>
+`;
+
+var SDHubGallerySVG_UnselectImage = `
+  <svg class="sdhub-unselect-svg" width="32px" height="32px" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" fill="transparent">
+    ${SDHubGallerySVG_SelectBorder}
+    <path d="M 21.489 8.511 L 8.51 21.49 M 21.487 21.49 L 8.51 8.511" stroke="currentColor" stroke-width="3"/>
   </svg>
 `;

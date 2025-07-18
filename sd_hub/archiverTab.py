@@ -626,7 +626,7 @@ def ArchiverTab():
             elem_classes='sdhub-input'
         )
 
-        with FormRow():
+        with FormRow(elem_classes='sdhub-button-output-row'):
             with FormColumn(scale=6):
                 with FormRow(elem_classes='sdhub-row'):
                     with FormRow(elem_classes='sdhub-button-row-1'):
@@ -677,7 +677,7 @@ def ArchiverTab():
             elem_classes='sdhub-input'
         )
 
-        with FormRow():
+        with FormRow(elem_classes='sdhub-button-output-row'):
             with FormColumn(scale=6):
                 with FormRow(elem_classes='sdhub-row'):
                     with FormRow(elem_classes='sdhub-button-row-1'):
@@ -696,7 +696,7 @@ def ArchiverTab():
                         )
 
             with FormColumn(scale=4):
-                gr.Textbox(show_label=False, max_lines=1, elem_classes='hide-this')
+                gr.Textbox(show_label=False, max_lines=1, elem_classes='sdhub-hidden')
 
         archiver_button.click(
             fn=archive,

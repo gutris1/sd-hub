@@ -1,4 +1,5 @@
 :root {
+  --sdhub-scale: 1.0001;
   --sdhub-border-color: #000;
   --sdhub-box-shadow: 0 0 1px 1px var(--sdhub-border-color);
   --sdhub-box-shadow-radio-label: inset 0 0 5px 0 var(--sdhub-border-color);
@@ -39,9 +40,14 @@
   color: var(--primary-500);
 }
 
-#SDHub-Tab .hide-this {
+#SDHub-Tab .sdhub-hidden {
   visibility: hidden;
   pointer-events: none;
+}
+
+.gradio-container-4-40-0 #SDHub-Tab .sdhub-button-output-row {
+  margin-top: -9px;
+  gap: 7px;
 }
 
 #SDHub-Tab .sdhub-row {
@@ -165,24 +171,23 @@
 }
 
 #SDHub-Tab .sdhub-checkbox input {
-  transform: rotate(45deg);
+  cursor: pointer;
   border: 0;
   border-radius: 0;
+  box-shadow: inset 0 0 7px 1px var(--primary-400), 0 0 1px 1px var(--primary-400);
   padding: 0;
-  cursor: pointer;
-  box-shadow: 0 0 3px 1px #000;
-  transition: 0.4s ease;
+  background: var(--input-background-fill);
+  transform: rotate(45deg);
+  transition: .4s ease;
 }
 
 #SDHub-Tab .sdhub-checkbox input:hover {
-  filter: drop-shadow(0 0 10px var(--primary-400));
-  box-shadow: 0 0 1px 2px var(--primary-500);
+  box-shadow: inset 0 0 3px 0px var(--primary-400), 0 0 1px 1px var(--primary-400);
 }
 
 #SDHub-Tab .sdhub-checkbox input:checked {
-  filter: drop-shadow(0 0 5px var(--primary-500));
-  box-shadow: 0 0 20px 0px var(--primary-500);
-  background-image: var(--radio-circle);
+  box-shadow: inset 0 0 1px 1px var(--primary-500), 0 0 17px 4px var(--primary-500);
+  background-image: var(--sdhub-gallery-checkbox-img);
   background-color: var(--primary-500);
 }
 
@@ -257,13 +262,6 @@
   border-color: var(--primary-500);
   filter: drop-shadow(0 0 3px var(--primary-500));
   background-color: var(--checkbox-label-background-fill-hover);
-}
-
-.gradio-container-4-40-0 #SDHub-Downloader-Button-Row,
-.gradio-container-4-40-0 #SDHub-Uploader-Button-Row,
-.gradio-container-4-40-0 #SDHub-Uploader-Input {
-  margin-top: -8px;
-  gap: 8px;
 }
 
 .gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {

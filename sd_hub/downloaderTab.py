@@ -508,7 +508,7 @@ def DownloaderTab():
             elem_classes='sdhub-input'
         )
 
-        with FormRow(elem_id='SDHub-Downloader-Button-Row'):
+        with FormRow(elem_classes='sdhub-button-output-row'):
             with FormColumn(scale=6):
                 with FormRow(elem_classes='sdhub-row'):
                     with FormRow(elem_classes='sdhub-button-row-1'):

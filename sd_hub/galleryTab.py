@@ -5,6 +5,7 @@ from fastapi import FastAPI, responses, Request
 from datetime import datetime, timedelta
 from urllib.parse import quote, unquote
 from modules.scripts import basedir
+from send2trash import send2trash
 from modules.shared import opts
 from pathlib import Path
 from io import BytesIO
@@ -15,7 +16,6 @@ import threading
 import asyncio
 import json
 import sys
-import time
 
 from sd_hub.infotext import config, LoadConfig
 from sd_hub.paths import SDHubPaths
@@ -81,10 +81,7 @@ def getThumbnail(fp, size=512):
             return None
 
     if isinstance(fp, list):
-        #start = time.time()
-        with ThreadPoolExecutor(max_workers=8) as exe:
-            list(exe.map(resize, fp))
-        #print(f'SD-Hub : {time.time() - start:.1f}s ({len(fp)} thumbnails)')
+        with ThreadPoolExecutor(max_workers=8) as exe: list(exe.map(resize, fp))
         return None
     else:
         return resize(fp)
@@ -119,6 +116,11 @@ def getImage():
 
     threading.Thread(target=listing, daemon=True).start()
 
+import zipfile
+import tempfile
+import shutil
+import os
+
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     global imgList
     getImage()
@@ -129,22 +131,22 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     }
 
     @app.get(BASE + '/initial')
-    async def initialLoad():
+    async def _():
         try:
-            r = await asyncio.to_thread(imgList_List.wait, 0.1)
+            r = await asyncio.to_thread(imgList_List.wait, 3)
             if not r: return {'status': 'waiting'}
             return {'images': imgList}
         except Exception as e:
             return responses.JSONResponse(status_code=500, content={'error': 'Server error', 'detail': str(e)})
 
     @app.get(BASE + '/image={img:path}')
-    async def sendImage(img: str):
+    async def _(img: str):
         fp = Path(unquote(img))
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
     @app.post(BASE + '/new-image')
-    async def newImage(req: Request):
+    async def _(req: Request):
         global imgList
         data = await req.json()
         paths = data.get('paths', [])
@@ -153,34 +155,69 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         return {'status': 'ok'}
 
     @app.get(BASE + '/thumb/{img}')
-    async def sendThumb(img: str):
+    async def _(img: str):
         thumb = Thumbnails.get(img)
         return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
 
     @app.post(BASE + '/get-thumb')
-    async def getThumb(req: Request):
+    async def _(req: Request):
         fp = Path((await req.json()).get('path'))
         await asyncio.to_thread(getThumbnail, fp)
         return {'status': f'{BASE}/thumb/{quote(fp.stem)}.jpeg'}
 
-    @app.post(BASE + '/delete')
-    async def deleteImage(req: Request):
-        d = await req.json()
-        path = Path(d.get('path'))
-        thumb = Path(unquote(d.get('thumb', ''))).name
-
+    def deleting(path: Path, thumb: Path, perm: bool):
+        global imgList
         if path.exists():
             try:
-                path.unlink()
-                Thumbnails.pop(thumb, None)
-                global imgList
+                path.unlink() if perm else send2trash(path)
+                Thumbnails.pop(thumb.name, None)
                 imgList = [img for img in imgList if unquote(img['path'].split('/image=')[-1].split('?')[0]) != path.as_posix()]
+                return True
             except Exception as e:
-                return {'status': f'error: {e}'}
+                print(f'Error deleting {path}: {e}')
+                return False
+        return False
+
+    @app.post(BASE + '/delete')
+    async def _(req: Request):
+        d = await req.json()
+        path = Path(d.get('path'))
+        thumb = Path(unquote(d.get('thumb', '')))
+        perm = d.get('permanent', False)
+
+        return {'status': 'deleted' if deleting(path, thumb, perm) else 'error'}
+
+    @app.post(BASE + '/batch-delete')
+    async def _(req: Request):
+        d = await req.json()
+        perm = d[0].get('permanent', False) if d else False
+
+        for i in d:
+            path = Path(i.get('path'))
+            thumb = Path(unquote(i.get('thumb', '')))
+            deleting(path, thumb, perm)
+
         return {'status': 'deleted'}
 
+    @app.post(BASE + '/batch-download')
+    async def _(req: Request):
+        from modules.ui_tempdir import is_gradio_temp_path
+        d = await req.json()
+        fp = [Path(i['path']) for i in d]
+
+        tmp_dir = tempfile.mkdtemp()
+        zip_path = Path(tmp_dir) / 'batch_download.zip'
+
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for file in fp:
+                if file.exists():
+                    zipf.write(file, arcname=file.name)
+
+        return responses.JSONResponse({'status': 'zipped', 'zip': str(zip_path)})
+
+
     @app.get(BASE + '/load-setting')
-    async def loadSetting():
+    async def _():
         d = LoadConfig()
         default = {
             'images-per-page': 100,
@@ -191,12 +228,17 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             'show-filename': False,
             'show-buttons': False,
             'image-info-layout': 'full_width',
+            'single-delete-permanent': False,
+            'single-delete-suppress-warning': False,
+            'batch-delete-permanent': False,
+            'batch-delete-suppress-warning': False,
+            'switch-tab-suppress-warning': False
         }
 
         return {**default, **d.get('Gallery', {})}
 
     @app.post(BASE + '/save-setting')
-    async def saveSetting(req: Request):
+    async def _(req: Request):
         c = await req.json()
         d = LoadConfig()
         d['Gallery'] = c
@@ -205,22 +247,22 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
-        async def imgChest():
+        async def _():
             privacy, nsfw, api = Loadimgchest()
             return {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
 
 def GalleryTab():
     if insecureENV:
-        with gr.Column(elem_id='SDHub-Gallery-imgchest-Column'):
+        with gr.Column(elem_id='SDHub-Gallery-ImgChest-Column'):
             gr.HTML(
                 'Auto Upload to <a class="sdhub-gallery-imgchest-info" '
                 'href="https://imgchest.com" target="_blank"> imgchest.com</a>',
-                elem_id='SDHub-Gallery-imgchest-Info'
+                elem_id='SDHub-Gallery-ImgChest-Info'
             )
 
             gr.Checkbox(
                 label='Click To Enable',
-                elem_id='SDHub-Gallery-imgchest-Checkbox'
+                elem_id='SDHub-Gallery-ImgChest-Checkbox'
             )
 
             with FormRow():
@@ -229,7 +271,7 @@ def GalleryTab():
                     value='Hidden',
                     label='Privacy',
                     interactive=True,
-                    elem_id='SDHub-Gallery-imgchest-Privacy',
+                    elem_id='SDHub-Gallery-ImgChest-Privacy',
                     elem_classes='sdhub-radio'
                 )
 
@@ -238,7 +280,7 @@ def GalleryTab():
                     value='True',
                     label='NSFW',
                     interactive=True,
-                    elem_id='SDHub-Gallery-imgchest-NSFW',
+                    elem_id='SDHub-Gallery-ImgChest-NSFW',
                     elem_classes='sdhub-radio'
                 )
 
@@ -247,7 +289,7 @@ def GalleryTab():
                 interactive=True,
                 placeholder='imgchest API key',
                 max_lines=1,
-                elem_id='SDHub-Gallery-imgchest-API',
+                elem_id='SDHub-Gallery-ImgChest-API',
                 elem_classes='sdhub-input'
             )
 
@@ -255,14 +297,14 @@ def GalleryTab():
                 savebtn = gr.Button(
                     'Save',
                     variant='primary',
-                    elem_id='SDHub-Gallery-imgchest-Save-Button',
+                    elem_id='SDHub-Gallery-ImgChest-Save-Button',
                     elem_classes='sdhub-buttons'
                 )
 
                 loadbtn = gr.Button(
                     'Load',
                     variant='primary',
-                    elem_id='SDHub-Gallery-imgchest-Load-Button',
+                    elem_id='SDHub-Gallery-ImgChest-Load-Button',
                     elem_classes='sdhub-buttons'
                 )
 
@@ -270,17 +312,17 @@ def GalleryTab():
         loadbtn.click(fn=Loadimgchest, inputs=[], outputs=[privacyset, nsfwset, apibox])
 
     with gr.TabItem('Gallery', elem_id='SDHub-Gallery-Tab'):
-        with FormRow(equal_height=False, elem_id='SDHub-Gallery-Info-Column'):
-            with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Info-Image-Column'):
-                image = gr.Image(elem_id='SDHub-Gallery-Info-Image', type='pil', source='upload', show_label=False)
-                image.change(fn=None, _js='() => { SDHubGalleryParser(); }')
+        with FormRow(equal_height=False, elem_id='SDHub-Gallery-Imageinfo-Row'):
+            with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Imageinfo-Image-Column'):
+                image = gr.Image(elem_id='SDHub-Gallery-Imageinfo-img', type='pil', source='upload', show_label=False)
+                image.change(fn=None, _js='() => SDHubGalleryParser()')
 
-                with FormRow(variant='compact', elem_id='SDHub-Gallery-Info-SendButton'):
+                with FormRow(variant='compact', elem_id='SDHub-Gallery-Imageinfo-SendButton'):
                     buttons = tempe.create_buttons(['txt2img', 'img2img', 'inpaint', 'extras'])
 
-            with FormColumn(variant='compact', scale=7, elem_id='SDHub-Gallery-Info-Output-Panel'):
-                geninfo = gr.Textbox(elem_id='SDHub-Gallery-Info-GenInfo', visible=False)
-                gr.HTML(elem_id='SDHub-Gallery-Info-HTML')
+            with FormColumn(variant='compact', scale=7, elem_id='SDHub-Gallery-Imageinfo-Output-Panel'):
+                geninfo = gr.Textbox(elem_id='SDHub-Gallery-Imageinfo-Geninfo', visible=False)
+                gr.HTML(elem_id='SDHub-Gallery-Imageinfo-HTML')
 
         for tabname, button in buttons.items():
             tempe.register_paste_params_button(
@@ -291,3 +333,28 @@ def GalleryTab():
                     source_image_component=image
                 )
             )
+
+        with FormColumn(elem_id='SDHub-Gallery-Batch-Column', visible=False):
+            def zipping(j):
+                try: p = json.loads(j)
+                except Exception: return None
+
+                zn = f"{p.get('name', 'sdhub-gallery').strip()}{datetime.now().strftime('-%S%f')[:-3]}"
+                img = p.get('images', [])
+
+                fp = [Path(i['path']) for i in img if Path(i['path']).exists()]
+                if not fp: return None
+
+                temp = tempfile.mkdtemp()
+                zp = Path(temp) / f'{zn}.zip'
+
+                with zipfile.ZipFile(zp, 'w') as z:
+                    for f in fp: z.write(f, arcname=f.name)
+
+                return zp
+
+            f = gr.File(file_count='single', interactive=False, elem_id='SDHub-Gallery-Batch-File')
+            f.change(None, _js="() => SDHubGalleryBatchDownload('onchange')")
+
+            p = gr.Textbox(elem_id='SDHub-Gallery-Batch-Path')
+            p.change(zipping, p, f)

@@ -84,7 +84,7 @@ def ShellTab():
                 'hantu',
                 variant='primary',
                 elem_id='SDHub-Shell-Ghost-Button',
-                elem_classes='hide-this'
+                elem_classes='sdhub-hidden'
             )
 
             output = gr.Textbox(
