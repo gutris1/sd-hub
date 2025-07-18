@@ -563,29 +563,28 @@ async function SDHubGalleryBatchDelete() {
 }
 
 async function SDHubGalleryBatchDownload(onchange = false) {
-  const batchInput = document.querySelector('#SDHub-Gallery-Batch-Path textarea');
-
   if (onchange) {
-    if (!batchInput?.value) return;
+    const path = document.querySelector('#SDHub-Gallery-Batch-Path textarea');
+    if (!path?.value) return;
 
     const waiting = setInterval(() => {
       const link = document.querySelector('#SDHub-Gallery-Batch-File a[download]');
       if (link) {
-        link.click();
-        SDHubGalleryCloseInfoPopup('dl');
-        clearInterval(waiting);
+        link.onclick = () => requestAnimationFrame(() => {
+          SDHubGalleryCloseInfoPopup('dl');
+          path.value = '';
+          updateInput(path);
+          clearInterval(waiting);
+        });
+
+        setTimeout(() => link.click(), 100);
       }
-    }, 200);
-    return;
-  }
-
-  batchInput.value = '';
-  updateInput(batchInput);
-
-  setTimeout(() => {
-    const TabCon = document.querySelector('.sdhub-gallery-tab-container.active'),
-          imgBox = Array.from(TabCon.querySelectorAll(`.sdhub-gallery-img-box.${SDHubiS}`)),
-          name = document.getElementById('SDHub-Gallery-Info-Batch-Input')?.value;
+    }, 1000);
+  } else {
+    const path = document.querySelector('#SDHub-Gallery-Batch-Path textarea'),
+          name = document.getElementById('SDHub-Gallery-Info-Batch-Input')?.value?.trim() || 'sdhub-gallery',
+          TabCon = document.querySelector('.sdhub-gallery-tab-container.active'),
+          imgBox = Array.from(TabCon.querySelectorAll(`.sdhub-gallery-img-box.${SDHubiS}`));
 
     const images = imgBox.map(b => {
       const i = b.querySelector('.sdhub-gallery-img'),
@@ -595,9 +594,9 @@ async function SDHubGalleryBatchDownload(onchange = false) {
 
     if (images.length === 0) return;
 
-    batchInput.value = JSON.stringify({ name: name?.trim(), images });
-    updateInput(batchInput);
-  }, 500);
+    path.value = JSON.stringify({ name, images });
+    updateInput(path);
+  }
 }
 
 function SDHubGalleryInfoPopUp(f, whichTab = null) {
@@ -811,6 +810,7 @@ function SDHubGalleryCloseInfoPopup(f = false) {
     SDHubGalleryTabImageCounters();
     SDHubGalleryRePages();
   }
+
   const q = id => document.getElementById(`SDHub-Gallery-Info-${id}`),
         infoCon = q('Container'),
         infoBox = q('Box'),

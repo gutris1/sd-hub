@@ -14,9 +14,7 @@ Supported languages:
   - Japanese (日本語)
   - Simplified Chinese (简体中文)
   - Traditional Chinese (繁體中文)
-  - Spanish (Español)
   - Korean (한국어)
-  - Russian (Русский)
 
 Language is automatically selected based on the browser’s language setting.
 

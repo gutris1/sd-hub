@@ -13,7 +13,9 @@ from PIL import Image
 import gradio as gr
 import mimetypes
 import threading
+import tempfile
 import asyncio
+import zipfile
 import json
 import sys
 
@@ -54,7 +56,7 @@ def Loadimgchest():
     return tuple(c.get(k, v) for k, v in zip(['privacy', 'nsfw', 'api-key'], default))
 
 def getPath(path):
-    p = path.resolve().as_posix() if sys.platform == 'win32' else str(path.resolve())
+    p = path.absolute().as_posix() if sys.platform == 'win32' else str(path.absolute())
     return quote(p)
 
 def getThumbnail(fp, size=512):
@@ -115,11 +117,6 @@ def getImage():
         imgList_List.set()
 
     threading.Thread(target=listing, daemon=True).start()
-
-import zipfile
-import tempfile
-import shutil
-import os
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     global imgList
@@ -198,23 +195,6 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             deleting(path, thumb, perm)
 
         return {'status': 'deleted'}
-
-    @app.post(BASE + '/batch-download')
-    async def _(req: Request):
-        from modules.ui_tempdir import is_gradio_temp_path
-        d = await req.json()
-        fp = [Path(i['path']) for i in d]
-
-        tmp_dir = tempfile.mkdtemp()
-        zip_path = Path(tmp_dir) / 'batch_download.zip'
-
-        with zipfile.ZipFile(zip_path, 'w') as zipf:
-            for file in fp:
-                if file.exists():
-                    zipf.write(file, arcname=file.name)
-
-        return responses.JSONResponse({'status': 'zipped', 'zip': str(zip_path)})
-
 
     @app.get(BASE + '/load-setting')
     async def _():
@@ -339,14 +319,15 @@ def GalleryTab():
                 try: p = json.loads(j)
                 except Exception: return None
 
-                zn = f"{p.get('name', 'sdhub-gallery').strip()}{datetime.now().strftime('-%S%f')[:-3]}"
+                ts = datetime.now().strftime('-%S%f')[:-3]
+                name = f"{p.get('name').strip()}{ts}"
                 img = p.get('images', [])
 
                 fp = [Path(i['path']) for i in img if Path(i['path']).exists()]
                 if not fp: return None
 
                 temp = tempfile.mkdtemp()
-                zp = Path(temp) / f'{zn}.zip'
+                zp = Path(temp) / f'{name}.zip'
 
                 with zipfile.ZipFile(zp, 'w') as z:
                     for f in fp: z.write(f, arcname=f.name)
