@@ -127,6 +127,35 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
     }
 
+    @app.get(BASE + '/load-setting')
+    async def _():
+        d = LoadConfig()
+        default = {
+            'images-per-page': 100,
+            'thumbnail-shape': 'aspect_ratio',
+            'thumbnail-position': 'center',
+            'thumbnail-layout': 'masonry',
+            'thumbnail-size': 240,
+            'show-filename': False,
+            'show-buttons': False,
+            'image-info-layout': 'full_width',
+            'single-delete-permanent': False,
+            'single-delete-suppress-warning': False,
+            'batch-delete-permanent': False,
+            'batch-delete-suppress-warning': False,
+            'switch-tab-suppress-warning': False
+        }
+
+        return {**default, **d.get('Gallery', {})}
+
+    @app.post(BASE + '/save-setting')
+    async def _(req: Request):
+        c = await req.json()
+        d = LoadConfig()
+        d['Gallery'] = c
+        config.write_text(json.dumps(d, indent=4), encoding='utf-8')
+        return {'status': 'saved'}
+
     @app.get(BASE + '/initial')
     async def _():
         try:
@@ -181,7 +210,6 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         path = Path(d.get('path'))
         thumb = Path(unquote(d.get('thumb', '')))
         perm = d.get('permanent', False)
-
         return {'status': 'deleted' if deleting(path, thumb, perm) else 'error'}
 
     @app.post(BASE + '/batch-delete')
@@ -193,37 +221,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             path = Path(i.get('path'))
             thumb = Path(unquote(i.get('thumb', '')))
             deleting(path, thumb, perm)
-
         return {'status': 'deleted'}
-
-    @app.get(BASE + '/load-setting')
-    async def _():
-        d = LoadConfig()
-        default = {
-            'images-per-page': 100,
-            'thumbnail-shape': 'aspect_ratio',
-            'thumbnail-position': 'center',
-            'thumbnail-layout': 'masonry',
-            'thumbnail-size': 240,
-            'show-filename': False,
-            'show-buttons': False,
-            'image-info-layout': 'full_width',
-            'single-delete-permanent': False,
-            'single-delete-suppress-warning': False,
-            'batch-delete-permanent': False,
-            'batch-delete-suppress-warning': False,
-            'switch-tab-suppress-warning': False
-        }
-
-        return {**default, **d.get('Gallery', {})}
-
-    @app.post(BASE + '/save-setting')
-    async def _(req: Request):
-        c = await req.json()
-        d = LoadConfig()
-        d['Gallery'] = c
-        config.write_text(json.dumps(d, indent=4), encoding='utf-8')
-        return {'status': 'saved'}
 
     if insecureENV:
         @app.get(BASE + '/imgChest')
@@ -317,14 +315,14 @@ def GalleryTab():
         with FormColumn(elem_id='SDHub-Gallery-Batch-Column', visible=False):
             def zipping(j):
                 try: p = json.loads(j)
-                except Exception: return None
+                except Exception: return None, ''
 
                 ts = datetime.now().strftime('-%S%f')[:-3]
                 name = f"{p.get('name').strip()}{ts}"
                 img = p.get('images', [])
 
                 fp = [Path(i['path']) for i in img if Path(i['path']).exists()]
-                if not fp: return None
+                if not fp: return None, ''
 
                 temp = tempfile.mkdtemp()
                 zp = Path(temp) / f'{name}.zip'
@@ -332,10 +330,19 @@ def GalleryTab():
                 with zipfile.ZipFile(zp, 'w') as z:
                     for f in fp: z.write(f, arcname=f.name)
 
-                return zp
+                return zp, zp
+
+            def deleting(t):
+                if not t: return
+                temp = Path(t)
+                if temp.exists(): temp.unlink()
+
+            t = gr.Textbox()
+            b = gr.Button(elem_id='SDHub-Gallery-Batch-Button')
+            b.click(deleting, t)
 
             f = gr.File(file_count='single', interactive=False, elem_id='SDHub-Gallery-Batch-File')
             f.change(None, _js="() => SDHubGalleryBatchDownload('onchange')")
 
             p = gr.Textbox(elem_id='SDHub-Gallery-Batch-Path')
-            p.change(zipping, p, f)
+            p.change(zipping, p, [f, t])

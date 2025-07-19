@@ -574,6 +574,7 @@ async function SDHubGalleryBatchDownload(onchange = false) {
           SDHubGalleryCloseInfoPopup('dl');
           path.value = '';
           updateInput(path);
+          document.getElementById('SDHub-Gallery-Batch-Button')?.click();
           clearInterval(waiting);
         });
 
@@ -605,7 +606,7 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
         infoBox = q('Box'),
         infoText = q('Text'),
         infoBatch = q('Batch'),
-        textareaText = q('Batch-Text'),
+        infoBatchText = q('Batch-Text'),
         checkboxWrap = q('Checkbox-Wrapper'),
         infoCheckbox = q('Checkbox'),
         infoCheckboxText = q('Checkbox-Text'),
@@ -625,13 +626,13 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
   };
 
   No.onclick = () => {
-    infoCheckboxInput.checked = infoWarningInput.checked = false;
     infoBox.style.opacity = infoBox.style.pointerEvents = infoCon.style.opacity = '';
     infoBox.style.transform = 'scale(1.5)';
     SDHubGalleryBlur('baygon');
     setTimeout(() => (
       infoCon.style.display = infoBox.style.transform = infoText.style.display = checkboxWrap.style.display = 
-      infoBatch.style.display = infoCheckbox.style.display = infoWarning.style.display = ''
+      infoBatch.style.display = infoCheckbox.style.display = infoWarning.style.display = '',
+      infoCheckboxInput.checked = infoWarningInput.checked = false
     ), 200);
     No.onclick = null;
   };
@@ -668,7 +669,7 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
   const bd = () => {
     infoText.style.display = 'none';
     infoBatch.style.display = 'flex';
-    textareaText.textContent = SDHubGetTranslation('file_name');
+    infoBatchText.textContent = SDHubGetTranslation('file_name');
     Yes.textContent = SDHubGetTranslation('download');
     No.textContent = SDHubGetTranslation('cancel');
     Yes.style.minWidth = No.style.minWidth = '130px';
@@ -683,7 +684,7 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
     });
   };
 
-  const confirmWithOptionalSettings = async ({ keys, skipWarning, func, delay = 1000, spin }) => {
+  const checking = async ({ keys, skipWarning, func, delay = 1000, spin }) => {
     spin && spin();
 
     if (!skipWarning) {
@@ -718,17 +719,16 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
 
   switch (f) {
     case 'delete': {
-      const k = 'single-delete-permanent',
-            sk = 'single-delete-suppress-warning';
+      const k = 'single-delete-permanent', sk = 'single-delete-suppress-warning';
 
       displayCon();
       infoCon.style.opacity = '1';
       const name = decodeURIComponent(window.SDHubImagePath.split('/').pop()),
-            suppress = warning(sk),
+            skip = warning(sk),
             cfg = { keys: [k, sk], func: SDHubGalleryDeleteImage, spin };
 
-      if (suppress) {
-        confirmWithOptionalSettings({ ...cfg, skipWarning: true });
+      if (skip) {
+        checking({ ...cfg, skipWarning: true });
       } else {
         infoText.textContent = `${SDHubGetTranslation('delete')} ${name}?`;
         text('delete_permanent', k);
@@ -736,22 +736,20 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
         buttons();
         displayBox();
 
-        Yes.onclick = () => confirmWithOptionalSettings({ ...cfg, skipWarning: false });
+        Yes.onclick = () => checking({ ...cfg, skipWarning: false });
       }
       break;
     }
 
     case 'batch-delete': {
-      const k = 'batch-delete-permanent',
-            sk = 'batch-delete-suppress-warning';
+      const k = 'batch-delete-permanent', sk = 'batch-delete-suppress-warning';
 
       displayCon();
       infoCon.style.opacity = '1';
-      const suppress = warning(sk),
-            cfg = { keys: [k, sk], func: SDHubGalleryBatchDelete, spin };
+      const skip = warning(sk), cfg = { keys: [k, sk], func: SDHubGalleryBatchDelete, spin };
 
-      if (suppress) {
-        confirmWithOptionalSettings({ ...cfg, skipWarning: true });
+      if (skip) {
+        checking({ ...cfg, skipWarning: true });
       } else {
         infoText.innerHTML = SDHubGetTranslation('batchbox_ask_deleting', SDHubGalleryImgSelected);
         text('delete_permanent', k);
@@ -759,7 +757,7 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
         buttons();
         displayBox();
 
-        Yes.onclick = () => confirmWithOptionalSettings({ ...cfg, skipWarning: false });
+        Yes.onclick = () => checking({ ...cfg, skipWarning: false });
       }
       break;
     }
@@ -773,10 +771,9 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
       break;
 
     case 'switch-tab': {
-      const sk = 'switch-tab-suppress-warning',
-            suppress = warning(sk);
+      const sk = 'switch-tab-suppress-warning', skip = warning(sk);
 
-      if (suppress) {
+      if (skip) {
         switchTab();
       } else {
         displayCon();
@@ -787,7 +784,7 @@ function SDHubGalleryInfoPopUp(f, whichTab = null) {
 
         Yes.onclick = () => {
           Yes.onclick = null;
-          confirmWithOptionalSettings({ keys: [sk], skipWarning: false, func: switchTab, delay: 0 });
+          checking({ keys: [sk], skipWarning: false, func: switchTab, delay: 0 });
 
           requestAnimationFrame(() => {
             infoBox.style.pointerEvents = infoBox.style.opacity = infoCon.style.opacity = '';

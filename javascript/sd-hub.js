@@ -409,24 +409,48 @@ async function SDHubRGBA() {
   const vars = [
     { c: '--input-background-fill', to: '--sdhub-gallery-output-background', a: 0.6 },
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-background-secondary', a: 0.9 },
+    { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-name-box-shadow-selected', a: 0.9, swap: true },
+    { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-name-background-selected', a: 0.7, swap: true },
+    { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-selected', a: 1, swap: true },
   ];
 
   const css = await (await fetch('/theme.css')).text();
   const get = s => Object.fromEntries((css.match(new RegExp(`${s}\\s*{([^}]*)}`, 'm'))?.[1] || '')
     .split(';').map(l => l.trim().split(':').map(s => s.trim())).filter(([k, v]) => k && v));
 
-  const addOpacity = (color, opacity) =>
-    color?.startsWith('#') ? `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}` :
-    color?.startsWith('rgb(') ? `rgb(${color.slice(4, -1)} / ${Math.round(opacity * 100)}%)` :
-    color?.startsWith('rgba(') ? `rgba(${color.slice(5, -1).split(',').slice(0, 3).join(',')}, ${opacity})` :
-    color || 'rgba(0,0,0,0)';
+  const names = {
+    white: '255 255 255', black: '0 0 0', red: '255 0 0', green: '0 128 0', blue: '0 0 255',
+    yellow: '255 255 0', cyan: '0 255 255', magenta: '255 0 255', silver: '192 192 192',
+    gray: '128 128 128', maroon: '128 0 0', olive: '128 128 0', lime: '0 255 0',
+    aqua: '0 255 255', teal: '0 128 128', navy: '0 0 128', fuchsia: '255 0 255',
+    purple: '128 0 128', orange: '255 165 0', pink: '255 192 203'
+  };
+
+  const alpha = (c, o) => {
+    if (!c) return 'rgba(0,0,0,0)';
+    if (names[c.toLowerCase()]) return `rgb(${names[c.toLowerCase()]} / ${Math.round(o * 100)}%)`;
+    if (c.startsWith('#')) return `${c}${Math.round(o * 255).toString(16).padStart(2, '0')}`;
+    if (c.startsWith('rgb(')) return `rgb(${c.slice(4, -1)} / ${Math.round(o * 100)}%)`;
+    if (c.startsWith('rgba(')) return `rgba(${c.slice(5, -1).split(',').slice(0, 3).join(',')}, ${o})`;
+    return c;
+  };
+
+  const resolve = (v, ctx, f = new Set()) => {
+    if (!v?.startsWith?.('var(')) return v;
+    const m = v.match(/^var\(([^)]+)\)$/);
+    if (!m || f.has(m[1])) return v;
+    f.add(m[1]);
+    return resolve(ctx[m[1]], ctx, f);
+  };
 
   const r = get(':root'), d = get('.dark'), S = document.createElement('style');
-  vars.forEach(({ c, to, a }) => {
-    S.textContent += `:root { ${to}: ${addOpacity(r[c], a)}; }\n.dark { ${to}: ${addOpacity(d[c], a)}; }\n`;
+
+  vars.forEach(({ c, to, a, swap }) => {
+    const [rc, dc] = [resolve(r[c], r), resolve(d[c], d)];
+    const [root, dark] = swap ? [alpha(dc, a), alpha(rc, a)] : [alpha(rc, a), alpha(dc, a)];
+    S.textContent += `:root { ${to}: ${root}; }\n.dark { ${to}: ${dark}; }\n`;
   });
 
-  // —————————————————————————————————————————————————————————————————————————————————————————————————————— //
   const svg = `
     <svg viewBox='0 0 16 16' fill='#fff' stroke='#fff' xmlns='http://www.w3.org/2000/svg'>
       <rect x='4' y='4' width='8' height='8'/>
