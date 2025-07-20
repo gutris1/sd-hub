@@ -190,6 +190,7 @@ function SDHubGalleryCopyButtonEvent(e) {
 
 function SDHubGallerySendButton(id) {
   window.scrollTo({ top: 0, behavior: 'instant' });
+  setTimeout(() => window.SDHubGalleryCloseImageInfo(), 100);
 
   if (['txt2img_tab', 'img2img_tab'].includes(id)) {
     const OutputRaw = window.SDHubGalleryImageInfoRaw;

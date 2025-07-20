@@ -915,7 +915,7 @@ function SDHubCreateGallery() {
       const btn = document.querySelector(`#${SDHGiI}-img > div > div > div > button:nth-child(2)`) ||
                   document.querySelector(`.gradio-container-4-40-0 #${SDHGiI}-img > div > div > button`);
 
-      imginfoRow.style.opacity = '';
+      imginfoRow.style.pointerEvents = imginfoRow.style.opacity = '';
       document.body.classList.remove(SDHubBnS);
       window.SDHubGalleryDisplayImageInfo = null;
       window.SDHubGallerySendImageInfo = null;

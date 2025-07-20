@@ -292,8 +292,14 @@ def GalleryTab():
     with gr.TabItem('Gallery', elem_id='SDHub-Gallery-Tab'):
         with FormRow(equal_height=False, elem_id='SDHub-Gallery-Imageinfo-Row'):
             with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Imageinfo-Image-Column'):
-                image = gr.Image(elem_id='SDHub-Gallery-Imageinfo-img', type='pil', source='upload', show_label=False)
+                def load(path):
+                    return gr.Image.update(value=path if path else None)
+
+                image = gr.Image(elem_id='SDHub-Gallery-Imageinfo-img', type='pil', show_label=False)
                 image.change(fn=None, _js='() => SDHubGalleryParser()')
+
+                path = gr.Textbox(elem_id='SDHub-Gallery-Imageinfo-Path', visible=False)
+                path.change(load, path, image)
 
                 with FormRow(variant='compact', elem_id='SDHub-Gallery-Imageinfo-SendButton'):
                     buttons = tempe.create_buttons(['txt2img', 'img2img', 'inpaint', 'extras'])
