@@ -5,6 +5,7 @@
   --sdhub-box-shadow-radio-label: inset 0 0 5px 0 var(--sdhub-border-color);
   --sdhub-box-shadow-primary: inset 0 0 10px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
   --sdhub-secondary-button-background: var(--input-background-fill-hover);
+  --sdhub-radio-border: 1px solid #000;
   --sdhub-radio-input-not-checked: drop-shadow(0 0 2px var(--sdhub-border-color));
 }
 
@@ -13,6 +14,7 @@
   --sdhub-box-shadow: 0 0 1px 1px transparent;
   --sdhub-box-shadow-radio-label: inset 0 0 0 0 #000;
   --sdhub-secondary-button-background: var(--button-secondary-background-fill);
+  --sdhub-radio-border: 1px solid var(--input-background-fill);
   --sdhub-radio-input-not-checked: drop-shadow(0 0 2px transparent);
 }
 
@@ -208,14 +210,9 @@
   box-shadow: var(--sdhub-box-shadow);
 }
 
-#SDHub-Tab .sdhub-radio label {
-  box-shadow: var(--sdhub-box-shadow-radio-label);
-}
-
 #SDHub-Tab .sdhub-buttons,
 #SDHub-Tab .sdhub-input textarea,
 #SDHub-Tab .sdhub-input input,
-#SDHub-Tab .sdhub-radio label,
 #SDHub-Shell-Button {
   transition:
     box-shadow .3s ease,
@@ -235,16 +232,25 @@
   filter: none !important;
 }
 
+#SDHub-Tab .sdhub-radio label {
+  border: var(--sdhub-radio-border);
+  transition: .2s;
+}
+
 #SDHub-Tab .sdhub-radio label > input,
 #SDHub-Tab .sdhub-radio label > span {
   pointer-events: none;
-  transition: .3s ease, border-color 0s, background-color 0s;
+  transition: .2s, background-color 0s;
 }
 
 #SDHub-Tab .sdhub-radio label:hover {
   border-color: var(--primary-500);
-  box-shadow: inset 0 0 0 0 #000, inset 0 0 7px 2px var(--primary-500);
+  box-shadow: 0 0 3px 0 var(--primary-500), inset 0 0 5px 0 var(--primary-500);
   cursor: pointer;
+}
+
+#SDHub-Tab .sdhub-radio label:hover > input:not(:checked) {
+  border-color: var(--primary-500);
 }
 
 #SDHub-Tab .sdhub-radio label > input:checked,
@@ -257,10 +263,6 @@
 
 #SDHub-Tab .sdhub-radio label > input:checked + span {
   color: var(--primary-500);
-}
-
-#SDHub-Tab .sdhub-radio label > input:not(:checked):hover {
-  border-color: var(--primary-500);
 }
 
 .gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {

@@ -23,9 +23,9 @@ function SDHubGalleryDOMLoaded() {
 
   const SDHubGallery = SDHubCreateEL('div', { id: 'SDHubGallery', style: { display: 'none' } });
 
-  const Setting = SDHubCreateEL('div', { id: 'SDHub-Gallery-Setting', tabindex: 0 }),
+  const Setting = SDHubCreateEL('div', { id: `${SDHGS}`, tabindex: 0 }),
         SettingButton = SDHubCreateEL('div', {
-          id: 'SDHub-Gallery-Setting-Button', html: SDHubGallerySVG_Setting, title: SDHubGetTranslation('setting_title')
+          id: `${SDHGS}-Button`, html: SDHubGallerySVG_Setting, title: SDHubGetTranslation('setting_title')
         });
 
   const TabRow = SDHubCreateEL('div', { id: 'SDHub-Gallery-Tab-Button-Row' }),
@@ -41,19 +41,19 @@ function SDHubGalleryDOMLoaded() {
       text: btnTitle, onclick: () => SDHubGallerySwitchTab(whichTab)
     });
 
-    const pageWrapper = SDHubCreateEL('div', { class: `${sdhubp}-wrapper` }),
+    const pageWrapper = SDHubCreateEL('div', { class: `${sdhgp}-wrapper` }),
           TabCon = SDHubCreateEL('div', { id: `SDHub-Gallery-${whichTab}-Tab-Container`, class: 'sdhub-gallery-tab-container', children: pageWrapper });
 
     const rightNavButton = SDHubCreateEL('span', {
-      class: [`${sdhubp}-right-button`, `${sdhubp}-nav-button`], html: SDHubGallerySVG_RightArrow,
+      class: [`${sdhgp}-right-button`, `${sdhgp}-nav-button`], html: SDHubGallerySVG_RightArrow,
       onclick: () => SDHubGallerySwitchPage(whichTab, 'right')
     });
     const leftNavButton = SDHubCreateEL('span', {
-      class: [`${sdhubp}-left-button`, `${sdhubp}-nav-button`], html: SDHubGallerySVG_LeftArrow,
+      class: [`${sdhgp}-left-button`, `${sdhgp}-nav-button`], html: SDHubGallerySVG_LeftArrow,
       onclick: () => SDHubGallerySwitchPage(whichTab, 'left')
     });
-    const pageIndicator = SDHubCreateEL('span', { class: `${sdhubp}-indicator`, text: '1 / 1' }),
-          pageNav = SDHubCreateEL('div', { class: `${sdhubp}-nav`, children: [leftNavButton, pageIndicator, rightNavButton] });
+    const pageIndicator = SDHubCreateEL('span', { class: `${sdhgp}-indicator`, text: '1 / 1' }),
+          pageNav = SDHubCreateEL('div', { class: `${sdhgp}-nav`, children: [leftNavButton, pageIndicator, rightNavButton] });
     TabCon.appendChild(pageNav);
 
     const counter = SDHubCreateEL('div', { id: `SDHub-Gallery-${whichTab}-Tab-Image-Counter`, class: 'sdhub-gallery-tab-image-counter' });
@@ -87,13 +87,13 @@ function SDHubGalleryDOMLoaded() {
 
   const pageNavBox = SDHubCreateEL('div', { id: 'SDHub-Gallery-Page-Nav-Box', children: TabCounterCon });
 
-  TabWrap.prepend(StickyCon, TabRow, pageNavBox, TabConWrap, SettingButton);
+  TabWrap.prepend(TabRow, pageNavBox, TabConWrap, SettingButton);
 
   SDHubGallery.append(
-    SDHubGalleryCreateContextMenu(),
     SDHubGalleryCreateLightBox(),
+    SDHubGalleryCreateContextMenu(),
     SDHubGalleryCreateInfoBox(),
-    Setting, TabWrap, imgBox, ImageInfoArrow
+    Setting, StickyCon, TabWrap, imgBox, ImageInfoArrow
   );
 
   document.body.append(SDHubGallery);
@@ -102,8 +102,8 @@ function SDHubGalleryDOMLoaded() {
   document.addEventListener('keydown', e => {
     if (document.getElementById('SDHub-Gallery-Tab')?.style.display !== 'block') return;
 
-    const imginfoRow = document.getElementById(`${SDHubiI}-Row`),
-          LightBox = document.getElementById(`${SDHubiV}`),
+    const imginfoRow = document.getElementById(`${SDHGiI}-Row`),
+          LightBox = document.getElementById(`${SDHGiV}`),
           infoCon = document.getElementById('SDHub-Gallery-Info-Container');
 
     if (['Escape', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
@@ -111,12 +111,12 @@ function SDHubGalleryDOMLoaded() {
       if (i || b) return;
 
       if (e.key === 'Escape') {
-        const img = imginfoRow.querySelector(`#${SDHubiI}-img img`);
-        img && (e.preventDefault(), window.SDHubGalleryImageInfoClear());
+        const img = imginfoRow.querySelector(`#${SDHGiI}-img img`);
+        img && (e.preventDefault(), window.SDHubGalleryCloseImageInfo());
       }
 
       const l = window.SDHubGallerySettings['image-info-layout'] === 'full_width',
-            el = l ? imginfoRow : document.getElementById(`${SDHubiI}-Output-Panel`),
+            el = l ? imginfoRow : document.getElementById(`${SDHGiI}-Output-Panel`),
             s = e.key === 'ArrowUp' ? 0 : e.key === 'ArrowDown' ? el.scrollHeight : null;
       if (s !== null) (e.preventDefault(), el.scrollTo({ top: s, behavior: 'smooth' }));
     }
@@ -126,8 +126,8 @@ function SDHubGalleryDOMLoaded() {
             s = Setting?.style.display === 'flex', n = infoCon?.style.display === 'flex';
       if (i || b || s || n) return;
 
-      const nav = document.querySelector(`.sdhub-gallery-tab-container.active > .${sdhubp}-nav`),
-            btn = nav?.querySelector(e.key === 'ArrowRight' ? `.${sdhubp}-right-button.btn-on` : `.${sdhubp}-left-button.btn-on`);
+      const nav = document.querySelector(`.sdhub-gallery-tab-container.active > .${sdhgp}-nav`),
+            btn = nav?.querySelector(e.key === 'ArrowRight' ? `.${sdhgp}-right-button.btn-on` : `.${sdhgp}-left-button.btn-on`);
       btn?.click();
     }
   });
@@ -144,7 +144,7 @@ function SDHubGalleryPageArrowEvents(arrow) {
     const GalleryTab = document.getElementById('SDHub-Gallery-Tab'),
           TabWrap = document.getElementById('SDHub-Gallery-Tab-Wrapper'),
           ActiveTab = TabWrap?.querySelector('.sdhub-gallery-tab-container.active'),
-          Tab = ActiveTab?.querySelector(`.${sdhubp}s.selected-page`);
+          Tab = ActiveTab?.querySelector(`.${sdhgp}s.selected-page`);
 
     if (!Tab) return arrow.style.transform = '';
     if (locked || GalleryTab.style.display !== 'block') return;
@@ -160,7 +160,7 @@ function SDHubGalleryPageArrowEvents(arrow) {
   arrow.addEventListener('click', () => {
     const TabWrap = document.getElementById('SDHub-Gallery-Tab-Wrapper'),
           ActiveTab = TabWrap?.querySelector('.sdhub-gallery-tab-container.active'),
-          Tab = ActiveTab?.querySelector(`.${sdhubp}s.selected-page`);
+          Tab = ActiveTab?.querySelector(`.${sdhgp}s.selected-page`);
     if (!Tab) return;
 
     locked = true;
@@ -187,7 +187,7 @@ function SDHubGalleryPageArrowEvents(arrow) {
     const GalleryTab = document.getElementById('SDHub-Gallery-Tab'),
           TabWrap = document.getElementById('SDHub-Gallery-Tab-Wrapper'),
           ActiveTab = TabWrap?.querySelector('.sdhub-gallery-tab-container.active'),
-          Tab = ActiveTab?.querySelector(`.${sdhubp}s.selected-page`);
+          Tab = ActiveTab?.querySelector(`.${sdhgp}s.selected-page`);
     if (!Tab || GalleryTab.style.display !== 'block') return;
     if (!locked) window.SDHubGalleryPageArrowUpdate();
   };
@@ -199,8 +199,8 @@ function SDHubGalleryImageInfoArrowEvents(arrow) {
   let clicked = false;
 
   const whichEL = () => {
-    const column = document.getElementById(`${SDHubiI}-Row`),
-          panel = document.getElementById(`${SDHubiI}-Output-Panel`);
+    const column = document.getElementById(`${SDHGiI}-Row`),
+          panel = document.getElementById(`${SDHGiI}-Output-Panel`);
     return (panel && panel.scrollHeight > panel.clientHeight) ? panel : column;
   };
 
@@ -214,7 +214,7 @@ function SDHubGalleryImageInfoArrowEvents(arrow) {
 
   window.SDHubGalleryImageInfoArrowUpdate = () => {
     if (clicked) return;
-    const imginfoRow = document.getElementById(`${SDHubiI}-Row`),
+    const imginfoRow = document.getElementById(`${SDHGiI}-Row`),
           el = whichEL();
     if (!el) return;
     if (getComputedStyle(imginfoRow).display !== 'flex') return arrow.style.transform = '';
@@ -250,7 +250,7 @@ async function SDHubGalleryCreateImageFile(path) {
 
 function SDHubGalleryCreateImagePages(wrapper, imageBoxes) {
   let navBox = document.getElementById('SDHub-Gallery-Page-Nav-Box'); navBox.style.display = 'flex';
-  let existingPages = wrapper.querySelectorAll(`.${sdhubp}s`);
+  let existingPages = wrapper.querySelectorAll(`.${sdhgp}s`);
   let totalPages = existingPages.length;
   let page = existingPages[totalPages - 1];
   let imagesInLastPage = page ? page.querySelectorAll('.sdhub-gallery-img-box').length : 0;
@@ -258,7 +258,7 @@ function SDHubGalleryCreateImagePages(wrapper, imageBoxes) {
   for (const imgBox of imageBoxes) {
     if (!page || imagesInLastPage >= SDHubGalleryPageLimit) {
       page = document.createElement('div');
-      page.className = `${sdhubp}s`;
+      page.className = `${sdhgp}s`;
       page.dataset.page = totalPages++;
       page.addEventListener('scroll', window.SDHubGalleryPageArrowUpdate);
       wrapper.append(page);
@@ -340,28 +340,28 @@ function SDHubGalleryCreateContextMenu() {
 
 function SDHubGalleryCreateLightBox() {
   const NextBtn = SDHubCreateEL('span', {
-    id: `${SDHubiV}-Next-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubGallerySVG_RightArrow,
+    id: `${SDHGiV}-Next-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubGallerySVG_RightArrow,
     onclick: (e) => (e.stopPropagation(), SDHubGalleryNextImage())
   });
 
   const PrevBtn = SDHubCreateEL('span', {
-    id: `${SDHubiV}-Prev-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubGallerySVG_LeftArrow,
+    id: `${SDHGiV}-Prev-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubGallerySVG_LeftArrow,
     onclick: (e) => (e.stopPropagation(), SDHubGalleryPrevImage())
   });
 
   const CloseBtn = SDHubCreateEL('span', {
-    id: `${SDHubiV}-Close-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubGallerySVG_Cross,
+    id: `${SDHGiV}-Close-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubGallerySVG_Cross,
     onclick: (e) => (e.stopPropagation(), window.SDHubGalleryImageViewerCloseZoom())
   });
 
-  const Control = SDHubCreateEL('div', { id: `${SDHubiV}-Control`, children: [NextBtn, PrevBtn, CloseBtn] }),
-        Wrapper = SDHubCreateEL('div', { id: `${SDHubiV}-Wrapper` }),
-        LightBox = SDHubCreateEL('div', { id: `${SDHubiV}`, tabindex: 0, children: [Control, Wrapper] });
+  const Control = SDHubCreateEL('div', { id: `${SDHGiV}-Control`, children: [NextBtn, PrevBtn, CloseBtn] }),
+        Wrapper = SDHubCreateEL('div', { id: `${SDHGiV}-Wrapper` }),
+        LightBox = SDHubCreateEL('div', { id: `${SDHGiV}`, tabindex: 0, children: [Control, Wrapper] });
 
   document.addEventListener('keydown', (e) => {
-    const LightBox = document.getElementById(`${SDHubiV}`),
-          NextBtn = document.getElementById(`${SDHubiV}-Next-Button`),
-          PrevBtn = document.getElementById(`${SDHubiV}-Prev-Button`);
+    const LightBox = document.getElementById(`${SDHGiV}`),
+          NextBtn = document.getElementById(`${SDHGiV}-Next-Button`),
+          PrevBtn = document.getElementById(`${SDHGiV}-Prev-Button`);
     const flex = (el) => el && getComputedStyle(el)?.display === 'flex';
     if (!flex(LightBox)) return;
     switch (e.key) {
@@ -427,23 +427,23 @@ function SDHubGalleryCreateBatchBox() {
   window.SDHubGalleryAllCheckbox = (add = true, currentOnly = true) => {
     const tab = document.querySelector('.sdhub-gallery-tab-container.active');
     const pages = currentOnly
-      ? [tab?.querySelector(`.${sdhubp}s.selected-page`)].filter(Boolean)
-      : Array.from(tab?.querySelectorAll(`.${sdhubp}s`) || []);
+      ? [tab?.querySelector(`.${sdhgp}s.selected-page`)].filter(Boolean)
+      : Array.from(tab?.querySelectorAll(`.${sdhgp}s`) || []);
 
     if (!pages.length) return false;
 
     let count = 0;
 
     pages.forEach(page => {
-      const s = `.sdhub-gallery-img-box${add ? `:not(.${SDHubiS})` : `.${SDHubiS}`}`;
+      const s = `.sdhub-gallery-img-box${add ? `:not(.${sdhgis})` : `.${sdhgis}`}`;
       const imgBox = page.querySelectorAll(s);
       if (!imgBox.length) return;
 
       imgBox.forEach(c => {
-        c.classList.toggle(SDHubiS, add);
+        c.classList.toggle(sdhgis, add);
         const cb = c.querySelector('.sdhub-gallery-img-btn-checkbox');
         if (cb) {
-          cb.classList.toggle(SDHubiS, add);
+          cb.classList.toggle(sdhgis, add);
           cb.innerHTML = add ? SDHubGallerySVG_UnselectImage : SDHubGallerySVG_SelectImage;
         }
       });
@@ -475,7 +475,7 @@ function SDHubGalleryCreateBatchBox() {
   });
   const setting = SDHubCreateEL('div', {
     id: 'SDHub-Gallery-Batch-Setting', class: 'sdhub-gallery-batch-button', html: SDHubGallerySVG_Setting,
-    onclick: () => document.getElementById('SDHub-Gallery-Setting-Button')?.click()
+    onclick: () => document.getElementById(`${SDHGS}-Button`)?.click()
   });
 
   const box = SDHubCreateEL('div', { id: 'SDHub-Gallery-Batch-Box', children: [selectAll, download, delet, unselectAll, setting] }),
@@ -485,8 +485,8 @@ function SDHubGalleryCreateBatchBox() {
     const a = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a';
     const el = id => document.getElementById(id)?.style.display;
     if (
-      el('SDHub-Gallery-Tab') !== 'block' || el(`${SDHubiI}-Row`) === 'flex' || el(`${SDHubiV}`) === 'flex' ||
-      el('SDHub-Gallery-Setting') === 'flex' || el('SDHub-Gallery-Info-Container') === 'flex'
+      el('SDHub-Gallery-Tab') !== 'block' || el(`${SDHGiI}-Row`) === 'flex' || el(`${SDHGiV}`) === 'flex' ||
+      el(`${SDHGS}`) === 'flex' || el('SDHub-Gallery-Info-Container') === 'flex'
     ) return;
 
     if (e.key === 'Delete' && box?.style.display == 'flex') return delet.click();
@@ -635,7 +635,7 @@ async function SDHubGalleryLoadInitial(retry = 1000) {
 
     for (const [tabName, images] of tabMap.entries()) {
       const TabCon = document.getElementById(`SDHub-Gallery-${tabName}-Tab-Container`),
-            wrapper = TabCon.querySelector(`.${sdhubp}-wrapper`),
+            wrapper = TabCon.querySelector(`.${sdhgp}-wrapper`),
             TabRow = document.getElementById('SDHub-Gallery-Tab-Button-Row'),
             TabBtn = document.getElementById(`SDHub-Gallery-${tabName}-Tab-Button`),
             Counter = document.getElementById(`SDHub-Gallery-${tabName}-Tab-Image-Counter`);

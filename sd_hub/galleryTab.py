@@ -330,7 +330,7 @@ def GalleryTab():
                 with zipfile.ZipFile(zp, 'w') as z:
                     for f in fp: z.write(f, arcname=f.name)
 
-                return zp, zp
+                return str(zp), str(zp)
 
             def deleting(t):
                 if not t: return

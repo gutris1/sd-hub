@@ -1,36 +1,33 @@
-let SDHubID = 'SDHub-Gallery-Setting';
-let SDHubClass = 'sdhub-gallery-setting';
-
 function SDHubGalleryCreateSetting(SettingButton, Setting) {
   window.SDHubGalleryThumbnailShapeClick = () => {
-    const shape = document.getElementById(`${SDHubID}-Thumbnail-Shape-Input`)?.dataset.selected,
+    const shape = document.getElementById(`${SDHGS}-Thumbnail-Shape-Input`)?.dataset.selected,
           square = shape === 'square',
-          pos = document.getElementById(`${SDHubID}-Thumbnail-Position`),
-          lay = document.getElementById(`${SDHubID}-Thumbnail-Layout`);
+          pos = document.getElementById(`${SDHGS}-Thumbnail-Position`),
+          lay = document.getElementById(`${SDHGS}-Thumbnail-Layout`);
 
     [pos, lay].forEach((el, i) => {
       const active = !!(i === 0) === square;
-      el.classList.toggle(`${SDHubClass}-active`, active);
-      el.classList.toggle(`${SDHubClass}-disable`, !active);
+      el.classList.toggle(`${sdhgs}-active`, active);
+      el.classList.toggle(`${sdhgs}-disable`, !active);
     });
   };
 
   function createSelections({ id, labelText, options, selected, onChange }) {
-    const i = `${SDHubID}-${id}`;
+    const i = `${SDHGS}-${id}`;
 
-    const parent = SDHubCreateEL('div', { id: i, class: `${SDHubClass}-box`, title: SDHubGetTranslation(`${labelText}_title`) }),
-          label = SDHubCreateEL('label', { id: `${i}-Label`, class: `${SDHubClass}-label`, text: SDHubGetTranslation(labelText) }),
-          wrapper = SDHubCreateEL('div', { id: `${i}-Wrapper`, class: `${SDHubClass}-wrapper` }),
-          selectionWrapper = SDHubCreateEL('div', { class: `${SDHubClass}-wrapper-selection` }),
-          input = SDHubCreateEL('input', { id: `${i}-Input`, class: `${SDHubClass}-input`, value: selected, dataset: { selected: selected } });
+    const parent = SDHubCreateEL('div', { id: i, class: `${sdhgs}-box`, title: SDHubGetTranslation(`${labelText}_title`) }),
+          label = SDHubCreateEL('label', { id: `${i}-Label`, class: `${sdhgs}-label`, text: SDHubGetTranslation(labelText) }),
+          wrapper = SDHubCreateEL('div', { id: `${i}-Wrapper`, class: `${sdhgs}-wrapper` }),
+          selectionWrapper = SDHubCreateEL('div', { class: `${sdhgs}-wrapper-selection` }),
+          input = SDHubCreateEL('input', { id: `${i}-Input`, class: `${sdhgs}-input`, value: selected, dataset: { selected: selected } });
 
     const inputClass = id.toLowerCase().split('-').slice(-2).join('-'),
-          sc = `${SDHubClass}-selected`,
+          sc = `${sdhgs}-selected`,
           c = `sdhub-gallery-selected-${inputClass}`;
 
     const selection = options.slice(0, 2).map(v => {
       const el = SDHubCreateEL('div', {
-        class: `${SDHubClass}-selection`,
+        class: `${sdhgs}-selection`,
         text: SDHubGetTranslation(v),
         dataset: { selected: v }
       });
@@ -40,7 +37,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     });
 
     parent.onclick = () => {
-      if (parent.classList.contains(`${SDHubClass}-disable`)) return;
+      if (parent.classList.contains(`${sdhgs}-disable`)) return;
 
       const [a, b] = selection, s = a.classList.contains(sc), nv = s ? b : a;
       [a, b].forEach(l => {
@@ -58,32 +55,32 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   }
 
   function createInputNumber({ id, labelText, min, max, defaultValue }) {
-    const i = `${SDHubID}-${id}`,
+    const i = `${SDHGS}-${id}`,
           name = id.toLowerCase(),
           last = String(window.SDHubGallerySettings?.[name] ?? defaultValue ?? String(min));
 
     return SDHubCreateEL('div', {
       id: i,
-      class: `${SDHubClass}-box`,
+      class: `${sdhgs}-box`,
       title: SDHubGetTranslation(`${labelText}_title`),
       children: [
         SDHubCreateEL('label', {
           id: `${i}-Label`,
-          class: `${SDHubClass}-label`,
+          class: `${sdhgs}-label`,
           text: SDHubGetTranslation(labelText)
         }),
         SDHubCreateEL('div', {
           id: `${i}-Wrapper`,
-          class: `${SDHubClass}-wrapper`,
+          class: `${sdhgs}-wrapper`,
           children: [
             SDHubCreateEL('div', {
-              class: `${SDHubClass}-wrapper-selection`,
+              class: `${sdhgs}-wrapper-selection`,
               children: [
                 SDHubCreateEL('input', {
                   id: `${i}-Input`,
                   type: 'text',
                   spellcheck: false,
-                  class: `${SDHubClass}-input-number`,
+                  class: `${sdhgs}-input-number`,
                   maxLength: String(max).length,
                   dataset: { lastNumber: last },
                   oninput: e => { let i = e.target; i.value = i.value.replace(/[^0-9]/g, ''); },
@@ -108,30 +105,30 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   }
 
   function createCheckbox({ id, labelText, def = false }) {
-    const i = `${SDHubID}-${id}`;
+    const i = `${SDHGS}-${id}`;
 
     return SDHubCreateEL('div', {
       id: i,
-      class: `${SDHubClass}-box`,
+      class: `${sdhgs}-box`,
       title: SDHubGetTranslation(`${labelText}_title`),
       onclick: () => document.getElementById(`${i}-Input`).click(),
       children: [
         SDHubCreateEL('label', {
           id: `${i}-Label`,
-          class: `${SDHubClass}-label`,
+          class: `${sdhgs}-label`,
           text: SDHubGetTranslation(labelText)
         }),
         SDHubCreateEL('div', {
           id: `${i}-Wrapper`,
-          class: `${SDHubClass}-wrapper`,
+          class: `${sdhgs}-wrapper`,
           children: [
             SDHubCreateEL('div', {
-              class: `${SDHubClass}-wrapper-checkbox`,
+              class: `${sdhgs}-wrapper-checkbox`,
               children: [
                 SDHubCreateEL('input', {
                   id: `${i}-Input`,
                   type: 'checkbox',
-                  class: `${SDHubClass}-checkbox-input`,
+                  class: `${sdhgs}-checkbox-input`,
                   checked: window.SDHubGallerySettings?.[id.toLowerCase()] ?? def
                 })
               ]
@@ -143,21 +140,21 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   }
 
 
-  const ExitButton = SDHubCreateEL('div', { id: `${SDHubID}-Exit-Button`, html: SDHubGallerySVG_Cross, onclick: killSetting }),
-        SettingFrame = SDHubCreateEL('div', { id: `${SDHubID}-Frame`, children: ExitButton }),
+  const ExitButton = SDHubCreateEL('div', { id: `${SDHGS}-Exit-Button`, html: SDHubGallerySVG_Cross, onclick: killSetting }),
+        SettingFrame = SDHubCreateEL('div', { id: `${SDHGS}-Frame`, children: ExitButton }),
 
-        SettingTitle = SDHubCreateEL('span', { id: `${SDHubID}-Title`, html: SDHubGetTranslation('setting_title') }),
-        SettingPage1 = SDHubCreateEL('div', { id: `${SDHubID}-Page-1`, class: `${SDHubClass}-page` }),
-        SettingPage2 = SDHubCreateEL('div', { id: `${SDHubID}-Page-2`, class: `${SDHubClass}-page` }),
-        SettingPageWrap = SDHubCreateEL('div', { id: `${SDHubID}-Page-Wrapper`, children: [SettingPage1, SettingPage2] }),
-        applyButton = SDHubCreateEL('span', { id: `${SDHubID}-Apply-Button`, text: SDHubGetTranslation('apply') }),
-        SettingWrapper = SDHubCreateEL('div', { id: `${SDHubID}-Wrapper`, children: [SettingTitle, SettingPageWrap, applyButton] }),
+        SettingTitle = SDHubCreateEL('span', { id: `${SDHGS}-Title`, html: SDHubGetTranslation('setting_title') }),
+        SettingPage1 = SDHubCreateEL('div', { id: `${SDHGS}-Page-1`, class: `${sdhgs}-page` }),
+        SettingPage2 = SDHubCreateEL('div', { id: `${SDHGS}-Page-2`, class: `${sdhgs}-page` }),
+        SettingPageWrap = SDHubCreateEL('div', { id: `${SDHGS}-Page-Wrapper`, children: [SettingPage1, SettingPage2] }),
+        applyButton = SDHubCreateEL('span', { id: `${SDHGS}-Apply-Button`, text: SDHubGetTranslation('apply') }),
+        SettingWrapper = SDHubCreateEL('div', { id: `${SDHGS}-Wrapper`, children: [SettingTitle, SettingPageWrap, applyButton] }),
 
-        leftNav = SDHubCreateEL('span', { id: `${SDHubID}-Nav-Left-Button`, class: `${SDHubClass}-nav-button`, html: SDHubGallerySVG_ArrowScroll }),
-        rightNav = SDHubCreateEL('span', { id: `${SDHubID}-Nav-Right-Button`, class: `${SDHubClass}-nav-button`, html: SDHubGallerySVG_ArrowScroll }),
-        SettingNav = SDHubCreateEL('div', { id: `${SDHubID}-Nav`, children: [leftNav, rightNav] });
+        leftNav = SDHubCreateEL('span', { id: `${SDHGS}-Nav-Left-Button`, class: `${sdhgs}-nav-button`, html: SDHubGallerySVG_ArrowScroll }),
+        rightNav = SDHubCreateEL('span', { id: `${SDHGS}-Nav-Right-Button`, class: `${sdhgs}-nav-button`, html: SDHubGallerySVG_ArrowScroll }),
+        SettingNav = SDHubCreateEL('div', { id: `${SDHGS}-Nav`, children: [leftNav, rightNav] });
 
-  const SettingBox = SDHubCreateEL('div', { id: `${SDHubID}-Box`, children: [SettingFrame, SettingWrapper, SettingNav], oncontextmenu: (e) => e.preventDefault() });
+  const SettingBox = SDHubCreateEL('div', { id: `${SDHGS}-Box`, children: [SettingFrame, SettingWrapper, SettingNav], oncontextmenu: (e) => e.preventDefault() });
   Setting.append(SettingBox);
 
   const pageLimiter = createInputNumber({ id: 'Page-Limiter', labelText: 'images_per_page', min: 10, max: 1000, defaultValue: 10 }),
@@ -193,7 +190,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   const applySettings = () => {
     applyButton.onclick = null;
 
-    const q = id => document.getElementById(`${SDHubID}-${id}-Input`),
+    const q = id => document.getElementById(`${SDHGS}-${id}-Input`),
           pageLimiter = parseInt(q('Page-Limiter').value, 10),
           thumbnailShape = q('Thumbnail-Shape').dataset.selected,
           thumbnailPosition = q('Thumbnail-Position').dataset.selected,
@@ -249,7 +246,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       TabWrap.querySelectorAll('.sdhub-gallery-tab-container').forEach(con => {
         con.style.display = '';
         con.classList.remove('active');
-        con.querySelectorAll(`.${sdhubp}s`)?.forEach(p => p.remove());
+        con.querySelectorAll(`.${sdhgp}s`)?.forEach(p => p.remove());
       });
 
       setTimeout(() => SDHubGalleryLoadInitial(), 0);
@@ -263,7 +260,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       if (!res.ok) throw new Error('Failed to save setting');
     }).catch(console.error);
 
-    const applied = `${SDHubClass}-applied`;
+    const applied = `${sdhgs}-applied`;
     SettingFrame.classList.add(applied);
     setTimeout(() => SettingFrame.classList.remove(applied), 600);
     setTimeout(() => applyButton.onclick = applySettings, 700);
@@ -271,7 +268,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
 
   applyButton.onclick = applySettings;
 
-  let navON = 'sdhub-gallery-setting-nav-on',
+  let navON = `${sdhgs}-nav-on`,
       navLocked = false;
 
   const nav = (r) => {
@@ -344,7 +341,7 @@ async function SDHubGalleryLoadSettings() {
   );
 
   ['Page-Limiter', 'Thumbnail-Size'].forEach(id => {
-    const input = document.getElementById(`${SDHubID}-${id}-Input`);
+    const input = document.getElementById(`${SDHGS}-${id}-Input`);
     if (input) input.dataset.lastNumber = settings[input.id.includes('Page') ? 'images-per-page' : 'thumbnail-size'];
   });
 
@@ -355,7 +352,7 @@ async function SDHubGalleryLoadSettings() {
 function SDHubGalleryApplySettings() {
   const v = window.SDHubGallerySettings;
 
-  const q = id => document.getElementById(`${SDHubID}-${id}-Input`),
+  const q = id => document.getElementById(`${SDHGS}-${id}-Input`),
         pageLimiter = q('Page-Limiter'),
         thumbnailSize = q('Thumbnail-Size'),
         showFilename = q('Show-Filename'),
@@ -379,10 +376,10 @@ function SDHubGalleryApplySettings() {
   warningSwitchTab.checked = v['switch-tab-suppress-warning'] ?? false;
 
   const settingList = {
-    [`${SDHubID}-Thumbnail-Shape`]: v['thumbnail-shape'],
-    [`${SDHubID}-Thumbnail-Position`]: v['thumbnail-position'],
-    [`${SDHubID}-Thumbnail-Layout`]: v['thumbnail-layout'],
-    [`${SDHubID}-Image-Info`]: v['image-info-layout'],
+    [`${SDHGS}-Thumbnail-Shape`]: v['thumbnail-shape'],
+    [`${SDHGS}-Thumbnail-Position`]: v['thumbnail-position'],
+    [`${SDHGS}-Thumbnail-Layout`]: v['thumbnail-layout'],
+    [`${SDHGS}-Image-Info`]: v['image-info-layout'],
   };
 
   for (const [id, v] of Object.entries(settingList)) {
@@ -393,10 +390,10 @@ function SDHubGalleryApplySettings() {
     if (input) input.value = input.dataset.selected = v;
 
     if (wrapper) {
-      wrapper.querySelectorAll(`.${SDHubClass}-selection`).forEach(el => {
+      wrapper.querySelectorAll(`.${sdhgs}-selection`).forEach(el => {
         const selected = el.dataset.selected === v;
         el.classList.toggle(`sdhub-gallery-selected-${clas}`, selected);
-        el.classList.toggle(`${SDHubClass}-selected`, selected);
+        el.classList.toggle(`${sdhgs}-selected`, selected);
       });
     }
   }
@@ -459,7 +456,7 @@ function SDHubGalleryChangeSettings(
 
   imageInfoLayout === 'side_by_side'
     ? add('SDHub-Gallery-Image-Info-SideBySide', `
-        #${SDHubiI}-Row {
+        #${SDHGiI}-Row {
           flex-grow: 10 !important;
           align-items: flex-start !important;
           flex-direction: row !important;
@@ -470,19 +467,19 @@ function SDHubGalleryChangeSettings(
           overflow: visible !important;
         }
 
-        #${SDHubiI}-Row > .form{
+        #${SDHGiI}-Row > .form{
           height: 100% !important;
           gap: 0 !important;
         }
 
-        #${SDHubiI}-Image-Column {
+        #${SDHGiI}-Image-Column {
           flex-direction: column !important;
           width: 100% !important;
           height: 100% !important;
           padding: 10px 0 10px 10px !important;
         }
 
-        #${SDHubiI}-img {
+        #${SDHGiI}-img {
           flex: 1 1 0% !important;
           position: relative !important;
           height: 100% !important;
@@ -494,7 +491,7 @@ function SDHubGalleryChangeSettings(
           box-shadow: 0 0 7px 1px #000 !important;
         }
 
-        #${SDHubiI}-img img {
+        #${SDHGiI}-img img {
           position: unset !important;
           max-width: 100% !important;
           max-height: 100% !important;
@@ -503,20 +500,20 @@ function SDHubGalleryChangeSettings(
           border-top-right-radius: 1.5rem !important;
         }
 
-        #${SDHubiI}-Clear-Button {
+        #${SDHGiI}-Clear-Button {
           position: absolute !important;
           top: 0 !important;
           right: 0 !important;
         }
 
-        #${SDHubiI}-img-frame {
+        #${SDHGiI}-img-frame {
           position: absolute !important;
           filter: unset !important;
           box-shadow: inset 0 0 5px 1px #000 !important;
           border-radius: 1rem !important;
         }
 
-        #${SDHubiI}-SendButton {
+        #${SDHGiI}-SendButton {
           grid-template-columns: 1fr 1fr !important;
           left: unset !important;
           bottom: 0 !important;
@@ -527,28 +524,28 @@ function SDHubGalleryChangeSettings(
           gap: 2px !important;
         }
 
-        #${SDHubiI}-SendButton button {
+        #${SDHGiI}-SendButton button {
           border-radius: 0 !important;
           box-shadow: 0 0 5px 1px #000 !important;
         }
 
-        #${SDHubiI}-SendButton > :nth-child(1) {
+        #${SDHGiI}-SendButton > :nth-child(1) {
           border-top-left-radius: 1rem !important;
         }
 
-        #${SDHubiI}-SendButton > :nth-child(2) {
+        #${SDHGiI}-SendButton > :nth-child(2) {
           border-top-right-radius: 1rem !important;
         }
 
-        #${SDHubiI}-SendButton > :nth-child(3) {
+        #${SDHGiI}-SendButton > :nth-child(3) {
           border-bottom-left-radius: 1rem !important;
         }
 
-        #${SDHubiI}-SendButton > :nth-child(4) {
+        #${SDHGiI}-SendButton > :nth-child(4) {
           border-bottom-right-radius: 1rem !important;
         }
 
-        #${SDHubiI}-Output-Panel {
+        #${SDHGiI}-Output-Panel {
           flex: 7 1 0% !important;
           position: relative !important;
           height: max-content !important;
@@ -560,48 +557,48 @@ function SDHubGalleryChangeSettings(
           scrollbar-width: none;
         }
 
-        #${SDHubiI}-img-area {
+        #${SDHGiI}-img-area {
           display: none !important;
         }
 
-        #${SDHubiI}-HTML {
+        #${SDHGiI}-HTML {
           height: max-content !important;
           margin: 0 !important;
           padding: 0 !important;
           position: relative !important;
         }
 
-        #${SDHubiI}-Output-Panel .${sdhubii}-output-title {
+        #${SDHGiI}-Output-Panel .${sdhgii}-output-title {
           background: var(--input-background-fill);
           filter: unset !important;
         }
 
-        #${SDHubiI}-Output-Panel .${sdhubii}-output-wrapper {
+        #${SDHGiI}-Output-Panel .${sdhgii}-output-wrapper {
           background: var(--input-background-fill) !important;
           filter: unset !important;
         }
 
-        #${SDHubiI}-Output-Panel .${sdhubii}-output-failed {
+        #${SDHGiI}-Output-Panel .${sdhgii}-output-failed {
           position: relative !important;
           margin-top: 5px !important;
           bottom: unset !important;
         }
 
         @media (max-width: 600px) {
-          #${SDHubiI}-Row {
+          #${SDHGiI}-Row {
             overflow-y: auto !important;
           }
 
-          #${SDHubiI}-Image-Column {
+          #${SDHGiI}-Image-Column {
             padding: 10px !important;
             height: 70% !important;
           }
 
-          #${SDHubiI}-SendButton {
+          #${SDHGiI}-SendButton {
             padding: 15px !important;
           }
 
-          #${SDHubiI}-Output-Panel {
+          #${SDHGiI}-Output-Panel {
             max-height: max-content !important;
             overflow: visible !important;
           }
@@ -634,8 +631,8 @@ function SDHubGalleryChangeSettings(
 function SDHubGalleryRePages() {
   const t = document.querySelector('.sdhub-gallery-tab-container.active'); if (!t) return;
   const parent = t?.parentElement;
-  const w = t.querySelector(`.${sdhubp}-wrapper`); if (!w) return;
-  const p = [...w.querySelectorAll(`.${sdhubp}s`)].sort((a, b) => a.dataset.page - b.dataset.page);
+  const w = t.querySelector(`.${sdhgp}-wrapper`); if (!w) return;
+  const p = [...w.querySelectorAll(`.${sdhgp}s`)].sort((a, b) => a.dataset.page - b.dataset.page);
 
   for (let i = 0; i < p.length - 1; i++) {
     let c = p[i], next = p[i + 1];
@@ -644,9 +641,9 @@ function SDHubGalleryRePages() {
 
   for (let i = p.length - 1; i >= 0; i--) { if (!p[i].children.length) p[i].remove(); }
 
-  const selected = w.querySelector(`.${sdhubp}s.selected-page`);
+  const selected = w.querySelector(`.${sdhgp}s.selected-page`);
   if (!selected) {
-    const lastPage = w.querySelector(`.${sdhubp}s:last-child`);
+    const lastPage = w.querySelector(`.${sdhgp}s:last-child`);
     if (lastPage) (lastPage.classList.add('selected-page'), requestAnimationFrame(() => lastPage.style.opacity = '1'));
   }
 
@@ -656,7 +653,7 @@ function SDHubGalleryRePages() {
     navBox.style.display = TabRow.style.display = '';
   }
 
-  const page = w.querySelectorAll(`.${sdhubp}s`).length;
+  const page = w.querySelectorAll(`.${sdhgp}s`).length;
 
   if (!page) {
     const Id = t.id,
@@ -671,7 +668,7 @@ function SDHubGalleryRePages() {
     TabCon && (TabCon.classList.remove('active'), TabCon.style.display = '');
     TabCounter && (TabCounter.style.display = '');
 
-    const allpages = parent.querySelectorAll(`.${sdhubp}s`); if (!allpages.length) return hide();
+    const allpages = parent.querySelectorAll(`.${sdhgp}s`); if (!allpages.length) return hide();
     const nextTabCon = allpages[0].closest('.sdhub-gallery-tab-container'); if (!nextTabCon) return;
     const nextId = nextTabCon.id.match(/^SDHub-Gallery-(.+)-Tab-Container$/); if (!nextId) return;
     const nextname = nextId[1],
@@ -683,9 +680,9 @@ function SDHubGalleryRePages() {
     nextTabCounter && (nextTabCounter.style.display = 'flex');
 
   } else {
-    const pages = [...w.querySelectorAll(`.${sdhubp}s`)],
+    const pages = [...w.querySelectorAll(`.${sdhgp}s`)],
           pageIndex = pages.findIndex(p => p.classList.contains('selected-page')),
-          indi = t.querySelector(`.${sdhubp}-indicator`);
+          indi = t.querySelector(`.${sdhgp}-indicator`);
     if (indi && pageIndex >= 0) indi.textContent = `${pageIndex + 1} / ${pages.length}`;
   }
 }
