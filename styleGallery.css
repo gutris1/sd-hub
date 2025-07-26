@@ -144,8 +144,28 @@ body.sdhub-body-no-scrolling {
   box-shadow: var(--sdhub-tab-button-box-shadow-hover);
 }
 
+#SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button.selected:hover {
+  box-shadow: var(--sdhub-tab-button-box-shadow-hover);
+}
+
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
   box-shadow: inset 0 0 5px 1px var(--primary-400), 0 0 10px 1px var(--primary-400);
+}
+
+#SDHub-Gallery-Tab-Button-Row .sdhub-gallery-ex-button {
+  display: flex;
+  cursor: pointer;
+  position: absolute;
+  z-index: 2;
+  top: -1px;
+  height: 43px;
+  width: 43px;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  transform-origin: center;
+  transition: .4s ease, transform 1s ease;
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-ex-button {
