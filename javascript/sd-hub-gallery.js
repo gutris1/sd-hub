@@ -24,6 +24,27 @@ const SDHubGalleryTabList = [
   'manual-save'
 ];
 
+async function SDHubGalleryUpdateImageInput(input, path) {
+  try {
+    const file = await SDHubGalleryCreateImageFile(path);
+    if (!file) throw new Error('Failed to create file');
+    const data = new DataTransfer();
+    data.items.add(file);
+    input.files = data.files;
+    const e = new Event('change', { bubbles: true, composed: true });
+    input.dispatchEvent(e);
+  } catch (err) { console.error('Error in updating image input:', err); }
+}
+
+async function SDHubGalleryCreateImageFile(path) {
+  try {
+    const res = await fetch(path);
+    const blob = await res.blob();
+    const name = path.split('/').pop().split('?')[0];
+    return new File([blob], name, { type: blob.type });
+  } catch (err) { console.error('Error in creating file:', err); return null; }
+}
+
 function SDHubGallerySwitchPage(tabName, direction = null, targetIndex = null) {
   if (SDHubGalleryPageLocks[tabName]) return;
   let selected = 'selected-page';
@@ -43,20 +64,14 @@ function SDHubGallerySwitchPage(tabName, direction = null, targetIndex = null) {
 
   if (newIndex === pageIndex) return;
 
-  const currentPage = pages[pageIndex],
-        newPage = pages[newIndex];
+  const currentPage = pages[pageIndex], newPage = pages[newIndex];
   SDHubGalleryPageLocks[tabName] = true;
 
   requestAnimationFrame(() => {
-    currentPage.style.opacity = '';
     currentPage.classList.remove(selected);
     newPage.classList.add(selected);
-
-    requestAnimationFrame(() => {
-      newPage.style.opacity = '1';
-      SDHubGalleryPageLocks[tabName] = false;
-      setTimeout(() => window.SDHubGalleryPageArrowUpdate(), 0);
-    });
+    SDHubGalleryPageLocks[tabName] = false;
+    setTimeout(() => window.SDHubGalleryPageArrowUpdate(), 0);
   });
 
   const nav = TabCon.querySelector(`.${sdhgp}-nav`),
@@ -93,12 +108,6 @@ function SDHubGalleryTabSwitch(whichTab) {
   if (Tab) (Tab.style.display = 'flex', Tab.classList.add('active'), counter && (counter.style.display = 'flex'));
   if (Btn) Btn.classList.add('selected');
 
-  const page = Tab?.querySelector(`.${sdhgp}s.selected-page`);
-  if (page) {
-    page.style.transition = 'none', page.style.opacity = '';
-    requestAnimationFrame(() => (page.style.transition = '', page.style.opacity = '1'));
-  }
-
   setTimeout(() => window.SDHubGalleryPageArrowUpdate(), 0);
 }
 
@@ -122,8 +131,7 @@ function SDHubGalleryTabEvents(TabCon) {
   TabCon.addEventListener('mousemove', (e) => {
     const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
     if (GalleryCM.style.transform !== 'scale(var(--sdhub-scale))') return;
-    const insideCM = GalleryCM?.matches(':hover'),
-          insideImg = e.target.closest('.sdhub-gallery-img-box')?.matches(':hover');
+    const insideCM = GalleryCM?.matches(':hover'), insideImg = e.target.closest('.sdhub-gallery-img-box')?.matches(':hover');
     if (!insideCM && !insideImg && !SDHubGalleryCMRightClick) setTimeout(() => SDHubGalleryKillContextMenu(), 100);
   });
 }
@@ -136,26 +144,56 @@ function SDHubGalleryTabImageCounters() {
   });
 }
 
+function SDHubGalleryCloneTab(id, name) {
+  const TabRow = document.getElementById('SDHub-Gallery-Tab-Button-Row'),
+        GalleryWrap = document.getElementById('SDHub-Gallery-Wrapper'),
+        TabCounter = document.getElementById('SDHub-Gallery-Tab-Counter-Container');
+
+  const exTabBtn = document.querySelector('.sdhub-gallery-tab-button:not(.selected)'),
+        TabBtn = exTabBtn.cloneNode(true);
+  TabBtn.id = `SDHub-Gallery-${id}-Tab-Button`;
+  TabBtn.textContent = name;
+  TabBtn.style.display = 'flex';
+  TabBtn.addEventListener('click', () => SDHubGallerySwitchTab(id));
+  TabRow.append(TabBtn);
+
+  const exTabCon = document.querySelector('.sdhub-gallery-tab-container:not(.active)'),
+        TabCon = exTabCon.cloneNode(false);
+  TabCon.id = `SDHub-Gallery-${id}-Tab-Container`;
+  TabCon.style.display = '';
+  TabCon.addEventListener('scroll', window.SDHubGalleryPageArrowUpdate);
+  GalleryWrap.append(TabCon);
+
+  const exCounter = document.querySelector('.sdhub-gallery-tab-image-counter'),
+        counter = exCounter.cloneNode(true);
+  counter.id = `SDHub-Gallery-${id}-Tab-Image-Counter`;
+  counter.style.display = '';
+  TabCounter.append(counter);
+
+  SDHubGalleryTabEvents(TabCon);
+  if (!SDHubGalleryTabList.includes(id)) SDHubGalleryTabList.push(id);
+}
+
 function SDHubGalleryImageButtonEvents(imgBox) {
-  const img = imgBox.querySelector('img'),
+  const imgCon = imgBox.querySelector('.sdhub-gallery-img-container'),
+        img = imgBox.querySelector('img'),
         checkbox = imgBox.querySelector('.sdhub-gallery-img-btn-checkbox'),
         contextBtn = imgBox.querySelector('.sdhub-gallery-img-btn-contextmenu'),
         viewerBtn = imgBox.querySelector('.sdhub-gallery-img-btn-imageviewer');
 
   let hover = null;
 
-  img.onclick = e => e.shiftKey ? checkbox?.click() : SDHubGalleryImageInfo(img);
+  img.onclick = (e) => e.shiftKey ? checkbox?.click() : SDHubGalleryImageInfo(img);
 
   checkbox.onclick = () => {
-    const s = imgBox.classList.contains(sdhgis),
-          n = !s;
+    const s = imgBox.classList.contains(sdhgis), n = !s;
 
     checkbox.classList.toggle(sdhgis, n);
     imgBox.classList.toggle(sdhgis, n);
 
     SDHubGalleryImgSelected += s ? -1 : 1;
     SDHubGalleryImgSelected = Math.max(0, SDHubGalleryImgSelected);
-    SDHubGalleryBatchBoxToggle(SDHubGalleryImgSelected > 0 ? 'flex' : '');
+    SDHubGalleryToggleBatchBox(SDHubGalleryImgSelected > 0 ? 'flex' : '');
     checkbox.innerHTML = n ? SDHubGallerySVG_UnselectImage : SDHubGallerySVG_SelectImage;
   };
 
@@ -169,48 +207,8 @@ function SDHubGalleryImageButtonEvents(imgBox) {
   viewerBtn.onclick = () => SDHubGalleryOpenViewerFromButton(img);
 }
 
-function SDHubGalleryCloneTab(id, name) {
-  const TabRow = document.getElementById('SDHub-Gallery-Tab-Button-Row'),
-        TabWrap = document.getElementById('SDHub-Gallery-Tab-Wrapper'),
-        TabCounter = document.getElementById('SDHub-Gallery-Tab-Counter-Container');
-
-  let exTabBtn = document.querySelector('.sdhub-gallery-tab-button:not(.selected)'),
-      TabBtn = exTabBtn.cloneNode(true);
-  TabBtn.id = `SDHub-Gallery-${id}-Tab-Button`;
-  TabBtn.textContent = name;
-  TabBtn.style.display = 'flex';
-  TabBtn.addEventListener('click', () => SDHubGallerySwitchTab(id));
-  TabRow.append(TabBtn);
-
-  let exTabCon = document.querySelector('.sdhub-gallery-tab-container:not(.active)'),
-      TabCon = exTabCon.cloneNode(false);
-  TabCon.id = `SDHub-Gallery-${id}-Tab-Container`;
-  TabCon.style.display = '';
-  TabCon.addEventListener('scroll', window.SDHubGalleryPageArrowUpdate);
-  TabWrap.append(TabCon);
-
-  let exCounter = document.querySelector('.sdhub-gallery-tab-image-counter'),
-      counter = exCounter.cloneNode(true);
-  counter.id = `SDHub-Gallery-${id}-Tab-Image-Counter`;
-  counter.style.display = '';
-  TabCounter.append(counter);
-
-  SDHubGalleryTabEvents(TabCon);
-  if (!SDHubGalleryTabList.includes(id)) SDHubGalleryTabList.push(id);
-}
-
-function SDHubGalleryBatchBoxToggle(v = '') {
-  const setBtn = document.getElementById(`${SDHGS}-Button`),
-        box = document.getElementById('SDHub-Gallery-Batch-Box');
-
-  v === 'flex'
-    ? (box.style.display = 'flex', setBtn.classList.add(`${sdhgs}-disable`),
-        requestAnimationFrame(() => box.classList.add('sdhub-gallery-batchbox-display')))
-    : (box.classList.remove('sdhub-gallery-batchbox-display'), setBtn.classList.remove(`${sdhgs}-disable`),
-        setTimeout(() => box.style.display = '', 200));
-}
-
 function SDHubGalleryKillContextMenu() {
+  const set = (e, s) => e && Object.assign(e.style, s);
   SDHubGalleryCMRightClick = false;
 
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu'),
@@ -218,24 +216,23 @@ function SDHubGalleryKillContextMenu() {
         submenu = document.getElementById('SDHub-Gallery-ContextMenu-SubMenu-SendTo'),
         ulsub = submenu?.querySelector('ul');
 
-  Object.assign(ul.style, { transition: 'opacity 150ms ease', opacity: '0' });
-  Object.assign(ulsub.style, { transition: 'opacity 150ms ease', opacity: '0' });
-  Object.assign(GalleryCM.style, { transition: 'transform 150ms ease', transform: 'scale(0.9)' });
-  Object.assign(submenu.style, { transition: 'transform 150ms ease', transform: 'scale(0.9)' });
+  set(GalleryCM, { transition: 'transform 150ms ease', transform: 'scale(0.9)' });
+  set(ul, { transition: 'opacity 150ms ease', opacity: '0' });
+  set(submenu, { transition: 'transform 150ms ease', transform: 'scale(0.9)' });
+  set(ulsub, { transition: 'opacity 150ms ease', opacity: '0' });
 
   setTimeout(() => requestAnimationFrame(() => {
-    Object.assign(ul.style, { transition: '', opacity: '' });
-    Object.assign(ulsub.style, { transition: '', opacity: '' });
-    Object.assign(GalleryCM.style, { left: '', top: '', right: '', transition: 'none', transform: '' });
-    Object.assign(submenu.style, { left: '', top: '', right: '', transform: '' });
+    set(GalleryCM, { left: '', top: '', right: '', transition: 'none', transform: '' });
+    set(ul, { transition: '', opacity: '' });
+    set(submenu, { left: '', top: '', right: '', transform: '' });
+    set(ulsub, { transition: '', opacity: '' });
   }, 100));
 }
 
 function SDHubGalleryContextMenu(e, imgEL) {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu'),
-        ul = GalleryCM?.querySelector('ul');
-
-  const display = () => SDHubGalleryContextMenuDisplay(e, imgEL);
+        ul = GalleryCM?.querySelector('ul'),
+        display = () => SDHubGalleryContextMenuDisplay(e, imgEL);
 
   if (GalleryCM.style.transform === 'scale(var(--sdhub-scale))') {
     Object.assign(ul.style, { transition: 'opacity 150ms ease', opacity: '0' });
@@ -249,11 +246,11 @@ function SDHubGalleryContextMenu(e, imgEL) {
 function SDHubGalleryContextMenuDisplay(e, imgEL) {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu'),
         ul = GalleryCM.querySelector('ul'),
-        page = imgEL.closest(`.${sdhgp}s.selected-page`);
+        submenu = document.getElementById('SDHub-Gallery-ContextMenu-SubMenu-SendTo'),
+        ulsub = submenu?.querySelector('ul'),
+        set = (e, s) => e && Object.assign(e.style, s);
 
-  window.SDHubImagePath = imgEL.getAttribute('data-image');
-  window.SDHubImageList = [...page.querySelectorAll('img')].map(img => img.getAttribute('data-image'));
-  window.SDHubImageIndex = window.SDHubImageList.indexOf(window.SDHubImagePath);
+  SDHubGalleryImageViewerimgList(imgEL);
 
   const select = document.getElementById('SDHub-Gallery-Context-Select'),
         unselect = document.getElementById('SDHub-Gallery-Context-Unselect'),
@@ -263,8 +260,10 @@ function SDHubGalleryContextMenuDisplay(e, imgEL) {
   if (select) select.style.display = selected ? 'none' : '';
   if (unselect) unselect.style.display = selected ? '' : 'none';
 
-  Object.assign(GalleryCM.style, { transition: 'none', left: '', right: '', top: '', bottom: '', transform: '' });
-  Object.assign(ul.style, { transition: 'none', opacity: '' });
+  set(GalleryCM, { transition: 'none', left: '', right: '', top: '', bottom: '', transform: '' });
+  set(ul, { transition: 'none', opacity: '' });
+  set(submenu, { transition: 'none', transform: '' });
+  set(ulsub, { transition: 'none', opacity: '' });
 
   let originY;
 
@@ -279,7 +278,7 @@ function SDHubGalleryContextMenuDisplay(e, imgEL) {
         posX = spaceRight >= menuWidth ? cursorX : viewportWidth - menuWidth - 5,
         posY = spaceBelow >= menuHeight ? (originY = 'top', cursorY) : (originY = 'bottom', cursorY - menuHeight);
 
-  Object.assign(GalleryCM.style, { left: `${posX}px`, top: `${posY}px` });
+  set(GalleryCM, { left: `${posX}px`, top: `${posY}px` });
 
   const bounds = GalleryCM.getBoundingClientRect();
 
@@ -291,8 +290,8 @@ function SDHubGalleryContextMenuDisplay(e, imgEL) {
   GalleryCM.style.transformOrigin = `${originY} left`;
 
   requestAnimationFrame(() => setTimeout(() => {
-    Object.assign(GalleryCM.style, { transition: '', transform: 'scale(var(--sdhub-scale))' });
-    Object.assign(ul.style, { transition: '', opacity: '1' });
+    set(GalleryCM, { transition: '', transform: 'scale(var(--sdhub-scale))' });
+    set(ul, { transition: '', opacity: '1' });
     setTimeout(() => SDHubGalleryContextSubmenu(), 310);
   }, 10));
 }
@@ -301,9 +300,8 @@ function SDHubGalleryContextSubmenu() {
   const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu'),
         subbtn = GalleryCM.querySelector('.sdhub-gallery-cm-sendto'),
         submenu = document.getElementById('SDHub-Gallery-ContextMenu-SubMenu-SendTo'),
-        ul = submenu.querySelector('ul');
-
-  submenu.style.transition = ul.style.transition = '';
+        ul = submenu.querySelector('ul'),
+        set = (e, s) => e && Object.assign(e.style, s);
 
   const cm = GalleryCM.getBoundingClientRect(),
         btn = subbtn.getBoundingClientRect(),
@@ -321,8 +319,7 @@ function SDHubGalleryContextSubmenu() {
     ? (submenu.style.left = '100%', ul.style.marginLeft = '10px', 'left')
     : (submenu.style.right = '100%', ul.style.marginRight = '10px', 'right');
 
-  const btnTop = btn.top - cm.top,
-        btnBottom = btn.bottom - cm.top;
+  const btnTop = btn.top - cm.top, btnBottom = btn.bottom - cm.top;
 
   let Y = below < cmH
     ? (submenu.style.top = `${(btnBottom - cmH + 8).toFixed(2)}px`, 'bottom')
@@ -337,8 +334,8 @@ function SDHubGalleryContextSubmenu() {
     clearTimeout(show);
     show = setTimeout(() => {
       requestAnimationFrame(() => {
-        Object.assign(submenu.style, { transform: 'scale(var(--sdhub-scale))' });
-        Object.assign(ul.style, { opacity: '1' });
+        set(submenu, { transition: '', transform: 'scale(var(--sdhub-scale))' });
+        set(ul, { transition: '', opacity: '1' });
         setTimeout(() => SDHubGalleryContextSubmenu(), 310);
       });
     }, 200);
@@ -348,8 +345,8 @@ function SDHubGalleryContextSubmenu() {
     clearTimeout(show);
     hover = setTimeout(() => {
       requestAnimationFrame(() => {
-        Object.assign(submenu.style, { transform: '' });
-        Object.assign(ul.style, { opacity: '' });
+        set(submenu, { transform: '' });
+        set(ul, { opacity: '' });
         setTimeout(() => SDHubGalleryContextSubmenu(), 310);
       });
     }, 100);
@@ -425,53 +422,51 @@ async function SDHubGallerySendImage(v) {
   infoCon.style.display = 'flex';
   SDHubGalleryBlur('add');
   Spinner.classList.add('sdhub-gallery-spinner');
-  window.SDHubGalleryDisplayImageInfo = null;
 
   if (input) {
     requestAnimationFrame(() => infoCon.style.opacity = '1');
+
+    window.SDHubGalleryDisplayImageInfo = null;
     await SDHubGalleryUpdateImageInput(input, path);
 
     window.SDHubGallerySendImageInfo = () => {
-      setTimeout(() => {
+      setTimeout(() => requestAnimationFrame(() => {
         document.querySelector(`#${SDHGiI}-SendButton > #${v}_tab`)?.click();
-        setTimeout(() => {
-          infoCon.style.opacity = infoCon.style.display = '';
-          SDHubGalleryBlur('remove'); Spinner.classList.remove('sdhub-gallery-spinner');
-        }, 100);
-      }, 200);
+        infoCon.style.opacity = infoCon.style.display = '';
+        Spinner.classList.remove('sdhub-gallery-spinner');
+        setTimeout(() => SDHubGalleryBlur('remove'), 200);
+      }), 100);
     };
   }
 }
 
 async function SDHubGalleryImageInfo(imgEL) {
   const imginfoRow = document.getElementById(`${SDHGiI}-Row`),
-        imgPanel = document.getElementById(`${SDHGiI}-img`),
-        input = imgPanel.querySelector('input'),
+        input = document.querySelector(`#${SDHGiI}-img input`),
         infoCon = document.getElementById('SDHub-Gallery-Info-Container'),
         Spinner = document.getElementById('SDHub-Gallery-Info-Spinner');
 
-  infoCon.style.display = 'flex';
+  imgEL.parentElement.style.pointerEvents = 'none';
+  infoCon.style.display = imginfoRow.style.display = 'flex';
   SDHubGalleryBlur('add');
   Spinner.classList.add('sdhub-gallery-spinner');
-  window.SDHubGallerySendImageInfo = null;
 
   if (input) {
-    requestAnimationFrame(() => {
-      infoCon.style.opacity = '1';
-      imginfoRow.style.display = 'flex';
-      imginfoRow.style.pointerEvents = 'none';
-    });
+    requestAnimationFrame(() => infoCon.style.opacity = '1');
 
+    window.SDHubGallerySendImageInfo = null;
     window.SDHubImagePath = imgEL.getAttribute('data-image');
     await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
 
     window.SDHubGalleryDisplayImageInfo = () => {
-      setTimeout(() => {
-        imginfoRow.style.opacity = '1';
-        infoCon.style.display = infoCon.style.opacity = imginfoRow.style.pointerEvents = '';
-        setTimeout(() => (SDHubGalleryBlur('remove'), Spinner.classList.remove('sdhub-gallery-spinner')), 100);
+      setTimeout(() => requestAnimationFrame(() => {
+        imginfoRow.style.opacity = '1'; 
+        infoCon.style.display = infoCon.style.opacity = '';
+        Spinner.classList.remove('sdhub-gallery-spinner');
+        setTimeout(() => SDHubGalleryBlur('remove'), 200);
         setTimeout(() => window.SDHubGalleryImageInfoArrowUpdate(), 0);
-      }, 200);
+        imgEL.parentElement.style.pointerEvents = '';
+      }), 100);
     };
   }
 }
@@ -481,13 +476,13 @@ async function SDHubGalleryDeleteImage() {
         imgBox = imgEL?.closest('.sdhub-gallery-img-box'),
         path = decodeURIComponent(window.SDHubImagePath).slice(`${SDHubGalleryBase}/image=`.length),
         thumb = decodeURIComponent(imgEL?.src.split('/').pop()),
-        perm = window.SDHubGallerySettings?.['single-delete-permanent'] ?? false;
+        perma = window.SDHubGallerySettings?.['single-delete-permanent'] ?? false;
 
   try {
     const res = await fetch(`${SDHubGalleryBase}/delete`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: path, thumb: thumb, ...(perm && { permanent: true }) }),
+      body: JSON.stringify({ path: path, thumb: thumb, ...(perma && { permanent: true }) }),
     });
 
     if (!res.ok) throw new Error(await res.text());
@@ -498,7 +493,7 @@ async function SDHubGalleryDeleteImage() {
         imgBox.classList.remove(sdhgis);
         imgBox.querySelector('.sdhub-gallery-img-btn-checkbox')?.classList.remove(sdhgis);
         SDHubGalleryImgSelected = Math.max(0, SDHubGalleryImgSelected - 1);
-        SDHubGalleryBatchBoxToggle(SDHubGalleryImgSelected > 0 ? 'flex' : '');
+        SDHubGalleryToggleBatchBox(SDHubGalleryImgSelected > 0 ? 'flex' : '');
       }
 
       imgBox?.remove();
@@ -519,10 +514,7 @@ async function SDHubGalleryBatchDelete() {
         perm = window.SDHubGallerySettings?.['batch-delete-permanent'] ?? false;
 
   const img = imgBox.map(b => {
-    const i = b.querySelector('.sdhub-gallery-img'),
-          p = i.dataset.image,
-          t = i.getAttribute('src');
-
+    const i = b.querySelector('.sdhub-gallery-img'), p = i.dataset.image, t = i.getAttribute('src');
     return {
       path: decodeURIComponent(p.replace(`${SDHubGalleryBase}/image=`, '')),
       thumb: decodeURIComponent(t.replace(`${SDHubGalleryBase}/thumb/`, '')),
@@ -579,8 +571,7 @@ async function SDHubGalleryBatchDownload(onchange = false) {
           imgBox = Array.from(TabCon.querySelectorAll(`.sdhub-gallery-img-box.${sdhgis}`));
 
     const images = imgBox.map(b => {
-      const i = b.querySelector('.sdhub-gallery-img'),
-            p = i?.dataset?.image;
+      const i = b.querySelector('.sdhub-gallery-img'), p = i?.dataset?.image;
       return p ? { path: decodeURIComponent(p.replace(`${SDHubGalleryBase}/image=`, '')) } : null;
     }).filter(Boolean);
 
@@ -589,6 +580,13 @@ async function SDHubGalleryBatchDownload(onchange = false) {
     path.value = JSON.stringify({ name, images });
     updateInput(path);
   }
+}
+
+function SDHubGalleryToggleBatchBox(v = '') {
+  const box = document.getElementById('SDHub-Gallery-Batch-Box');
+  v === 'flex'
+    ? (box.style.display = 'flex', requestAnimationFrame(() => box.classList.add('sdhub-gallery-batchbox-display')))
+    : (box.classList.remove('sdhub-gallery-batchbox-display'), setTimeout(() => box.style.display = '', 200));
 }
 
 function SDHubGalleryInfoPopUp(f, whichTab = null) {
@@ -817,39 +815,38 @@ function SDHubGalleryCloseInfoPopup(f = false) {
 }
 
 function SDHubGalleryBlur(f) {
-  const id = 'SDHub-Gallery-Blur',
+  const layer = document.getElementById('SDHub-Gallery-Tab-Layer'),
+        id = 'SDHub-Gallery-Blur',
         e = document.getElementById(id),
-        FoxFire = /firefox/i.test(navigator.userAgent),
         css = `
-          #SDHub-Gallery-Tab-Wrapper {
-            ${FoxFire ? '' : 'filter: blur(3px);'}
-            pointer-events: none;
+          #SDHub-Gallery-Tab-Layer {
+            opacity: 1;
           }
 
-          #SDHub-Tab .sdhub-sticky-container > * {
-            pointer-events: none;
+          #SDHub-Tab .sdhub-sticky-container *,
+          #${SDHGiI}-Row * {
+            pointer-events: none !important;
           }
 
-          #SDHub-Tab .sdhub-sticky-container {
-            opacity: 0.4;
-            filter: blur(2px);
+          #SDHub-Gallery-Batch-Box, #SDHub-Gallery-Page-Arrow-Wrapper {
+            opacity: .8;
           }
 
-          :root #SDHub-Gallery-Tab-Wrapper {
-            opacity: 0.7;
-          }
-
-          .dark #SDHub-Gallery-Tab-Wrapper {
-            opacity: 0.5;
+          #SDHub-Tab .sdhub-gallery-blur-layer {
+            transform: scale(1);
+            opacity: 1;
           }
         `;
 
   f === 'add'
-    ? (!e && (() => {
-        document.body.appendChild(Object.assign(document.createElement('style'), { id, textContent: css }));
-        document.body.classList.add(SDHubBnS);
-      })())
-    : (e?.remove(), f === 'baygon' && document.body.classList.remove(SDHubBnS));
+    ? (!e && (
+        layer.style.display = 'flex',
+        requestAnimationFrame(() => {
+          document.body.appendChild(Object.assign(document.createElement('style'), { id, textContent: css }));
+          document.body.classList.add(SDHubBnS);
+        })
+      ))
+    : (e?.remove(), f === 'baygon' && document.body.classList.remove(SDHubBnS), setTimeout(() => layer.style.display = '', 300));
 }
 
 async function SDHubGalleryImgChestUpload(paths, names) {
@@ -860,9 +857,9 @@ async function SDHubGalleryImgChestUpload(paths, names) {
   const [privacy, nsfw] = ['#SDHub-Gallery-ImgChest-Privacy', '#SDHub-Gallery-ImgChest-NSFW'].map(whichone);
 
   const sorted = paths.map((path, i) => ({ path, name: names[i] })).sort((a, b) => b.name.includes('grid-') - a.name.includes('grid-')),
-        files = await Promise.all(sorted.map(({ path }) => SDHubGalleryCreateImageFile(path)));
+        files = await Promise.all(sorted.map(({ path }) => SDHubGalleryCreateImageFile(path))),
+        data = new FormData();
 
-  const data = new FormData();
   files.forEach(file => file && data.append('images[]', file));
   data.append('title', sorted.length > 1 && sorted.some(item => item.name.includes('grid-')) ? sorted[1].name : sorted[0].name);
   data.append('privacy', privacy || 'hidden');
@@ -887,24 +884,20 @@ function SDHubCreateGallery() {
     SDHubGallery.style.display = '';
     const Setting = SDHubGallery.querySelector(`#${SDHGS}`),
           infoCon = SDHubGallery.querySelector('#SDHub-Gallery-Info-Container'),
-          TabWrap = SDHubGallery.querySelector('#SDHub-Gallery-Tab-Wrapper'),
-          imgBox = SDHubGallery.querySelector('#SDHub-Gallery-Image-Box-0'),
-          StickyCon = SDHubGallery.querySelector('#SDHub-Gallery-Sticky-Container');
+          GalleryWrap = SDHubGallery.querySelector('#SDHub-Gallery-Wrapper'),
+          imgBox = SDHubGallery.querySelector('#SDHub-Gallery-Image-Box-0');
 
-    GalleryTab.prepend(Setting, infoCon, StickyCon, TabWrap, imgBox);
+    GalleryTab.prepend(Setting, infoCon, GalleryWrap, imgBox);
 
     const SettingWrapper = Setting.querySelector(`#${SDHGS}-Wrapper`),
           repo = document.querySelector('#SDHub-Repo > a');
     SettingWrapper && repo && SettingWrapper.append(repo.cloneNode(true));
 
-    const imgchestColumn = document.getElementById('SDHub-Gallery-ImgChest-Column');
-    if (imgchestColumn) SDHubGalleryCreateimgChest(TabWrap, imgchestColumn);
-
     const sendButton = document.getElementById(`${SDHGiI}-SendButton`);
     sendButton?.querySelectorAll('button').forEach(btn => btn.onclick = () => SDHubGallerySendButton(btn.id));
 
     const imginfoRow = document.getElementById(`${SDHGiI}-Row`);
-    imginfoRow.append(SDHubGallery.querySelector('#SDHub-Gallery-Image-Info-Arrow'));
+    imginfoRow.append(SDHubGallery.querySelector('#SDHub-Gallery-Imageinfo-Arrow-Button'));
     imginfoRow.addEventListener('scroll', window.SDHubGalleryImageInfoArrowUpdate);
 
     const imgCon = document.querySelector(`#${SDHGiI}-img > .image-container`),
@@ -912,10 +905,10 @@ function SDHubCreateGallery() {
           clearButton = SDHubCreateEL('div', { id: `${SDHGiI}-Clear-Button`, html: SDHubGallerySVG_Cross });
 
     window.SDHubGalleryCloseImageInfo = () => {
-      const btn = document.querySelector(`#${SDHGiI}-img > div > div > div > button:nth-child(2)`) ||
-                  document.querySelector(`.gradio-container-4-40-0 #${SDHGiI}-img > div > div > button`);
+      const btn = document.querySelector(`.gradio-container-4-40-0 #${SDHGiI}-img > div > div > button`) ||
+                  document.querySelector(`#${SDHGiI}-img > div > div > div > button:nth-child(2)`);
 
-      imginfoRow.style.pointerEvents = imginfoRow.style.opacity = '';
+      imginfoRow.style.opacity = '';
       document.body.classList.remove(SDHubBnS);
       window.SDHubGalleryDisplayImageInfo = null;
       window.SDHubGallerySendImageInfo = null;
@@ -939,6 +932,7 @@ function SDHubCreateGallery() {
     const HTMLPanel = document.getElementById(`${SDHGiI}-HTML`);
     HTMLPanel.classList.add('prose');
 
+    SDHubGalleryCreateimgChest();
     SDHubGalleryLoadSettings();
     onAfterUiUpdate(SDHubGalleryWatchNewImage);
   }
@@ -1011,10 +1005,8 @@ async function SDHubGalleryGetNewImage(whichGallery) {
     tabMap.get(whichTab).push({ newImgBox, imgSrc });
   }
 
-  const tabs = SDHubGalleryTabList,
-        tabSorted = [...tabMap.keys()].sort((a, b) => {
-    const aa = tabs.indexOf(a),
-          bb = tabs.indexOf(b);
+  const tabs = SDHubGalleryTabList, tabSorted = [...tabMap.keys()].sort((a, b) => {
+    const aa = tabs.indexOf(a), bb = tabs.indexOf(b);
     return (aa === -1 ? Infinity : aa) - (bb === -1 ? Infinity : bb);
   });
 

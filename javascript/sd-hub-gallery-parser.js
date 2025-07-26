@@ -10,10 +10,7 @@ async function SDHubGalleryParser() {
   }
 
   img.onclick = () => SDHubGalleryImageViewer('s');
-  img.onload = () => {
-    img.style.opacity = '1';
-    setTimeout(() => window.SDHubGalleryDisplayImageInfo?.(), 200);
-  };
+  img.onload = () => (img.style.opacity = '1', setTimeout(() => window.SDHubGalleryDisplayImageInfo?.(), 200));
 
   const output = await SharedImageParser(img);
   window.SDHubGalleryImageInfoRaw = RawOutput.value = output;

@@ -174,7 +174,7 @@ var SDHubGallerySVG_ImgChest = `
   </svg>
 `;
 
-var SDHubGallerySVG_ArrowScroll = `
+var SDHubGallerySVG_ArrowButton = `
   <svg height="100%" width="100%" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve">
     <polygon fill="currentColor" points="95.936,214.656 256,378.016 416.064,214.656 366.096,165.856 256,278.208 145.904,165.856"/>
   </svg>

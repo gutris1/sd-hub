@@ -29,23 +29,22 @@ onUiLoaded(() => {
 });
 
 function SDHubTabChange() {
-  const imginfoRow = document.getElementById(`${SDHGiI}-Row`);
-  const tagList = document.getElementById('SDHub-Tag-Accordion');
-  const nav = document.querySelector('#tabs > .tab-nav > button.selected');
-  const hubnav = document.querySelectorAll('#SDHub-Tab > .tab-nav > button') || [];
-  const selected = document.querySelector('#SDHub-Tab > .tab-nav > button.selected');
+  const imginfoRow = document.getElementById(`${SDHGiI}-Row`),
+        tagList = document.getElementById('SDHub-Tag-Accordion'),
+        nav = document.querySelector('#tabs > .tab-nav > button.selected'),
+        hubnav = document.querySelectorAll('#SDHub-Tab > .tab-nav > button') || [],
+        selected = document.querySelector('#SDHub-Tab > .tab-nav > button.selected'),
 
-  const HUB = nav?.textContent.trim() === 'HUB';
-  const TextEditor = selected?.id === 'SDHub-Tab-Button-Texteditor';
-  const Gallery = selected?.id === 'SDHub-Tab-Button-Gallery';
+        HUB = nav?.textContent.trim() === 'HUB',
+        TextEditor = selected?.id === 'SDHub-Tab-Button-Texteditor',
+        Gallery = selected?.id === 'SDHub-Tab-Button-Gallery',
 
-  const repo = document.getElementById('SDHub-Repo');
+        repo = document.getElementById('SDHub-Repo'),
 
-  const infoCon = document.getElementById('SDHub-Gallery-Info-Container');
+        infoCon = document.getElementById('SDHub-Gallery-Info-Container');
 
   const ScrollBar = (f) => {
-    const Id = 'SDHub-Hide-Scroll-Bar';
-    const sb = document.getElementById(Id);
+    const Id = 'SDHub-Hide-Scroll-Bar', sb = document.getElementById(Id);
 
     f === 'add' && !sb
       ? document.head.appendChild(Object.assign(document.createElement('style'), {
@@ -135,16 +134,23 @@ function SDHubEventListener() {
     textEditor: document.getElementById('SDHub-Texteditor-Save-Button')
   };
 
-  document.addEventListener('keydown', (e) => {
-    if (Tab.downloader?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.downloader?.click();
-    if (Tab.uploader?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.uploader?.click();
-    if (Tab.shell?.style.display === 'block' && e.shiftKey && e.key === 'Enter') Button.shell?.click();
-    if (Tab.textEditor?.style.display === 'block' && e.ctrlKey && e.key === 's') (e.preventDefault(), Button.textEditor?.click());
+  document.addEventListener('keydown', e => {
+    const C = el => el?.style.display === 'block';
+    const { key: k, shiftKey: s, ctrlKey: c } = e;
+
+    if (!C(document.getElementById('tab_SDHub'))) return;
+
+    if (s && k === 'Enter') (
+      C(Tab.downloader) && Button.downloader?.click(),
+      C(Tab.uploader) && Button.uploader?.click(),
+      C(Tab.shell) && Button.shell?.click()
+    );
+
+    if (c && k === 's' && C(Tab.textEditor)) (e.preventDefault(), Button.textEditor?.click());
   });
 
   document.addEventListener('click', (e) => {
-    const td = e.target.closest('#SDHub-Tag-Dataframe td');
-    const text = td?.querySelector('span')?.textContent;
+    const td = e.target.closest('#SDHub-Tag-Dataframe td'), text = td?.querySelector('span')?.textContent;
     if (text) (navigator.clipboard.writeText(text), td.classList.add('pulse-td'), setTimeout(() => td.classList.remove('pulse-td'), 2000));
   });
 
@@ -207,8 +213,8 @@ async function SDHubDownloader() {
 }
 
 async function SDHubArchiver(v) {
-  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
-  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button'),
+        extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
 
   if (v === 'finish') {
     archiveBtn.classList.remove('sdhub-button-disabled');
@@ -226,9 +232,7 @@ async function SDHubTextEditorInfo(v) {
 }
 
 function SDHubTextEditorGalleryScrollBar() {
-  const FoxFire = /firefox/i.test(navigator.userAgent);
-  const ScrollBAR = document.createElement('style');
-  document.body.appendChild(ScrollBAR);
+  const FoxFire = /firefox/i.test(navigator.userAgent), ScrollBAR = document.createElement('style');
 
   const F = `
     #${SDHGS}-Box {
@@ -290,6 +294,7 @@ function SDHubTextEditorGalleryScrollBar() {
   `;
 
   ScrollBAR.innerHTML = FoxFire ? F : W;
+  document.body.appendChild(ScrollBAR);
 }
 
 function SDHubGetTranslation(k, n = 1) {
@@ -424,6 +429,7 @@ async function SDHubRGBA() {
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-name-box-shadow-selected', a: 0.9, swap: true },
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-name-background-selected', a: 0.7, swap: true },
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-selected', a: 1, swap: true },
+    { c: '--background-fill-primary', to: '--sdhub-gallery-tab-layer-background', ar: 0.25, ad: 0.4 },
   ];
 
   const css = await (await fetch('/theme.css')).text();
@@ -457,9 +463,11 @@ async function SDHubRGBA() {
 
   const r = get(':root'), d = get('.dark'), S = document.createElement('style');
 
-  vars.forEach(({ c, to, a, swap }) => {
+  vars.forEach(({ c, to, a, ar, ad, swap }) => {
     const [rc, dc] = [resolve(r[c], r), resolve(d[c], d)];
-    const [root, dark] = swap ? [alpha(dc, a), alpha(rc, a)] : [alpha(rc, a), alpha(dc, a)];
+    const rootAlpha = ar !== undefined ? ar : a;
+    const darkAlpha = ad !== undefined ? ad : a;
+    const [root, dark] = swap ? [alpha(dc, rootAlpha), alpha(rc, darkAlpha)] : [alpha(rc, rootAlpha), alpha(dc, darkAlpha)];
     S.textContent += `:root { ${to}: ${root}; }\n.dark { ${to}: ${dark}; }\n`;
   });
 
