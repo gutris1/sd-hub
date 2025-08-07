@@ -15,9 +15,9 @@ def onSDHUBTab():
             UploaderTab()
             ArchiverTab()
 
-            if SDHubPaths.getENV():
-                from sd_hub.texteditorTab import TextEditorTab; TextEditorTab()
-                from sd_hub.shellTab import ShellTab; ShellTab()
+            #if SDHubPaths.getENV():
+            from sd_hub.texteditorTab import TextEditorTab; TextEditorTab()
+            from sd_hub.shellTab import ShellTab; ShellTab()
 
             GalleryTab()
 

@@ -20,14 +20,16 @@ function SDHubGalleryImageViewerDisplayImage(skip = false) {
         Wrapper = LightBox.querySelector(`#${SDHGiV}-Wrapper`),
         pointer = 'sdhub-gallery-pointer-events-none';
 
-  let imgEL = !skip
-    ? (Wrapper.querySelectorAll('img').forEach(img => img.remove()),
-      imgEL = document.createElement('img'),
-      imgEL.id = `${SDHGiV}-img`,
-      imgEL.src = window.SDHubImagePath,
-      Wrapper.append(imgEL),
-      imgEL)
-    : document.getElementById(`${SDHGiV}-img`);
+  let imgEL;
+  if (!skip) {
+    Wrapper.querySelectorAll('img').forEach(img => img.remove());
+    imgEL = document.createElement('img');
+    imgEL.id = `${SDHGiV}-img`;
+    imgEL.src = window.SDHubImagePath;
+    Wrapper.append(imgEL);
+  } else {
+    imgEL = document.getElementById(`${SDHGiV}-img`);
+  }
 
   requestAnimationFrame(() => setTimeout(() => {
     LightBox.style.opacity = '1';

@@ -2,7 +2,6 @@ from modules.ui_components import FormRow
 import gradio as gr
 import subprocess
 import select
-import pty
 import os
 
 from sd_hub.paths import SDHubPaths
@@ -10,6 +9,8 @@ from sd_hub.paths import SDHubPaths
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
 def ShellRun(inputs):
+    import pty
+
     for tag, path in tag_tag.items():
         inputs = inputs.replace(tag, path)
 

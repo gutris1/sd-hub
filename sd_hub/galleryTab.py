@@ -1,5 +1,6 @@
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
+from modules.script_callbacks import on_image_saved
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, responses, Request
 from datetime import datetime, timedelta
@@ -32,6 +33,7 @@ today = datetime.today().strftime('%Y-%m-%d')
 imgList = []
 imgList_List = threading.Event()
 Thumbnails = {}
+imgNew = []
 
 sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
 grid_dirs = [opts.outdir_txt2img_grids, opts.outdir_img2img_grids]
@@ -64,7 +66,7 @@ def getThumbnail(fp, size=512):
         try:
             if not path.exists(): return None
 
-            k = f'{path.stem}.jpeg'
+            k = f"{getPath(path.with_suffix(''))}.jpeg"
             if k in Thumbnails: return Thumbnails[k]
 
             img = Image.open(path)
@@ -165,31 +167,39 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         except Exception as e:
             return responses.JSONResponse(status_code=500, content={'error': 'Server error', 'detail': str(e)})
 
+    @app.get(BASE + '/thumb={img:path}')
+    async def _(img: Path):
+        thumb = Thumbnails.get(getPath(img))
+        return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
+
+    @app.post(BASE + '/new-thumb')
+    async def _(req: Request):
+        fp = Path((await req.json()).get('path'))
+        await asyncio.to_thread(getThumbnail, fp)
+        return {'status': f"{BASE}/thumb={getPath(fp.with_suffix(''))}.jpeg"}
+
     @app.get(BASE + '/image={img:path}')
     async def _(img: str):
         fp = Path(unquote(img))
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
-    @app.post(BASE + '/new-image')
-    async def _(req: Request):
-        global imgList
-        data = await req.json()
-        paths = data.get('paths', [])
-        imgList.extend([{'path': p} for p in paths])
+    @app.get(BASE + '/new-image')
+    async def _():
+        return {'images': imgNew}
+
+    @app.post(BASE + '/loaded')
+    async def _():
+        imgNew.clear()
+        return {'message': 'cleared'}
+
+    def on_saved(params):
+        path = str(Path(params.filename).absolute())
+        imgNew.append(path)
+        imgList.append({'path': path})
         imgList_List.set()
-        return {'status': 'ok'}
 
-    @app.get(BASE + '/thumb/{img}')
-    async def _(img: str):
-        thumb = Thumbnails.get(img)
-        return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
-
-    @app.post(BASE + '/get-thumb')
-    async def _(req: Request):
-        fp = Path((await req.json()).get('path'))
-        await asyncio.to_thread(getThumbnail, fp)
-        return {'status': f'{BASE}/thumb/{quote(fp.stem)}.jpeg'}
+    on_image_saved(on_saved)
 
     def deleting(path: Path, thumb: Path, perm: bool):
         global imgList
@@ -232,62 +242,60 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 def GalleryTab():
     if insecureENV:
         with gr.Column(elem_id='SDHub-Gallery-ImgChest-Column'):
-            gr.HTML(
-                'Auto Upload to <a class="sdhub-gallery-imgchest-info" '
-                'href="https://imgchest.com" target="_blank"> imgchest.com</a>',
-                elem_id='SDHub-Gallery-ImgChest-Info'
-            )
+            with gr.Column(elem_id='SDHub-Gallery-ImgChest-Wrapper'):
+                gr.HTML(
+                    'Auto Upload to <a class="sdhub-gallery-imgchest-info" '
+                    'href="https://imgchest.com" target="_blank"> imgchest.com</a>',
+                    elem_id='SDHub-Gallery-ImgChest-Info'
+                )
 
-            gr.Checkbox(
-                label='Click To Enable',
-                elem_id='SDHub-Gallery-ImgChest-Checkbox'
-            )
+                gr.Checkbox(label='Click To Enable', elem_id='SDHub-Gallery-ImgChest-Checkbox')
 
-            with FormRow():
-                privacyset = gr.Radio(
-                    ['Hidden', 'Public'],
-                    value='Hidden',
-                    label='Privacy',
+                with FormRow():
+                    privacyset = gr.Radio(
+                        ['Hidden', 'Public'],
+                        value='Hidden',
+                        label='Privacy',
+                        interactive=True,
+                        elem_id='SDHub-Gallery-ImgChest-Privacy',
+                        elem_classes='sdhub-radio'
+                    )
+
+                    nsfwset = gr.Radio(
+                        ['True', 'False'],
+                        value='True',
+                        label='NSFW',
+                        interactive=True,
+                        elem_id='SDHub-Gallery-ImgChest-NSFW',
+                        elem_classes='sdhub-radio'
+                    )
+
+                apibox = gr.Textbox(
+                    show_label=False,
                     interactive=True,
-                    elem_id='SDHub-Gallery-ImgChest-Privacy',
-                    elem_classes='sdhub-radio'
+                    placeholder='imgchest API key',
+                    max_lines=1,
+                    elem_id='SDHub-Gallery-ImgChest-API',
+                    elem_classes='sdhub-input'
                 )
 
-                nsfwset = gr.Radio(
-                    ['True', 'False'],
-                    value='True',
-                    label='NSFW',
-                    interactive=True,
-                    elem_id='SDHub-Gallery-ImgChest-NSFW',
-                    elem_classes='sdhub-radio'
-                )
+                with FormRow(elem_classes='sdhub-row'):
+                    savebtn = gr.Button(
+                        'Save',
+                        variant='primary',
+                        elem_id='SDHub-Gallery-ImgChest-Save-Button',
+                        elem_classes='sdhub-buttons'
+                    )
 
-            apibox = gr.Textbox(
-                show_label=False,
-                interactive=True,
-                placeholder='imgchest API key',
-                max_lines=1,
-                elem_id='SDHub-Gallery-ImgChest-API',
-                elem_classes='sdhub-input'
-            )
+                    loadbtn = gr.Button(
+                        'Load',
+                        variant='primary',
+                        elem_id='SDHub-Gallery-ImgChest-Load-Button',
+                        elem_classes='sdhub-buttons'
+                    )
 
-            with FormRow(elem_classes='sdhub-row'):
-                savebtn = gr.Button(
-                    'Save',
-                    variant='primary',
-                    elem_id='SDHub-Gallery-ImgChest-Save-Button',
-                    elem_classes='sdhub-buttons'
-                )
-
-                loadbtn = gr.Button(
-                    'Load',
-                    variant='primary',
-                    elem_id='SDHub-Gallery-ImgChest-Load-Button',
-                    elem_classes='sdhub-buttons'
-                )
-
-        savebtn.click(fn=Saveimgchest, inputs=[privacyset, nsfwset, apibox], outputs=[privacyset, nsfwset, apibox])
-        loadbtn.click(fn=Loadimgchest, inputs=[], outputs=[privacyset, nsfwset, apibox])
+            savebtn.click(fn=Saveimgchest, inputs=[privacyset, nsfwset, apibox], outputs=[privacyset, nsfwset, apibox])
+            loadbtn.click(fn=Loadimgchest, inputs=[], outputs=[privacyset, nsfwset, apibox])
 
     with gr.TabItem('Gallery', elem_id='SDHub-Gallery-Tab'):
         with FormRow(equal_height=False, elem_id='SDHub-Gallery-Imageinfo-Row'):
