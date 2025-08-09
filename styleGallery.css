@@ -105,6 +105,7 @@ body.sdhub-body-no-scrolling {
 #SDHub-Gallery-Tab-Button-Row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 20px;
   position: sticky;
@@ -147,7 +148,6 @@ body.sdhub-body-no-scrolling {
   cursor: default;
   box-shadow: var(--sdhub-box-shadow-2);
   color: var(--sdhub-gallery-items-color);
-  transition: .3s ease;
 }
 
 #SDHub-Gallery-Tab-Button-Row .sdhub-gallery-tab-button:not(.selected):hover {
@@ -726,13 +726,12 @@ body.sdhub-body-no-scrolling {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  row-gap: 12px;
   position: relative;
   left: 0;
   right: 0;
   max-height: calc(100vh + 400px);
   width: 100%;
-  padding: 15px 10px;
+  padding: 15px;
   border: 0;
   margin: 0;
   border-radius: 0;
@@ -1333,10 +1332,9 @@ body.sdhub-body-no-scrolling {
   align-items: center;
   justify-content: center;
   position: relative;
-  height: 90px;
+  height: 80px;
   width: 100%;
   margin: 0;
-  margin-bottom: 10px;
 }
 
 #SDHub-Gallery-Imageinfo-Spinner {

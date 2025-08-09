@@ -382,7 +382,7 @@ function SDHubGalleryContextSubmenu() {
 
 function SDHubGaleryContextImage(v) {
   SDHubGalleryContextMenuClose();
-  const path = window.SDHubImagePath, img = document.querySelector(`img[data-image='${path}']`);
+  const path = window.SDHubImg = window.SDHubImagePath, img = document.querySelector(`img[data-image='${path}']`);
   if (v && img) img.classList.add('sdhub-gallery-img-pulse'), setTimeout(() => img.classList.remove('sdhub-gallery-img-pulse'), 600);
   return { img, path };
 }
@@ -484,7 +484,7 @@ async function SDHubGalleryImageInfo(imgEL) {
     });
 
     window.SDHubGallerySendImageInfo = null;
-    window.SDHubImagePath = imgEL.getAttribute('data-image');
+    window.SDHubImagePath = window.SDHubImg = imgEL.getAttribute('data-image');
     await SDHubGalleryUpdateImageInput(input, window.SDHubImagePath);
 
     window.SDHubGalleryDisplayImageInfo = () => {
@@ -970,7 +970,7 @@ function SDHubCreateGallery() {
 async function SDHubGalleryWatchNewImage() {
   try {
     const { images } = await fetch(`${SDHubGalleryBase}/new-image`).then(r => r.json());
-    if (!images?.length) return;
+    if (!images || !Array.isArray(images) || images.length === 0) return;
 
     const gallery = new Map();
 
@@ -993,16 +993,14 @@ async function SDHubGalleryWatchNewImage() {
     await fetch(`${SDHubGalleryBase}/loaded`, { method: 'POST' });
 
   } catch (err) {
-    console.error("Error fetching new images:", err);
+    console.error('Error fetching new images:', err);
   }
 }
 
 async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
   let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0'),
   imgNames = [],
-  imgPaths = [],
-  loaded = 0,
-  selectedTab = false;
+  imgPaths = [];
 
   const tabMap = new Map();
 
@@ -1011,10 +1009,8 @@ async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
     prefix = whichGallery.split('_')[0],
     whichTab =
       whichGallery === 'extras_gallery'
-        ? 'extras-images'
-        : grid
-        ? `${prefix}-grids`
-        : `${prefix}-images`;
+        ? 'extras-images' : grid
+          ? `${prefix}-grids` : `${prefix}-images`;
 
     const newImgBox = imgBox.cloneNode(true);
     let newId = `SDHub-Gallery-Image-Box-${SDHubGalleryTabImageIndex++}`;
@@ -1040,27 +1036,27 @@ async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
     wrapper = TabCon.querySelector(`.${sdhgp}-wrapper`),
     imageBoxes = [];
 
+    let loaded = 0,
+    selectedTab = false;
+
     for (const { newImgBox, imgSrc } of images) {
       const img = newImgBox.querySelector('img'),
       path = `${SDHubGalleryBase}/image=${imgSrc}`,
+      thumb = `${SDHubGalleryBase}/thumb=${imgSrc.split('?')[0].replace(/\.[^/.]+$/, '')}.jpeg`,
       name = path.split('/').pop().split('?')[0],
       nameBox = newImgBox.querySelector('.sdhub-gallery-img-name'),
       named = decodeURIComponent(name);
-
-      if (nameBox) nameBox.textContent = named;
+      nameBox && (nameBox.textContent = named);
 
       if (img) {
         img.loading = 'lazy';
         img.dataset.image = path;
         img.title = named;
 
-        const thumb = await SDHubGalleryGetNewThumbnail(imgSrc),
+        //const thumb = await SDHubGalleryGetNewThumbnail(imgSrc),
         loadThumb = new Image();
         loadThumb.src = thumb;
-        loadThumb.onload = () => {
-          img.src = thumb;
-          if (++loaded === images.length) SDHubGalleryTabImageCounters();
-        };
+        loadThumb.onload = () => (img.src = thumb, ++loaded === images.length && SDHubGalleryTabImageCounters());
       }
 
       imgNames.push(name);
@@ -1084,7 +1080,6 @@ async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
   }
 
   if (imgNames.length) SDHubGalleryImgChestUpload(imgPaths, imgNames);
-  SDHubGalleryTabImageCounters();
 }
 
 async function SDHubGalleryGetNewThumbnail(src) {

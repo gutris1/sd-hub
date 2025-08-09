@@ -477,7 +477,7 @@ async function SDHubRGBA() {
       </svg>
     `.trim()).replace(/'/g, '%27').replace(/"/g, '%22')}")`;
 
-  S.textContent = `
+  S.textContent += `
     :root { --sdhub-gallery-checkbox-img: ${svg('#000')}; }
     .dark  { --sdhub-gallery-checkbox-img: ${svg('#fff')}; }
   `;

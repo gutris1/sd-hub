@@ -19,6 +19,7 @@ import asyncio
 import zipfile
 import json
 import sys
+import re
 
 from sd_hub.infotext import config, LoadConfig
 from sd_hub.paths import SDHubPaths
@@ -26,24 +27,12 @@ from sd_hub.paths import SDHubPaths
 insecureENV = SDHubPaths.getENV()
 
 BASE = '/sd-hub-gallery'
-CSS = Path(basedir()) / 'styleGallery.css'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
-today = datetime.today().strftime('%Y-%m-%d')
 
 imgList = []
 imgList_List = threading.Event()
 Thumbnails = {}
 imgNew = []
-
-sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
-grid_dirs = [opts.outdir_txt2img_grids, opts.outdir_img2img_grids]
-etc_dirs = [opts.outdir_save, opts.outdir_init_images]
-
-outdir_samples = [Path(opts.outdir_samples) / today] if opts.outdir_samples else []
-outdir_grids = [Path(opts.outdir_grids) / today] if opts.outdir_grids else []
-outdir_extras = [Path(opts.outdir_samples)] if opts.outdir_samples else []
-
-outpath = (outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d])
 
 def Saveimgchest(privacy, nsfw, api):
     d = LoadConfig()
@@ -91,6 +80,17 @@ def getThumbnail(fp, size=512):
         return resize(fp)
 
 def getImage():
+    dates = re.compile(r'\d{2}-\d{2}-\d{4}')
+    sample_dirs = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
+    grid_dirs = [opts.outdir_txt2img_grids, opts.outdir_img2img_grids]
+    etc_dirs = [opts.outdir_save, opts.outdir_init_images]
+
+    outdir_samples = [p for p in Path(opts.outdir_samples).iterdir() if dates.fullmatch(p.name)] if opts.outdir_samples else []
+    outdir_grids = [p for p in Path(opts.outdir_grids).iterdir() if dates.fullmatch(p.name)] if opts.outdir_grids else []
+    outdir_extras = [Path(opts.outdir_samples)] if opts.outdir_samples else []
+
+    outpath = (outdir_samples + outdir_grids + outdir_extras + [Path(d) for d in sample_dirs + grid_dirs + etc_dirs if d])
+
     def listing():
         dirs = [d for d in outpath if d.exists() and d.is_dir()]
         files = []
@@ -110,7 +110,11 @@ def getImage():
             elif path.parent in outdir_extras: query = '?extras'
             else: query = ''
 
-            results.append({'path': f'{BASE}/image={getPath(path)}{query}'})
+            img = f'{BASE}/image={getPath(path)}{query}'
+            thumb = f'{BASE}/thumb={getPath(path.with_suffix(""))}.jpeg'
+            name = path.name
+
+            results.append({'path': img, 'thumb': thumb, 'name': name})
 
         global imgList
         imgList_List.clear()
@@ -128,35 +132,6 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         'Cache-Control': 'public, max-age=31536000, immutable',
         'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
     }
-
-    @app.get(BASE + '/load-setting')
-    async def _():
-        d = LoadConfig()
-        default = {
-            'images-per-page': 100,
-            'thumbnail-shape': 'aspect_ratio',
-            'thumbnail-position': 'center',
-            'thumbnail-layout': 'masonry',
-            'thumbnail-size': 240,
-            'show-filename': False,
-            'show-buttons': False,
-            'image-info-layout': 'full_width',
-            'single-delete-permanent': False,
-            'single-delete-suppress-warning': False,
-            'batch-delete-permanent': False,
-            'batch-delete-suppress-warning': False,
-            'switch-tab-suppress-warning': False
-        }
-
-        return {**default, **d.get('Gallery', {})}
-
-    @app.post(BASE + '/save-setting')
-    async def _(req: Request):
-        c = await req.json()
-        d = LoadConfig()
-        d['Gallery'] = c
-        config.write_text(json.dumps(d, indent=4), encoding='utf-8')
-        return {'status': 'saved'}
 
     @app.get(BASE + '/initial')
     async def _():
@@ -186,6 +161,9 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
     @app.get(BASE + '/new-image')
     async def _():
+        for img in imgNew:
+            fp = Path(img)
+            asyncio.create_task(asyncio.to_thread(getThumbnail, fp))
         return {'images': imgNew}
 
     @app.post(BASE + '/loaded')
@@ -238,6 +216,35 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         async def _():
             privacy, nsfw, api = Loadimgchest()
             return {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
+
+    @app.get(BASE + '/load-setting')
+    async def _():
+        d = LoadConfig()
+        default = {
+            'images-per-page': 100,
+            'thumbnail-shape': 'aspect_ratio',
+            'thumbnail-position': 'center',
+            'thumbnail-layout': 'masonry',
+            'thumbnail-size': 240,
+            'show-filename': False,
+            'show-buttons': False,
+            'image-info-layout': 'full_width',
+            'single-delete-permanent': False,
+            'single-delete-suppress-warning': False,
+            'batch-delete-permanent': False,
+            'batch-delete-suppress-warning': False,
+            'switch-tab-suppress-warning': False
+        }
+
+        return {**default, **d.get('Gallery', {})}
+
+    @app.post(BASE + '/save-setting')
+    async def _(req: Request):
+        c = await req.json()
+        d = LoadConfig()
+        d['Gallery'] = c
+        config.write_text(json.dumps(d, indent=4), encoding='utf-8')
+        return {'status': 'saved'}
 
 def GalleryTab():
     if insecureENV:

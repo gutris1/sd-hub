@@ -283,18 +283,21 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   rightNav.onclick = () => nav(true);
 
   SettingButton.onclick = () => {
+    Setting.style.display = 'flex';
     rightNav.classList.add(navON);
     document.body.classList.add(SDHubBnS);
     SettingButton.style.transform = 'rotate(-360deg)';
     SDHubGalleryApplySettings();
     SDHubGalleryContextMenuClose();
 
-    Setting.style.display = 'flex';
-    Setting.focus();
-
     requestAnimationFrame(() => {
-      Setting.style.opacity = SettingBox.style.opacity = '1';
-      SettingBox.style.transform = sdhubScale;
+      void Setting.offsetHeight;
+      Setting.focus();
+
+      setTimeout(() => {
+        Setting.style.opacity = SettingBox.style.opacity = '1';
+        SettingBox.style.transform = sdhubScale;
+      }, 100);
     });
   };
 

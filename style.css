@@ -295,8 +295,12 @@
   max-width: max-content;
 }
 
-.gradio-container-4-40-0 #SDHub-Uploader-Radio-Box .svelte-1kzox3m,
-:not(.gradio-container-4-40-0) #SDHub-Uploader-Radio-Box > div:nth-of-type(2) {
+.gradio-container-4-40-0 #SDHub-Uploader-Tab > div > .form {
+  position: relative !important;
+  margin-top: -10px !important;
+}
+
+.gradio-container-4-40-0 #SDHub-Uploader-Radio-Box > .wrap {
   margin-top: -3px !important;
 }
 

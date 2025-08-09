@@ -18,12 +18,12 @@ async function SDHubGalleryParser() {
   updateInput(RawOutput);
   setTimeout(() => window.SDHubGallerySendImageInfo?.(), 200);
   HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
+  window.SDHubImg = null;
 }
 
 async function SDHubGalleryPlainTextToHTML(inputs) {
-  const { SharedParserEncryptInfo: EncryptInfo, SharedParserSha256Info: Sha256Info, 
-          SharedParserNaiSourceInfo: NaiSourceInfo, SharedParserSoftwareInfo: SoftwareInfo,
-          SharedParserExtrasInfo: ExtrasInfo, SharedParserPostProcessingInfo: PostProcessingInfo
+  const { SharedParserExtrasInfo: ExtrasInfo, SharedParserPostProcessingInfo: PostProcessingInfo,
+          SharedParserEncryptInfo: EncryptInfo, SharedParserSha256Info: Sha256Info, SharedParserNaiSourceInfo: NaiSourceInfo,
         } = window,
 
   SendButton = document.getElementById(`${SDHGiI}-SendButton`),
@@ -117,6 +117,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     const hashes = process.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/);
     if (hashes?.[1]) paramsText = paramsText.replace(hashes[0], '').trim();
     if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
+    SharedVersionParser(paramsText);
 
     modelOutput = `<div id='${SDHGiI}-Spinner-Wrapper'><div id='${SDHGiI}-Spinner'>${SDHubGallerySVG_Spinner}</div></div>`;
 
@@ -140,9 +141,9 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   }
 
   const sections = [
-    [titles.prompt, promptText], [titles.negativePrompt, negativePromptText], [titles.params, paramsText],
-    [titles.postProcessing, ExtrasInfo], [titles.postProcessing, PostProcessingInfo], [titles.models, modelOutput],
-    [titles.software, SoftwareInfo], [titles.encrypt, EncryptInfo], [titles.sha, Sha256Info], [titles.source, NaiSourceInfo]
+    [titles.prompt, promptText], [titles.negativePrompt, negativePromptText], [titles.params, paramsText], [titles.models, modelOutput],
+    [titles.postProcessing, ExtrasInfo], [titles.postProcessing, PostProcessingInfo], [titles.software, window.SharedParserSoftwareInfo],
+    [titles.encrypt, EncryptInfo], [titles.sha, Sha256Info], [titles.source, NaiSourceInfo]
   ];
 
   return sections.filter(([_, content]) => content?.trim()).map(([title, content]) => createSection(title, content)).join('');
@@ -186,4 +187,7 @@ function SDHubGallerySendButton(id) {
     cb = document.getElementById(`script_${id.replace('_tab', '')}_adetailer_ad_main_accordion-visible-checkbox`);
     if (ADmodel && cb?.checked === false) cb.click();
   }
+
+  if (document.querySelector('.gradio-container-4-40-0') && id.includes('extras_tab'))
+    setTimeout(() => document.getElementById('tab_extras-button').click(), 500);
 }
