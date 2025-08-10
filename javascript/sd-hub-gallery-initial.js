@@ -73,8 +73,8 @@ function SDHubGalleryDOMLoaded() {
   });
 
   const img = SDHubCreateEL('img', { class: 'sdhub-gallery-img', src: 'https://huggingface.co/gutris1/webui/resolve/main/misc/card-no-preview.png' }),
-  checkbox = SDHubCreateEL('span', { class: ['sdhub-gallery-img-btn-checkbox', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_SelectImage }),
   ContextBtn = SDHubCreateEL('span', { class: ['sdhub-gallery-img-btn-contextmenu', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_ImageButton }),
+  CheckBtn = SDHubCreateEL('span', { class: ['sdhub-gallery-img-btn-checkbox', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_SelectImage }),
   ViewerBtn = SDHubCreateEL('span', { 
     class: ['sdhub-gallery-img-btn-imageviewer', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_Image,
     title: SDHubGetTranslation('image_viewer')
@@ -82,7 +82,7 @@ function SDHubGalleryDOMLoaded() {
 
   imgName = SDHubCreateEL('div', { class: 'sdhub-gallery-img-name' }),
   eFrame = SDHubCreateEL('div', { class: 'sdhub-gallery-img-emptyframe' }),
-  imgWrap = SDHubCreateEL('div', { class: 'sdhub-gallery-img-wrapper', children: [img, checkbox, ContextBtn, ViewerBtn, imgName, eFrame] }),
+  imgWrap = SDHubCreateEL('div', { class: 'sdhub-gallery-img-wrapper', children: [img, ContextBtn, CheckBtn, ViewerBtn, imgName, eFrame] }),
 
   imgBor = SDHubCreateEL('div', { class: 'sdhub-gallery-img-border' }),
   imgCon = SDHubCreateEL('div', { class: 'sdhub-gallery-img-container', children: [imgWrap, imgBor] }),

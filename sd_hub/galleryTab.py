@@ -103,16 +103,16 @@ def getImage():
         getThumbnail(files)
 
         results = []
-        for path in files:
-            src = str(path.parent)
+        for fp in files:
+            src = str(fp.parent)
             if src == opts.outdir_save: query = '?save'
             elif src == opts.outdir_init_images: query = '?init'
-            elif path.parent in outdir_extras: query = '?extras'
+            elif fp.parent in outdir_extras: query = '?extras'
             else: query = ''
 
-            img = f'{BASE}/image={getPath(path)}{query}'
-            thumb = f'{BASE}/thumb={getPath(path.with_suffix(""))}.jpeg'
-            name = path.name
+            img = f'{BASE}/image={getPath(fp)}{query}'
+            thumb = f'{BASE}/thumb={getPath(fp.with_suffix(""))}.jpeg'
+            name = fp.name
 
             results.append({'path': img, 'thumb': thumb, 'name': name})
 
@@ -159,17 +159,26 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
-    @app.get(BASE + '/new-image')
-    async def _():
-        for img in imgNew:
-            fp = Path(img)
-            asyncio.create_task(asyncio.to_thread(getThumbnail, fp))
-        return {'images': imgNew}
-
     @app.post(BASE + '/loaded')
     async def _():
         imgNew.clear()
         return {'message': 'cleared'}
+
+    @app.get(BASE + '/new-image')
+    async def _():
+        results = []
+
+        for img in imgNew:
+            fp = Path(img)
+            asyncio.create_task(asyncio.to_thread(getThumbnail, fp))
+
+            results.append({
+                'path': f'{BASE}/image={getPath(fp)}',
+                'thumb': f'{BASE}/thumb={getPath(fp.with_suffix(""))}.jpeg',
+                'name': fp.name
+            })
+
+        return {'images': results}
 
     def on_saved(params):
         path = str(Path(params.filename).absolute())

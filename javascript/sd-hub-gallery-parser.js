@@ -117,7 +117,6 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     const hashes = process.slice(hashesIndex).match(/Hashes:\s*(\{.*?\})(,\s*)?/);
     if (hashes?.[1]) paramsText = paramsText.replace(hashes[0], '').trim();
     if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
-    SharedVersionParser(paramsText);
 
     modelOutput = `<div id='${SDHGiI}-Spinner-Wrapper'><div id='${SDHGiI}-Spinner'>${SDHubGallerySVG_Spinner}</div></div>`;
 
@@ -175,7 +174,7 @@ function SDHubGalleryCopyButtonEvent(e) {
 
     if (text) CopyText(text, e.target);
   }
-}
+} 
 
 function SDHubGallerySendButton(id) {
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -184,8 +183,19 @@ function SDHubGallerySendButton(id) {
   if (['txt2img_tab', 'img2img_tab'].includes(id)) {
     const OutputRaw = window.SDHubGalleryImageInfoRaw,
     ADmodel = OutputRaw?.includes('ADetailer model'),
-    cb = document.getElementById(`script_${id.replace('_tab', '')}_adetailer_ad_main_accordion-visible-checkbox`);
-    if (ADmodel && cb?.checked === false) cb.click();
+    mahiro = OutputRaw?.includes('mahiro_cfg_enabled: True');
+
+    if (ADmodel) {
+      const i = `script_${id.replace('_tab', '')}_adetailer_ad_main_accordion-visible-checkbox`,
+      cb = document.getElementById(i);
+      if (cb && !cb.checked) cb.click();
+    }
+
+    if (mahiro) {
+      const i = `#${id.replace('_tab', '')}_script_container span`,
+      cb = Array.from(document.querySelectorAll(i)).find(s => s.textContent.trim() === 'Enable Mahiro CFG')?.previousElementSibling;
+      if (cb && !cb.checked) cb.click();
+    }
   }
 
   if (document.querySelector('.gradio-container-4-40-0') && id.includes('extras_tab'))

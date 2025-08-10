@@ -430,6 +430,13 @@ async function SDHubGalleryContextMenuButton(v) {
 }
 
 async function SDHubGallerySendImage(v) {
+  const set = (e, s) => e && Object.assign(e.style, s),
+  submenu = document.getElementById('SDHub-Gallery-ContextMenu-SubMenu-SendTo'),
+  ulsub = submenu?.querySelector('ul');
+
+  set(submenu, { transition: 'transform 150ms ease', transform: 'scale(0.9)' });
+  set(ulsub, { transition: 'opacity 150ms ease', opacity: '0' });
+
   const { path } = SDHubGaleryContextImage(v);
 
   if (v === 'uploader') {
@@ -974,22 +981,25 @@ async function SDHubGalleryWatchNewImage() {
 
     const gallery = new Map();
 
-    for (const imgPath of images) {
-      if (SDHubGalleryNewImageSrc.has(imgPath)) continue;
-      SDHubGalleryNewImageSrc.add(imgPath);
-      const tab = SDHubGalleryTabList.find(t => imgPath.includes(`/${t}/`)),
+    for (const { path, thumb, name } of images) {
+      if (SDHubGalleryNewImageSrc.has(path)) continue;
+      SDHubGalleryNewImageSrc.add(path);
+
+      const tab = SDHubGalleryTabList.find(t => path.includes(`/${t}/`)),
       whichGallery =
-        tab.startsWith('txt2img') ? 'txt2img_gallery' :
-        tab.startsWith('img2img') ? 'img2img_gallery' :
-        tab.startsWith('extras')  ? 'extras_gallery' :
+        tab?.startsWith('txt2img') ? 'txt2img_gallery' :
+        tab?.startsWith('img2img') ? 'img2img_gallery' :
+        tab?.startsWith('extras')  ? 'extras_gallery' :
         '';
 
       if (!whichGallery) continue;
       if (!gallery.has(whichGallery)) gallery.set(whichGallery, []);
-      gallery.get(whichGallery).push(imgPath);
+      gallery.get(whichGallery).push({ path, thumb, name });
     }
 
-    for (const [whichGallery, paths] of gallery) await SDHubGalleryGetNewImage(whichGallery, paths);
+    for (const [whichGallery, imageObjs] of gallery)
+      await SDHubGalleryGetNewImage(whichGallery, imageObjs);
+
     await fetch(`${SDHubGalleryBase}/loaded`, { method: 'POST' });
 
   } catch (err) {
@@ -997,15 +1007,15 @@ async function SDHubGalleryWatchNewImage() {
   }
 }
 
-async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
+async function SDHubGalleryGetNewImage(whichGallery, imagesToAdd = []) {
   let imgBox = document.getElementById('SDHub-Gallery-Image-Box-0'),
   imgNames = [],
   imgPaths = [];
 
   const tabMap = new Map();
 
-  for (let imgSrc of imgPathsToAdd) {
-    const grid = imgSrc.includes('grid-'),
+  for (let { path, thumb, name } of imagesToAdd) {
+    const grid = path.includes('grid-'),
     prefix = whichGallery.split('_')[0],
     whichTab =
       whichGallery === 'extras_gallery'
@@ -1019,7 +1029,7 @@ async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
     SDHubGalleryImageButtonEvents(newImgBox);
 
     if (!tabMap.has(whichTab)) tabMap.set(whichTab, []);
-    tabMap.get(whichTab).push({ newImgBox, imgSrc });
+    tabMap.get(whichTab).push({ newImgBox, path, thumb, name });
   }
 
   const tabs = SDHubGalleryTabList,
@@ -1039,11 +1049,8 @@ async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
     let loaded = 0,
     selectedTab = false;
 
-    for (const { newImgBox, imgSrc } of images) {
+    for (const { newImgBox, path, thumb, name } of images) {
       const img = newImgBox.querySelector('img'),
-      path = `${SDHubGalleryBase}/image=${imgSrc}`,
-      thumb = `${SDHubGalleryBase}/thumb=${imgSrc.split('?')[0].replace(/\.[^/.]+$/, '')}.jpeg`,
-      name = path.split('/').pop().split('?')[0],
       nameBox = newImgBox.querySelector('.sdhub-gallery-img-name'),
       named = decodeURIComponent(name);
       nameBox && (nameBox.textContent = named);
@@ -1053,10 +1060,12 @@ async function SDHubGalleryGetNewImage(whichGallery, imgPathsToAdd = []) {
         img.dataset.image = path;
         img.title = named;
 
-        //const thumb = await SDHubGalleryGetNewThumbnail(imgSrc),
-        loadThumb = new Image();
+        const loadThumb = new Image();
         loadThumb.src = thumb;
-        loadThumb.onload = () => (img.src = thumb, ++loaded === images.length && SDHubGalleryTabImageCounters());
+        loadThumb.onload = () => {
+          img.src = thumb;
+          ++loaded === images.length && SDHubGalleryTabImageCounters();
+        };
       }
 
       imgNames.push(name);
