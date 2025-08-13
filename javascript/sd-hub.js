@@ -122,6 +122,9 @@ async function SDHubTabLoaded() {
       input && (input.value = v, updateInput(input));
     });
   } catch (e) { console.error('Error loading info:', e); }
+
+  const table4 = document.querySelector('.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > div > table');
+  table4 && (table4.style.opacity = '0', table4.style.pointerEvents = 'none');
 }
 
 function SDHubEventListener() {
@@ -154,9 +157,16 @@ function SDHubEventListener() {
     if (c && k === 's' && C(Tab.textEditor)) (e.preventDefault(), Button.textEditor?.click());
   });
 
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', e => {
     const td = e.target.closest('#SDHub-Tag-Dataframe td'), text = td?.querySelector('span')?.textContent;
-    if (text) (navigator.clipboard.writeText(text), td.classList.add('pulse-td'), setTimeout(() => td.classList.remove('pulse-td'), 2000));
+    if (text) {
+      navigator.clipboard.writeText(text);
+      td.style.transition = 'all .5s ease';
+      void td.offsetWidth;
+      td.classList.add('pulse-td');
+      setTimeout(() => td.classList.remove('pulse-td'), 400);
+      setTimeout(() => td.style.transition = '', 1000);
+    }
   });
 
   const Inputs = {

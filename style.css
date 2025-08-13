@@ -1,28 +1,37 @@
 :root {
   --sdhub-scale: 1.0001;
   --sdhub-border-color: #000;
-  --sdhub-box-shadow: 0 0 1px 1px var(--sdhub-border-color);
+  --sdhub-box-shadow: inset 0 0 1px 1px #000;
+  --sdhub-box-shadow-focus-hover: inset 0 0 1px 1px var(--primary-500), inset 0 0 5px 0 var(--primary-500), 0 0 5px 0 var(--primary-500);
+  --sdhub-box-shadow-primy: inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400), 0 0 10px 1px var(--primary-400);
   --sdhub-box-shadow-0: 0 0 0 0 #fff;
   --sdhub-box-shadow-1: inset 0 0 1px 0 var(--primary-400), 0 0 1px 1px var(--primary-400), 0 0 3px 1px var(--primary-400);
-  --sdhub-box-shadow-2: inset 0 0 5px 0 var(--primary-400), 0 0 1px 1px var(--primary-400), 0 0 3px 1px var(--primary-400);
+  --sdhub-box-shadow-2: 0 0 3px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400);
   --sdhub-box-shadow-radio-label: inset 0 0 5px 0 var(--sdhub-border-color);
-  --sdhub-box-shadow-primary: inset 0 0 8px 0 var(--primary-400), 0 0 8px 0 var(--primary-400);
-  --sdhub-button-box-shadow: inset 0 0 10px 2px var(--primary-400), var(--sdhub-box-shadow-1);
-  --sdhub-button-box-shadow-hover: inset 0 0 15px 2px var(--primary-400), var(--sdhub-box-shadow-1);
+  --sdhub-button-box-shadow: 0 0 3px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-400), inset 0 0 16px 1px var(--primary-400);
+  --sdhub-button-box-shadow-hover: 0 0 3px 0 var(--primary-500), inset 0 0 1px 1px var(--primary-500), inset 0 0 16px 2px var(--primary-500);
   --sdhub-secondary-button-background: var(--input-background-fill-hover);
   --sdhub-radio-border: 1px solid #000;
   --sdhub-radio-input-not-checked: drop-shadow(0 0 2px var(--sdhub-border-color));
   --sdhub-tab-button-box-shadow: inset 0 0 2px 1px var(--primary-400), 0 0 2px 1px var(--primary-400);
   --sdhub-tab-button-box-shadow-hover: inset 0 0 2px 1px var(--primary-500), 0 0 2px 1px var(--primary-500);
+  --sdhub-accordion-border: inset 0 0 1px 1px #000;
+  --sdhub-table-head: var(--table-odd-background-fill);
+  --sdhub-table-odd: var(--table-even-background-fill);
+  --sdhub-table-even: var(--table-odd-background-fill);
 }
 
 .dark {
   --sdhub-border-color: #303030;
-  --sdhub-box-shadow: 0 0 1px 1px transparent;
+  --sdhub-box-shadow: inset 0 0 1px 1px transparent;
   --sdhub-box-shadow-radio-label: inset 0 0 0 0 #000;
   --sdhub-secondary-button-background: var(--button-secondary-background-fill);
   --sdhub-radio-border: 1px solid var(--input-background-fill);
   --sdhub-radio-input-not-checked: drop-shadow(0 0 2px transparent);
+  --sdhub-accordion-border: inset 0 0 1px 1px var(--block-border-color);
+  --sdhub-table-head: var(--table-odd-background-fill);
+  --sdhub-table-odd: var(--table-even-background-fill);
+  --sdhub-table-even: var(--table-odd-background-fill);
 }
 
 #tab_SDHub {
@@ -206,7 +215,7 @@
 }
 
 #SDHub-Tab .sdhub-checkbox input:checked {
-  box-shadow: inset 0 0 1px 1px var(--primary-500), 0 0 17px 2px var(--primary-500);
+  box-shadow: inset 0 0 1px 1px var(--primary-500), 0 0 1px 1px var(--primary-400), 0 0 17px 3px var(--primary-500);
   background-image: var(--sdhub-gallery-checkbox-img);
   background-color: var(--primary-500);
 }
@@ -238,7 +247,7 @@
 #SDHub-Tab .sdhub-input textarea:focus,
 #SDHub-Tab .sdhub-input input:focus {
   border-color: var(--primary-500);
-  box-shadow: 0 0 7px 1px var(--primary-500), inset 0 0 1px 1px var(--primary-500);
+  box-shadow: var(--sdhub-box-shadow-focus-hover);
 }
 
 #SDHub-Tab .sdhub-input input:hover {
@@ -246,24 +255,30 @@
 }
 
 #SDHub-Tab .sdhub-radio label {
-  border: var(--sdhub-radio-border);
+  border: 0 !important;
+  box-shadow: var(--sdhub-box-shadow);
   transition: .2s;
+}
+
+#SDHub-Tab .sdhub-radio label.selected {
+  box-shadow: var(--sdhub-box-shadow-focus-hover);
 }
 
 #SDHub-Tab .sdhub-radio label > input,
 #SDHub-Tab .sdhub-radio label > span {
-  pointer-events: none;
+  border: 0 !important;
   transition: .2s, background-color 0s;
+  pointer-events: none;
 }
 
 #SDHub-Tab .sdhub-radio label:hover {
   border-color: var(--primary-500);
-  box-shadow: 0 0 3px 0 var(--primary-500), inset 0 0 5px 0 var(--primary-500);
+  box-shadow: var(--sdhub-box-shadow-focus-hover);
   cursor: pointer;
 }
 
 #SDHub-Tab .sdhub-radio label:hover > input:not(:checked) {
-  border-color: var(--primary-500);
+  box-shadow: var(--sdhub-box-shadow-focus-hover);
 }
 
 #SDHub-Tab .sdhub-radio label > input:checked,
@@ -278,10 +293,6 @@
   color: var(--primary-500);
 }
 
-.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {
-  overflow: hidden;
-}
-
 #SDHub-Uploader-Username-Box,
 #SDHub-Uploader-Repo-Box {
   max-width: 240px;
@@ -293,15 +304,12 @@
 
 #SDHub-Uploader-Radio-Box {
   max-width: max-content;
+  margin-top: -1px !important;
 }
 
 .gradio-container-4-40-0 #SDHub-Uploader-Tab > div > .form {
   position: relative !important;
   margin-top: -10px !important;
-}
-
-.gradio-container-4-40-0 #SDHub-Uploader-Radio-Box > .wrap {
-  margin-top: -3px !important;
 }
 
 #SDHub-Repo {
@@ -359,21 +367,16 @@
   pointer-events: none;
 }
 
-:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe,
-:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div,
-:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe table {
-  overflow: visible !important;
-}
-
 #SDHub-Tab .sdhub-accordion {
-  border: 1px solid var(--sdhub-border-color) !important;
-  box-shadow: inset 0 0 10px 1px transparent, 0 0 10px 1px transparent;
+  border: 0 !important;
+  box-shadow: var(--sdhub-accordion-border);
   transition: .3s ease;
 }
 
 #SDHub-Tab .sdhub-accordion > .label-wrap {
   padding: 8px 0;
   margin: -8px 0;
+  outline: none;
 }
 
 #SDHub-Tab .sdhub-accordion > :nth-child(3) {
@@ -387,8 +390,39 @@
 
 #SDHub-Tab .sdhub-accordion:hover,
 #SDHub-Tab .sdhub-accordion.sdhub-accordion-open {
-  border-color: var(--primary-400) !important;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: var(--sdhub-box-shadow-primy);
+}
+
+#SDHub-Tag-Dataframe {
+  border: 0 !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe,
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div,
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe table {
+  overflow: visible !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > thead > tr {
+  background: var(--sdhub-table-head) !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > thead > tr > th {
+  background: transparent !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > tbody > tr:nth-child(odd) {
+  background: var(--sdhub-table-odd) !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > tbody > tr:nth-child(even) {
+  background: var(--sdhub-table-even) !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > .table-wrap > div {
+  border: 1px solid #000;
+  border-radius: var(--table-radius);
+  overflow: hidden;
 }
 
 #SDHub-Tag-Dataframe tbody {
@@ -396,20 +430,16 @@
   z-index: 11;
 }
 
-#SDHub-Tag-Dataframe td {
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > .table-wrap,
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe td {
   border: 0;
 }
 
 #SDHub-Tag-Dataframe td:hover {
-  filter: drop-shadow(0 0 5px var(--primary-400));
-  box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 10px 1px var(--primary-400);
-  color: var(--background-fill-primary);
-  background: var(--button-primary-background-fill);
-}
-
-#SDHub-Tag-Dataframe table {
-  border-collapse: separate;
-  cursor: auto;
+  box-shadow: inset 0 0 7px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-500);
+  color: var(--primary-400);
+  background: transparent;
+  filter: drop-shadow(0 0 4px var(--primary-500));
 }
 
 #SDHub-Tag-Dataframe thead {
@@ -422,38 +452,76 @@
 
 #SDHub-Tag-Dataframe thead svg,
 #SDHub-Tag-Dataframe td {
+  box-shadow: inset 0 0 0 0 transparent;
   pointer-events: auto;
 }
 
 #SDHub-Tag-Dataframe td.pulse-td {
-  animation: pulse-td-box 2s alternate forwards;
+  box-shadow: inset 0 0 7px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-500);
+  color: var(--background-fill-primary);
+  background: var(--primary-400);
+  filter: drop-shadow(0 0 4px var(--primary-500));
 }
 
-@keyframes pulse-td-box {
-  0% {
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 10px 1px var(--primary-400);
-    color: var(--background-fill-primary);
-    background: var(--button-primary-background-fill);
-  }
-  33% {
-    filter: drop-shadow(0 0 0 transparent);
-    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 0 0 var(--primary-400);
-    color: var(--body-text-color);
-    background: transparent;
-  }
-  66% {
-    filter: drop-shadow(0 0 5px var(--primary-400));
-    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 10px 1px var(--primary-400);
-    color: var(--background-fill-primary);
-    background: var(--button-primary-background-fill);
-  }
-  100% {
-    filter: drop-shadow(0 0 0 transparent);
-    box-shadow: inset 0 0 0 1px var(--ring-color), 0 0 0 0 var(--primary-400);
-    color: var(--body-text-color);
-    background: transparent;
-  }
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe table {
+  border-collapse: collapse !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > thead > tr,
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > tbody > tr {
+  border: 0;
+  border-bottom: 1px solid #000;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > tbody > tr:last-child {
+  border-bottom: 0 !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > thead > tr > th:nth-child(1),
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe > div > div > div > table > tbody > tr > td:nth-child(1) {
+  border: 0;
+  border-right: 1px solid #000;
+}
+
+.gradio-container-4-40-0 #SDHub-Tab .sdhub-accordion > button > span {
+  color: var(--primary-400) !important;
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe {
+  overflow: visible !important;
+  padding: 0 3px;
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > .table-wrap {
+  border: 0;
+  overflow: visible;
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > div > table,
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {
+  border: 1px solid #000;
+  border-collapse: collapse !important;
+  overflow: visible;
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table {
+  height: inherit !important;
+  border-radius: var(--table-radius);
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table > thead > tr {
+  border: 0;
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table > tbody > tr {
+  border: 0;
+  border-top: 1px solid #000;
+}
+
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table > thead > tr > th:nth-child(2),
+.gradio-container-4-40-0 #SDHub-Tag-Dataframe table.table > tbody > tr > td:nth-child(2) {
+  border: 0;
+  border-left: 1px solid #000;
 }
 
 #SDHub-Texteditor-Row {

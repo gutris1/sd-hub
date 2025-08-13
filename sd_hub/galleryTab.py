@@ -26,7 +26,7 @@ from sd_hub.paths import SDHubPaths
 
 insecureENV = SDHubPaths.getENV()
 
-BASE = '/sd-hub-gallery'
+BASE = '/sd-hub-gallery-'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 
 imgList = []
@@ -93,33 +93,33 @@ def getImage():
 
     def listing():
         dirs = [d for d in outpath if d.exists() and d.is_dir()]
-        files = []
+        f = []
 
         for d in dirs:
-            if d in outdir_extras: files.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
-            else: files.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
+            if d in outdir_extras: f.extend([p for p in d.glob('*') if p.suffix.lower() in imgEXT])
+            else: f.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
 
-        files.sort(key=lambda p: p.stat().st_mtime_ns)
-        getThumbnail(files)
+        f.sort(key=lambda p: p.stat().st_mtime_ns)
+        getThumbnail(f)
 
-        results = []
-        for fp in files:
+        r = []
+        for fp in f:
             src = str(fp.parent)
             if src == opts.outdir_save: query = '?save'
             elif src == opts.outdir_init_images: query = '?init'
             elif fp.parent in outdir_extras: query = '?extras'
             else: query = ''
 
-            img = f'{BASE}/image={getPath(fp)}{query}'
-            thumb = f'{BASE}/thumb={getPath(fp.with_suffix(""))}.jpeg'
-            name = fp.name
-
-            results.append({'path': img, 'thumb': thumb, 'name': name})
+            r.append({
+                'path': f'{BASE}image={getPath(fp)}{query}',
+                'thumb': f'{BASE}thumb={getPath(fp.with_suffix(""))}.jpeg',
+                'name': fp.name
+            })
 
         global imgList
         imgList_List.clear()
         imgList.clear()
-        imgList.extend(results)
+        imgList.extend(r)
         imgList_List.set()
 
     threading.Thread(target=listing, daemon=True).start()
@@ -133,7 +133,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         'Expires': (datetime.now() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
     }
 
-    @app.get(BASE + '/initial')
+    @app.get(BASE + 'initial')
     async def _():
         try:
             r = await asyncio.to_thread(imgList_List.wait, 3)
@@ -142,43 +142,34 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         except Exception as e:
             return responses.JSONResponse(status_code=500, content={'error': 'Server error', 'detail': str(e)})
 
-    @app.get(BASE + '/thumb={img:path}')
+    @app.get(BASE + 'thumb={img:path}')
     async def _(img: Path):
-        thumb = Thumbnails.get(getPath(img))
-        return responses.Response(content=thumb, headers=headers, media_type='image/jpeg')
+        return responses.Response(content=Thumbnails.get(getPath(img)), headers=headers, media_type='image/jpeg')
 
-    @app.post(BASE + '/new-thumb')
-    async def _(req: Request):
-        fp = Path((await req.json()).get('path'))
-        await asyncio.to_thread(getThumbnail, fp)
-        return {'status': f"{BASE}/thumb={getPath(fp.with_suffix(''))}.jpeg"}
-
-    @app.get(BASE + '/image={img:path}')
+    @app.get(BASE + 'image={img:path}')
     async def _(img: str):
         fp = Path(unquote(img))
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
 
-    @app.post(BASE + '/loaded')
+    @app.get(BASE + 'new-image')
     async def _():
-        imgNew.clear()
-        return {'message': 'cleared'}
+        r = []
+        images = list(imgNew)
 
-    @app.get(BASE + '/new-image')
-    async def _():
-        results = []
-
-        for img in imgNew:
+        for img in images:
             fp = Path(img)
             asyncio.create_task(asyncio.to_thread(getThumbnail, fp))
 
-            results.append({
-                'path': f'{BASE}/image={getPath(fp)}',
-                'thumb': f'{BASE}/thumb={getPath(fp.with_suffix(""))}.jpeg',
+            r.append({
+                'path': f'{BASE}image={getPath(fp)}',
+                'thumb': f'{BASE}thumb={getPath(fp.with_suffix(""))}.jpeg',
                 'name': fp.name
             })
 
-        return {'images': results}
+            imgNew.remove(img)
+
+        return {'images': r}
 
     def on_saved(params):
         path = str(Path(params.filename).absolute())
@@ -194,14 +185,14 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             try:
                 path.unlink() if perm else send2trash(path)
                 Thumbnails.pop(thumb.name, None)
-                imgList = [img for img in imgList if unquote(img['path'].split('/image=')[-1].split('?')[0]) != path.as_posix()]
+                imgList = [img for img in imgList if unquote(img['path'].split('-image=')[-1].split('?')[0]) != path.as_posix()]
                 return True
             except Exception as e:
                 print(f'Error deleting {path}: {e}')
                 return False
         return False
 
-    @app.post(BASE + '/delete')
+    @app.post(BASE + 'delete')
     async def _(req: Request):
         d = await req.json()
         path = Path(d.get('path'))
@@ -209,7 +200,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         perm = d.get('permanent', False)
         return {'status': 'deleted' if deleting(path, thumb, perm) else 'error'}
 
-    @app.post(BASE + '/batch-delete')
+    @app.post(BASE + 'batch-delete')
     async def _(req: Request):
         d = await req.json()
         perm = d[0].get('permanent', False) if d else False
@@ -218,15 +209,16 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             path = Path(i.get('path'))
             thumb = Path(unquote(i.get('thumb', '')))
             deleting(path, thumb, perm)
+
         return {'status': 'deleted'}
 
     if insecureENV:
-        @app.get(BASE + '/imgChest')
+        @app.get(BASE + 'imgChest')
         async def _():
             privacy, nsfw, api = Loadimgchest()
             return {'privacy': privacy, 'nsfw': nsfw, 'api-key': api}
 
-    @app.get(BASE + '/load-setting')
+    @app.get(BASE + 'load-setting')
     async def _():
         d = LoadConfig()
         default = {
@@ -247,7 +239,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
         return {**default, **d.get('Gallery', {})}
 
-    @app.post(BASE + '/save-setting')
+    @app.post(BASE + 'save-setting')
     async def _(req: Request):
         c = await req.json()
         d = LoadConfig()

@@ -73,7 +73,7 @@ function SDHubGalleryDOMLoaded() {
   });
 
   const img = SDHubCreateEL('img', { class: 'sdhub-gallery-img', src: 'https://huggingface.co/gutris1/webui/resolve/main/misc/card-no-preview.png' }),
-  ContextBtn = SDHubCreateEL('span', { class: ['sdhub-gallery-img-btn-contextmenu', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_ImageButton }),
+  ContextBtn = SDHubCreateEL('span', { class: ['sdhub-gallery-img-btn-contextmenu', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_ContextButton }),
   CheckBtn = SDHubCreateEL('span', { class: ['sdhub-gallery-img-btn-checkbox', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_SelectImage }),
   ViewerBtn = SDHubCreateEL('span', { 
     class: ['sdhub-gallery-img-btn-imageviewer', 'sdhub-gallery-img-btn'], html: SDHubGallerySVG_Image,
@@ -81,8 +81,9 @@ function SDHubGalleryDOMLoaded() {
   }),
 
   imgName = SDHubCreateEL('div', { class: 'sdhub-gallery-img-name' }),
-  eFrame = SDHubCreateEL('div', { class: 'sdhub-gallery-img-emptyframe' }),
-  imgWrap = SDHubCreateEL('div', { class: 'sdhub-gallery-img-wrapper', children: [img, ContextBtn, CheckBtn, ViewerBtn, imgName, eFrame] }),
+  imgFrame = SDHubCreateEL('div', { class: 'sdhub-gallery-img-frame' }),
+  imgLayer = SDHubCreateEL('div', { class: 'sdhub-gallery-img-layer' }),
+  imgWrap = SDHubCreateEL('div', { class: 'sdhub-gallery-img-wrapper', children: [img, ContextBtn, CheckBtn, ViewerBtn, imgName, imgFrame, imgLayer] }),
 
   imgBor = SDHubCreateEL('div', { class: 'sdhub-gallery-img-border' }),
   imgCon = SDHubCreateEL('div', { class: 'sdhub-gallery-img-container', children: [imgWrap, imgBor] }),
@@ -538,7 +539,7 @@ async function SDHubGalleryCreateimgChest() {
     imgchestButton.classList.toggle(sdhubDisplay, checked);
   };
 
-  await fetch(`${SDHubGalleryBase}/imgChest`)
+  await fetch(`${SDHubGalleryBase}imgChest`)
     .then(r => r.json())
     .then(d => {
       const Radio = (id, v) => imgchestColumn.querySelector(`${id} label[data-testid='${v}-radio-label']`)?.click();
@@ -571,7 +572,7 @@ async function SDHubGalleryLoadInitial(retry = 1000) {
 
     [infoCon, Spinner].forEach(el => el.classList.add('sdhub-gallery-spinner'));
 
-    const res = await fetch(`${SDHubGalleryBase}/initial`),
+    const res = await fetch(`${SDHubGalleryBase}initial`),
     data = await res.json();
 
     if (data.status === 'waiting') {
@@ -617,8 +618,8 @@ async function SDHubGalleryLoadInitial(retry = 1000) {
 
       imageBoxes = images.map(({ path, thumb, name }) => {
         const newImgBox = imgBox.cloneNode(true);
-        let newId = `SDHub-Gallery-Image-Box-${SDHubGalleryTabImageIndex++}`;
-        while (q(newId)) newId = `SDHub-Gallery-Image-Box-${SDHubGalleryTabImageIndex++}`;
+        let newId = `SDHub-Gallery-Image-Box-${SDHubGalleryImgIndex++}`;
+        while (q(newId)) newId = `SDHub-Gallery-Image-Box-${SDHubGalleryImgIndex++}`;
 
         newImgBox.id = newId;
         SDHubGalleryImageButtonEvents(newImgBox);

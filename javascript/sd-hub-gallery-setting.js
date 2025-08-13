@@ -252,7 +252,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       setTimeout(() => SDHubGalleryLoadInitial(), 100);
     }
 
-    fetch(`${SDHubGalleryBase}/save-setting`, {
+    fetch(`${SDHubGalleryBase}save-setting`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(window.SDHubGallerySettings)
@@ -311,7 +311,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
 }
 
 async function SDHubGalleryLoadSettings() {
-  const v = await (await fetch(`${SDHubGalleryBase}/load-setting`)).json(),
+  const v = await (await fetch(`${SDHubGalleryBase}load-setting`)).json(),
 
   keys = [
     'images-per-page', 'thumbnail-shape', 'thumbnail-position', 'thumbnail-layout',

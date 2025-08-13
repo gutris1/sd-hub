@@ -1,20 +1,24 @@
 var SDHubGallerySVG_ImageButton = `
-  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'
-    width='30px' height='30px'>
+  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' width='30px' height='30px'>
     <path d='M4 6H20M4 12H20M4 18H20' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/>
   </svg>
 `;
 
+var SDHubGallerySVG_ContextButton = `
+  <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30' width='30px' height='30px' fill="currentColor">
+    <path d='M 17.865 17.865 L 25.888 17.865 L 25.888 25.888 L 17.865 25.888 L 17.865 17.865 Z M 4.111 17.865 L 12.134 17.865 L 12.134 25.888 L 4.111 25.888
+    L 4.111 17.865 Z M 17.865 4.111 L 25.888 4.111 L 25.888 12.134 L 17.865 12.134 L 17.865 4.111 Z M 4.111 4.111 L 12.134 4.111 L 12.134 12.134 L 4.111 12.134 L 4.111 4.111 Z'/>
+  </svg>
+`;
+
 var SDHubGallerySVG_Download = `
-  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg'
-    width='32' height='32' viewBox='0 0 32 32'>
+  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>
     <path fill='currentColor' stroke='currentColor' stroke-width='1.8' d='M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4zm0-10 l-1.41-1.41L17 20.17V2h-2v18.17l-7.59-7.58L6 14l10 10l10-10z'/>
   </svg>
 `;
 
 var SDHubGallerySVG_Copy = `
-  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'
-    width='30px' height='30px' viewBox='0 0 24 24' fill='transparent'>
+  <svg class='sdhub-gallery-cm-svg' xmlns='http://www.w3.org/2000/svg' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' width='30px' height='30px' viewBox='0 0 24 24' fill='transparent'>
     <rect x='4.758' y='0.768' width='18.475' height='18.475' rx='2' ry='2'/>
     <circle cx='10.404' cy='6.414' r='1.539'/>
     <polyline points='23.234 13.085 18.102 7.954 6.81 19.244'/>
@@ -24,8 +28,7 @@ var SDHubGallerySVG_Copy = `
 `;
 
 var SDHubGallerySVG_SubArrow = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs">
+  <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs">
     <path d="M9 18l6-6-6-6"/>
   </svg>
 `;

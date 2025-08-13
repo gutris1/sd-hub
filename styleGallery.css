@@ -111,7 +111,7 @@ body.sdhub-body-no-scrolling {
   gap: 20px;
   position: sticky;
   z-index: 2;
-  top: 1px;
+  top: 0;
   min-height: 44px;
   max-width: 100%;
   padding: 5px 50px;
@@ -123,7 +123,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-Tab-Button-Row.sdhub-display {
   border-color: var(--primary-400);
-  box-shadow: inset 0 0 7px 0 var(--primary-400), 0 0 1px 1px var(--primary-400), 0 0 10px 2px var(--primary-400);
+  box-shadow: var(--sdhub-box-shadow-primy);
   background: var(--sdhub-gallery-tab-background);
 }
 
@@ -139,7 +139,7 @@ body.sdhub-body-no-scrolling {
   max-width: 100%;
   border: 0;
   border-radius: 1rem;
-  padding: 3px 15px;
+  padding: 5px 15px;
   color: var(--body-text-color);
   background: transparent;
   transition: .3s ease, box-shadow 0s;
@@ -160,7 +160,7 @@ body.sdhub-body-no-scrolling {
   cursor: pointer;
   position: absolute;
   z-index: 2;
-  top: 0;
+  top: unset;
   height: 44px;
   width: 44px;
   margin: 0;
@@ -198,7 +198,7 @@ body.sdhub-body-no-scrolling {
   cursor: pointer;
   position: sticky;
   z-index: 3;
-  bottom: 1px;
+  bottom: 0;
   width: 44px;
   height: 44px;
   transform: scale(0);
@@ -213,13 +213,14 @@ body.sdhub-body-no-scrolling {
 #SDHub-Tab .sdhub-gallery-arrow-scroll {
   display: flex;
   position: relative;
-  border: 2px solid var(--primary-400);
+  border: 0;
   border-radius: 50%;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: var(--sdhub-box-shadow-2);
   background: var(--sdhub-gallery-background-secondary);
   color: var(--primary-400);
   padding: 0;
   margin: 0;
+  transform: scale(0.85);
   transition: .3s ease;
   overflow: hidden;
 }
@@ -387,10 +388,10 @@ body.sdhub-body-no-scrolling {
   height: 44px;
   width: max-content;
   padding: 6px 20px;
-  border: 1px solid var(--primary-400);
-  border-radius: 8px;
-  box-shadow: var(--sdhub-box-shadow-primary);
-  background: var(--sdhub-gallery-background-secondary);
+  border: 0;
+  border-radius: 12px;
+  box-shadow: var(--sdhub-box-shadow-primy);
+  background: var(--input-background-fill);
   transform: scaleY(0.5);
   transform-origin: center;
   transition: .3s ease;
@@ -547,8 +548,8 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-img-btn-contextmenu > svg {
-  height: 30px;
-  width: 30px;
+  height: 27px;
+  width: 27px;
 }
 
 .sdhub-gallery-img-btn-imageviewer {
@@ -570,7 +571,11 @@ body.sdhub-body-no-scrolling {
   transform: scale(1);
 }
 
-.sdhub-gallery-img-emptyframe {
+.sdhub-gallery-img-box.sdhub-gallery-img-selected .sdhub-gallery-img-btn {
+  color: var(--primary-500);
+}
+
+.sdhub-gallery-img-frame {
   display: block;
   position: absolute;
   inset: 0;
@@ -579,19 +584,49 @@ body.sdhub-body-no-scrolling {
   border: 0;
   box-shadow: var(--sdhub-box-shadow-0);
   opacity: 0;
+  transition: .3s ease;
   pointer-events: none;
   overflow: hidden;
-  transition: .3s ease;
 }
 
-.sdhub-gallery-img-container:hover .sdhub-gallery-img-emptyframe {
+.sdhub-gallery-img-container:hover .sdhub-gallery-img-frame {
   box-shadow: var(--sdhub-box-shadow-0), inset 0 0 15px 3px var(--background-fill-primary);
   opacity: 1;
 }
 
-.sdhub-gallery-img-box.sdhub-gallery-img-selected .sdhub-gallery-img-emptyframe {
+.sdhub-gallery-img-box.sdhub-gallery-img-selected .sdhub-gallery-img-frame {
   box-shadow: var(--sdhub-box-shadow-0), inset 0 0 15px 3px var(--sdhub-gallery-img-selected) !important;
   opacity: 1;
+}
+
+.sdhub-gallery-img-layer {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  backdrop-filter: grayscale(1) blur(1px);
+  transition: .3s ease;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sdhub-gallery-img-layer.sdhub-display {
+  animation: sdhub-img-layer 1s infinite alternate forwards;
+}
+
+@keyframes sdhub-img-layer {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 #SDHub-Gallery-Image-Box-0 {
@@ -628,10 +663,6 @@ body.sdhub-body-no-scrolling {
   .sdhub-gallery-img-container:hover .sdhub-gallery-img-btn {
     transform: scale(1.5);
   }
-}
-
-.sdhub-gallery-img-pulse {
-  filter: brightness(0.5) blur(3px);
 }
 
 /* ############################################################################################################ */
@@ -672,13 +703,13 @@ body.sdhub-body-no-scrolling {
   gap: 1rem;
   position: sticky;
   z-index: 2;
-  bottom: 1px;
+  bottom: 0;
   height: 44px;
   width: 100%;
   border-radius: 1.5rem;
   padding: 5px 10px;
   border: 0;
-  box-shadow: inset 0 0 7px 0 var(--primary-400), 0 0 1px 1px var(--primary-400), 0 0 10px 2px var(--primary-400);
+  box-shadow: var(--sdhub-box-shadow-primy);
   background: var(--sdhub-gallery-tab-background);
 }
 
@@ -724,6 +755,7 @@ body.sdhub-body-no-scrolling {
   transition: .3s ease;
   user-select: none;
   -webkit-user-select: none;
+  filter: blur(0);
 }
 
 .sdhub-gallery-pages {
@@ -757,8 +789,8 @@ body.sdhub-body-no-scrolling {
   position: fixed;
   z-index: 1000;
   transform: scale(0.8);
-  pointer-events: auto;
-  transition: transform .2s ease-out;
+  transition: transform 200ms ease;
+  pointer-events: none;
   will-change: transform;
 }
 
@@ -782,7 +814,7 @@ body.sdhub-body-no-scrolling {
   filter: drop-shadow(0 0 1px rgb(0 0 0 / 30%));
   backdrop-filter: blur(4px);
   opacity: 0;
-  transition: opacity .2s ease-out;
+  transition: opacity 200ms ease;
 }
 
 #SDHub-Gallery-ContextMenu li {
@@ -817,7 +849,7 @@ body.sdhub-body-no-scrolling {
   position: absolute;
   right: 5px;
   margin-right: 0 !important;
-  transition: transform .3s ease;
+  transition: transform .2s ease;
   color: var(--body-text-color) !important;
 }
 
@@ -834,7 +866,8 @@ body.sdhub-body-no-scrolling {
   border: 0;
   border-radius: 0;
   transform: scale(0.8);
-  transition: transform .2s ease-out;
+  transition: transform 200ms ease;
+  pointer-events: none;
 }
 
 #SDHub-Gallery-ContextMenu li > span > svg {
@@ -1380,11 +1413,11 @@ body.sdhub-body-no-scrolling {
   width: 45px;
   padding: 0;
   margin: 0;
-  border: 2px solid var(--primary-400);
+  border: 0;
   border-radius: 50%;
   z-index: 1;
   cursor: pointer;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: var(--sdhub-box-shadow-primy);
   color: var(--primary-400);
   background: var(--sdhub-gallery-background-secondary);
   transform: scale(0);
@@ -1488,9 +1521,9 @@ body.sdhub-body-no-scrolling {
   height: 100%;
   width: 100%;
   padding: 20px 30px;
-  border: 1px solid var(--primary-400);
+  border: 0;
   border-radius: 1rem;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: var(--sdhub-box-shadow-primy);
   background: var(--input-background-fill);
 }
 
@@ -1666,7 +1699,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-ImgChest-Button,
 #SDHub-Gallery-ImgChest-Button path {
-  left: 2px;
+  left: 8px;
   transition: .4s ease !important;
 }
 
@@ -1694,15 +1727,14 @@ body.sdhub-body-no-scrolling {
   left: 2px;
   height: auto;
   width: auto;
-  border: 1px solid var(--primary-400);
+  border: 0;
   border-radius: 1rem;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: 0 0 25px 2px #000;
   background: var(--background-fill-primary);
   opacity: 0;
-  transform: scale(0.5);
+  transform: scale(0.8);
   transform-origin: top left;
-  transition: transform .3s ease, opacity .2s ease;
-  overflow: hidden;
+  transition: transform .3s ease, opacity .25s ease;
   pointer-events: none;
 }
 
@@ -1720,18 +1752,27 @@ body.sdhub-body-no-scrolling {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: 10px;
+  gap: 0;
   position: relative;
-  height: 244px;
-  width: 410px;
+  height: 100%;
+  width: 100%;
+  border-radius: 1rem;
+  box-shadow: 0 0 14px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-400), inset 0 0 8px 0 var(--primary-400);
   padding: 10px;
   will-change: transform;
 }
 
+.gradio-container-4-40-0 #SDHub-Gallery-ImgChest-Wrapper,
+#SDHub-Gallery-ImgChest-Wrapper > .form {
+  gap: .7em;
+  height: max-content;
+}
+
 #SDHub-Gallery-ImgChest-Info {
-  height: 100%;
-  width: 100%;
   text-align: center;
+  height: max-content;
+  width: 100%;
+  margin-bottom: 6px;
   color: var(--body-text-color);
   cursor: default;
 }
@@ -1740,6 +1781,7 @@ body.sdhub-body-no-scrolling {
   color: var(--primary-400) !important;
 }
 
+.gradio-container-4-40-0 #SDHub-Gallery-ImgChest-Info,
 #SDHub-Gallery-ImgChest-Checkbox {
   margin: 0;
 }
@@ -1750,14 +1792,14 @@ body.sdhub-body-no-scrolling {
   width: 100%;
   border: 0;
   border-radius: var(--button-large-radius);
-  box-shadow: var(--sdhub-button-box-shadow);
+  box-shadow: 0 0 5px 0 var(--primary-500), inset 0 0 1px 1px var(--primary-500), inset 0 0 10px 0 var(--primary-500);
   padding: 5px;
-  background-color: var(--background-fill-primary);
+  background-color: transparent;
   background-image: none;
 }
 
 #SDHub-Gallery-ImgChest-Checkbox input:checked {
-  box-shadow: var(--sdhub-button-box-shadow-hover);
+  box-shadow: 0 0 5px 0 var(--primary-500), inset 0 0 1px 1px var(--primary-500), inset 0 0 16px 2px var(--primary-500);
   background: var(--input-background-fill);
 }
 
@@ -1787,18 +1829,18 @@ body.sdhub-body-no-scrolling {
   transition: .4s ease;
 }
 
-#SDHub-Gallery-ImgChest-Privacy input, 
-#SDHub-Gallery-ImgChest-NSFW input {
+#SDHub-Tab #SDHub-Gallery-ImgChest-Privacy input,
+#SDHub-Tab #SDHub-Gallery-ImgChest-NSFW input {
   cursor: pointer;
 }
 
-#SDHub-Gallery-ImgChest-Privacy > span, 
-#SDHub-Gallery-ImgChest-NSFW > span {
+#SDHub-Tab #SDHub-Gallery-ImgChest-Privacy > span, 
+#SDHub-Tab #SDHub-Gallery-ImgChest-NSFW > span {
   cursor: default;
   margin: 0;
 }
 
-#SDHub-Gallery-ImgChest-API input {
+#SDHub-Tab #SDHub-Gallery-ImgChest-API input {
   text-align: center;
   width: 52ch;
 }
@@ -1890,9 +1932,9 @@ body.sdhub-body-no-scrolling {
   width: 55px;
   height: 55px;
   color: var(--primary-400);
-  border: 2px solid var(--primary-400);
+  border: 0;
   border-radius: 50%;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: var(--sdhub-box-shadow-primy);
   background: var(--sdhub-gallery-background-secondary);
   padding: 0;
   margin: 0;
@@ -1937,11 +1979,11 @@ body.sdhub-body-no-scrolling {
   inset: 0;
   height: 100%;
   width: 100%;
-  border: 2px solid var(--primary-400);
+  border: 1px solid var(--primary-400);
   border-radius: 1rem;
   z-index: 4;
   pointer-events: none;
-  box-shadow: var(--sdhub-box-shadow-primary);
+  box-shadow: var(--sdhub-box-shadow-primy);
   transition: box-shadow .6s ease;
   overflow: hidden;
 }
