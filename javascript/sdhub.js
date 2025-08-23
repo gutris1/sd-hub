@@ -1,5 +1,5 @@
 let SDHubBnS = 'sdhub-body-no-scrolling',
-sdhubDisplay = 'sdhub-display',
+sdhubS = 'sdhub-style',
 sdhubScale = 'scale(var(--sdhub-scale))',
 
 SDHubTabButtons = {
@@ -34,7 +34,7 @@ function SDHubTabChange() {
   const imginfoRow = document.getElementById(`${SDHGiI}-Row`),
   tagList = document.getElementById('SDHub-Tag-Accordion'),
   nav = document.querySelector('#tabs > .tab-nav'),
-  navbtn = nav.querySelector('button.selected'),
+  navbtn = nav?.querySelector('button.selected'),
   hubnav = document.querySelectorAll('#SDHub-Tab > .tab-nav > button') || [],
   selected = document.querySelector('#SDHub-Tab > .tab-nav > button.selected'),
 
@@ -524,3 +524,18 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
   } catch (err) { console.error('XLSX Error:', err); }
 });
+
+function SDHubEL(t, o = {}) {
+  const l = document.createElement(t);
+  for (const [k, v] of Object.entries(o)) {
+    if (k === 'class') l.className = Array.isArray(v) ? v.join(' ') : v;
+    else if (k === 'style' && typeof v === 'object') Object.assign(l.style, v);
+    else if (k === 'html') l.innerHTML = v;
+    else if (k === 'text') l.textContent = v;
+    else if (k === 'children') (Array.isArray(v) ? v : [v]).forEach(child => l.appendChild(child));
+    else if (k === 'dataset') Object.assign(l.dataset, v);
+    else if (k in l) l[k] = v;
+    else l.setAttribute(k, v);
+  }
+  return l;
+}

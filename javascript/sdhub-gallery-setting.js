@@ -12,159 +12,133 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     });
   };
 
-  function createSelections({ id, labelText, options, selected, onChange }) {
+  const applied = `${sdhgs}-applied`,
+
+  createSelection = ({ id, labelText, options, selected, onChange }) => {
     const i = `${SDHGS}-${id}`,
-
-    parent = SDHubCreateEL('div', { id: i, class: `${sdhgs}-box`, title: SDHubGetTranslation(`${labelText}_title`) }),
-    label = SDHubCreateEL('label', { id: `${i}-Label`, class: `${sdhgs}-label`, text: SDHubGetTranslation(labelText) }),
-    wrapper = SDHubCreateEL('div', { id: `${i}-Wrapper`, class: `${sdhgs}-wrapper` }),
-    selectionWrapper = SDHubCreateEL('div', { class: `${sdhgs}-wrapper-selection` }),
-    input = SDHubCreateEL('input', { id: `${i}-Input`, class: `${sdhgs}-input`, value: selected, dataset: { selected: selected } }),
-
     inputClass = id.toLowerCase().split('-').slice(-2).join('-'),
     sc = `${sdhgs}-selected`,
     c = `sdhub-gallery-selected-${inputClass}`,
 
+    selectionWrapper = SDHubEL('div', { class: `${sdhgs}-wrapper-selection` }),
     selection = options.slice(0, 2).map(v => {
-      const el = SDHubCreateEL('div', {
-        class: `${sdhgs}-selection`,
-        text: SDHubGetTranslation(v),
-        dataset: { selected: v }
-      });
+      const el = SDHubEL('div', { class: `${sdhgs}-selection`, text: SDHubGetTranslation(v), dataset: { selected: v } });
       if (v === selected) el.classList.add(sc, c);
       selectionWrapper.appendChild(el);
       return el;
+    }),
+
+    input = SDHubEL('input', { id: `${i}-Input`, tabindex: -1, class: `${sdhgs}-input`, value: selected, dataset: { selected } });
+
+    return SDHubEL('div', {
+      id: i,
+      class: `${sdhgs}-box`,
+      title: SDHubGetTranslation(`${labelText}_title`),
+      onclick: (e) => {
+        const parent = e.currentTarget;
+        if (parent.classList.contains(`${sdhgs}-disable`)) return;
+
+        const [a, b] = selection, s = a.classList.contains(sc), nv = s ? b : a;
+        [a, b].forEach(l => {
+          l.classList.toggle(sc, l === nv);
+          l.classList.toggle(c, l === nv);
+        });
+
+        input.value = input.dataset.selected = nv.dataset.selected;
+        onChange?.(nv.dataset.selected);
+      },
+      children: [
+        SDHubEL('label', { id: `${i}-Label`, class: `${sdhgs}-label`, text: SDHubGetTranslation(labelText) }),
+        SDHubEL('div', { id: `${i}-Wrapper`, class: `${sdhgs}-wrapper`, children: [selectionWrapper] }),
+        input
+      ]
     });
+  },
 
-    parent.onclick = () => {
-      if (parent.classList.contains(`${sdhgs}-disable`)) return;
+  createInputNumber = ({ id, labelText, min, max, defaultValue }) => {
+    const i = `${SDHGS}-${id}`, name = id.toLowerCase(),
+    last = String(window.SDHubGallerySettings?.[name] ?? defaultValue ?? String(min)),
 
-      const [a, b] = selection, s = a.classList.contains(sc), nv = s ? b : a;
-      [a, b].forEach(l => {
-        l.classList.toggle(sc, l === nv);
-        l.classList.toggle(c, l === nv);
-      });
+    input = SDHubEL('input', {
+      id: `${i}-Input`,
+      type: 'text',
+      spellcheck: false,
+      tabindex: -1,
+      class: `${sdhgs}-input-number`,
+      maxLength: String(max).length,
+      dataset: { lastNumber: last },
+      oninput: e => { const el = e.target; el.value = el.value.replace(/[^0-9]/g, ''); },
+      onblur: e => {
+        const el = e.target, v = el.value, n = parseInt(v, 10), def = el.dataset.lastNumber ?? String(min);
+        el.value =
+          v === '' ? def
+          : isNaN(n) || n < min ? (el.dataset.lastNumber = el.value = String(min))
+          : n > max ? (el.dataset.lastNumber = el.value = String(max))
+          : (el.dataset.lastNumber = v);
+      }
+    }),
 
-      input.value = input.dataset.selected = nv.dataset.selected;
-      onChange?.(nv.dataset.selected);
-    };
+    wrapperSelection = SDHubEL('div', { class: `${sdhgs}-wrapper-selection`, children: [input] }),
+    wrapper = SDHubEL('div', { id: `${i}-Wrapper`, class: `${sdhgs}-wrapper`, children: [wrapperSelection] }),
+    label = SDHubEL('label', { id: `${i}-Label`, class: `${sdhgs}-label`, text: SDHubGetTranslation(labelText) });
 
-    wrapper.appendChild(selectionWrapper);
-    parent.append(label, wrapper, input);
-    return parent;
-  }
+    return SDHubEL('div', {
+      id: i,
+      class: `${sdhgs}-box`,
+      title: SDHubGetTranslation(`${labelText}_title`),
+      onclick: () => input.focus(),
+      children: [label, wrapper]
+    });
+  },
 
-  function createInputNumber({ id, labelText, min, max, defaultValue }) {
+  createCheckbox = ({ id, labelText, def = false }) => {
     const i = `${SDHGS}-${id}`,
     name = id.toLowerCase(),
-    last = String(window.SDHubGallerySettings?.[name] ?? defaultValue ?? String(min));
 
-    return SDHubCreateEL('div', {
+    input = SDHubEL('input', {
+      id: `${i}-Input`,
+      type: 'checkbox',
+      tabindex: -1,
+      class: `${sdhgs}-checkbox-input`,
+      checked: window.SDHubGallerySettings?.[name] ?? def
+    }),
+
+    wrapperCheckbox = SDHubEL('div', { class: `${sdhgs}-wrapper-checkbox`, children: [input] }),
+    wrapper = SDHubEL('div', { id: `${i}-Wrapper`, class: `${sdhgs}-wrapper`, children: [wrapperCheckbox] }),
+    label = SDHubEL('label', { id: `${i}-Label`, class: `${sdhgs}-label`, text: SDHubGetTranslation(labelText) });
+
+    return SDHubEL('div', {
       id: i,
       class: `${sdhgs}-box`,
       title: SDHubGetTranslation(`${labelText}_title`),
-      onclick: () => document.getElementById(`${i}-Input`).focus(),
-      children: [
-        SDHubCreateEL('label', {
-          id: `${i}-Label`,
-          class: `${sdhgs}-label`,
-          text: SDHubGetTranslation(labelText)
-        }),
-        SDHubCreateEL('div', {
-          id: `${i}-Wrapper`,
-          class: `${sdhgs}-wrapper`,
-          children: [
-            SDHubCreateEL('div', {
-              class: `${sdhgs}-wrapper-selection`,
-              children: [
-                SDHubCreateEL('input', {
-                  id: `${i}-Input`,
-                  type: 'text',
-                  spellcheck: false,
-                  class: `${sdhgs}-input-number`,
-                  maxLength: String(max).length,
-                  dataset: { lastNumber: last },
-                  oninput: e => { let i = e.target; i.value = i.value.replace(/[^0-9]/g, ''); },
-                  onblur: e => {
-                    let i = e.target,
-                      v = i.value,
-                      n = parseInt(v, 10),
-                      def = i.dataset.lastNumber ?? String(min);
-                    i.value =
-                      v === '' ? def
-                      : isNaN(n) || n < min ? (i.dataset.lastNumber = i.value = String(min))
-                      : n > max ? (i.dataset.lastNumber = i.value = String(max))
-                      : (i.dataset.lastNumber = v);
-                  }
-                })
-              ]
-            })
-          ]
-        })
-      ]
+      onclick: () => input.click(),
+      children: [label, wrapper]
     });
-  }
+  },
 
-  function createCheckbox({ id, labelText, def = false }) {
-    const i = `${SDHGS}-${id}`;
+  SettingFrame = SDHubEL('div', { id: `${SDHGS}-Frame` }),
+  SettingTitle = SDHubEL('span', { id: `${SDHGS}-Title`, html: SDHubGetTranslation('setting_title') }),
+  SettingPage1 = SDHubEL('div', { id: `${SDHGS}-Page-1`, class: `${sdhgs}-page` }),
+  SettingPage2 = SDHubEL('div', { id: `${SDHGS}-Page-2`, class: `${sdhgs}-page` }),
+  SettingPageWrap = SDHubEL('div', { id: `${SDHGS}-Page-Wrapper`, children: [SettingPage1, SettingPage2] }),
+  applyButton = SDHubEL('span', { id: `${SDHGS}-Apply-Button`, text: SDHubGetTranslation('apply') }),
+  exitButton = SDHubEL('div', { id: `${SDHGS}-Exit-Button`, html: SDHubGallerySVG_Cross, onclick: killSetting }),
+  SettingWrapper = SDHubEL('div', { id: `${SDHGS}-Wrapper`, children: [SettingTitle, SettingPageWrap, applyButton, exitButton] }),
 
-    return SDHubCreateEL('div', {
-      id: i,
-      class: `${sdhgs}-box`,
-      title: SDHubGetTranslation(`${labelText}_title`),
-      onclick: () => document.getElementById(`${i}-Input`).click(),
-      children: [
-        SDHubCreateEL('label', {
-          id: `${i}-Label`,
-          class: `${sdhgs}-label`,
-          text: SDHubGetTranslation(labelText)
-        }),
-        SDHubCreateEL('div', {
-          id: `${i}-Wrapper`,
-          class: `${sdhgs}-wrapper`,
-          children: [
-            SDHubCreateEL('div', {
-              class: `${sdhgs}-wrapper-checkbox`,
-              children: [
-                SDHubCreateEL('input', {
-                  id: `${i}-Input`,
-                  type: 'checkbox',
-                  class: `${sdhgs}-checkbox-input`,
-                  checked: window.SDHubGallerySettings?.[id.toLowerCase()] ?? def
-                })
-              ]
-            })
-          ]
-        })
-      ]
-    });
-  }
+  leftNav = SDHubEL('span', { id: `${SDHGS}-Nav-Left-Button`, class: `${sdhgs}-nav-button`, html: SDHubGallerySVG_ArrowButton }),
+  rightNav = SDHubEL('span', { id: `${SDHGS}-Nav-Right-Button`, class: `${sdhgs}-nav-button`, html: SDHubGallerySVG_ArrowButton }),
+  SettingNav = SDHubEL('div', { id: `${SDHGS}-Nav`, children: [leftNav, rightNav] }),
 
-
-  const ExitButton = SDHubCreateEL('div', { id: `${SDHGS}-Exit-Button`, html: SDHubGallerySVG_Cross, onclick: killSetting }),
-  SettingFrame = SDHubCreateEL('div', { id: `${SDHGS}-Frame`, children: ExitButton }),
-
-  SettingTitle = SDHubCreateEL('span', { id: `${SDHGS}-Title`, html: SDHubGetTranslation('setting_title') }),
-  SettingPage1 = SDHubCreateEL('div', { id: `${SDHGS}-Page-1`, class: `${sdhgs}-page` }),
-  SettingPage2 = SDHubCreateEL('div', { id: `${SDHGS}-Page-2`, class: `${sdhgs}-page` }),
-  SettingPageWrap = SDHubCreateEL('div', { id: `${SDHGS}-Page-Wrapper`, children: [SettingPage1, SettingPage2] }),
-  applyButton = SDHubCreateEL('span', { id: `${SDHGS}-Apply-Button`, text: SDHubGetTranslation('apply') }),
-  SettingWrapper = SDHubCreateEL('div', { id: `${SDHGS}-Wrapper`, children: [SettingTitle, SettingPageWrap, applyButton] }),
-
-  leftNav = SDHubCreateEL('span', { id: `${SDHGS}-Nav-Left-Button`, class: `${sdhgs}-nav-button`, html: SDHubGallerySVG_ArrowButton }),
-  rightNav = SDHubCreateEL('span', { id: `${SDHGS}-Nav-Right-Button`, class: `${sdhgs}-nav-button`, html: SDHubGallerySVG_ArrowButton }),
-  SettingNav = SDHubCreateEL('div', { id: `${SDHGS}-Nav`, children: [leftNav, rightNav] }),
-
-  SettingBox = SDHubCreateEL('div', { id: `${SDHGS}-Box`, children: [SettingFrame, SettingWrapper, SettingNav], oncontextmenu: (e) => e.preventDefault() }),
+  SettingBox = SDHubEL('div', { id: `${SDHGS}-Box`, children: [SettingFrame, SettingWrapper, SettingNav], oncontextmenu: (e) => e.preventDefault() }),
 
   pageLimiter = createInputNumber({ id: 'Page-Limiter', labelText: 'images_per_page', min: 10, max: 1000, defaultValue: 10 }),
-  thumbnailShape = createSelections({ id: 'Thumbnail-Shape', labelText: 'thumbnail_shape', options: ['aspect_ratio', 'square'], selected: 'aspect_ratio', onChange: window.SDHubGalleryThumbnailShapeClick }),
-  thumbnailPosition = createSelections({ id: 'Thumbnail-Position', labelText: 'thumbnail_position', options: ['center', 'top'], selected: 'center' }),
-  thumbnailLayout = createSelections({ id: 'Thumbnail-Layout', labelText: 'thumbnail_layout', options: ['masonry', 'uniform'], selected: 'masonry' }),
+  thumbnailShape = createSelection({ id: 'Thumbnail-Shape', labelText: 'thumbnail_shape', options: ['aspect_ratio', 'square'], selected: 'aspect_ratio', onChange: window.SDHubGalleryThumbnailShapeClick }),
+  thumbnailPosition = createSelection({ id: 'Thumbnail-Position', labelText: 'thumbnail_position', options: ['center', 'top'], selected: 'center' }),
+  thumbnailLayout = createSelection({ id: 'Thumbnail-Layout', labelText: 'thumbnail_layout', options: ['masonry', 'uniform'], selected: 'masonry' }),
   thumbnailSize = createInputNumber({ id: 'Thumbnail-Size', labelText: 'thumbnail_size', min: 100, max: 512, defaultValue: 100 }),
   showFilename = createCheckbox({ id: 'Show-Filename', labelText: 'show_filename', defaultValue: false }),
   showButtons = createCheckbox({ id: 'Show-Buttons', labelText: 'show_buttons', defaultValue: false }),
-  imageInfoLayout = createSelections({ id: 'Image-Info', labelText: 'image_info_layout', options: ['full_width', 'side_by_side'], selected: 'full_width' }),
+  imageInfoLayout = createSelection({ id: 'Image-Info', labelText: 'image_info_layout', options: ['full_width', 'side_by_side'], selected: 'full_width' }),
 
   deleteSingle = createCheckbox({ id: 'Delete-Single', labelText: 'single_delete_permanent', defaultValue: false }),
   warningSingle = createCheckbox({ id: 'Warning-Delete-Single', labelText: 'single_delete_suppress_warning', defaultValue: false }),
@@ -176,24 +150,12 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   SettingPage2.append(imageInfoLayout, deleteSingle, warningSingle, deleteBatch, warningBatch, warningSwitchTab);
   Setting.append(SettingBox);
 
-  function killSetting() {
-    document.body.classList.remove(SDHubBnS);
-    SettingBox.style.transform = 'scale(1.5)';
-    Setting.style.pointerEvents = 'none';
-    Setting.style.opacity = SettingBox.style.opacity = SettingButton.style.transform = '';
-    leftNav.classList.remove(navON);
-    setTimeout(() => (
-      Setting.style.display = SettingBox.style.transform =
-      SettingPageWrap.style.transform = Setting.style.pointerEvents = ''
-    ), 300);
-  }
-
   const applySettings = () => {
     applyButton.onclick = null;
     window.SDHubGalleryAllCheckbox(false, false);
     const GalleryWrap = document.getElementById('SDHub-Gallery-Wrapper'),
-
     q = id => document.getElementById(`${SDHGS}-${id}-Input`),
+
     pageLimiter = parseInt(q('Page-Limiter').value, 10),
     thumbnailShape = q('Thumbnail-Shape').dataset.selected,
     thumbnailPosition = q('Thumbnail-Position').dataset.selected,
@@ -237,7 +199,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       navBox.style.display = '';
 
       const TabRow = document.getElementById('SDHub-Gallery-Tab-Button-Row');
-      TabRow.classList.remove(sdhubDisplay);
+      TabRow.classList.remove(sdhubS);
       TabRow.querySelectorAll('.sdhub-gallery-tab-button').forEach(btn => {
         btn.style.display = '';
         btn.classList.remove('selected');
@@ -252,7 +214,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       setTimeout(() => SDHubGalleryLoadInitial(), 100);
     }
 
-    fetch(`${SDHubGalleryBase}save-setting`, {
+    fetch(`${SDHubGalleryBase}-save-setting`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(window.SDHubGallerySettings)
@@ -260,13 +222,10 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
       if (!res.ok) throw new Error('Failed to save setting');
     }).catch(console.error);
 
-    const applied = `${sdhgs}-applied`;
     SettingFrame.classList.add(applied);
     setTimeout(() => SettingFrame.classList.remove(applied), 600);
     setTimeout(() => applyButton.onclick = applySettings, 700);
   };
-
-  applyButton.onclick = applySettings;
 
   let navON = `${sdhgs}-nav-on`, navLocked = false;
 
@@ -283,35 +242,45 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
   rightNav.onclick = () => nav(true);
 
   SettingButton.onclick = () => {
-    Setting.style.display = 'flex';
-    rightNav.classList.add(navON);
     document.body.classList.add(SDHubBnS);
     SettingButton.style.transform = 'rotate(-360deg)';
+
+    Setting.style.display = 'flex';
+    Setting.focus();
+
     SDHubGalleryApplySettings();
     SDHubGalleryContextMenuClose();
 
-    requestAnimationFrame(() => {
-      void Setting.offsetHeight;
-      Setting.focus();
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      [Setting, SettingBox].forEach(l => l.classList.add(sdhubS));
+      rightNav.classList.add(navON);
+    }));
 
-      setTimeout(() => {
-        Setting.style.opacity = SettingBox.style.opacity = '1';
-        SettingBox.style.transform = sdhubScale;
-      }, 100);
-    });
+    setTimeout(() => {
+      Setting.onkeydown = (e) => {
+        if (e.key === 'Escape') return killSetting();
+        if (e.key === 'Enter') return applyButton.click();
+        if (e.key === 'ArrowLeft') return leftNav.click();
+        if (e.key === 'ArrowRight') return rightNav.click();
+      };
+    }, 300);
   };
 
   Setting.addEventListener('contextmenu', (e) => e.preventDefault());
-  Setting.onkeydown = (e) => {
-    if (e.key === 'Escape') return killSetting();
-    if (e.key === 'Enter') return applyButton.click();
-    if (e.key === 'ArrowLeft') return leftNav.click();
-    if (e.key === 'ArrowRight') return rightNav.click();
-  };
+  applyButton.onclick = applySettings;
+
+  function killSetting() {
+    document.body.classList.remove(SDHubBnS);
+    Setting.onkeydown = null;
+    [rightNav, leftNav].forEach(l => l.classList.remove(navON));
+    [Setting, SettingBox].forEach(l => l.classList.remove(sdhubS));
+    SettingButton.style.transform = '';
+    setTimeout(() => (Setting.style.display = SettingPageWrap.style.transform =  ''), 200);
+  }
 }
 
 async function SDHubGalleryLoadSettings() {
-  const v = await (await fetch(`${SDHubGalleryBase}load-setting`)).json(),
+  const v = await (await fetch(`${SDHubGalleryBase}-load-setting`)).json(),
 
   keys = [
     'images-per-page', 'thumbnail-shape', 'thumbnail-position', 'thumbnail-layout',
@@ -460,9 +429,9 @@ function SDHubGalleryChangeSettings(
     ? add('SDHub-Gallery-Image-Info-SideBySide', `
         #${SDHGiI}-Row {
           flex-grow: 10 !important;
-          align-items: flex-start !important;
           flex-direction: row !important;
           flex-wrap: wrap !important;
+          align-items: flex-start !important;
           height: 100% !important;
           width: 100% !important;
           padding: 0 !important;
@@ -470,14 +439,14 @@ function SDHubGalleryChangeSettings(
         }
 
         #${SDHGiI}-Row > .form{
-          height: 100% !important;
           gap: 0 !important;
+          height: 100% !important;
         }
 
         #${SDHGiI}-Image-Column {
           flex-direction: column !important;
-          width: 100% !important;
           height: 100% !important;
+          width: 100% !important;
           padding: 10px 0 10px 10px !important;
         }
 
@@ -487,73 +456,64 @@ function SDHubGalleryChangeSettings(
           height: 100% !important;
           min-height: min(160px, 100%) !important;
           width: 100% !important;
-          background: transparent !important;
-          border: 0 !important;
           border-radius: 1rem !important;
-          box-shadow: 0 0 7px 1px #000 !important;
+          box-shadow: 0 0 4px 0 #000, 0 0 1px 1px var(--background-fill-primary) !important;
+        }
+
+        #${SDHGiI}-img .boundedheight {
+          position: relative !important;
+          inset: unset !important;
+          filter: unset !important;
         }
 
         #${SDHGiI}-img img {
-          position: unset !important;
-          max-width: 100% !important;
-          max-height: 100% !important;
           object-fit: cover !important;
           object-position: top !important;
+          position: unset !important;
+          max-height: 100% !important;
+          max-width: 100% !important;
           border-top-right-radius: 1.5rem !important;
         }
 
-        #${SDHGiI}-Clear-Button {
+        #${SDHGiI}-Exit-Button {
           position: absolute !important;
           top: 0 !important;
           right: 0 !important;
+          height: 54px !important;
+          min-width: 54px !important;
+          max-width: 54px !important;
           padding: 7px !important;
+          box-shadow: 0 0 5px 1px #000 !important;
         }
 
-        #${SDHGiI}-Clear-Button > svg {
-          position: relative !important;
+        #${SDHGiI}-Exit-Button > svg {
           top: unset !important;
           right: unset !important;
-          width: unset !important;
-          height: unset !important;
         }
 
         #${SDHGiI}-img-frame {
           position: absolute !important;
-          filter: unset !important;
-          box-shadow: inset 0 0 5px 1px #000 !important;
           border-radius: 1rem !important;
+          box-shadow: inset 0 0 1px 0 var(--background-fill-primary), inset 0 0 3px 1px var(--background-fill-primary) !important;
+          filter: unset !important;
         }
 
         #${SDHGiI}-SendButton {
           grid-template-columns: 1fr 1fr !important;
+          gap: 4px !important;
+          align-self: center !important;
           left: unset !important;
           bottom: 0 !important;
+          width: 100% !important;
           padding: 0 10px 15px 10px !important;
           border-radius: 1rem;
-          width: 100% !important;
-          align-self: center !important;
-          gap: 2px !important;
         }
 
-        #${SDHGiI}-SendButton button {
-          border-radius: 0 !important;
-        }
-
-        #${SDHGiI}-SendButton > :nth-child(1) {
-          border-top-left-radius: 1rem !important;
-        }
-
-        #${SDHGiI}-SendButton > :nth-child(2) {
-          border-top-right-radius: 1rem !important;
-        }
-
-        #${SDHGiI}-SendButton > :nth-child(3) {
-          border-bottom-left-radius: 1rem !important;
-        }
-
-        #${SDHGiI}-SendButton > :nth-child(4) {
-          border-bottom-right-radius: 1rem !important;
-        }
+        #${SDHGiI}-SendButton button { border-radius: 0 !important; }
+        #${SDHGiI}-SendButton > :nth-child(1) { border-top-left-radius: 1rem !important; }
+        #${SDHGiI}-SendButton > :nth-child(2) { border-top-right-radius: 1rem !important; }
+        #${SDHGiI}-SendButton > :nth-child(3) { border-bottom-left-radius: 1rem !important; }
+        #${SDHGiI}-SendButton > :nth-child(4) { border-bottom-right-radius: 1rem !important; }
 
         #${SDHGiI}-Output-Panel {
           flex: 7 1 0% !important;
@@ -663,7 +623,7 @@ function SDHubGalleryRePages() {
 
   const hide = () => {
     document.getElementById('SDHub-Gallery-Page-Nav-Box').style.display = '';
-    document.getElementById('SDHub-Gallery-Tab-Button-Row').classList.remove(sdhubDisplay);
+    document.getElementById('SDHub-Gallery-Tab-Button-Row').classList.remove(sdhubS);
   }
 
   const page = w.querySelectorAll(`.${sdhgp}s`).length;

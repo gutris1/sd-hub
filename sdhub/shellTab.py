@@ -1,10 +1,11 @@
-from modules.ui_components import FormRow
 import gradio as gr
 import subprocess
 import select
 import os
 
-from sd_hub.paths import SDHubPaths
+from modules.ui_components import FormRow
+
+from sdhub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
@@ -50,8 +51,7 @@ def ShellRun(inputs):
         p.wait()
 
 def ShellLobby(inputs, box_state=gr.State()):
-    if not inputs.strip():
-        return
+    if not inputs.strip(): return
 
     output_box = box_state if box_state else []
 
@@ -63,6 +63,8 @@ def ShellLobby(inputs, box_state=gr.State()):
     return gr.update()
 
 def ShellTab():
+    if not SDHubPaths.getENV(): return
+
     with gr.TabItem('Shell', elem_id='SDHub-Shell-Tab'):
         with FormRow():
             button = gr.Button(

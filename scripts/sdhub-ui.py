@@ -1,24 +1,25 @@
-from modules.script_callbacks import on_ui_tabs, on_app_started
 import gradio as gr
 
-from sd_hub.uploaderTab import UploaderTab, LoadUploaderInfo
-from sd_hub.galleryTab import GalleryTab, GalleryApp
-from sd_hub.downloaderTab import DownloaderTab
-from sd_hub.archiverTab import ArchiverTab
-from sd_hub.infotext import sdhub_repo
-from sd_hub.paths import SDHubPaths
+from modules.script_callbacks import on_ui_tabs, on_app_started, on_image_saved
 
-def onSDHUBTab():
+from sdhub.downloaderTab import DownloaderTab
+from sdhub.uploaderTab import UploaderTab, LoadUploaderInfo
+from sdhub.archiverTab import ArchiverTab
+from sdhub.texteditorTab import TextEditorTab
+from sdhub.shellTab import ShellTab
+from sdhub.galleryTab import GalleryTab, GalleryApp, GalleryImg
+
+from sdhub.infotext import sdhub_repo
+from sdhub.paths import SDHubPaths
+
+def Tab():
     with gr.Blocks(analytics_enabled=False) as sdhub:
         with gr.Tabs(elem_id='SDHub-Tab'):
             DownloaderTab()
             UploaderTab()
             ArchiverTab()
-
-            #if SDHubPaths.getENV():
-            from sd_hub.texteditorTab import TextEditorTab; TextEditorTab()
-            from sd_hub.shellTab import ShellTab; ShellTab()
-
+            TextEditorTab()
+            ShellTab()
             GalleryTab()
 
             with gr.Accordion(
@@ -42,4 +43,5 @@ def onSDHUBTab():
 
 on_app_started(LoadUploaderInfo)
 on_app_started(GalleryApp)
-on_ui_tabs(onSDHUBTab)
+on_image_saved(GalleryImg)
+on_ui_tabs(Tab)

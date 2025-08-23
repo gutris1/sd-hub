@@ -376,6 +376,7 @@
 #SDHub-Tab .sdhub-accordion > .label-wrap {
   padding: 8px 0;
   margin: -8px 0;
+  color: var(--primary-400);
   outline: none;
 }
 
@@ -395,6 +396,10 @@
 
 #SDHub-Tag-Dataframe {
   border: 0 !important;
+}
+
+.gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe {
+  padding: 5px;
 }
 
 .gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe,
@@ -524,6 +529,49 @@
   border-left: 1px solid #000;
 }
 
+/* ############################################################################################################ */
+:root {
+  --sdhub-TE-label: var(--primary-500);
+  --sdhub-TE-bs: inset 0 0 2px 1px #000;  
+  --sdhub-TE-bg: #fff;
+  --sdhub-TE-selection: #add6ff;
+  --sdhub-TE-cm-num: #6e7689;
+  --sdhub-TE-cm-line: #0431fb;
+  --sdhub-TE-1q: #af00e2;
+  --sdhub-TE-1r: #000;
+  --sdhub-TE-1s: #000;
+  --sdhub-TE-1t: #a17735;
+  --sdhub-TE-1x: #319359;
+  --sdhub-TE-1w: #000;
+  --sdhub-TE-1z: #0431fb;
+  --sdhub-TE-2c: #008000;
+  --sdhub-TE-2l: #0431fb;
+  --sdhub-TE-21: #000;
+  --sdhub-TE-23: #319331;
+  --sdhub-TE-28: #a8191f;
+}
+
+.dark {
+  --sdhub-TE-label: var(--primary-400);
+  --sdhub-TE-bs: inset 0 0 2px 1px var(--input-background-fill); 
+  --sdhub-TE-bg: #1f1f1f;
+  --sdhub-TE-selection: #264f78;
+  --sdhub-TE-cm-num: #8192a7;
+  --sdhub-TE-cm-line: #fff;
+  --sdhub-TE-1q: #e89bdf;
+  --sdhub-TE-1r: #d08770;
+  --sdhub-TE-1s: #31ffd5;
+  --sdhub-TE-1t: #fffca4;
+  --sdhub-TE-1x: #1c8fff;
+  --sdhub-TE-1w: #fff;
+  --sdhub-TE-1z: #fff;
+  --sdhub-TE-2c: #6a9955;
+  --sdhub-TE-2l: #d08770;
+  --sdhub-TE-21: #fff;
+  --sdhub-TE-23: #cf6db9;
+  --sdhub-TE-28: #b97d50;
+}
+
 #SDHub-Texteditor-Row {
   gap: inherit;
 }
@@ -557,57 +605,89 @@
 }
 
 #SDHub-Texteditor-Editor {
-  background: #1f1f1f;
   font-family: Consolas, 'Courier New', monospace;
   max-height: 1000px;
+  border: 0 !important;
+  box-shadow: var(--sdhub-TE-bs);
+  background: var(--sdhub-TE-bg);
   overflow: auto !important;
 }
 
 #SDHub-Texteditor-Editor > div[data-testid="block-label"] {
   border: 1px solid #3a3a3a;
+  color: var(--sdhub-TE-label);
 }
 
-#SDHub-Texteditor-Editor .cm-content, #SDHub-Texteditor-Editor .cm-gutters {
+#SDHub-Texteditor-Editor .cm-content,
+#SDHub-Texteditor-Editor .cm-gutters {
   line-height: 1.4;
   font-size: 13px;
   font-family: Consolas, "Courier New", monospace;
+}
+
+#SDHub-Texteditor-Editor .cm-selectionBackground {
+  background-color: var(--sdhub-TE-selection) !important;
+}
+
+#SDHub-Texteditor-Editor .cm-lineNumbers .cm-gutterElement {
+  color: var(--sdhub-TE-cm-num);
 }
 
 #SDHub-Texteditor-Editor .cm-gutters {
   border-right: 1px solid #3a3a3a;
 }
 
-#SDHub-Texteditor-Editor span.\ͼ2c {
-  color: #5e8a36;
-  font-style: normal;
+#SDHub-Texteditor-Editor .cm-line {
+  color: var(--sdhub-TE-cm-line);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ1q {
-  color: #e89bdf;
+  color: var(--sdhub-TE-1q);
+}
+
+#SDHub-Texteditor-Editor span.\ͼ1r {
+  color: var(--sdhub-TE-1r);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ1s {
-  color: #31ffd5;
+  color: var(--sdhub-TE-1s);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ1t {
-  color: #fffca4;
+  color: var(--sdhub-TE-1t);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ1x {
-  color: #1c8fff;
+  color: var(--sdhub-TE-1x);
+}
+
+#SDHub-Texteditor-Editor span.\ͼ1w {
+  color: var(--sdhub-TE-1w);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ1z {
-  color: #fff;
+  color: var(--sdhub-TE-1z);
+}
+
+#SDHub-Texteditor-Editor span.\ͼ2c {
+  color: var(--sdhub-TE-2c);
+  font-style: normal;
+}
+
+#SDHub-Texteditor-Editor span.\ͼ2l {
+  color: var(--sdhub-TE-2l);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ21 {
-  color: #fff;
+  color: var(--sdhub-TE-21);
 }
 
 #SDHub-Texteditor-Editor span.\ͼ23 {
-  color: #cf6db9;
+  color: var(--sdhub-TE-23);
+}
+
+#SDHub-Texteditor-Editor span.\ͼ28 {
+  color: var(--sdhub-TE-28);
 }
 
 #SDHub-Shell-Button, #SDHub-Shell-Ghost-Button {

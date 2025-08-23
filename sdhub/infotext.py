@@ -1,11 +1,13 @@
-from modules.scripts import basedir
 from pathlib import Path
 import urllib.request
 import shutil
 import json
 import re
 
-from sd_hub.version import version
+from modules.scripts import basedir
+
+from sdhub.version import version
+
 print(f"\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m")
 
 blt = "<strong>•</strong>"

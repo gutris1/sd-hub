@@ -1,14 +1,17 @@
-from modules.ui_components import FormRow
 from pathlib import Path
 import gradio as gr
 import json
 
-from sd_hub.infotext import config, LoadConfig
-from sd_hub.paths import SDHubPaths
+from modules.ui_components import FormRow
+
+from sdhub.infotext import config, LoadConfig
+from sdhub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 Code = gr.Code.update
 Textbox = gr.Textbox.update
+
+empty = Code(value='', label='', language=None)
 
 langs = {
     '.py': 'python',
@@ -23,26 +26,28 @@ langs = {
 }
 
 def LoadTextFile(fp):
+    fp = fp.strip()
+    if not fp: yield empty, Textbox(value=fp), Textbox(value='Missing input'); return
+
+    if fp[0] in ('"', "'") and fp[-1] == fp[0]: fp = fp[1:-1]
+    i = Textbox(value=fp)
+
     for tag, path in tag_tag.items():
         fp = fp.replace(tag, path)
 
     f = Path(fp)
     ext = f.suffix
 
-    if not fp or not f.exists() or ext not in langs:
-        info = 'File Not Found' if not f.exists() else 'File Unsupported'
-        yield Code(value='', label='', language=None), Textbox(value=info)
-        return
+    if not f.exists(): yield empty, i, Textbox(value='File Not Found'); return
+    if ext not in langs: yield empty, i, Textbox(value='File Unsupported'); return
 
     script = f.read_text()
     syntax = langs[ext]
 
-    yield Code(value=script, label=syntax, language=syntax), Textbox(value='Loaded')
+    yield Code(value=script, label=syntax, language=syntax), i, Textbox(value='Loaded')
 
 def SaveTextFile(script, fp):
-    if not fp.strip():
-        yield Textbox(value=''), Textbox(value='Save Nothing')
-        return
+    if not fp.strip(): yield Textbox(value=''), Textbox(value='Save Nothing'); return
 
     f = Path(fp)
     f.write_text(script)
@@ -66,9 +71,11 @@ def LoadInitial():
             syntax = langs[ext]
             return Code(value=script, label=syntax, language=syntax), Textbox(value=str(f))
 
-    return Code(value='', label='', language=None), Textbox(value='')
+    return empty, Textbox(value='')
 
 def TextEditorTab():
+    if not SDHubPaths.getENV(): return
+
     with gr.TabItem('Text Editor', elem_id='SDHub-Texteditor-Tab'):
         with FormRow(elem_id='SDHub-Texteditor-Row'):
             saving = gr.Button(
@@ -118,7 +125,7 @@ def TextEditorTab():
             }
         """
 
-        loading.click(fn=LoadTextFile, inputs=inputs, outputs=[editor, info]).then(fn=None, _js=js)
+        loading.click(fn=LoadTextFile, inputs=inputs, outputs=[editor, inputs, info]).then(fn=None, _js=js)
         saving.click(fn=SaveTextFile, inputs=[editor, inputs], outputs=[inputs, info]).then(fn=None, _js=js)
 
         initial = gr.Button(visible=False, elem_id='SDHub-Texteditor-Initial-Load')

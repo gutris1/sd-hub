@@ -1,6 +1,3 @@
-from modules.ui_components import FormRow, FormColumn
-from modules.scripts import basedir
-from modules.shared import cmd_opts
 from urllib.parse import urlparse
 from pathlib import Path
 from PIL import Image
@@ -15,10 +12,14 @@ import re
 import io
 import os
 
-from sd_hub.infotext import dl_title, dl_info, LoadToken, SaveToken
-from sd_hub.paths import SDHubPaths, BLOCK
-from sd_hub.scraper import scraper
-from sd_hub.version import xyz
+from modules.ui_components import FormRow, FormColumn
+from modules.scripts import basedir
+from modules.shared import cmd_opts
+
+from sdhub.infotext import dl_title, dl_info, LoadToken, SaveToken
+from sdhub.paths import SDHubPaths, BLOCK
+from sdhub.scraper import scraper
+from sdhub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'

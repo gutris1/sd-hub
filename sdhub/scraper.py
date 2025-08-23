@@ -1,4 +1,3 @@
-from modules.scripts import basedir
 from urllib.parse import urlparse
 from pathlib import Path
 import gradio as gr
@@ -8,6 +7,8 @@ import shutil
 import stat
 import sys
 import os
+
+from modules.scripts import basedir
 
 tmp_dir = Path(basedir()) / 'tmp'
 

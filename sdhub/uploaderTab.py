@@ -1,7 +1,5 @@
 from huggingface_hub import model_info, create_repo, create_branch
 from huggingface_hub.utils import RepositoryNotFoundError
-from modules.ui_components import FormRow, FormColumn
-from modules.shared import cmd_opts
 from fastapi import FastAPI
 from pathlib import Path
 import gradio as gr
@@ -12,16 +10,16 @@ import json
 import sys
 import re
 
-from sd_hub.infotext import upl_title, upl_info, config, LoadConfig, LoadToken, SaveToken
-from sd_hub.paths import SDHubPaths, BLOCK
-from sd_hub.version import xyz
+from modules.ui_components import FormRow, FormColumn
+from modules.shared import cmd_opts
+
+from sdhub.infotext import upl_title, upl_info, config, LoadConfig, LoadToken, SaveToken
+from sdhub.paths import SDHubPaths, BLOCK
+from sdhub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
-def push_push(
-    repo_id, file_path, file_name, token, branch,
-    is_private=False, commit_msg='', ex_ext=None, path_in_repo=None
-):
+def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, commit_msg='', ex_ext=None, path_in_repo=None):
     msg = commit_msg.replace('"', '\\"')
     cli = xyz('huggingface-cli.exe') if sys.platform == 'win32' else xyz('huggingface-cli')
     cmd = cli + ['upload', repo_id, file_path]
@@ -34,7 +32,7 @@ def push_push(
         cmd += [file_name]
 
     cmd += ['--token', token, '--revision', branch, '--commit-message', msg]
-    if is_private: cmd.append('--private')
+    if private_repo: cmd.append('--private')
     if ex_ext: cmd += ['--exclude', *[f'*.{ext}' for ext in ex_ext]]
 
     p = subprocess.Popen(
@@ -187,8 +185,8 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         try:
             model_info(repo_id, token=token)
         except RepositoryNotFoundError:
-            is_private = repo_radio == 'Private'
-            create_repo(repo_id, private=is_private, token=token)
+            private_repo = repo_radio == 'Private'
+            create_repo(repo_id, private=private_repo, token=token)
 
         create_branch(repo_id=repo_id, branch=branch, token=token, exist_ok=True)
         repo_info = model_info(repo_id, token=token)
@@ -201,7 +199,7 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             file_name=file_name,
             token=token,
             branch=branch,
-            is_private=repo_radio == 'Private',
+            private_repo=repo_radio == 'Private',
             commit_msg=f'Upload {file_name} using SD-Hub',
             ex_ext=ex_ext,
             path_in_repo=path_in_repo):
