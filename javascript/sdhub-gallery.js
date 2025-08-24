@@ -940,57 +940,11 @@ function SDHubCreateGallery() {
     SDHubGalleryCreateimgChest();
     SDHubGalleryLoadSettings();
     window.addEventListener('blur', SDHubGalleryContextMenuClose);
-
-    const delay = (f, d) => {
-      let c = 0;
-      return (...p) => {
-        const n = Date.now();
-        if (n - c >= d) {
-          c = n;
-          f(...p);
-        }
-      };
-    };
-
-    //onAfterUiUpdate(delay(SDHubGalleryNewImage, 2000));
   }
 }
 
 async function SDHubGalleryNewImage(images) {
   try {
-    const gallery = new Map();
-
-    for (const { path, thumb, name } of images) {
-      if (SDHubGalleryNewImgSrc.has(path)) continue;
-      SDHubGalleryNewImgSrc.add(path);
-      new Image().src = path;
-
-      const tab = SDHubGalleryTabList.find(t => path.includes(`/${t}/`));
-      const whichGallery =
-        tab?.startsWith('txt2img') ? 'txt2img_gallery' :
-        tab?.startsWith('img2img') ? 'img2img_gallery' :
-        tab?.startsWith('extras')  ? 'extras_gallery' :
-        '';
-
-      if (!whichGallery) continue;
-      if (!gallery.has(whichGallery)) gallery.set(whichGallery, []);
-      gallery.get(whichGallery).push({ path, thumb, name });
-    }
-
-    for (const [whichGallery, imageObjs] of gallery) {
-      await SDHubGalleryGetNewImage(whichGallery, imageObjs);
-    }
-
-  } catch (err) {
-    console.error('Error fetching new images:', err);
-  }
-}
-
-async function SDHubGalleryNewImageS() {
-  try {
-    const { images } = await fetch(`${SDHubGalleryBase}/_`).then(r => r.json());
-    if (!images || !Array.isArray(images) || images.length === 0) return;
-
     const gallery = new Map();
 
     for (const { path, thumb, name } of images) {

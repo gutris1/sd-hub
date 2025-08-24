@@ -29,11 +29,10 @@ imgChestColumn, imgChestApp = imgChest()
 BASE = '/sdhub-gallery'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 
+ws = []
 imgList = []
 imgList_List = threading.Event()
 Thumbnails = {}
-imgNew = []
-ws = []
 
 fav = Cache('sd-hub')
 fap = '__sdhub-gallery__'
@@ -59,6 +58,13 @@ def getOutpath():
 
     return outdir_samples, outdir_grids, outdir_extras, outpath
 
+def getEntry(fp, query=''):
+    return {
+        'path': f'{BASE}-image={getPath(fp)}{query}',
+        'thumb': f'{BASE}-thumb={getPath(fp.with_suffix(""))}.jpeg',
+        'name': fp.name,
+    }
+
 def getImage():
     _, _, outdir_extras, outpath = getOutpath()
 
@@ -83,11 +89,7 @@ def getImage():
 
             if fav.get(getRawPath(fp)): query += '&favorite' if query else '?favorite'
 
-            r.append({
-                'path': f'{BASE}-image={getPath(fp)}{query}',
-                'thumb': f'{BASE}-thumb={getPath(fp.with_suffix(""))}.jpeg',
-                'name': fp.name
-            })
+            r.append(getEntry(fp, query))
 
         global imgList
         imgList_List.clear()
@@ -126,36 +128,32 @@ def getThumbnail(fp, size=512):
     else:
         return resize(fp)
 
-async def WS(msg: str):
+async def WS(p):
     if not ws: return
-    w = ws[0]
+
     try:
-        if w.client_state.name == 'CONNECTED': await w.send_text(msg)
-        else: ws.clear()
-    except Exception:
-        ws.clear()
-
-def GalleryImg(params):
-    fp = Path(params.filename).absolute()
-
-    async def r():
+        fp = Path(p)
         await asyncio.to_thread(getThumbnail, fp)
-
-        s = {
-            'path': f'{BASE}-image={getPath(fp)}',
-            'thumb': f'{BASE}-thumb={getPath(fp.with_suffix(""))}.jpeg',
-            'name': fp.name
-        }
+        s = getEntry(fp)
 
         imgList.append(s)
         imgList_List.set()
-        await WS(json.dumps(s))
+        r = json.dumps(s)
 
-    try:
-        loop = asyncio.get_running_loop()
-        loop.create_task(r())
     except Exception as e:
-        print(f'Error: {e}')
+        print(f'Error in WS: {e}')
+        return
+
+    w = ws[0]
+    try:
+        await w.send_text(r)
+    except Exception as e:
+        print(f'Error in WS: {e}')
+        ws.remove(w)
+
+def GalleryImg(params):
+    try: asyncio.run(WS(str(Path(params.filename).absolute())))
+    except Exception as e: print(f'Error : {e}')
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     global imgList
@@ -210,28 +208,6 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         fp = Path(unquote(img))
         media_type, _ = mimetypes.guess_type(fp)
         return responses.FileResponse(fp, headers=headers, media_type=media_type)
-
-    @app.get(BASE + '/_')
-    async def _():
-        if not imgNew: return {'images': []}
-
-        r = []
-
-        while imgNew:
-            fp = Path(imgNew.pop(0))
-            await asyncio.to_thread(getThumbnail, fp)
-
-            s = {
-                'path': f'{BASE}-image={getPath(fp)}',
-                'thumb': f'{BASE}-thumb={getPath(fp.with_suffix(""))}.jpeg',
-                'name': fp.name
-            }
-
-            r.append(s)
-            imgList.append(s)
-            imgList_List.set()
-
-        return {'images': r}
 
     @app.post(BASE + '-favorite')
     async def _(req: Request):
@@ -303,9 +279,9 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         ws.append(w)
 
         try:
-            msg = await w.receive_text()
-            if msg == 'ping':
-                await w.send_text('pong')
+            while True:
+                msg = await w.receive_text()
+                if msg == 'ping': await w.send_text('pong')
         except Exception:
             pass
         finally:
