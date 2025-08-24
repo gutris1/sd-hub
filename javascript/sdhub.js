@@ -496,6 +496,7 @@ async function SDHubRGBA() {
 }
 
 document.addEventListener('DOMContentLoaded', async function () {
+  SDHubGalleryWS();
   await new Promise(resolve => (function check() { window.XLSX ? resolve() : setTimeout(check, 50); })());
 
   try {

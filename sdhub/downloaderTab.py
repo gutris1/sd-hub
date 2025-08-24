@@ -16,7 +16,8 @@ from modules.ui_components import FormRow, FormColumn
 from modules.scripts import basedir
 from modules.shared import cmd_opts
 
-from sdhub.infotext import dl_title, dl_info, LoadToken, SaveToken
+from sdhub.config import LoadToken, SaveToken
+from sdhub.infotext import dl_title, dl_info
 from sdhub.paths import SDHubPaths, BLOCK
 from sdhub.scraper import scraper
 from sdhub.version import xyz

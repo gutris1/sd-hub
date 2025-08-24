@@ -13,7 +13,8 @@ import re
 from modules.ui_components import FormRow, FormColumn
 from modules.shared import cmd_opts
 
-from sdhub.infotext import upl_title, upl_info, config, LoadConfig, LoadToken, SaveToken
+from sdhub.config import config, LoadConfig, LoadToken, SaveToken
+from sdhub.infotext import upl_title, upl_info
 from sdhub.paths import SDHubPaths, BLOCK
 from sdhub.version import xyz
 

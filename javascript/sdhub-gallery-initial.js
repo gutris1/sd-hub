@@ -788,3 +788,21 @@ function SDHubGalleryCloneTab(id, name) {
   SDHubGalleryTabEvents(TabCon);
   if (!SDHubGalleryTabList.includes(id)) SDHubGalleryTabList.push(id);
 }
+
+function SDHubGalleryWS() {
+  let c = false, r = 0;
+  const m = 3,
+    p = window.location.protocol === 'https:' ? 'wss:' : 'ws:',
+    u = `${p}//${window.location.host}${SDHubGalleryBase}/w`;
+
+  (function WS() {
+    if (c || r >= m) return;
+
+    const w = new WebSocket(u);
+
+    w.onopen = () => (c = true, r = 0, w.send('ping'));
+    w.onclose = (e) => (c = false, e.code !== 1000 && (r++, r < m ? setTimeout(WS, 2000) : console.warn('Stopping.')));
+    w.onerror = () => (c = false, r++, r < m ? setTimeout(WS, 2000) : console.warn('Stopping.'));
+    w.onmessage = (e) => SDHubGalleryNewImage(JSON.parse(e.data));
+  })();
+}

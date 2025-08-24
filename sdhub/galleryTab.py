@@ -1,5 +1,5 @@
+from fastapi import FastAPI, responses, Request, WebSocket
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import FastAPI, responses, Request
 from datetime import datetime, timedelta
 from urllib.parse import quote, unquote
 from send2trash import send2trash
@@ -19,10 +19,9 @@ import re
 import modules.generation_parameters_copypaste as tempe # type: ignore
 from modules.ui_components import FormRow, FormColumn
 from modules.cache import cache as Cache
-from modules.scripts import basedir
 from modules.shared import opts
 
-from sdhub.infotext import config, LoadConfig
+from sdhub.config import config, LoadConfig, GalleryDefault
 from sdhub.imgChest import imgChest
 
 imgChestColumn, imgChestApp = imgChest()
@@ -34,6 +33,7 @@ imgList = []
 imgList_List = threading.Event()
 Thumbnails = {}
 imgNew = []
+ws = []
 
 fav = Cache('sd-hub')
 fap = '__sdhub-gallery__'
@@ -126,9 +126,36 @@ def getThumbnail(fp, size=512):
     else:
         return resize(fp)
 
+async def WS(msg: str):
+    if not ws: return
+    w = ws[0]
+    try:
+        if w.client_state.name == 'CONNECTED': await w.send_text(msg)
+        else: ws.clear()
+    except Exception:
+        ws.clear()
+
 def GalleryImg(params):
-    path = str(Path(params.filename).absolute())
-    imgNew.append(path)
+    fp = Path(params.filename).absolute()
+
+    async def r():
+        await asyncio.to_thread(getThumbnail, fp)
+
+        s = {
+            'path': f'{BASE}-image={getPath(fp)}',
+            'thumb': f'{BASE}-thumb={getPath(fp.with_suffix(""))}.jpeg',
+            'name': fp.name
+        }
+
+        imgList.append(s)
+        imgList_List.set()
+        await WS(json.dumps(s))
+
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(r())
+    except Exception as e:
+        print(f'Error: {e}')
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     global imgList
@@ -260,23 +287,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     @app.get(BASE + '-load-setting')
     async def _():
         d = LoadConfig()
-        default = {
-            'images-per-page': 100,
-            'thumbnail-shape': 'aspect_ratio',
-            'thumbnail-position': 'center',
-            'thumbnail-layout': 'masonry',
-            'thumbnail-size': 240,
-            'show-filename': False,
-            'show-buttons': False,
-            'image-info-layout': 'full_width',
-            'single-delete-permanent': False,
-            'single-delete-suppress-warning': False,
-            'batch-delete-permanent': False,
-            'batch-delete-suppress-warning': False,
-            'switch-tab-suppress-warning': False
-        }
-
-        return {**default, **d.get('Gallery', {})}
+        return {**GalleryDefault, **d.get('Gallery', {})}
 
     @app.post(BASE + '-save-setting')
     async def _(req: Request):
@@ -285,6 +296,20 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         d['Gallery'] = c
         config.write_text(json.dumps(d, indent=4), encoding='utf-8')
         return {'status': 'saved'}
+
+    @app.websocket(BASE + '/w')
+    async def _(w: WebSocket):
+        await w.accept()
+        ws.append(w)
+
+        try:
+            msg = await w.receive_text()
+            if msg == 'ping':
+                await w.send_text('pong')
+        except Exception:
+            pass
+        finally:
+            if w in ws: ws.remove(w)
 
 def GalleryTab():
     if imgChestColumn: imgChestColumn()

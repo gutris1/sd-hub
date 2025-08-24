@@ -337,13 +337,6 @@ body.sdhub-body-no-scrolling {
   width: auto;
   max-height: 100%;
   max-width: 100%;
-  clip-path: inset(-2% -2% -2% -2%);
-  transition: clip-path .3s ease;
-}
-
-.sdhub-gallery-img-box.sdhub-style {
-  clip-path: inset(0 50% 0 50%);
-  pointer-events: none;
 }
 
 .sdhub-gallery-img-container {

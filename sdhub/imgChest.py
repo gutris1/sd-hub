@@ -3,7 +3,7 @@ import json
 
 from modules.ui_components import FormRow
 
-from sdhub.infotext import config, LoadConfig
+from sdhub.config import config, LoadConfig
 from sdhub.paths import SDHubPaths
 
 def imgChest_save(privacy, nsfw, api):
