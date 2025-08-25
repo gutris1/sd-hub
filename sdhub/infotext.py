@@ -105,7 +105,7 @@ arc_info = """
 </p>
 """
 
-sdhub_repo = f"""
+repo = f"""
 <h4 id="SDHub-Repo">
   <a href="https://github.com/gutris1/sd-hub">
     SD-Hub • v{version}

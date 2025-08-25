@@ -24,26 +24,26 @@ from modules.shared import opts
 from sdhub.config import config, LoadConfig, GalleryDefault
 from sdhub.imgChest import imgChest
 
-imgChestColumn, imgChestApp = imgChest()
+imgChestColumn, imgChestApp, imgChestUpl = imgChest()
 
 BASE = '/sdhub-gallery'
 imgEXT = ['.png', '.jpg', '.jpeg', '.webp', '.avif']
 
-ws = []
+fav = Cache('sd-hub')
+fap = '__sdhub-gallery__'
+
+ws = set()
 imgList = []
 imgList_List = threading.Event()
 Thumbnails = {}
 
-fav = Cache('sd-hub')
-fap = '__sdhub-gallery__'
-
-def getRawPath(path):
+def _rawpath(path):
     return path.absolute().as_posix() if sys.platform == 'win32' else str(path.absolute())
 
-def getPath(path):
-    return quote(getRawPath(path))
+def _path(path):
+    return quote(_rawpath(path))
 
-def getOutpath():
+def _outpath():
     dates = re.compile(r'\d{2}-\d{2}-\d{4}')
 
     sample = [opts.outdir_txt2img_samples, opts.outdir_img2img_samples, opts.outdir_extras_samples]
@@ -58,15 +58,8 @@ def getOutpath():
 
     return outdir_samples, outdir_grids, outdir_extras, outpath
 
-def getEntry(fp, query=''):
-    return {
-        'path': f'{BASE}-image={getPath(fp)}{query}',
-        'thumb': f'{BASE}-thumb={getPath(fp.with_suffix(""))}.jpeg',
-        'name': fp.name,
-    }
-
-def getImage():
-    _, _, outdir_extras, outpath = getOutpath()
+def _img():
+    _, _, outdir_extras, outpath = _outpath()
 
     def listing():
         dirs = [d for d in outpath if d.exists() and d.is_dir()]
@@ -77,7 +70,7 @@ def getImage():
             else: f.extend([p for p in d.rglob('*') if p.suffix.lower() in imgEXT])
 
         f.sort(key=lambda p: p.stat().st_mtime_ns)
-        getThumbnail(f)
+        _thumb(f)
 
         r = []
         for fp in f:
@@ -87,9 +80,9 @@ def getImage():
             elif fp.parent in outdir_extras: query = '?extras'
             else: query = ''
 
-            if fav.get(getRawPath(fp)): query += '&favorite' if query else '?favorite'
+            if fav.get(_rawpath(fp)): query += '&favorite' if query else '?favorite'
 
-            r.append(getEntry(fp, query))
+            r.append(_entry(fp, query))
 
         global imgList
         imgList_List.clear()
@@ -99,12 +92,12 @@ def getImage():
 
     threading.Thread(target=listing, daemon=True).start()
 
-def getThumbnail(fp, size=512):
+def _thumb(fp, size=512):
     def resize(path):
         try:
             if not path.exists(): return None
 
-            k = f"{getPath(path.with_suffix(''))}.jpeg"
+            k = f"{_path(path.with_suffix(''))}.jpeg"
             if k in Thumbnails: return Thumbnails[k]
 
             img = Image.open(path)
@@ -128,36 +121,44 @@ def getThumbnail(fp, size=512):
     else:
         return resize(fp)
 
+def _entry(fp, query=''):
+    return {
+        'path': f'{BASE}-image={_path(fp)}{query}',
+        'thumb': f'{BASE}-thumb={_path(fp.with_suffix(""))}.jpeg',
+        'name': fp.name,
+    }
+
 async def WS(p):
     if not ws: return
 
     try:
         fp = Path(p)
-        await asyncio.to_thread(getThumbnail, fp)
-        s = getEntry(fp)
-
+        await asyncio.to_thread(_thumb, fp)
+        s = _entry(fp)
         imgList.append(s)
         imgList_List.set()
         r = json.dumps(s)
-
     except Exception as e:
         print(f'Error in WS: {e}')
         return
 
-    w = ws[0]
-    try:
-        await w.send_text(r)
-    except Exception as e:
-        print(f'Error in WS: {e}')
-        ws.remove(w)
+    dead = []
+
+    for w in list(ws):
+        try:
+            await w.send_text(r)
+        except Exception as e:
+            print(f'Error to WS: {e}')
+            dead.append(w)
+
+    for d in dead: ws.discard(d)
 
 def GalleryImg(params):
-    try: asyncio.run(WS(str(Path(params.filename).absolute())))
-    except Exception as e: print(f'Error : {e}')
+    asyncio.run(WS(str(Path(params.filename).absolute())))
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     global imgList
-    getImage()
+    _img()
 
     headers = {
         'Cache-Control': 'public, max-age=31536000, immutable',
@@ -175,7 +176,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             fl = fav.get(fap, [])
 
             for img in imgList:
-                r = getRawPath(Path(unquote(img['path'].split('=', 1)[-1].split('?')[0])))
+                r = _rawpath(Path(unquote(img['path'].split('=', 1)[-1].split('?')[0])))
                 c = img.copy()
                 fp = Path(r)
 
@@ -191,7 +192,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
                 i.append(c)
 
-            pf = {getRawPath(Path(unquote(img['path'].split('=', 1)[-1].split('?')[0]))): img for img in f}
+            pf = {_rawpath(Path(unquote(img['path'].split('=', 1)[-1].split('?')[0]))): img for img in f}
             f = [pf[p] for p in fl if p in pf]
 
             return {'images': i, 'favorites': f}
@@ -201,7 +202,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
     @app.get(BASE + '-thumb={img:path}')
     async def _(img: Path):
-        return responses.Response(content=Thumbnails.get(getPath(img)), headers=headers, media_type='image/jpeg')
+        return responses.Response(content=Thumbnails.get(_path(img)), headers=headers, media_type='image/jpeg')
 
     @app.get(BASE + '-image={img:path}')
     async def _(img: str):
@@ -259,6 +260,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
         return {'status': 'deleted'}
 
     if imgChestApp: app.get(BASE + '-imgChest')(imgChestApp)
+    if imgChestUpl: app.post(BASE + '-imgChest-upload')(imgChestUpl)
 
     @app.get(BASE + '-load-setting')
     async def _():
@@ -276,16 +278,13 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     @app.websocket(BASE + '/w')
     async def _(w: WebSocket):
         await w.accept()
-        ws.append(w)
-
+        ws.add(w)
         try:
             while True:
                 msg = await w.receive_text()
                 if msg == 'ping': await w.send_text('pong')
-        except Exception:
-            pass
-        finally:
-            if w in ws: ws.remove(w)
+        except Exception: pass
+        finally: ws.discard(w)
 
 def GalleryTab():
     if imgChestColumn: imgChestColumn()

@@ -853,7 +853,7 @@ function SDHubGalleryBlur(f) {
   setTimeout(() => layer.style.display = '', 300);
 }
 
-async function SDHubGalleryImgChestUpload(paths, names) {
+async function SDHubGalleryImgChestUploads(paths, names) {
   if (!document.querySelector('#SDHub-Gallery-ImgChest-Checkbox input')?.checked) return;
 
   const api = document.querySelector('#SDHub-Gallery-ImgChest-API input')?.value.trim(); if (!api) return;
@@ -978,7 +978,7 @@ async function SDHubGalleryGetNewImage(whichGallery, imagesToAdd = []) {
   box = g('SDHub-Gallery-imgBox'),
   tabMap = new Map();
 
-  let imgNames = [], imgPaths = [];
+  let imgNames = [], imgURLs = [];
 
   for (let { path, thumb, name } of imagesToAdd) {
     const grid = path.includes('grid-'),
@@ -1029,7 +1029,7 @@ async function SDHubGalleryGetNewImage(whichGallery, imagesToAdd = []) {
       }
 
       imgNames.push(name);
-      imgPaths.push(path);
+      imgURLs.push(img.dataset.image);
       imageBoxes.push(imgBox);
     }
 
@@ -1048,5 +1048,44 @@ async function SDHubGalleryGetNewImage(whichGallery, imagesToAdd = []) {
     SDHubGallerySwitchPage(tabName, null, totalPages - 1);
   }
 
-  if (imgNames.length) SDHubGalleryImgChestUpload(imgPaths, imgNames);
+  if (
+    imgNames.length &&
+    document.querySelector('#SDHub-Gallery-ImgChest-Checkbox input')?.checked &&
+    document.querySelector('#SDHub-Gallery-ImgChest-API input')?.value.trim()
+  ) SDHubGalleryImgChestUpload(imgURLs, imgNames);
+}
+
+async function SDHubGalleryImgChestUpload(urls, names) {
+  const getRadio = (id) =>
+    document.querySelector(`${id} > div > label.selected`)
+      ?.getAttribute('data-testid')
+      ?.replace('-radio-label', '')
+      .toLowerCase() || '',
+
+  api = document.querySelector('#SDHub-Gallery-ImgChest-API input')?.value.trim(),
+  privacy = getRadio('#SDHub-Gallery-ImgChest-Privacy') || 'hidden',
+  nsfw = getRadio('#SDHub-Gallery-ImgChest-NSFW') || 'true',
+
+  sorted = urls.map((url, i) => ({ url, name: names[i] })).sort((a, b) => b.name.includes('grid-') - a.name.includes('grid-')),
+
+  p = {
+    images: sorted,
+    title: (sorted.length > 1 && sorted.some((item) => item.name.includes('grid-'))) ? sorted[1].name : sorted[0]?.name || '',
+    privacy,
+    nsfw,
+    api,
+  };
+
+  try {
+    const r = await fetch(`${SDHubGalleryBase}-imgChest-upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(p),
+    });
+
+    const j = await r.json();
+    console.log('Uploaded :', j);
+  } catch (err) {
+    console.error('Upload failed:', err);
+  }
 }

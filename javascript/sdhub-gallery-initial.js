@@ -791,14 +791,14 @@ function SDHubGalleryCloneTab(id, name) {
 
 function SDHubGalleryWS() {
   const u = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}${SDHubGalleryBase}/w`;
-  let c = false;
+  let c = false, r = 0;
 
-  (function connect() {
-    if (c) return;
+  (function f() {
+    if (c || r >= 2) return;
     const w = new WebSocket(u);
-    w.onopen = () => (c = true, w.send('ping'));
+    w.onopen = () => (c = true, r = 0, w.send('ping'));
     w.onmessage = (e) => e.data !== 'pong' && SDHubGalleryNewImage([JSON.parse(e.data)]);
-    w.onclose = (e) => (c = false, e.code !== 1000 && setTimeout(() => !c && connect(), 2000));
-    w.onerror = () => c = false;
+    w.onclose = (e) => (c = false, e.code !== 2000 && ++r < 2 && setTimeout(() => !c && f(), 2000));
+    w.onerror = () => (c = false, r++);
   })();
 }
