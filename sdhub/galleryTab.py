@@ -154,6 +154,7 @@ async def WS(p):
     for d in dead: ws.discard(d)
 
 def GalleryImg(params):
+    print(vars(params.p))
     asyncio.run(WS(str(Path(params.filename).absolute())))
 
 def GalleryApp(_: gr.Blocks, app: FastAPI):

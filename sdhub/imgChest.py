@@ -1,5 +1,6 @@
 from fastapi import Request
 import gradio as gr
+import mimetypes
 import httpx
 import json
 
@@ -93,15 +94,18 @@ def imgChest():
 
         files = []
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient() as c:
             for img in images:
                 try:
-                    r = await client.get(img['path'])
+                    r = await c.get(img['url'])
                     r.raise_for_status()
-                    files.append(('images[]', (img['name'], r.content, r.headers.get('content-type', 'image/jpeg'))))
-
+                    mime, _ = mimetypes.guess_type(img['name'])
+                    files.append((
+                        'images[]',
+                        (img['name'], r.content, mime or r.headers.get('content-type', 'application/octet-stream'))
+                    ))
                 except Exception as e:
-                    print(f'Error fetching {img["path"]}: {e}')
+                    print(f'Error fetching {img.get("url")}: {e}')
 
             form = {
                 'title': title or (images[0]['name'] if images else ''),
@@ -110,7 +114,7 @@ def imgChest():
             }
 
             try:
-                r = await client.post(
+                r = await c.post(
                     'https://api.imgchest.com/v1/post',
                     headers={'Authorization': f'Bearer {api}'},
                     data=form,

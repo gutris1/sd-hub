@@ -321,13 +321,15 @@ async function SDHubGalleryContextMenuButton(v) {
       window.open(path, '_blank');
       break;
 
-    case 'download': {
-      const link = Object.assign(document.createElement('a'), { href: path, download: img?.title });
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    case 'download':
+      fetch(path)
+        .then(r => r.blob())
+        .then(b => {
+          const url = URL.createObjectURL(b), link = document.createElement('a');
+          link.href = url; link.download = img.title; document.body.appendChild(link);
+          link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+        });
       break;
-    }
 
     case 'copy': {
       const file = await SDHubGalleryCreateImageFile(path);
@@ -345,7 +347,7 @@ async function SDHubGalleryContextMenuButton(v) {
 
     case 'select':
     case 'unselect':
-      img?.parentElement.querySelector('.sdhub-gallery-img-btn-checkbox')?.click();
+      img.parentElement.querySelector('.sdhub-gallery-img-btn-checkbox').click();
       break;
 
     case 'delete':
@@ -1066,7 +1068,10 @@ async function SDHubGalleryImgChestUpload(urls, names) {
   privacy = getRadio('#SDHub-Gallery-ImgChest-Privacy') || 'hidden',
   nsfw = getRadio('#SDHub-Gallery-ImgChest-NSFW') || 'true',
 
-  sorted = urls.map((url, i) => ({ url, name: names[i] })).sort((a, b) => b.name.includes('grid-') - a.name.includes('grid-')),
+  sorted = urls.map((url, i) => ({
+    url: `${window.location.protocol}//${window.location.host}` + url,
+    name: names[i]
+  })).sort((a, b) => b.name.includes('grid-') - a.name.includes('grid-')),
 
   p = {
     images: sorted,
