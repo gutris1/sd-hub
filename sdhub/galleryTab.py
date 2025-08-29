@@ -128,35 +128,6 @@ def _entry(fp, query=''):
         'name': fp.name,
     }
 
-async def WS(p):
-    if not ws: return
-
-    try:
-        fp = Path(p)
-        await asyncio.to_thread(_thumb, fp)
-        s = _entry(fp)
-        imgList.append(s)
-        imgList_List.set()
-        r = json.dumps(s)
-    except Exception as e:
-        print(f'Error in WS: {e}')
-        return
-
-    dead = []
-
-    for w in list(ws):
-        try:
-            await w.send_text(r)
-        except Exception as e:
-            print(f'Error to WS: {e}')
-            dead.append(w)
-
-    for d in dead: ws.discard(d)
-
-def GalleryImg(params):
-    print(vars(params.p))
-    asyncio.run(WS(str(Path(params.filename).absolute())))
-
 def GalleryApp(_: gr.Blocks, app: FastAPI):
     global imgList
     _img()
@@ -238,6 +209,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             imgList[:] = [img for img in imgList if unquote(img['path'].split('-image=')[-1].split('?')[0]) != path.as_posix()]
             if str(path) in fav: del fav[str(path)]
             return True
+
         except Exception as e:
             print(f'Error deleting {path}: {e}')
             return False
@@ -260,9 +232,6 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             deleting(path, thumb, perm)
         return {'status': 'deleted'}
 
-    if imgChestApp: app.get(BASE + '-imgChest')(imgChestApp)
-    if imgChestUpl: app.post(BASE + '-imgChest-upload')(imgChestUpl)
-
     @app.get(BASE + '-load-setting')
     async def _():
         d = LoadConfig()
@@ -284,24 +253,29 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             while True:
                 msg = await w.receive_text()
                 if msg == 'ping': await w.send_text('pong')
+
         except Exception: pass
+
         finally: ws.discard(w)
+
+    if imgChestApp: app.get(BASE + '-imgChest')(imgChestApp)
+    if imgChestUpl: app.post(BASE + '-imgChest-upload')(imgChestUpl)
 
 def GalleryTab():
     if imgChestColumn: imgChestColumn()
 
     with gr.TabItem('Gallery', elem_id='SDHub-Gallery-Tab'):
-        with FormRow(equal_height=False, elem_id='SDHub-Gallery-Imageinfo-Row'):
-            with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Imageinfo-Image-Column'):
-                image = gr.Image(elem_id='SDHub-Gallery-Imageinfo-img', type='pil', show_label=False)
+        with FormRow(equal_height=False, elem_id='SDHub-Gallery-Image-Info-Row'):
+            with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Image-Info-Image-Column'):
+                image = gr.Image(elem_id='SDHub-Gallery-Image-Info-img', type='pil', show_label=False)
                 image.change(fn=None, _js='() => SDHubGalleryParser()')
 
-                with FormRow(variant='compact', elem_id='SDHub-Gallery-Imageinfo-SendButton'):
+                with FormRow(variant='compact', elem_id='SDHub-Gallery-Image-Info-SendButton'):
                     buttons = tempe.create_buttons(['txt2img', 'img2img', 'inpaint', 'extras'])
 
-            with FormColumn(variant='compact', scale=7, elem_id='SDHub-Gallery-Imageinfo-Output-Panel'):
-                geninfo = gr.Textbox(elem_id='SDHub-Gallery-Imageinfo-Geninfo', visible=False)
-                gr.HTML(elem_id='SDHub-Gallery-Imageinfo-HTML')
+            with FormColumn(variant='compact', scale=7, elem_id='SDHub-Gallery-Image-Info-Output-Panel'):
+                geninfo = gr.Textbox(elem_id='SDHub-Gallery-Image-Info-Geninfo', visible=False)
+                gr.HTML(elem_id='SDHub-Gallery-Image-Info-HTML')
 
         for tabname, button in buttons.items():
             tempe.register_paste_params_button(
@@ -347,3 +321,45 @@ def GalleryTab():
 
             p = gr.Textbox(elem_id='SDHub-Gallery-Batch-Path')
             p.change(zipping, p, [f, t])
+
+class GalleryWS:
+    def __init__(self):
+        self.shelf = []
+
+    async def send(self, j):
+        dead = []
+        for w in list(ws):
+            try:
+                await w.send_text(json.dumps(j))
+
+            except Exception as e:
+                print(f'Error WS send: {e}')
+                dead.append(w)
+
+        for d in dead: ws.discard(d)
+
+    async def proc(self, p, t):
+        if not ws: return
+
+        try:
+            fp = Path(p)
+            await asyncio.to_thread(_thumb, fp)
+            r = _entry(fp)
+            imgList.append(r)
+            imgList_List.set()
+
+        except Exception as e:
+            print(f'Error WS proc: {e}')
+            return
+
+        await self.send(r)
+        self.shelf.append(r)
+
+        if len(self.shelf) == t:
+            await self.send({'batch': True, 'images': self.shelf})
+            self.shelf.clear()
+
+    def img(self, params):
+        t = params.p.batch_size * params.p.n_iter
+        if t > 1: t += 1
+        asyncio.run(self.proc(str(Path(params.filename).absolute()), t))

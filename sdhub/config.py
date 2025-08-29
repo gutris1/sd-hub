@@ -1,5 +1,7 @@
 from pathlib import Path
 import json
+import sys
+import os
 
 from modules.scripts import basedir
 
@@ -26,6 +28,7 @@ def LoadConfig():
         try:
             d = config.read_text(encoding='utf-8').strip()
             return json.loads(d) if d else {}
+
         except json.JSONDecodeError:
             return {}
     else:
@@ -44,8 +47,10 @@ def LoadToken(Tab: str = 'all'):
         c = config.read_text(encoding='utf-8').strip()
         d = json.loads(c) if c else {}
         T = d.get('Token', {})
+
     except FileNotFoundError:
         return '', '', '', f'{config} Not Found.', f'{config} Not Found.'
+
     except json.JSONDecodeError:
         return '', '', '', f'{config} Invalid JSON.', f'{config} Invalid JSON.'
 
@@ -83,3 +88,12 @@ def SaveToken(HFW=None, HFR=None, CAK=None):
     config.write_text(json.dumps(v, indent=4), encoding='utf-8')
 
     return f'{m}\nSaved To: {config}' if s else 'No Token Saved.'
+
+def xyz(y):
+    if 'COLAB_JUPYTER_TOKEN' in os.environ:
+        x = Path('/usr/local/bin') / y
+        if not x.exists(): x = Path(sys.executable).parent / y
+    else:
+        x = Path(sys.executable).parent / y
+
+    return [str(x)]

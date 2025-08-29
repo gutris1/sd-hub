@@ -44,12 +44,14 @@ def _sub(inputs):
     try:
         subprocess.run(inputs, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         return True
+
     except subprocess.CalledProcessError:
         return False
 
 def _check_req(pkg, args, cmd, pkg_list):
     try:
         subprocess.run([pkg, args], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
     except FileNotFoundError:
         pkg_list.append(pkg)
         _sub(cmd.split())
@@ -69,6 +71,7 @@ def _install_req_1():
                     if ('==' in pkg and installed < required) or ('>=' in pkg and installed < required):
                         reqs.append(pkg)
                         names.append(pkg_name)
+
                 except metadata.PackageNotFoundError:
                     reqs.append(pkg)
                     names.append(pkg_name)

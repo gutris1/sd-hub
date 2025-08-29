@@ -104,6 +104,7 @@ def imgChest():
                         'images[]',
                         (img['name'], r.content, mime or r.headers.get('content-type', 'application/octet-stream'))
                     ))
+
                 except Exception as e:
                     print(f'Error fetching {img.get("url")}: {e}')
 
@@ -122,7 +123,13 @@ def imgChest():
                 )
 
                 r.raise_for_status()
-                return r.json()
+                if not r.content:
+                    return {'status': 'ok', 'reason': 'nothing'}
+                try:
+                    return r.json()
+
+                except Exception as e:
+                    return {'status': 'error', 'reason': f'JSON failed: {str(e)}', 'content': r.text}
 
             except Exception as e:
                 return {'status': 'error', 'reason': str(e)}

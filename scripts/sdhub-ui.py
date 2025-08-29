@@ -7,10 +7,12 @@ from sdhub.uploaderTab import UploaderTab, LoadUploaderInfo
 from sdhub.archiverTab import ArchiverTab
 from sdhub.texteditorTab import TextEditorTab
 from sdhub.shellTab import ShellTab
-from sdhub.galleryTab import GalleryTab, GalleryApp, GalleryImg
+from sdhub.galleryTab import GalleryTab, GalleryApp, GalleryWS
 
 from sdhub.infotext import repo
 from sdhub.paths import SDHubPaths
+
+Gallery = GalleryWS()
 
 def Tab():
     with gr.Blocks(analytics_enabled=False) as sdhub:
@@ -37,5 +39,5 @@ def Tab():
 
 on_app_started(LoadUploaderInfo)
 on_app_started(GalleryApp)
-on_image_saved(GalleryImg)
+on_image_saved(Gallery.img)
 on_ui_tabs(Tab)

@@ -1,37 +1,27 @@
 :root {
   --sdhub-scale: 1.0001;
-  --sdhub-border-color: #000;
-  --sdhub-box-shadow: inset 0 0 1px 1px #000;
-  --sdhub-box-shadow-focus-hover: inset 0 0 1px 1px var(--primary-500), inset 0 0 5px 0 var(--primary-500), 0 0 5px 0 var(--primary-500);
-  --sdhub-box-shadow-primy: inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400), 0 0 10px 1px var(--primary-400);
-  --sdhub-box-shadow-0: 0 0 0 0 #fff;
-  --sdhub-box-shadow-1: inset 0 0 1px 0 var(--primary-400), 0 0 1px 1px var(--primary-400), 0 0 3px 1px var(--primary-400);
-  --sdhub-box-shadow-2: 0 0 3px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400);
-  --sdhub-box-shadow-radio-label: inset 0 0 5px 0 var(--sdhub-border-color);
-  --sdhub-button-box-shadow: 0 0 3px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-400), inset 0 0 16px 1px var(--primary-400);
-  --sdhub-button-box-shadow-hover: 0 0 3px 0 var(--primary-500), inset 0 0 1px 1px var(--primary-500), inset 0 0 16px 2px var(--primary-500);
+  --sdhub-shadow-1: #000;
+  --sdhub-shadow-2: 0 0 3px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400);
+  --sdhub-shadow-focus-hover: inset 0 0 1px 1px var(--primary-500), inset 0 0 5px 0 var(--primary-500), 0 0 5px 0 var(--primary-500);
+  --sdhub-shadow-primy: inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400), 0 0 10px 1px var(--primary-400);
   --sdhub-secondary-button-background: var(--input-background-fill-hover);
-  --sdhub-radio-border: 1px solid #000;
-  --sdhub-radio-input-not-checked: drop-shadow(0 0 2px var(--sdhub-border-color));
-  --sdhub-tab-button-box-shadow: inset 0 0 2px 1px var(--primary-400), 0 0 2px 1px var(--primary-400);
-  --sdhub-tab-button-box-shadow-hover: inset 0 0 2px 1px var(--primary-500), 0 0 2px 1px var(--primary-500);
-  --sdhub-accordion-border: inset 0 0 1px 1px #000;
+  --sdhub-accordion-border: #000;
   --sdhub-table-head: var(--table-odd-background-fill);
   --sdhub-table-odd: var(--table-even-background-fill);
   --sdhub-table-even: var(--table-odd-background-fill);
 }
 
 .dark {
-  --sdhub-border-color: #303030;
-  --sdhub-box-shadow: inset 0 0 1px 1px transparent;
-  --sdhub-box-shadow-radio-label: inset 0 0 0 0 #000;
+  --sdhub-shadow-1: transparent;
   --sdhub-secondary-button-background: var(--button-secondary-background-fill);
-  --sdhub-radio-border: 1px solid var(--input-background-fill);
-  --sdhub-radio-input-not-checked: drop-shadow(0 0 2px transparent);
-  --sdhub-accordion-border: inset 0 0 1px 1px var(--block-border-color);
-  --sdhub-table-head: var(--table-odd-background-fill);
-  --sdhub-table-odd: var(--table-even-background-fill);
-  --sdhub-table-even: var(--table-odd-background-fill);
+  --sdhub-accordion-border: var(--block-border-color);
+  --sdhub-table-head: var(--table-even-background-fill);
+  --sdhub-table-odd: var(--table-odd-background-fill);
+  --sdhub-table-even: var(--table-even-background-fill);
+}
+
+#tabs > .tab-nav.sdhub-style {
+  border-color: transparent;
 }
 
 #tab_SDHub {
@@ -61,7 +51,7 @@
   cursor: default;
   filter: drop-shadow(0 0 0 var(--primary-400));
   border-color: var(--primary-400);
-  box-shadow: var(--sdhub-box-shadow-2);
+  box-shadow: var(--sdhub-shadow-2);
   color: var(--sdhub-gallery-items-color);
   background: transparent;
   transition: .3s ease;
@@ -103,14 +93,16 @@
   font-size: 17px;
   height: 40px;
   border: 0;
-  box-shadow: var(--sdhub-button-box-shadow);
+  box-shadow: var(--a) var(--primary-400), var(--b) var(--primary-400), inset 0 0 16px 1px var(--primary-400);
   color: var(--body-text-color);
   background: transparent;
   padding: 0;
+  --a: 0 0 3px 0 !important;
+  --b: inset 0 0 1px 1px !important;
 }
 
 #SDHub-Tab .sdhub-buttons:hover {
-  box-shadow: var(--sdhub-button-box-shadow-hover);
+  box-shadow: var(--a) var(--primary-500), var(--b) var(--primary-500), inset 0 0 16px 2px var(--primary-500);;
   color: var(--primary-400);
   background: var(--input-background-fill);
 }
@@ -163,7 +155,7 @@
   padding: 0;
   font-size: clamp(15px, 4vw, 100%);
   transition: 0.4s ease;
-  box-shadow: var(--sdhub-box-shadow);
+  box-shadow: inset 0 0 1px 1px var(--sdhub-shadow-1);
   background: var(--sdhub-secondary-button-background);
 }
 
@@ -229,7 +221,7 @@
 #SDHub-Tab .sdhub-radio input,
 #SDHub-Tab .sdhub-output input,
 #SDHub-Tab .sdhub-output textarea {
-  box-shadow: var(--sdhub-box-shadow);
+  box-shadow: inset 0 0 1px 1px var(--sdhub-shadow-1);
 }
 
 #SDHub-Tab .sdhub-buttons,
@@ -247,7 +239,7 @@
 #SDHub-Tab .sdhub-input textarea:focus,
 #SDHub-Tab .sdhub-input input:focus {
   border-color: var(--primary-500);
-  box-shadow: var(--sdhub-box-shadow-focus-hover);
+  box-shadow: var(--sdhub-shadow-focus-hover);
 }
 
 #SDHub-Tab .sdhub-input input:hover {
@@ -256,12 +248,12 @@
 
 #SDHub-Tab .sdhub-radio label {
   border: 0 !important;
-  box-shadow: var(--sdhub-box-shadow);
+  box-shadow: inset 0 0 1px 1px var(--sdhub-shadow-1);
   transition: .2s;
 }
 
 #SDHub-Tab .sdhub-radio label.selected {
-  box-shadow: var(--sdhub-box-shadow-focus-hover);
+  box-shadow: var(--sdhub-shadow-focus-hover);
 }
 
 #SDHub-Tab .sdhub-radio label > input,
@@ -273,12 +265,12 @@
 
 #SDHub-Tab .sdhub-radio label:hover {
   border-color: var(--primary-500);
-  box-shadow: var(--sdhub-box-shadow-focus-hover);
+  box-shadow: var(--sdhub-shadow-focus-hover);
   cursor: pointer;
 }
 
 #SDHub-Tab .sdhub-radio label:hover > input:not(:checked) {
-  box-shadow: var(--sdhub-box-shadow-focus-hover);
+  box-shadow: var(--sdhub-shadow-focus-hover);
 }
 
 #SDHub-Tab .sdhub-radio label > input:checked,
@@ -318,6 +310,10 @@
   text-align: center;
   font-size: 13px;
   font-weight: normal;
+}
+
+#SDHub-Repo.sdhub-style {
+  display: none;
 }
 
 #SDHub-Repo > a {
@@ -369,7 +365,7 @@
 
 #SDHub-Tab .sdhub-accordion {
   border: 0 !important;
-  box-shadow: var(--sdhub-accordion-border);
+  box-shadow: inset 0 0 1px 1px var(--sdhub-accordion-border);
   transition: .3s ease;
 }
 
@@ -391,7 +387,7 @@
 
 #SDHub-Tab .sdhub-accordion:hover,
 #SDHub-Tab .sdhub-accordion.sdhub-accordion-open {
-  box-shadow: var(--sdhub-box-shadow-primy);
+  box-shadow: var(--sdhub-shadow-primy);
 }
 
 #SDHub-Tag-Dataframe {

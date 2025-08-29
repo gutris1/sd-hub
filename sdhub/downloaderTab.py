@@ -16,11 +16,10 @@ from modules.ui_components import FormRow, FormColumn
 from modules.scripts import basedir
 from modules.shared import cmd_opts
 
-from sdhub.config import LoadToken, SaveToken
+from sdhub.config import LoadToken, SaveToken, xyz
 from sdhub.infotext import dl_title, dl_info
 from sdhub.paths import SDHubPaths, BLOCK
 from sdhub.scraper import scraper
-from sdhub.version import xyz
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
@@ -203,6 +202,7 @@ def civitai_preview(j, p, fn):
     if KAGGLE:
         try:
             import sd_image_encryption  # type: ignore
+
         except ImportError as e:
             err = f"{str(e)}\nimage preview skipped\nInstall https://github.com/gutris1/sd-image-encryption extension or you'll get banned by Kaggle."
             print(err)
@@ -291,6 +291,7 @@ def url_check(url):
         if url_parsed.netloc not in supported: return False, f'Supported Domain:\n' + '\n'.join(supported)
 
         return True, ''
+
     except Exception as e:
         return False, str(e)
 

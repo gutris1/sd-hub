@@ -4,8 +4,7 @@ import shutil
 import json
 import re
 
-from sdhub.version import version
-
+version = '12'
 print(f"\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m")
 
 blt = "<strong>•</strong>"
@@ -43,7 +42,7 @@ dl_info = f"""
 </p>
 """
 
-def getUploaderSVG():
+def uploaderTabsvg():
     url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
     fp = Path(__file__).parent / 'hf-logo.svg'
 
@@ -61,7 +60,7 @@ def getUploaderSVG():
 
     return svg
 
-uploaderSVG = getUploaderSVG()
+hflogo = uploaderTabsvg()
 
 upl_title = f"""
 <h3 class='sdhub-tab-title sdhub-uploader-tab-title' style="
@@ -71,7 +70,7 @@ upl_title = f"""
     justify-content: center; 
     margin-bottom: 3px;
     margin-top: -5px;">
-  {uploaderSVG} Upload To Huggingface
+  {hflogo} Upload To Huggingface
 </h3>
 """
 

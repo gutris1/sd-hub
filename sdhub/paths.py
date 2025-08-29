@@ -64,8 +64,8 @@ class SDPathsSDHub:
             for attr in outdirs:
                 try:
                     v = getattr(opts, attr, None)
-                    if isinstance(v, str) and v:
-                        outpath.append(Path(v).resolve())
+                    if isinstance(v, str) and v: outpath.append(Path(v).resolve())
+
                 except Exception:
                     pass
 

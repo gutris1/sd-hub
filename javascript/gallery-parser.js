@@ -1,7 +1,7 @@
 async function SDHubGalleryParser() {
-  const RawOutput = document.querySelector(`#${SDHGiI}-Geninfo textarea`),
-  HTMLPanel = document.getElementById(`${SDHGiI}-HTML`),
-  ImagePanel = document.getElementById(`${SDHGiI}-img`),
+  const RawOutput = document.querySelector(`#${SDHubVar.ImgInfo}-Geninfo textarea`),
+  HTMLPanel = document.getElementById(`${SDHubVar.ImgInfo}-HTML`),
+  ImagePanel = document.getElementById(`${SDHubVar.ImgInfo}-img`),
   img = ImagePanel.querySelector('img');
 
   if (!img) {
@@ -26,8 +26,8 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
           SharedParserEncryptInfo: EncryptInfo, SharedParserSha256Info: Sha256Info, SharedParserNaiSourceInfo: NaiSourceInfo,
         } = window,
 
-  SendButton = document.getElementById(`${SDHGiI}-SendButton`),
-  OutputPanel = document.getElementById(`${SDHGiI}-Output-Panel`),
+  SendButton = document.getElementById(`${SDHubVar.ImgInfo}-SendButton`),
+  OutputPanel = document.getElementById(`${SDHubVar.ImgInfo}-Output-Panel`),
 
   outputDisplay = 'sdhub-gallery-display-output-panel',
   outputFail = 'sdhub-gallery-display-output-fail',
@@ -37,8 +37,8 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     C = copyBtn && SDHubGetTranslation(`copy_${label}`),
 
     att = [
-      copyBtn && `id='${SDHGiI}-${id}-Button'`,
-      `class='${sdhgii}-output-title${copyBtn ? ` ${sdhgii}-copybutton` : ''}'`,
+      copyBtn && `id='${SDHubVar.ImgInfo}-${id}-Button'`,
+      `class='${SDHubVar.imgInfo}-output-title${copyBtn ? ` ${SDHubVar.imgInfo}-copybutton` : ''}'`,
       copyBtn && `title='${C}'`,
       copyBtn && `onclick='SDHubGalleryCopyButtonEvent(event)'`
     ].filter(Boolean).join(' ');
@@ -61,9 +61,9 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   createSection = (title, content) => {
     if (!content?.trim()) return '';
     const empty = title === 'nothing', model = title === titles.models, wrapper = !empty && !model,
-    text = wrapper ? `<div class='${sdhgii}-output-wrapper'><div class='${sdhgii}-output-content'>${content}</div></div>` : content,
-    extra = model ? ` ${sdhgii}-models-section` : '';
-    return `<div class='${sdhgii}-output-section${extra}'${empty ? " style='height: 100%'" : ''}>${empty ? '' : title}${text}</div>`;
+    text = wrapper ? `<div class='${SDHubVar.imgInfo}-output-wrapper'><div class='${SDHubVar.imgInfo}-output-content'>${content}</div></div>` : content,
+    extra = model ? ` ${SDHubVar.imgInfo}-models-section` : '';
+    return `<div class='${SDHubVar.imgInfo}-output-section${extra}'${empty ? " style='height: 100%'" : ''}>${empty ? '' : title}${text}</div>`;
   };
 
   if (!inputs?.trim() && !(window.SharedParserExtrasInfo?.trim() || window.SharedParserPostProcessingInfo?.trim())) {
@@ -77,7 +77,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   if (inputs.trim().includes('Nothing To See Here') || inputs.trim().includes('Nothing To Read Here')) {
     OutputPanel.classList.add(outputFail);
     SendButton.classList.remove(outputDisplay);
-    const failContent = `<div class='${sdhgii}-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
+    const failContent = `<div class='${SDHubVar.imgInfo}-output-failed' style='position: absolute; bottom: 0;'>${inputs}</div>`;
     return createSection('nothing', failContent);
   }
 
@@ -93,7 +93,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
   let process = inputs
     .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/Seed:\s?(\d+),/gi, (_, seedNumber) => 
-      `<span id='${SDHGiI}-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`
+      `<span id='${SDHubVar.ImgInfo}-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`
     );
 
   const negativePromptIndex = process.indexOf('Negative prompt:'),
@@ -118,10 +118,10 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
     if (hashes?.[1]) paramsText = paramsText.replace(hashes[0], '').trim();
     if (paramsText.endsWith(',')) paramsText = paramsText.slice(0, -1).trim();
 
-    modelOutput = `<div id='${SDHGiI}-Spinner-Wrapper'><div id='${SDHGiI}-Spinner'>${SDHubGallerySVG_Spinner}</div></div>`;
+    modelOutput = `<div id='${SDHubVar.ImgInfo}-Spinner-Wrapper'><div id='${SDHubVar.ImgInfo}-Spinner'>${SDHubSVG.spinner()}</div></div>`;
 
     setTimeout(async () => {
-      const modelsBox = OutputPanel.querySelector(`.${sdhgii}-models-section`);
+      const modelsBox = OutputPanel.querySelector(`.${SDHubVar.imgInfo}-models-section`);
       if (modelsBox) {
         try {
           const links = await SharedModelsFetch(paramsRAW);
@@ -129,7 +129,7 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
 
           modelsBox.innerHTML = links;
         } catch (error) {
-          modelsBox.innerHTML = `<div class='${sdhgii}-output-failed'>Failed to fetch...</div>`;
+          modelsBox.innerHTML = `<div class='${SDHubVar.imgInfo}-output-failed'>Failed to fetch...</div>`;
         }
         setTimeout(() => window.SDHubGalleryImageInfoArrowUpdate(), 0);
       }
@@ -152,9 +152,9 @@ function SDHubGalleryCopyButtonEvent(e) {
   const OutputRaw = window.SDHubGalleryImageInfoRaw,
 
   CopyText = (text, target) => {
-    const content = target.closest(`.${sdhgii}-output-section`)?.querySelector(`.${sdhgii}-output-content`);
-    content?.classList.add(`${sdhgii}-borderpulse`);
-    setTimeout(() => content?.classList.remove(`${sdhgii}-borderpulse`), 2000);
+    const content = target.closest(`.${SDHubVar.imgInfo}-output-section`)?.querySelector(`.${SDHubVar.imgInfo}-output-content`);
+    content?.classList.add(`${SDHubVar.imgInfo}-borderpulse`);
+    setTimeout(() => content?.classList.remove(`${SDHubVar.imgInfo}-borderpulse`), 2000);
     navigator.clipboard.writeText(text);
   };
 
@@ -166,10 +166,10 @@ function SDHubGalleryCopyButtonEvent(e) {
     seedMatch = OutputRaw.match(/Seed:\s?(\d+),/i),
 
     text = {
-      [`${SDHGiI}-Prompt-Button`]: () => OutputRaw.substring(0, [negStart, stepsStart].find(i => i !== -1) || OutputRaw.length).trim(),
-      [`${SDHGiI}-NegativePrompt-Button`]: () => negStart !== -1 && stepsStart > negStart ? OutputRaw.slice(negStart + 16, stepsStart).trim() : null,
-      [`${SDHGiI}-Params-Button`]: () => stepsStart !== -1 ? OutputRaw.slice(stepsStart).trim() : null,
-      [`${SDHGiI}-Seed-Button`]: () => seedMatch?.[1]?.trim() || null
+      [`${SDHubVar.ImgInfo}-Prompt-Button`]: () => OutputRaw.substring(0, [negStart, stepsStart].find(i => i !== -1) || OutputRaw.length).trim(),
+      [`${SDHubVar.ImgInfo}-NegativePrompt-Button`]: () => negStart !== -1 && stepsStart > negStart ? OutputRaw.slice(negStart + 16, stepsStart).trim() : null,
+      [`${SDHubVar.ImgInfo}-Params-Button`]: () => stepsStart !== -1 ? OutputRaw.slice(stepsStart).trim() : null,
+      [`${SDHubVar.ImgInfo}-Seed-Button`]: () => seedMatch?.[1]?.trim() || null
     }[id]?.();
 
     if (text) CopyText(text, e.target);

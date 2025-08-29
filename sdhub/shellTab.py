@@ -37,8 +37,10 @@ def ShellRun(inputs):
                         break
                 if p.poll() is not None:
                     break
+
             except OSError:
                 break
+
     finally:
         os.close(ayu)
         os.close(rika)
