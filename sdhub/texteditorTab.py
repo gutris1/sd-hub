@@ -119,10 +119,10 @@ def TextEditorTab():
         )
 
         js = """
-            () => {
-                let info = document.querySelector('#SDHub-Texteditor-Info input')?.value;
-                if (info) SDHubTextEditorInfo(info);
-            }
+        () => {
+            let info = document.querySelector('#SDHub-Texteditor-Info input')?.value;
+            info && SDHubTextEditorInfo(info);
+        }
         """
 
         loading.click(fn=LoadTextFile, inputs=inputs, outputs=[editor, inputs, info]).then(fn=None, _js=js)

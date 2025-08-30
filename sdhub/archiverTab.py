@@ -700,14 +700,16 @@ def ArchiverTab():
             with FormColumn(scale=4):
                 gr.Textbox(show_label=False, max_lines=1, elem_classes='sdhub-hidden')
 
+        finish = '() => SDHubArchiver("finish")'
+
         archiver_button.click(
             fn=archive,
             inputs=[archiver_input, archiver_name, archiver_output, archiver_format, archiver_mkdir, archiver_split, gr.State()],
             outputs=[archiver_output_1, archiver_output_2]
-        ).then(fn=None, _js='() => { SDHubArchiver("finish"); }')
+        ).then(fn=None, _js=finish)
 
         extractor_button.click(
             fn=extract,
             inputs=[extractor_input, extractor_output, extractor_mkdir, gr.State()],
             outputs=[archiver_output_1, archiver_output_2]
-        ).then(fn=None, _js='() => { SDHubArchiver("finish"); }')
+        ).then(fn=None, _js=finish)

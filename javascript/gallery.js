@@ -302,7 +302,7 @@ function SDHubGalleryContextMenuClose() {
 
 function SDHubGaleryContextImage(v) {
   SDHubGalleryContextMenuClose();
-  const path = window.SDHubImg = window.SDHubImagePath, img = document.querySelector(`img[data-image='${path}']`);
+  const path = window.SDHubImagePath, img = document.querySelector(`img[data-image='${path}']`);
   if (v && img) {
     img.classList.add(SDHubVar.style);
     setTimeout(() => img.classList.remove(SDHubVar.style), 1000);
@@ -382,6 +382,7 @@ async function SDHubGallerySendImage(v) {
   if (imgInput) {
     setTimeout(async () => {
       window.SDHubGalleryDisplayImageInfo = null;
+      window.SDHubImg = path;
       await SDHubGalleryUpdateImageInput(imgInput, path);
     }, 100);
 

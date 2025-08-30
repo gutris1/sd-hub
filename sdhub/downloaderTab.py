@@ -448,7 +448,6 @@ def read_txt(f, box):
 
 def DownloaderTab():
     _, HFR, CAK, _, _ = LoadToken('downloader')
-    TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Downloader', elem_id='SDHub-Downloader-Tab'):
         gr.HTML(dl_title)
@@ -554,6 +553,8 @@ def DownloaderTab():
                     elem_classes='sdhub-output'
                 )
 
+        TokenBlur = '() => SDHubTokenBlur()'
+
         load_button.click(
             fn=lambda: LoadToken('downloader'), inputs=[], outputs=[output_2, token_1, token_2, output_2]
         ).then(fn=None, _js=TokenBlur)
@@ -577,7 +578,7 @@ def DownloaderTab():
                 return [...v, null];
             }
             """
-        ).then(fn=None, _js='() => { SDHubDownloader(); }')
+        ).then(fn=None, _js='() => SDHubDownloader()')
 
         txt_button.upload(fn=read_txt, inputs=[txt_button, input_box], outputs=input_box)
         scrape_button.click(fn=scraper, inputs=[input_box, token_1, gr.State()], outputs=[input_box, output_2])

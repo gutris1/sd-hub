@@ -255,7 +255,6 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
                 if msg == 'ping': await w.send_text('pong')
 
         except Exception: pass
-
         finally: ws.discard(w)
 
     if imgChestApp: app.get(BASE + '-imgChest')(imgChestApp)

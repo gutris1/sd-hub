@@ -469,7 +469,7 @@ function SDHubGalleryChangeSettings(
         #${SDHubVar.ImgInfo}-img img {
           object-fit: cover !important;
           object-position: top !important;
-          position: unset !important;
+          position: absolute !important;
           max-height: 100% !important;
           max-width: 100% !important;
           border-top-right-radius: 1.5rem !important;

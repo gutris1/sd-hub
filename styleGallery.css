@@ -1243,9 +1243,9 @@ body.sdhub-body-no-scrolling {
   position: relative;
   overflow-wrap: break-word;
   height: 100%;
-  gap: 1.2rem !important;
+  gap: 1rem !important;
   max-width: 100%;
-  margin-top: 196px;
+  margin-top: 190px;
   padding: 20px !important;
   padding-top: 0 !important;
   border-radius: 0.8rem !important;
@@ -1376,6 +1376,7 @@ body.sdhub-body-no-scrolling {
   height: 80px;
   width: 100%;
   margin: 0;
+  margin-bottom: 10px;
 }
 
 #SDHub-Gallery-Image-Info-Spinner {
@@ -1383,16 +1384,16 @@ body.sdhub-body-no-scrolling {
   align-items: center;
   justify-content: center;
   position: relative;
-  height: 90px;
-  width: 90px;
+  height: 80px;
+  width: 80px;
   margin: 0;
   padding: 0;
   animation: sdhub-spinner 1.5s linear infinite;
 }
 
 #SDHub-Gallery-Image-Info-Spinner > svg {
-  height: 90px;
-  width: 90px;
+  height: 100%;
+  width: 100%;
   filter: var(--sdhub-gallery-spinner-filter);;
 }
 

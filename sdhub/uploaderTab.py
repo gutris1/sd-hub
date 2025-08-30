@@ -262,7 +262,6 @@ def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
 
 def UploaderTab():
     HFW, _, _, _, _ = LoadToken('uploader')
-    TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Uploader', elem_id='SDHub-Uploader-Tab'):
         gr.HTML(upl_title)
@@ -371,6 +370,8 @@ def UploaderTab():
                     lines=5,
                     elem_classes='sdhub-output'
                 )
+
+        TokenBlur = '() => SDHubTokenBlur()'
 
         load_button.click(
             fn=lambda: LoadToken('uploader'), inputs=[], outputs=[token_box, output_2, output_2, output_2]
