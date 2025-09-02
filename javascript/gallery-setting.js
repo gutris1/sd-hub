@@ -225,6 +225,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     SettingFrame.classList.add(applied);
     setTimeout(() => SettingFrame.classList.remove(applied), 600);
     setTimeout(() => applyButton.onclick = applySettings, 700);
+    animBox();
   };
 
   let navON = `${SDHubVar.setting}-nav-on`, navLocked = false;
@@ -234,7 +235,7 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     navLocked = true;
     rightNav.classList.toggle(navON, !r);
     leftNav.classList.toggle(navON, r);
-    SettingPageWrap.style.transform = r ? 'translateX(calc(-100% - 20px))' : '';
+    SettingPageWrap.classList.toggle(SDHubVar.style, r);
     setTimeout(() => navLocked = false, 800);
   };
 
@@ -275,7 +276,39 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
     [rightNav, leftNav].forEach(l => l.classList.remove(navON));
     [Setting, SettingBox].forEach(l => l.classList.remove(SDHubVar.style));
     SettingButton.style.transform = '';
-    setTimeout(() => (Setting.style.display = SettingPageWrap.style.transform =  ''), 200);
+    setTimeout(() => (Setting.style.display = '', SettingPageWrap.classList.remove(SDHubVar.style)), 200);
+  }
+
+  function animBox() {
+    SettingPageWrap.style.pointerEvents = 'none';
+
+    const transitionClass = 'sdhub-gallery-setting-applied';
+    const boxShadowClass = SDHubVar.style;
+    const wrap = SettingPageWrap.classList.contains(SDHubVar.style) ? SettingPage2 : SettingPage1;
+    const boxes = wrap.querySelectorAll('.sdhub-gallery-setting-box');
+
+    // Apply transition class to all boxes
+    boxes.forEach(box => box.classList.add(transitionClass));
+
+    // Animate box-shadow class one by one
+    boxes.forEach((box, index) => {
+      setTimeout(() => {
+        if (index > 0) boxes[index - 1].classList.remove(boxShadowClass);
+
+        box.classList.add(boxShadowClass);
+      }, index * 150);
+    });
+
+    // Remove box-shadow from last box after animation
+    setTimeout(() => {
+      boxes[boxes.length - 1].classList.remove(boxShadowClass);
+    }, boxes.length * 150);
+
+    // Remove transition class and re-enable pointer events at the end
+    setTimeout(() => {
+      boxes.forEach(box => box.classList.remove(transitionClass));
+      SettingPageWrap.style.pointerEvents = '';
+    }, boxes.length * 150 + 300);
   }
 }
 
@@ -506,11 +539,22 @@ function SDHubGalleryChangeSettings(
           border-radius: 1rem;
         }
 
-        #${SDHubVar.ImgInfo}-SendButton button { border-radius: 0 !important; }
-        #${SDHubVar.ImgInfo}-SendButton > :nth-child(1) { border-top-left-radius: 1rem !important; }
-        #${SDHubVar.ImgInfo}-SendButton > :nth-child(2) { border-top-right-radius: 1rem !important; }
-        #${SDHubVar.ImgInfo}-SendButton > :nth-child(3) { border-bottom-left-radius: 1rem !important; }
-        #${SDHubVar.ImgInfo}-SendButton > :nth-child(4) { border-bottom-right-radius: 1rem !important; }
+        #${SDHubVar.ImgInfo}-SendButton button {
+          border-radius: 0 !important;
+        }
+
+        #${SDHubVar.ImgInfo}-SendButton > :nth-child(1) {
+          border-top-left-radius: 1rem !important;
+        }
+        #${SDHubVar.ImgInfo}-SendButton > :nth-child(2) {
+          border-top-right-radius: 1rem !important;
+        }
+        #${SDHubVar.ImgInfo}-SendButton > :nth-child(3) {
+          border-bottom-left-radius: 1rem !important;
+        }
+        #${SDHubVar.ImgInfo}-SendButton > :nth-child(4) {
+          border-bottom-right-radius: 1rem !important;
+        }
 
         #${SDHubVar.ImgInfo}-Output-Panel {
           flex: 7 1 0% !important;

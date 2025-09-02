@@ -285,10 +285,15 @@ async function SDHubTextEditorInfo(v) {
 }
 
 function SDHubStyles() {
-  const fox = /firefox/i.test(navigator.userAgent),
-  s = document.createElement('style'),
+  const f = `
+    :root {
+      --sdhub-gallery-viewer-background: rgb(200 200 200 / 90%) !important;
+    }
 
-  f = `
+    .dark {
+      --sdhub-gallery-viewer-background: rgb(0 0 0 / 90%) !important;
+    }
+
     #${SDHubVar.Setting}-Box {
       scrollbar-width: thin !important;
       scrollbar-color: var(--primary-400) transparent !important;
@@ -314,9 +319,9 @@ function SDHubStyles() {
     .sdhub-gallery-img-box:not(.${SDHubVar.imgFavorited}) .sdhub-gallery-img-container:hover .sdhub-gallery-img-frame {
       box-shadow: none;
     }
-  `,
+  `;
 
-  w = `
+  const w = `
     .${SDHubVar.page}s.selected-page {
       scrollbar-width: none !important;
     }
@@ -353,8 +358,8 @@ function SDHubStyles() {
     }
   `;
 
-  s.innerHTML = fox ? f : w;
-  document.body.appendChild(s);
+  const fox = /firefox/i.test(navigator.userAgent);
+  document.body.append(SDHubEL('style', { id: 'SDHub-Styles', html: fox ? f : w }));
 }
 
 function SDHubGetTranslation(k, n = 1) {

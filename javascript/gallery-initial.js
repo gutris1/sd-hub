@@ -278,20 +278,27 @@ function SDHubGalleryCreateContextMenu() {
 
   GalleryCM.addEventListener('click', e => {
     const li = e.target.closest('li');
-    li && (li.dataset.menu
-      ? SDHubGalleryContextMenuButton(li.dataset.menu)
-      : li.dataset.submenu && SDHubGallerySendImage(li.dataset.submenu));
+    if (!li || !GalleryCM.contains(li)) return;
+
+    if (li.dataset.menu) {
+      SDHubGalleryContextMenuButton(li.dataset.menu);
+    } else if (li.dataset.submenu) {
+      SDHubGallerySendImage(li.dataset.submenu);
+    }
+
+    SDHubGalleryContextMenuClose();
   });
 
   document.addEventListener('wheel', (e) => {
-    GalleryCM.style.transform === SDHubVar.scale ? (GalleryCM.contains(e.target)
+    GalleryCM.classList.contains(SDHubVar.style) ? (GalleryCM.contains(e.target)
       ? e.preventDefault()
       : SDHubGalleryContextMenuClose())
       : null;
   }, { passive: false });
 
   document.addEventListener('click', (e) => {
-    if (GalleryCM?.style.transform === SDHubVar.scale && !GalleryCM.contains(e.target)) SDHubGalleryContextMenuClose();
+    if (!e.isTrusted) return;
+    if (GalleryCM.classList.contains(SDHubVar.style) && !GalleryCM.contains(e.target)) SDHubGalleryContextMenuClose();
   });
 
   document.addEventListener('contextmenu', (e) => {
@@ -668,13 +675,6 @@ function SDHubGalleryTabEvents(TabCon) {
 
   ['touchend', 'touchmove', 'touchcancel'].forEach(event => {
     TabCon.addEventListener(event, () => clearTimeout(touche));
-  });
-
-  TabCon.addEventListener('mousemove', (e) => {
-    const GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu');
-    if (GalleryCM.style.transform !== SDHubVar.scale) return;
-    const insideCM = GalleryCM?.matches(':hover'), insideImg = e.target.closest('.sdhub-gallery-img-box')?.matches(':hover');
-    if (!insideCM && !insideImg && !SDHubGalleryCMRightClick) setTimeout(() => SDHubGalleryContextMenuClose(), 100);
   });
 }
 
