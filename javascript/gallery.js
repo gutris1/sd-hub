@@ -114,10 +114,10 @@ function SDHubGalleryContextMenuClose() {
   const r = (e, c) => e?.forEach?.(l => l?.classList?.remove(c)),
 
   GalleryCM = document.getElementById('SDHub-Gallery-ContextMenu'),
-  ul = GalleryCM.querySelector('ul'),
-  subbtn = GalleryCM.querySelector('.sdhub-gallery-cm-sendto'),
-  submenu = GalleryCM.querySelector('#SDHub-Gallery-ContextMenu-SubMenu-SendTo'),
-  ulsub = submenu.querySelector('ul'),
+  ul = GalleryCM?.querySelector('ul'),
+  subbtn = GalleryCM?.querySelector('.sdhub-gallery-cm-sendto'),
+  submenu = GalleryCM?.querySelector('#SDHub-Gallery-ContextMenu-SubMenu-SendTo'),
+  ulsub = submenu?.querySelector('ul'),
   s = SDHubVar.style;
 
   requestAnimationFrame(() => {
