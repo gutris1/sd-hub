@@ -120,6 +120,8 @@ function SDHubGalleryContextMenuClose() {
   ulsub = submenu?.querySelector('ul'),
   s = SDHubVar.style;
 
+  if (!subbtn || !submenu) return;
+
   requestAnimationFrame(() => {
     [subbtn, submenu].forEach(l => l.onmouseenter = l.onmouseleave = l.onclick = null);
     submenu.classList.contains(s)
