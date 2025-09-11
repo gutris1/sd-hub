@@ -36,9 +36,14 @@ function SDHubGalleryImageViewer(mode, skip = false) {
 
     setTimeout(() => {
       LightBox.onkeydown = (e) => {
-        if (e.key === 'Escape') return window.SDHubGalleryImageViewerExit();
-        if (e.key === 'ArrowLeft') return getComputedStyle(PrevBtn).display === 'flex' && PrevBtn.click();
-        if (e.key === 'ArrowRight') return getComputedStyle(NextBtn).display === 'flex' && NextBtn.click();
+        switch (e.key) {
+          case 'Escape':
+            return window.SDHubGalleryImageViewerExit();
+          case 'ArrowLeft':
+            return getComputedStyle(PrevBtn).display === 'flex' && PrevBtn.click();
+          case 'ArrowRight':
+            return getComputedStyle(NextBtn).display === 'flex' && NextBtn.click();
+        }
       };
     }, 400);
   }
