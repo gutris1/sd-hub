@@ -355,9 +355,9 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-img-border {
+  --a: transparent !important;
+  --b: 0 0 5px 1px var(--a), 0 0 1px 1px var(--a), inset 0 0 5px 0 var(--a) !important;
   display: block;
-  pointer-events: none;
-  overflow: hidden;
   position: absolute;
   z-index: 2;
   width: 100%;
@@ -366,8 +366,8 @@ body.sdhub-body-no-scrolling {
   border-radius: 10px;
   box-shadow: 0 0 2px 1px var(--sdhub-gallery-img-border);
   transition: .3s ease;
-  --a: transparent !important;
-  --b: 0 0 5px 1px var(--a), 0 0 1px 1px var(--a), inset 0 0 5px 0 var(--a) !important;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .sdhub-gallery-img-container:hover .sdhub-gallery-img-border {
@@ -663,6 +663,8 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-img-frame {
+  --a: transparent !important;
+  --b: 0 0 0 0 var(--a), inset 0 0 15px 3px var(--a) !important;
   display: block;
   position: absolute;
   inset: 0;
@@ -674,8 +676,6 @@ body.sdhub-body-no-scrolling {
   transition: .3s ease;
   pointer-events: none;
   overflow: hidden;
-  --a: transparent !important;
-  --b: 0 0 0 0 var(--a), inset 0 0 15px 3px var(--a) !important;
 }
 
 .sdhub-gallery-img-container:hover .sdhub-gallery-img-frame {
@@ -782,9 +782,10 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-page-nav .sdhub-gallery-page-nav-button {
+  --a: drop-shadow(0 0 2px #000) !important;
   color: var(--primary-400);
   opacity: .4;
-  filter: brightness(0.5) drop-shadow(0 0 2px #000);
+  filter: brightness(0.5) var(--a);
   pointer-events: none;
   outline: none;
   transition: opacity .4s ease, filter .4s ease, transform .3s ease;
@@ -798,7 +799,7 @@ body.sdhub-body-no-scrolling {
 
 .sdhub-gallery-page-nav .sdhub-gallery-page-nav-button.btn-on {
   opacity: 1;
-  filter: brightness(1) drop-shadow(0 0 2px #000);
+  filter: brightness(1) var(--a);
   pointer-events: auto;
   cursor: pointer;
 }
@@ -1006,6 +1007,14 @@ body.sdhub-body-no-scrolling {
   transition: opacity .25s;
 }
 
+#SDHub-Gallery-Image-Viewer-Control.sdhub-style {
+  opacity: 0;
+}
+
+#SDHub-Gallery-Image-Viewer-Control.sdhub-style * {
+  pointer-events: none !important;
+}
+
 #SDHub-Gallery-Image-Viewer-Wrapper {
   display: flex;
   position: relative;
@@ -1083,14 +1092,6 @@ body.sdhub-body-no-scrolling {
   top: 50%;
   left: 0;
   margin-left: 5px;
-}
-
-#SDHub-Gallery-Image-Viewer-Control.sdhub-gallery-pointer-events-none {
-  opacity: 0;
-}
-
-.sdhub-gallery-pointer-events-none * {
-  pointer-events: none !important;
 }
 
 /* ############################################################################################################ */
@@ -1198,6 +1199,10 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-Image-Info-SendButton button {
+  --a: #000 !important;
+  --b: var(--background-fill-secondary) !important;
+  --c: 0 0 5px 1px var(--a) !important;
+  --d: 0 0 1px 1px var(--b) !important;
   white-space: nowrap;
   position: relative;
   padding: 5px 20px;
@@ -1208,10 +1213,6 @@ body.sdhub-body-no-scrolling {
   background: var(--input-background-fill);
   transition: .2s ease;
   outline: none;
-  --a: #000 !important;
-  --b: var(--background-fill-secondary) !important;
-  --c: 0 0 5px 1px var(--a) !important;
-  --d: 0 0 1px 1px var(--b) !important;
 }
 
 #SDHub-Gallery-Image-Info-SendButton button:hover {
@@ -1298,14 +1299,14 @@ body.sdhub-body-no-scrolling {
   border-radius: 0.5rem 0.5rem 0 0;
   color: var(--primary-400);
   background: var(--input-background-fill);
-  transition: .4s ease;
+  transition: .2s ease;
   cursor: default;
   pointer-events: auto;
 }
 
 #SDHub-Gallery-Tab .sdhub-gallery-image-info-copybutton {
   cursor: pointer;
-  transition: .4s ease;
+  transition: .2s ease;
 }
 
 #SDHub-Gallery-Tab .sdhub-gallery-image-info-copybutton:hover {
@@ -1336,7 +1337,7 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-Tab .sdhub-gallery-image-info-output-content {
-  line-height: 1.7;
+  line-height: 1.5;
   margin: 0;
   padding: 5px 8px;
   border: 1px solid transparent;
@@ -1633,6 +1634,7 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-Info-Batch-Input {
+  --a: 0 0 5px 1px var(--primary-400) !important;
   display: flex;
   outline: none;
   text-align: center;
@@ -1645,7 +1647,6 @@ body.sdhub-body-no-scrolling {
   color: var(--body-text-color);
   background: var(--input-background-fill-hover);
   transition: .4s ease;
-  --a: 0 0 5px 1px var(--primary-400) !important;
 }
 
 #SDHub-Gallery-Info-Batch-Input:hover,
@@ -1673,6 +1674,8 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-info-button {
+  --a: transparent !important;
+  --b: 0 0 10px 1px var(--a) !important;
   display: flex;
   cursor: pointer;
   pointer-events: auto;
@@ -1694,8 +1697,6 @@ body.sdhub-body-no-scrolling {
   transition: .4s ease;
   user-select: none;
   -webkit-user-select: none;
-  --a: transparent !important;
-  --b: 0 0 10px 1px var(--a) !important;
 }
 
 .sdhub-gallery-info-button:hover {
@@ -1808,6 +1809,7 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-ImgChest-Checkbox input {
+  --a: 0 0 5px 0 var(--primary-500), inset 0 0 1px 1px var(--primary-500) !important;
   cursor: pointer;
   height: 30px;
   width: 100%;
@@ -1817,7 +1819,6 @@ body.sdhub-body-no-scrolling {
   padding: 5px;
   background-color: transparent;
   background-image: none;
-  --a: 0 0 5px 0 var(--primary-500), inset 0 0 1px 1px var(--primary-500) !important;
 }
 
 #SDHub-Gallery-ImgChest-Checkbox input:checked {
@@ -2046,7 +2047,7 @@ body.sdhub-body-no-scrolling {
   cursor: pointer;
 }
 
-#SDHub-Gallery-Setting-Exit-Button svg {
+#SDHub-Gallery-Setting-Exit-Button > svg {
   position: relative;
   filter: var(--sdhub-gallery-x-filter);
   transition: .2s ease;
@@ -2057,7 +2058,7 @@ body.sdhub-body-no-scrolling {
   filter: drop-shadow(0 0 3px red);
 }
 
-#SDHub-Gallery-Setting-Exit-Button:hover svg {
+#SDHub-Gallery-Setting-Exit-Button:hover > svg {
   color: #fff;
 }
 
@@ -2138,6 +2139,9 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-Setting .sdhub-gallery-setting-input-number {
+  --a: var(--primary-500) !important;
+  --b: inset 0 0 1px 1px var(--a) !important;
+  --c: inset 0 0 5px 1px var(--a) !important;
   display: inline-flex;
   outline: none;
   line-height: 1.5;
@@ -2155,9 +2159,6 @@ body.sdhub-body-no-scrolling {
   background: var(--input-background-fill);
   appearance: textfield;
   transition: .3s ease;
-  --a: var(--primary-500) !important;
-  --b: inset 0 0 1px 1px var(--a) !important;
-  --c: inset 0 0 5px 1px var(--a) !important;
 }
 
 #SDHub-Gallery-Setting .sdhub-gallery-setting-input-number:hover {
@@ -2275,6 +2276,9 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-setting-selection {
+  --a: 0 0 3px 1px !important;
+  --b: #000 !important;
+  --c: var(--primary-500) !important;
   display: inline-flex;
   align-items: center;
   line-height: 1.5;
@@ -2296,9 +2300,6 @@ body.sdhub-body-no-scrolling {
   overflow-wrap: anywhere;
   user-select: none;
   -webkit-user-select: none;
-  --a: 0 0 3px 1px !important;
-  --b: #000 !important;
-  --c: var(--primary-500) !important;
 }
 
 .sdhub-gallery-setting-selection.sdhub-gallery-setting-selected {
@@ -2395,6 +2396,8 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-Gallery-Setting-Apply-Button {
+  --a: var(--primary-500) !important;
+  --b: inset 0 0 1px 1px var(--a), 0 0 5px 0 #000 !important;
   display: flex;
   position: relative;
   align-self: center;
@@ -2415,8 +2418,6 @@ body.sdhub-body-no-scrolling {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  --a: var(--primary-500) !important;
-  --b: inset 0 0 1px 1px var(--a), 0 0 5px 0 #000 !important;
 }
 
 #SDHub-Gallery-Setting-Apply-Button:hover {
