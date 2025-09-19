@@ -1,12 +1,12 @@
 :root {
   --sdhub-gallery-tab-background: var(--input-background-fill-hover);
-  --sdhub-gallery-cm-ul-background: rgb(255 255 255 / 70%);
-  --sdhub-gallery-cm-ul-shadow: 0 0 1px 0 rgb(0 0 0 / 65%), inset 0 0 10px 1px rgb(0 0 0 / 65%), inset 0 0 1px 1px rgb(0 0 0 / 25%), 0 0 10px 0 rgb(0 0 0 / 70%);
+  --sdhub-gallery-cm-ul-background: rgb(255 255 255 / 80%);
+  --sdhub-gallery-cm-ul-shadow: 0 0 1px 0 rgb(0 0 0 / 65%), inset 0 0 7px 1px rgb(0 0 0 / 50%), inset 0 0 1px 1px rgb(0 0 0 / 25%), 0 0 14px 0 rgb(0 0 0);
   --sdhub-gallery-cm-li-hover-background: rgb(0 0 0 / 67%);
   --sdhub-gallery-cm-li-hover-color: var(--background-fill-primary);
   --sdhub-gallery-cm-line: 1px solid rgb(0 0 0 / 40%);
   --sdhub-gallery-img-border: #000;
-  --sdhub-gallery-img-size: 240px;
+  --sdhub-gallery-img-size: 260px;
   --sdhub-gallery-img-name-shadow: 0 0 3px 1px rgb(255 255 255 / 90%);
   --sdhub-gallery-img-name-background: rgb(255 255 255 / 70%);
   --sdhub-gallery-img-button-radius: 10px;
@@ -16,13 +16,13 @@
   --sdhub-gallery-spinner-filter: drop-shadow(0 0 2px rgb(0 0 0 / 90%)) drop-shadow(0 0 10px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px var(--primary-400));
   --sdhub-gallery-x-filter: drop-shadow(0 0 1px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px rgb(0 0 0 / 90%));
   --output-text-color: #fff;
-  --sdhub-gallery-viewer-background: rgb(200 200 200 / 80%);
+  --sdhub-gallery-viewer-background: rgb(200 200 200 / 90%);
 }
 
 .dark {
   --sdhub-gallery-tab-background: var(--input-background-fill);
-  --sdhub-gallery-cm-ul-background: rgb(0 0 0 / 60%);
-  --sdhub-gallery-cm-ul-shadow: 0 0 1px 0 rgb(255 255 255), inset 0 0 10px 1px rgb(187 187 187), inset 0 0 1px 1px rgb(82 82 82), 0 0 10px 2px rgb(0 0 0);
+  --sdhub-gallery-cm-ul-background: rgb(0 0 0 / 75%);
+  --sdhub-gallery-cm-ul-shadow: 0 0 1px 0 rgb(255 255 255), inset 0 0 7px 1px rgb(255 255 255 / 50%), inset 0 0 1px 1px rgb(82 82 82), 0 0 14px 0 rgb(0 0 0);
   --sdhub-gallery-cm-li-hover-background: rgb(255 255 255 / 70%);
   --sdhub-gallery-cm-li-hover-color: var(--background-fill-primary);
   --sdhub-gallery-cm-line: 1px solid rgb(255 255 255 / 40%);
@@ -31,7 +31,7 @@
   --sdhub-gallery-img-name-background: rgb(0 0 0 / 70%);
   --sdhub-gallery-items-color: var(--primary-400);
   --output-text-color: var(--body-text-color);
-  --sdhub-gallery-viewer-background: rgb(0 0 0 / 80%);
+  --sdhub-gallery-viewer-background: rgb(0 0 0 / 90%);
 }
 
 .sdhub-clear-text {
@@ -723,13 +723,13 @@ body.sdhub-body-no-scrolling {
 
 @media (min-width: 1920px) {
   .sdhub-gallery-img-container:hover .sdhub-gallery-img-btn {
-    transform: scale(1.4);
+    transform: scale(1.1);
   }
 }
 
 @media (min-width: 2560px) {
   .sdhub-gallery-img-container:hover .sdhub-gallery-img-btn {
-    transform: scale(1.5);
+    transform: scale(1.25);
   }
 }
 
@@ -838,7 +838,7 @@ body.sdhub-body-no-scrolling {
   right: 0;
   max-height: calc(100vh + 400px);
   width: 100%;
-  padding: 15px;
+  padding: 15px 0;
   border: 0;
   margin: 0;
   border-radius: 0;
@@ -983,8 +983,8 @@ body.sdhub-body-no-scrolling {
   width: 100%;
   height: 100%;
   opacity: 0;
-  background-color: var(--sdhub-gallery-viewer-background);
-  backdrop-filter: blur(7px);
+  background: var(--sdhub-gallery-viewer-background) var(--sd-image-scripts-noise);
+  background-repeat: repeat;
   transition: opacity .2s ease;
   overflow: hidden;
   outline: none;
@@ -992,7 +992,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-Image-Viewer.sdhub-style {
   opacity: 1;
-  transition: opacity .3s ease;
+  transition: opacity .25s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-Control {
@@ -1025,6 +1025,11 @@ body.sdhub-body-no-scrolling {
   gap: 0;
   transform: translate(0px, 0px) scale(1.2);
   transition: transform .2s ease-out;
+  pointer-events: none;
+}
+
+#SDHub-Gallery-Image-Viewer-Wrapper * {
+  pointer-events: auto;
 }
 
 #SDHub-Gallery-Image-Viewer-Wrapper.sdhub-style {

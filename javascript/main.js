@@ -556,8 +556,8 @@ document.addEventListener('DOMContentLoaded', async function () {
   await new Promise(resolve => (function check() { window.XLSX ? resolve() : setTimeout(check, 50); })());
 
   try {
-    window.getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)?.[0];
-    const path = getRunningScript()?.match(/file=[^\/]+\/[^\/]+\//)?.[0];
+    const getRunningScript = () => new Error().stack.match(/file=[^ \n]*\.js/)?.[0],
+    path = getRunningScript()?.match(/file=[^\/]+\/[^\/]+\//)?.[0];
     if (path) window.SDHubFilePath = path;
 
     const res = await fetch(`${path}sd-hub-translations.xlsx?ts=${Date.now()}`);

@@ -12,7 +12,7 @@ GalleryDefault = {
     'thumbnail-shape': 'aspect_ratio',
     'thumbnail-position': 'center',
     'thumbnail-layout': 'masonry',
-    'thumbnail-size': 240,
+    'thumbnail-size': 260,
     'show-filename': False,
     'show-buttons': False,
     'image-info-layout': 'full_width',
