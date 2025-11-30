@@ -286,14 +286,6 @@ async function SDHubTextEditorInfo(v) {
 
 function SDHubStyles() {
   const f = `
-    :root {
-      --sdhub-gallery-viewer-background: rgb(200 200 200 / 90%) !important;
-    }
-
-    .dark {
-      --sdhub-gallery-viewer-background: rgb(0 0 0 / 90%) !important;
-    }
-
     #${SDHub.Setting}-Box {
       scrollbar-width: thin !important;
       scrollbar-color: var(--primary-400) transparent !important;
@@ -303,11 +295,6 @@ function SDHubStyles() {
     .${SDHub.page}s.selected-page {
       scrollbar-width: none !important;
       scrollbar-color: var(--primary-400) transparent !important;
-    }
-
-    #${SDHub.ImgViewer},
-    #SDHub-Gallery-Tab-Layer {
-      backdrop-filter: none !important;
     }
 
     .sdhub-gallery-cm-ul {
@@ -490,7 +477,7 @@ async function SDHubRGBA() {
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-name-shadow-selected', a: 0.9, swap: true },
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-name-background-selected', a: 0.7, swap: true },
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-selected', a: 1, swap: true },
-    { c: '--background-fill-primary', to: '--sdhub-gallery-tab-layer-background', ar: 0.4, ad: 0.6 },
+    { c: '--background-fill-primary', to: '--sdhub-gallery-tab-layer-background', ar: 0.6, ad: 0.7 },
     { c: '--background-fill-primary', to: '--sdhub-gallery-cm-ul-fox', a: 0.75 },
   ];
 

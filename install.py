@@ -8,7 +8,6 @@ import zipfile
 import sys
 import os
 
-from modules.launch_utils import run_git, git_clone
 from modules.paths_internal import extensions_dir
 import launch
 
@@ -20,16 +19,24 @@ base = Path(__file__).parent
 py = sys.executable
 run = subprocess.run
 
-def _js():
+def _Req():
     n = 'sd-image-scripts'
     p = Path(extensions_dir) / n
 
-    if p.exists(): run_git(str(p), n, 'pull', desc='', errdesc='')
-    else: git_clone(f'https://github.com/gutris1/{n}', str(p), n)
+    if not p.exists():
+        run(['git', 'clone', '-q', f'https://github.com/gutris1/{n}', str(p)], check=True)
 
+        e = {
+            (p / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
+            (p / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
+        }
+
+        for f, u in e.items():
+            if not f.exists():
+                f.write_bytes(urllib.request.urlopen(u).read())
+
+def _js():
     e = {
-        (p / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-        (p / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
         (base / 'javascript/XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
         (base / 'javascript/XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
     }
@@ -141,6 +148,7 @@ def _check(p, a, cmd, pkgs):
         pkgs.append(p)
         _sub(cmd.split())
 
+_Req()
 _js()
 _req1()
 _req2()

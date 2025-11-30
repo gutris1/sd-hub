@@ -183,9 +183,11 @@ function SDHubGalleryImageInfoArrowEvents(arrow) {
   let clicked = false;
 
   const whichEL = () => {
-    const column = document.getElementById(`${SDHub.ImgInfo}-Row`),
-    panel = document.getElementById(`${SDHub.ImgInfo}-Output-Panel`);
-    return (panel && panel.scrollHeight > panel.clientHeight) ? panel : column;
+    const row = document.getElementById(`${SDHub.ImgInfo}-Row`),
+          panel = document.getElementById(`${SDHub.ImgInfo}-Output-Panel`),
+          l = window.SDHubGallerySettings['image-info-layout'] === 'full_width';
+
+    return l ? row : panel;
   };
 
   arrow.onclick = () => {
@@ -198,9 +200,10 @@ function SDHubGalleryImageInfoArrowEvents(arrow) {
 
   window.SDHubGalleryImageInfoArrowUpdate = () => {
     if (clicked) return;
-    const imginfoRow = document.getElementById(`${SDHub.ImgInfo}-Row`), el = whichEL();
-    if (!el) return;
+    const imginfoRow = document.getElementById(`${SDHub.ImgInfo}-Row`),
+    el = whichEL(); if (!el) return;
     if (getComputedStyle(imginfoRow).display !== 'flex') return arrow.style.transform = '';
+
     const { scrollTop, scrollHeight, clientHeight } = el,
     overflow = scrollHeight > clientHeight + 1,
     bottom = scrollTop + clientHeight >= scrollHeight - 5;
@@ -314,24 +317,24 @@ function SDHubGalleryCreateContextMenu() {
 }
 
 function SDHubGalleryCreateLightBox() {
-  const NextBtn = SDHubEL('span', {
+  const nextBtn = SDHubEL('span', {
     id: `${SDHub.ImgViewer}-Next-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubSVG.rightArrow(),
     onclick: (e) => (e.stopPropagation(), SDHubGalleryNextImage())
   }),
 
-  PrevBtn = SDHubEL('span', {
+  prevBtn = SDHubEL('span', {
     id: `${SDHub.ImgViewer}-Prev-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubSVG.leftArrow(),
     onclick: (e) => (e.stopPropagation(), SDHubGalleryPrevImage())
   }),
 
-  ExitBtn = SDHubEL('span', {
+  exitBtn = SDHubEL('span', {
     id: `${SDHub.ImgViewer}-Exit-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubSVG.cross(),
     onclick: (e) => (e.stopPropagation(), window.SDHubGalleryImageViewerExit())
   }),
 
-  Control = SDHubEL('div', { id: `${SDHub.ImgViewer}-Control`, append: [NextBtn, PrevBtn, ExitBtn] }),
-  Wrapper = SDHubEL('div', { id: `${SDHub.ImgViewer}-Wrapper`}),
-  lightBox = SDHubEL('div', { id: `${SDHub.ImgViewer}`, tabindex: 0, append: [Control, Wrapper] });
+  controls = SDHubEL('div', { id: `${SDHub.ImgViewer}-Control`, append: [nextBtn, prevBtn, exitBtn] }),
+  wrapper = SDHubEL('div', { id: `${SDHub.ImgViewer}-Wrapper`}),
+  lightBox = SDHubEL('div', { id: `${SDHub.ImgViewer}`, tabindex: 0, append: [controls, wrapper] });
 
   return lightBox;
 }

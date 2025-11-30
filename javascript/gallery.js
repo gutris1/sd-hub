@@ -320,7 +320,7 @@ async function SDHubGalleryContextMenuButton(v) {
       break;
 
     case 'viewer':
-      SDHubGalleryImageViewer('m');
+      SDHubGalleryDisplayImageViewer('m');
       break;
 
     case 'select':
@@ -391,7 +391,6 @@ async function SDHubGalleryImageInfo(img) {
         imgInfoRow.classList.add(SDHub.style);
         infoCon.style.display = '';
 
-        setTimeout(() => window.SDHubGalleryImageInfoArrowUpdate(), 0);
         setTimeout(() => SDHubGalleryBlur('remove'), 100);
         setTimeout(() => imgInfoRow.style.pointerEvents = '', 300);
         setTimeout(() => {

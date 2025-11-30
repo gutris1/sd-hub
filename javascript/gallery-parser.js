@@ -7,18 +7,21 @@ async function SDHubGalleryParser() {
   if (!img) {
     window.SharedParserPostProcessingInfo = window.SharedParserExtrasInfo = '';
     HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML('');
+    setTimeout(window.SDHubGalleryImageInfoArrowUpdate, 0);
     return;
   }
 
-  img.onclick = () => SDHubGalleryImageViewer('s');
-  img.onload = () => (img.style.opacity = '1', setTimeout(() => window.SDHubGalleryDisplayImageInfo?.(), 200));
+  img.onclick = () => SDHubGalleryDisplayImageViewer('s');
+  img.onload = () => {
+    img.style.opacity = '1';
+    setTimeout(() => window.SDHubGalleryDisplayImageInfo?.(), 200);
+  };
 
   const output = await SharedImageParser(img);
   window.SDHubGalleryImageInfoRaw = RawOutput.value = output;
   updateInput(RawOutput);
   setTimeout(() => window.SDHubGallerySendImageInfo?.(), 200);
   HTMLPanel.innerHTML = await SDHubGalleryPlainTextToHTML(output);
-  setTimeout(() => window.SDHubGalleryImageInfoArrowUpdate(), 0);
   window.SDHubImg = null;
 }
 
@@ -95,9 +98,10 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
   let text = inputs
     .replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>').replace(/Seed:\s?(\d+),/gi, (_, seedNumber) => 
       `<span id='${SDHub.ImgInfo}-Seed-Button' title='${SDHubGetTranslation("copy_seed")}' onclick='SDHubGalleryCopyButtonEvent(event)'>Seed</span>: ${seedNumber},`
-    );
+    ),
 
-  let modelOutput = `<div id='${SDHub.ImgInfo}-Spinner-Wrapper'><div id='${SDHub.ImgInfo}-Spinner'>${SDHubSVG.spinner()}</div></div>`;
+  spinner = `<div id='${SDHub.ImgInfo}-Spinner-Wrapper'><div id='${SDHub.ImgInfo}-Spinner'>${SDHubSVG.spinner()}</div></div>`;
+
   const { prompt, negativePrompt, params, paramsRAW } = SharedPromptParser(text);
 
   if (paramsRAW) {
@@ -107,18 +111,18 @@ async function SDHubGalleryPlainTextToHTML(inputs) {
         try {
           const links = await SharedModelsFetch(paramsRAW);
           if (!links?.trim()) return modelsBox.remove();
-
           modelsBox.innerHTML = links;
         } catch {
           modelsBox.innerHTML = `<div class='${SDHub.imgInfo}-output-failed'>Failed to fetch...</div>`;
         }
-        setTimeout(() => window.SDHubGalleryImageInfoArrowUpdate(), 0);
       }
+
+      setTimeout(window.SDHubGalleryImageInfoArrowUpdate, 0);
     }, 500);
   }
 
   const sections = [
-    [titles.prompt, prompt], [titles.negativePrompt, negativePrompt], [titles.params, params], [titles.models, modelOutput],
+    [titles.prompt, prompt], [titles.negativePrompt, negativePrompt], [titles.params, params], [titles.models, spinner],
     [titles.postProcessing, ExtrasInfo], [titles.postProcessing, PostProcessingInfo], [titles.software, window.SharedParserSoftwareInfo],
     [titles.encrypt, EncryptInfo], [titles.sha, Sha256Info], [titles.source, NaiSourceInfo]
   ];

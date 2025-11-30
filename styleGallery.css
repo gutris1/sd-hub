@@ -8,15 +8,16 @@
   --sdhub-gallery-img-border: #000;
   --sdhub-gallery-img-size: 260px;
   --sdhub-gallery-img-name-shadow: 0 0 3px 1px rgb(255 255 255 / 90%);
-  --sdhub-gallery-img-name-background: rgb(255 255 255 / 70%);
+  --sdhub-gallery-img-name-background: rgb(255 255 255 / 80%);
   --sdhub-gallery-img-button-radius: 10px;
-  --sdhub-gallery-img-fav: #ecb800;
+  --sdhub-gallery-img-fav: #d3a500;
   --sdhub-gallery-items-color: var(--body-text-color);
   --sdhub-gallery-flash-nav-button: brightness(1) drop-shadow(0 0 3px var(--primary-400)) drop-shadow(0 0 2px var(--primary-500));
   --sdhub-gallery-spinner-filter: drop-shadow(0 0 2px rgb(0 0 0 / 90%)) drop-shadow(0 0 10px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px var(--primary-400));
   --sdhub-gallery-x-filter: drop-shadow(0 0 1px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px rgb(0 0 0 / 60%)) drop-shadow(0 0 1px rgb(0 0 0 / 90%));
   --output-text-color: #fff;
-  --sdhub-gallery-viewer-background: rgb(200 200 200 / 90%);
+  --sdhub-gallery-viewer-bg: rgb(200 200 200 / 95%);
+  --sdhub-gallery-viewer-percent-bg: rgb(200 200 200 / 90%);
 }
 
 .dark {
@@ -28,10 +29,12 @@
   --sdhub-gallery-cm-line: 1px solid rgb(255 255 255 / 40%);
   --sdhub-gallery-img-border: #444444;
   --sdhub-gallery-img-name-shadow: 0 0 3px 1px rgb(0 0 0 / 80%);
-  --sdhub-gallery-img-name-background: rgb(0 0 0 / 70%);
+  --sdhub-gallery-img-name-background: rgb(0 0 0 / 80%);
+  --sdhub-gallery-img-fav: #ecb800;
   --sdhub-gallery-items-color: var(--primary-400);
   --output-text-color: var(--body-text-color);
-  --sdhub-gallery-viewer-background: rgb(0 0 0 / 90%);
+  --sdhub-gallery-viewer-bg: rgb(18 18 18 / 95%);
+  --sdhub-gallery-viewer-percent-bg: rgb(18 18 18 / 80%);
 }
 
 .sdhub-clear-text {
@@ -215,7 +218,6 @@ body.sdhub-body-no-scrolling {
   width: calc(100% + 20px);
   opacity: 0;
   background: var(--sdhub-gallery-tab-layer-background);
-  backdrop-filter: blur(4px);
   transition: .2s ease;
 }
 
@@ -548,7 +550,6 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-Tab-Wrapper > :not(#SDHub-Gallery-Favorites-Tab-Container) .sdhub-gallery-img-box.sdhub-gallery-img-favorited .sdhub-gallery-img-name {
   color: var(--sdhub-gallery-img-fav) !important;
-  text-shadow: 0 0 1px var(--sdhub-gallery-img-fav);
 }
 
 .sdhub-gallery-img-btn {
@@ -718,12 +719,6 @@ body.sdhub-body-no-scrolling {
     background: var(--input-background-fill);
     transform: scale(1) !important;
     opacity: 1 !important;
-  }
-}
-
-@media (min-width: 1920px) {
-  .sdhub-gallery-img-container:hover .sdhub-gallery-img-btn {
-    transform: scale(1.1);
   }
 }
 
@@ -983,32 +978,34 @@ body.sdhub-body-no-scrolling {
   width: 100%;
   height: 100%;
   opacity: 0;
-  background: var(--sdhub-gallery-viewer-background) var(--sd-image-scripts-noise);
+  background: var(--sdhub-gallery-viewer-bg);
   background-repeat: repeat;
-  transition: opacity .2s ease;
+  transition: opacity .15s ease;
   overflow: hidden;
   outline: none;
 }
 
 #SDHub-Gallery-Image-Viewer.sdhub-style {
   opacity: 1;
-  transition: opacity .25s ease;
+  transition: opacity .2s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-Control {
+  display: flex;
+  align-items: center;
+  position: absolute;
   z-index: 1;
+  top: 0;
   height: 100%;
   width: 100%;
-  pointer-events: none;
-  top: 0;
-  display: flex;
-  position: absolute;
   opacity: 1;
-  transition: opacity .25s;
+  transition: opacity .15s ease;
+  pointer-events: none;
 }
 
 #SDHub-Gallery-Image-Viewer-Control.sdhub-style {
   opacity: 0;
+  transition: opacity .2s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-Control.sdhub-style * {
@@ -1048,7 +1045,7 @@ body.sdhub-body-no-scrolling {
   cursor: default;
   user-select: none;
   -webkit-user-select: none;
-  background-color: #212121;
+  background: #212121;
   transform: translate(0px, 0px) scale(var(--sdhub-scale));
   transition: transform .4s cubic-bezier(.2, .4, .4, 1) 0s;
 }
@@ -1060,43 +1057,69 @@ body.sdhub-body-no-scrolling {
 .sdhub-gallery-img-viewer-button {
   display: flex;
   position: absolute;
-  top: 50%;
   margin: 0;
   padding: 0;
   border: 0;
   color: var(--primary-400);
   background: transparent;
   transform: scale(0);
-  transition: .3s ease;
+  transition: .2s ease;
   pointer-events: auto;
   cursor: pointer;
-}
-
-.sdhub-gallery-img-viewer-button svg {
-  filter:drop-shadow(0 0 4px rgb(0 0 0 / 60%)) drop-shadow(0 0 3px rgb(0 0 0 / 60%)) drop-shadow(0 0 2px rgb(0 0 0 / 90%));
-  width: 45px;
-  height: 45px;
 }
 
 #SDHub-Gallery-Image-Viewer.sdhub-style .sdhub-gallery-img-viewer-button {
   transform: scale(1);
 }
 
-#SDHub-Gallery-Image-Viewer.sdhub-style .sdhub-gallery-img-viewer-button:hover {
-  transform: scale(1.3);
-  color: var(--primary-400);
+#SDHub-Gallery-Image-Viewer-Next-Button,
+#SDHub-Gallery-Image-Viewer-Prev-Button {
+  --a: -30px !important;
+  align-items: center;
+  height: 60px;
+  width: 85px;
+  padding: 0;
+  border-radius: 100px;
+  box-shadow: 0 0 3px 1px #000;
+  background: var(--input-background-fill);
+  transition: .2s ease;
 }
 
 #SDHub-Gallery-Image-Viewer-Next-Button {
-  top: 50%;
-  right: 0;
-  margin-right: 5px;
+  justify-content: left;
+  right: var(--a);
+  transform-origin: right;
 }
 
 #SDHub-Gallery-Image-Viewer-Prev-Button {
-  top: 50%;
-  left: 0;
-  margin-left: 5px;
+  justify-content: right;
+  left: var(--a);
+  transform-origin: left;
+}
+
+#SDHub-Gallery-Image-Viewer-Next-Button > svg,
+#SDHub-Gallery-Image-Viewer-Prev-Button > svg {
+  --a: 12px !important;
+  position: absolute;
+  height: 45px;
+  width: 40px;
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 60%)) drop-shadow(0 0 0 rgb(0 0 0 / 90%));
+}
+
+#SDHub-Gallery-Image-Viewer-Next-Button > svg {
+  left: var(--a);
+}
+
+#SDHub-Gallery-Image-Viewer-Prev-Button > svg {
+  right: var(--a);
+}
+
+#SDHub-Gallery-Image-Viewer-Next-Button:hover,
+#SDHub-Gallery-Image-Viewer-Prev-Button:hover {
+  box-shadow: 0 0 1px 1px #000, 0 0 10px 0 var(--primary-500);
+  color: var(--body-text-color);
+  background: var(--primary-500);
+  filter: drop-shadow(0 0 5px var(--primary-500));
 }
 
 /* ############################################################################################################ */
@@ -1116,7 +1139,7 @@ body.sdhub-body-no-scrolling {
   opacity: 0;
   border-radius: 0;
   background: var(--input-background-fill-hover) !important;
-  transition: opacity .2s ease;
+  transition: opacity .15s ease;
   overflow-y: auto;
   overscroll-behavior: contain;
   scroll-behavior: smooth;
@@ -1126,7 +1149,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-Image-Info-Row.sdhub-style {
   opacity: 1;
-  transition: opacity .3s ease;
+  transition: opacity .2s ease;
 }
 
 #SDHub-Gallery-Image-Info-Row > .form {
@@ -1396,7 +1419,7 @@ body.sdhub-body-no-scrolling {
   align-items: center;
   justify-content: center;
   position: relative;
-  height: 80px;
+  height: 70px;
   width: 100%;
   margin: 0;
   margin-bottom: 10px;
