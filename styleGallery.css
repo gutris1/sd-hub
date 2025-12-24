@@ -1703,7 +1703,7 @@ body.sdhub-body-no-scrolling {
 
 .sdhub-gallery-info-button {
   --a: transparent !important;
-  --b: 0 0 10px 1px var(--a) !important;
+  --b: 0 0 6px 0 var(--a) !important;
   display: flex;
   cursor: pointer;
   pointer-events: auto;
@@ -1719,10 +1719,10 @@ body.sdhub-body-no-scrolling {
   padding: 2px 10px;
   border: 1px solid var(--body-text-color);
   border-radius: 8px;
-  box-shadow: 0 0 10px 2px #000;
-  color: var(--background-fill-secondary);
-  background: var(--body-text-color);
-  transition: .4s ease;
+  box-shadow: 0 0 2px 0 #000;
+  color: var(--body-text-color);
+  background: var(--input-background-fill);
+  transition: .3s ease;
   user-select: none;
   -webkit-user-select: none;
 }
