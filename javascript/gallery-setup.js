@@ -60,15 +60,12 @@ function SDHubGalleryDOMLoaded() {
 
   const img = SDHubEL('img', { class: 'sdhub-gallery-img', src: 'https://huggingface.co/gutris1/webui/resolve/main/misc/card-no-preview.png' }),
   favBtn = SDHubEL('span', { class: ['sdhub-gallery-img-btn-fav', 'sdhub-gallery-img-btn'], html: SDHubSVG.favButton() }),
-  CheckBtn = SDHubEL('span', { class: ['sdhub-gallery-img-btn-checkbox', 'sdhub-gallery-img-btn'], html: SDHubSVG.imageCheck() }),
-  ViewerBtn = SDHubEL('span', { 
-    class: ['sdhub-gallery-img-btn-imageviewer', 'sdhub-gallery-img-btn'], html: SDHubSVG.imageButton(),
-    title: SDHubGetTranslation('image_viewer')
-  }),
+  checkBtn = SDHubEL('span', { class: ['sdhub-gallery-img-btn-checkbox', 'sdhub-gallery-img-btn'], html: SDHubSVG.imageCheck() }),
+  viewerBtn = SDHubEL('span', { class: ['sdhub-gallery-img-btn-imageviewer', 'sdhub-gallery-img-btn'], html: SDHubSVG.imageButton() }),
 
   imgName = SDHubEL('div', { class: 'sdhub-gallery-img-name' }),
   imgFrame = SDHubEL('div', { class: 'sdhub-gallery-img-frame' }),
-  imgWrap = SDHubEL('div', { class: 'sdhub-gallery-img-wrapper', append: [img, favBtn, CheckBtn, ViewerBtn, imgName, imgFrame] }),
+  imgWrap = SDHubEL('div', { class: 'sdhub-gallery-img-wrapper', append: [img, favBtn, checkBtn, viewerBtn, imgName, imgFrame] }),
 
   imgBor = SDHubEL('span', { class: 'sdhub-gallery-img-border' }),
   imgCon = SDHubEL('div', { class: 'sdhub-gallery-img-container', append: [imgWrap, imgBor] }),
@@ -81,8 +78,8 @@ function SDHubGalleryDOMLoaded() {
 
   StickyCon = SDHubEL('div', { id: 'SDHub-Gallery-Sticky-Container', append: [SDHubGalleryCreateBatchBox(), pageArrowCon]}),
 
-  ViewerBtnSVG = ViewerBtn.querySelector('svg');
-  ViewerBtnSVG && ViewerBtnSVG.classList.remove('sdhub-gallery-cm-svg');
+  viewerBtnSVG = viewerBtn.querySelector('svg');
+  viewerBtnSVG && viewerBtnSVG.classList.remove('sdhub-gallery-cm-svg');
 
   GalleryWrap.prepend(TabRow, SDHubEL('div', { id: 'SDHub-Gallery-Page-Nav-Box'}));
   GalleryWrap.append(StickyCon, TabLayer);
@@ -409,6 +406,7 @@ function SDHubGalleryCreateBatchBox() {
         if (cb) {
           cb.classList.toggle(SDHub.imgSel, add);
           cb.innerHTML = add ? SDHubSVG.imageUncheck() : SDHubSVG.imageCheck();
+          SDHubGallerySetSelect(c, cb);
         }
       });
       count += imgBox.length;
@@ -423,22 +421,27 @@ function SDHubGalleryCreateBatchBox() {
 
   const selectAll = SDHubEL('div', {
     id: 'SDHub-Gallery-Batch-Select', class: 'sdhub-gallery-batch-button', html: SDHubSVG.multiSelect(),
+    title: SDHubGetTranslation('select_all_images'),
     onclick: () => window.SDHubGalleryAllCheckbox()
   }),
   download = SDHubEL('div', {
     id: 'SDHub-Gallery-Batch-Download', class: 'sdhub-gallery-batch-button', html: SDHubSVG.download(),
+    title: SDHubGetTranslation('batch_download_images'),
     onclick: () => SDHubGalleryInfoPopUp('batch-download')
   }),
   delet = SDHubEL('div', {
     id: 'SDHub-Gallery-Batch-Delete', class: 'sdhub-gallery-batch-button', html: SDHubSVG.delete(),
+    title: SDHubGetTranslation('batch_delete_images'),
     onclick: () => SDHubGalleryInfoPopUp('batch-delete')
   }),
   unselectAll = SDHubEL('div', {
     id: 'SDHub-Gallery-Batch-Unselect', class: 'sdhub-gallery-batch-button', html: SDHubSVG.multiUnselect(),
+    title: SDHubGetTranslation('unselect_all_images'),
     onclick: () => window.SDHubGalleryAllCheckbox(false)
   }),
   setting = SDHubEL('div', {
     id: 'SDHub-Gallery-Batch-Setting', class: 'sdhub-gallery-batch-button', html: SDHubSVG.gear(),
+    title: SDHubGetTranslation('setting_title'),
     onclick: () => document.getElementById(`${SDHub.Setting}-Button`)?.click()
   }),
 
@@ -708,10 +711,16 @@ function SDHubGalleryImgBoxes({ path, thumb, name, fav = false }, onLoad = null)
 
   const img = imgBox.querySelector('img'),
   nameBox = imgBox.querySelector('.sdhub-gallery-img-name'),
+  favBtn = imgBox.querySelector('.sdhub-gallery-img-btn-fav'),
+  checkBtn = imgBox.querySelector('.sdhub-gallery-img-btn-checkbox'),
+  viewerBtn = imgBox.querySelector('.sdhub-gallery-img-btn-imageviewer'),
   named = decodeURIComponent(name);
 
   nameBox && (nameBox.textContent = named);
   fav && imgBox.classList.add(SDHub.imgFav);
+  favBtn && SDHubGallerySetFav(imgBox, favBtn);
+  checkBtn && SDHubGallerySetSelect(imgBox, checkBtn);
+  viewerBtn.title = SDHubGetTranslation('image_viewer');
 
   if (img) {
     img.loading = 'lazy';
@@ -728,6 +737,9 @@ function SDHubGalleryImgBoxes({ path, thumb, name, fav = false }, onLoad = null)
 
   return imgBox;
 }
+
+const SDHubGallerySetFav = (b, f) => f.title = b.classList.contains(SDHub.imgFav) ? SDHubGetTranslation('unfav_this_image') : SDHubGetTranslation('fav_this_image');
+const SDHubGallerySetSelect = (b, cb) => cb.title = b.classList.contains(SDHub.imgSel) ? SDHubGetTranslation('unselect_this_image') : SDHubGetTranslation('select_this_image');
 
 function SDHubGalleryTabPages(tabName, imageBoxes, f, last = false) {
   const TabRow = document.getElementById('SDHub-Gallery-Tab-Button-Row'),

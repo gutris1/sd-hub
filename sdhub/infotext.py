@@ -1,7 +1,6 @@
 from pathlib import Path
 import urllib.request
 import shutil
-import json
 import re
 
 version = '12'

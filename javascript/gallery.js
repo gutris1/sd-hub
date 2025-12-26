@@ -29,6 +29,7 @@ function SDHubGalleryImageButtonEvents(imgBox) {
     favBtn.onclick = null;
     try {
       await SDHubGalleryImageFav(imgBox, img);
+      favBtn && SDHubGallerySetFav(imgBox, favBtn);
     } finally {
       favBtn.onclick = fav;
     }
@@ -42,6 +43,7 @@ function SDHubGalleryImageButtonEvents(imgBox) {
     SDHubGalleryImgSelected = Math.max(0, SDHubGalleryImgSelected);
     SDHubGalleryToggleBatchBox(SDHubGalleryImgSelected > 0 ? 'flex' : '');
     checkbox.innerHTML = n ? SDHubSVG.imageUncheck() : SDHubSVG.imageCheck();
+    SDHubGallerySetSelect(imgBox, checkbox);
   };
 
   viewerBtn.onclick = () => SDHubGalleryOpenViewerFromButton(img);
