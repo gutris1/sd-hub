@@ -278,7 +278,11 @@ Use the arrow buttons at the bottom to navigate between pages (if available), or
 - The same applies to the auto-uploading function in the Gallery tab, which uploads images to imgchest.com after each image generation.<br>
 
 # Changelog
-### 2025-06-30 — v11
+### 2025-12-26 — v12
+- Added function for Gallery Tab = favorite button, batch selecting, batch downloading, batch deletion.
+- Favorited images will be copied to Favorites Tab.
+
+<details><summary>2025-06-30 — v11</summary><br>
 - Added function for Downloader Tab to automatically create model info tags when the source is Civitai.
 - And a checkbox to optionally download the model preview.
 - If the source is Huggingface, the SHA256 will be used to match and fetch the info tags and preview from Civitai when possible. Needs a Huggingface read token if the model is private.
@@ -286,6 +290,7 @@ Use the arrow buttons at the bottom to navigate between pages (if available), or
 <p align="left">
   <img src="https://github.com/user-attachments/assets/338198eb-7180-44a2-988a-d25df64961eb", width=100%>
 </p>
+</details>
 
 <details><summary>2025-06-14 — v10</summary><br>
 
