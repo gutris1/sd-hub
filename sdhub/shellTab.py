@@ -1,15 +1,17 @@
-from modules.ui_components import FormRow
 import gradio as gr
 import subprocess
 import select
-import pty
 import os
 
-from sd_hub.paths import SDHubPaths
+from modules.ui_components import FormRow
+
+from sdhub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
 def ShellRun(inputs):
+    import pty
+
     for tag, path in tag_tag.items():
         inputs = inputs.replace(tag, path)
 
@@ -35,8 +37,10 @@ def ShellRun(inputs):
                         break
                 if p.poll() is not None:
                     break
+
             except OSError:
                 break
+
     finally:
         os.close(ayu)
         os.close(rika)
@@ -49,8 +53,7 @@ def ShellRun(inputs):
         p.wait()
 
 def ShellLobby(inputs, box_state=gr.State()):
-    if not inputs.strip():
-        return
+    if not inputs.strip(): return
 
     output_box = box_state if box_state else []
 
@@ -62,6 +65,8 @@ def ShellLobby(inputs, box_state=gr.State()):
     return gr.update()
 
 def ShellTab():
+    if not SDHubPaths.getENV(): return
+
     with gr.TabItem('Shell', elem_id='SDHub-Shell-Tab'):
         with FormRow():
             button = gr.Button(
@@ -84,7 +89,7 @@ def ShellTab():
                 'hantu',
                 variant='primary',
                 elem_id='SDHub-Shell-Ghost-Button',
-                elem_classes='hide-this'
+                elem_classes='sdhub-hidden'
             )
 
             output = gr.Textbox(

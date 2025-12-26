@@ -1,16 +1,17 @@
-from modules.ui_components import FormRow, FormColumn
-from modules.paths_internal import data_path
-from modules.shared import opts
 from pathlib import Path
 from tqdm import tqdm
 import gradio as gr
 import zipfile
 
-from sd_hub.paths import SDHubPaths
+from modules.ui_components import FormRow, FormColumn
+from modules.paths_internal import data_path
+from modules.shared import opts
+
+from sdhub.paths import SDHubPaths
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
-def is_that_tag(output_path):
+def check(output_path):
     if output_path.startswith('$'):
         parts = output_path[1:].strip().split('/', 1)
         tags_key = f'${parts[0].lower()}'
@@ -26,7 +27,7 @@ def is_that_tag(output_path):
         return Path(output_path), None
 
 def zipping(file_name, output_path, mkdir_zip):
-    resolved, err = is_that_tag(output_path)
+    resolved, err = check(output_path)
     if err: yield err, True; return
 
     out = resolved if resolved else Path(data_path)
@@ -94,6 +95,8 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     return gr.update(), gr.State(output_box)
 
 def ZipOutputs():
+    if not SDHubPaths.getENV(): return
+
     with gr.Accordion('Zip Outputs', open=False, elem_id='SDHub-Archiver-ZipOutputs-Accordion', elem_classes='sdhub-accordion'):
         with FormRow():
             with FormColumn(scale=6):

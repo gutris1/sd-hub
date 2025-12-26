@@ -1,8 +1,9 @@
+from pathlib import Path
+import os
+
 from modules.paths_internal import models_path, data_path, extensions_dir
 from modules.sd_models import model_path as ckpt_path
 from modules.shared import cmd_opts, opts
-from pathlib import Path
-import os
 
 BLOCK = (
     'Downloading/Uploading/etc files from/to outside models/embeddings/outputs folders is blocked. '
@@ -63,8 +64,8 @@ class SDPathsSDHub:
             for attr in outdirs:
                 try:
                     v = getattr(opts, attr, None)
-                    if isinstance(v, str) and v:
-                        outpath.append(Path(v).resolve())
+                    if isinstance(v, str) and v: outpath.append(Path(v).resolve())
+
                 except Exception:
                     pass
 

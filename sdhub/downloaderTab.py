@@ -1,6 +1,3 @@
-from modules.ui_components import FormRow, FormColumn
-from modules.scripts import basedir
-from modules.shared import cmd_opts
 from urllib.parse import urlparse
 from pathlib import Path
 from PIL import Image
@@ -15,10 +12,14 @@ import re
 import io
 import os
 
-from sd_hub.infotext import dl_title, dl_info, LoadToken, SaveToken
-from sd_hub.paths import SDHubPaths, BLOCK
-from sd_hub.scraper import scraper
-from sd_hub.version import xyz
+from modules.ui_components import FormRow, FormColumn
+from modules.scripts import basedir
+from modules.shared import cmd_opts
+
+from sdhub.config import LoadToken, SaveToken, xyz
+from sdhub.infotext import dl_title, dl_info
+from sdhub.paths import SDHubPaths, BLOCK
+from sdhub.scraper import scraper
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 aria2cexe = Path(basedir()) / 'aria2c.exe'
@@ -201,6 +202,7 @@ def civitai_preview(j, p, fn):
     if KAGGLE:
         try:
             import sd_image_encryption  # type: ignore
+
         except ImportError as e:
             err = f"{str(e)}\nimage preview skipped\nInstall https://github.com/gutris1/sd-image-encryption extension or you'll get banned by Kaggle."
             print(err)
@@ -289,6 +291,7 @@ def url_check(url):
         if url_parsed.netloc not in supported: return False, f'Supported Domain:\n' + '\n'.join(supported)
 
         return True, ''
+
     except Exception as e:
         return False, str(e)
 
@@ -445,7 +448,6 @@ def read_txt(f, box):
 
 def DownloaderTab():
     _, HFR, CAK, _, _ = LoadToken('downloader')
-    TokenBlur = '() => { SDHubTokenBlur(); }'
 
     with gr.TabItem('Downloader', elem_id='SDHub-Downloader-Tab'):
         gr.HTML(dl_title)
@@ -508,7 +510,7 @@ def DownloaderTab():
             elem_classes='sdhub-input'
         )
 
-        with FormRow(elem_id='SDHub-Downloader-Button-Row'):
+        with FormRow(elem_classes='sdhub-button-output-row'):
             with FormColumn(scale=6):
                 with FormRow(elem_classes='sdhub-row'):
                     with FormRow(elem_classes='sdhub-button-row-1'):
@@ -551,6 +553,8 @@ def DownloaderTab():
                     elem_classes='sdhub-output'
                 )
 
+        TokenBlur = '() => SDHubTokenBlur()'
+
         load_button.click(
             fn=lambda: LoadToken('downloader'), inputs=[], outputs=[output_2, token_1, token_2, output_2]
         ).then(fn=None, _js=TokenBlur)
@@ -574,7 +578,7 @@ def DownloaderTab():
                 return [...v, null];
             }
             """
-        ).then(fn=None, _js='() => { SDHubDownloader(); }')
+        ).then(fn=None, _js='() => SDHubDownloader()')
 
         txt_button.upload(fn=read_txt, inputs=[txt_button, input_box], outputs=input_box)
         scrape_button.click(fn=scraper, inputs=[input_box, token_1, gr.State()], outputs=[input_box, output_2])

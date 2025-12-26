@@ -14,9 +14,7 @@ Supported languages:
   - Japanese (日本語)
   - Simplified Chinese (简体中文)
   - Traditional Chinese (繁體中文)
-  - Spanish (Español)
   - Korean (한국어)
-  - Russian (Русский)
 
 Language is automatically selected based on the browser’s language setting.
 
@@ -219,7 +217,7 @@ $ckpt
 
 <details><summary> <h2>Gallery</h2> </summary><br>
 
-<p><img src="https://github.com/user-attachments/assets/86112ae4-7698-4ad1-a6ef-01869fcedf09", max-width=1000px></p>
+<p><img src="https://github.com/user-attachments/assets/7080fdeb-b2c8-436d-a35d-b7df8cfc3b74", max-width=1000px></p>
 
 inspired by [IIB](https://github.com/zanllp/sd-webui-infinite-image-browsing)<br>
 a simple gallery to display your outputs.<br>
@@ -229,24 +227,49 @@ Each Tab has its own pagination, with a default limit of 100 images per page (yo
 Use the arrow buttons at the bottom to navigate between pages (if available), or use the left/right arrow keys on your keyboard.<br>
 
 - Click the gear icon on the right to open Settings and change the layout of certain elements.
-  - Press [X] in the top-right or ESC to close Settings.
-<p><img src="https://github.com/user-attachments/assets/11f9c838-891e-494c-97d5-5275f04fb93b", max-width=1000px></p>
+  - Press the [X] button in the top-right corner or the Esc key to close it.
+  - Settings will be stored in /sd-webui/extensions/sd-hub/.sd-hub-config.json
+<p><img src="https://github.com/user-attachments/assets/92146f73-aa7d-4495-b528-dd7ca6b60198", max-width=1000px></p>
+<p><img src="https://github.com/user-attachments/assets/6d9f9394-0b75-4eea-892f-232ca24c1986", max-width=1000px></p>
 
 - Left-click on an image to open the image info.<br>
-  - left-click the image inside the image info to open the image viewer.
-  - Press [X] in the top-right or ESC to close image info.
-<p><img src="https://github.com/user-attachments/assets/62a9f988-a190-4970-b0dc-446eaa051380", max-width=1000px></p>
+  - left-click the image inside the image info to open the image viewer (single).
+  - Press the [X] button in the top-right corner or the Esc key to close it.
+<p><img src="https://github.com/user-attachments/assets/6ca8baf6-43b3-49a8-b40d-2da7cc7b9d1e", max-width=1000px></p>
 
 - Right-click on an image to open a context menu.<br>
-<p><img src="https://github.com/user-attachments/assets/57152ccd-293f-418c-840b-1a1ecdc6ae55", max-width=1000px></p>
+<p><img src="https://github.com/user-attachments/assets/b99759b3-dd6c-4f7f-bf8c-6ba3a3a6b5b0", max-width=1000px></p>
 
-- Hovering over an image will reveal the image viewer button in the bottom-left and a context menu button in the top-right (which also opens on hover).<br>
-<p><img src="https://github.com/user-attachments/assets/e2b6d93a-cbd4-44d3-a59b-f4350c96cf1a", max-width=1000px></p>
+- Deletion box.
+<p><img src="https://github.com/user-attachments/assets/8082277d-90a8-420f-a7aa-e2db83c2041d", max-width=1000px></p>
 
-- Left-click on the bottom left button to open an image viewer.
-  - Use left/right arrow keys to navigate between images.
-  - Press [X] in the top-right or ESC to close image viewer.
-<p><img src="https://github.com/user-attachments/assets/2cd39ac5-2cbd-438c-9222-6362cff97445", max-width=1000px></p>
+- Hovering over an image will reveal the image buttons.
+  - Top-left button for Favorite/Unfavorite the image.
+  - Top-right button for Select/Unselect the image.
+  - Bottom-left button for image viewer (multi).
+<p><img src="https://github.com/user-attachments/assets/108b8043-9c1b-43a2-b996-820aa7379bed", max-width=1000px></p>
+
+- Selecting an image using the checklist button will display controls for Select All, Batch Download, Batch Delete, and Unselect All..
+  - <code>Shift + Left Click</code> selects or unselects an image.
+  - <code>Ctrl/Meta + A</code> selects all images.
+  - <code>Ctrl/Meta + Shift + A</code> unselects all images.
+<p><img src="https://github.com/user-attachments/assets/7e985d76-4fbc-4e82-89ab-6b7ee10eb73d", max-width=1000px></p>
+
+- Batch Download box.
+  - in zip format and default name to sdhub-gallery.
+  - will auto download by the browser.
+<p><img src="https://github.com/user-attachments/assets/2e93bd97-62ec-4365-a846-a58765c59b99", max-width=1000px></p>
+
+- Left-click on the bottom left button to open an image viewer (multi).
+  - Use left/right arrow button or arrow keys on keyboard to navigate between images.
+  - Press the [X] button in the top-right corner or the Esc key or click anywhere outside the image to close it.
+<p><img src="https://github.com/user-attachments/assets/0d3f661f-391f-454d-abc4-dcf8b9131377", max-width=1000px></p>
+
+- Favorites Tab.
+  - Click the star button to unfavorite the image.
+  - Favorites list will be stored in /sd-webui/cache/sd-hub.
+<p><img src="https://github.com/user-attachments/assets/970e6756-1cdd-4d94-88c8-df93b136a7b3", max-width=1000px></p>
+
 
 </details>
 

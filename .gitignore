@@ -5,8 +5,8 @@ __pycache__/
 aria2c.exe
 .sd-hub-config.json
 
-sd_hub/hf-logo.svg
-sd_hub/__pycache__/
+sdhub/hf-logo.svg
+sdhub/__pycache__/
 
 scripts/__pycache__/
 
