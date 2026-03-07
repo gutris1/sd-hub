@@ -110,6 +110,8 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         aria2cmd.extend([f'--header={k}: {v}' for k, v in h.items()])
 
     elif 'civitai.com' in url:
+        if not CAK: yield 'CivitAI API key is required for downloading models from civitai.com', True; return
+
         input_url = url
         url = url.split('?token=')[0] if '?token=' in url else url
 
@@ -134,7 +136,20 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         url = input_url if use_input else (j.get('modelVersions', [{}])[0] if 'modelVersions' in j else j).get('downloadUrl')
         if not url: yield f'Unable to find download URL for\n-> {input_url}\n', False; return
 
-        url = url.replace('?type=', f'?token={CAK}&type=') if '?type=' in url else f'{url}?token={CAK}'
+        try:
+            headers = {'User-Agent': civitai_headers()['User-Agent'], 'Authorization': f'Bearer {CAK}'}
+
+            req = url
+            r = requests.get(req, headers=headers, allow_redirects=True, stream=True, timeout=30)
+
+            fu = r.url
+            r.close()
+
+            if fu and fu != req: url = fu
+            else: aria2cmd.append(f'--header=Authorization: Bearer {CAK}')
+
+        except Exception: aria2cmd.append(f'--header=Authorization: Bearer {CAK}')
+
         aria2cmd.extend([f'--header={k}: {v}' for k, v in civitai_headers().items()])
 
     aria2cmd.append(url)
@@ -424,7 +439,7 @@ def downloader(inputs, HFR, CAK, preview, box_state=gr.State()):
 
     catcher = [
         'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL', 'banned by Kaggle',
-        'filename', 'Supported Domain:', '500 Server Error', 'fatal'
+        'filename', 'Supported Domain:', '500 Server Error', 'fatal', 'key is required'
     ]
 
     if any(w in l for w in catcher for l in output_box):
