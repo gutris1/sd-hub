@@ -3,7 +3,7 @@ import urllib.request
 import shutil
 import re
 
-version = '12.1'
+version = '12.2'
 print(f"\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m")
 
 blt = "<strong>•</strong>"
