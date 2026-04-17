@@ -26,6 +26,8 @@ aria2cexe = Path(basedir()) / 'aria2c.exe'
 
 KAGGLE = 'KAGGLE_DATA_PROXY_TOKEN' in os.environ
 
+CIVDOM = ['civitai.com', 'civitai.red']
+
 def gitclown(url, fp):
     cmd = ['git', 'clone'] + shlex.split(url)
     p = subprocess.Popen(cmd, cwd=str(fp), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
@@ -88,6 +90,8 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
 
     j = None
 
+    civdom = get_civdom(url)
+
     if 'github.com' in url:
         url = url.replace('/blob/', '/raw/')
 
@@ -97,40 +101,65 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         ext = ['.safetensors', '.pt', '.pth']
 
         if fn and Path(fn).suffix.lower() in ext:
-            response = requests.get(re.sub(r'/(resolve|blob)/', '/raw/', url), headers=h)
-            t = re.search(r'oid sha256:([a-fA-F0-9]{64})', response.text)
-            if t:
-                sha256 = t.group(1)
-                api_url = f'https://civitai.com/api/v1/model-versions/by-hash/{sha256}'
-                j = requests.get(api_url, headers=civitai_headers()).json()
-                r = next((f for f in j.get('files', []) if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()), None)
-                if not r: j = None
+            try:
+                response = requests.get(re.sub(r'/(resolve|blob)/', '/raw/', url), headers=h, timeout=15)
+                t = re.search(r'oid sha256:([a-fA-F0-9]{64})', response.text)
+
+                if t:
+                    j = None
+                    sha256 = t.group(1)
+
+                    for d in CIVDOM:
+                        try:
+                            api_url = f'https://{d}/api/v1/model-versions/by-hash/{sha256}'
+                            res = requests.get(api_url, headers=civitai_headers(), timeout=15)
+
+                            if res.status_code != 200: continue
+
+                            j_try = res.json()
+
+                            r = next(
+                                (f for f in j_try.get('files', [])
+                                if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()),
+                                None
+                            )
+
+                            if r:
+                                j = j_try
+                                civdom = d
+                                break
+
+                        except Exception:
+                            continue
+
+            except Exception:
+                pass
 
         url = url.replace('/blob/', '/resolve/')
         aria2cmd.extend([f'--header={k}: {v}' for k, v in h.items()])
 
-    elif 'civitai.com' in url:
-        if not CAK: yield 'CivitAI API key is required for downloading models from civitai.com', True; return
+    elif civdom in url:
+        if not CAK: yield 'CivitAI API key is required for downloading models from Civitai', True; return
 
         input_url = url
         url = url.split('?token=')[0] if '?token=' in url else url
 
-        if 'civitai.com/api/download/models/' in url:
+        if f'{civdom}/api/download/models/' in url:
             use_input = True
             versionId = url.split('models/')[1].split('/')[0].split('?')[0]
-            api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+            api_url = f'https://{civdom}/api/v1/model-versions/{versionId}'
 
-        elif 'civitai.com/models/' in url:
+        elif f'{civdom}/models/' in url:
             use_input = False
             modelId = url.split('models/')[1].split('/')[0].split('?')[0]
             versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
 
-            if versionId: api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
-            else: api_url = f'https://civitai.com/api/v1/models/{modelId}'
+            if versionId: api_url = f'https://{civdom}/api/v1/model-versions/{versionId}'
+            else: api_url = f'https://{civdom}/api/v1/models/{modelId}'
 
         j = requests.get(api_url, headers=civitai_headers()).json()
 
-        msg = civitai_earlyAccess(j)
+        msg = civitai_earlyAccess(j, civdom)
         if msg: yield msg; return
 
         url = input_url if use_input else (j.get('modelVersions', [{}])[0] if 'modelVersions' in j else j).get('downloadUrl')
@@ -164,7 +193,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
                 uri = uri_pattern.group(1)
                 url_list = {
                     'huggingface.co': f'## Authorization Failed, Enter your Huggingface Token\n-> {url}\n',
-                    'civitai.com': f'## Authorization Failed, Enter your Civitai API Key\n-> {url}\n'
+                    f'{civdom}': f'## Authorization Failed, Enter your Civitai API Key\n-> {url}\n'
                 }
                 for domain, msg in url_list.items():
                     if domain in uri:
@@ -190,6 +219,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
                 break_line, error = True, False
                 break
 
+    civdom = None
     if not error and (stripe := aria2_output.find('======+====+===========')) != -1:
         for lines in aria2_output[stripe:].splitlines():
             if '|' in lines and (pipe := lines.split('|')) and len(pipe) > 3:
@@ -209,6 +239,16 @@ def resizer(b, size=512):
     i.resize(s, Image.LANCZOS).save(o, format='PNG')
     o.seek(0)
     return o
+
+def get_civdom(url: str) -> str | None:
+    try:
+        h = urlparse(url).netloc.lower()
+        for d in CIVDOM:
+            if d in h:
+                return d
+    except:
+        pass
+    return None
 
 def civitai_headers():
     return {'User-Agent': 'CivitaiLink:Automatic1111'}
@@ -275,7 +315,7 @@ def civitai_infotags(j, p, fn):
 
     info.write_text(json.dumps(data, indent=4))
 
-def civitai_earlyAccess(j):
+def civitai_earlyAccess(j, civdom=None):
     v = None
 
     if 'modelVersions' in j:
@@ -287,7 +327,7 @@ def civitai_earlyAccess(j):
 
     if v:
         modelVersionId = v.get('id')
-        page = f'https://civitai.com/models/{modelId}?modelVersionId={modelVersionId}'
+        page = f'https://{civdom}/models/{modelId}?modelVersionId={modelVersionId}'
         return f'{page}\n-> The model is in early access and requires payment for downloading.', False
 
     return None
@@ -295,7 +335,7 @@ def civitai_earlyAccess(j):
 def url_check(url):
     try:
         supported = {
-            'civitai.com',
+            *CIVDOM,
             'huggingface.co',
             'github.com',
             'drive.google.com'
@@ -311,7 +351,7 @@ def url_check(url):
         return False, str(e)
 
 def get_fn(url):
-    if any(x in url for x in ['civitai.com', 'drive.google.com']):
+    if any(x in url for x in [*CIVDOM, 'drive.google.com']):
         return None
     return Path(urlparse(url).path).name
 

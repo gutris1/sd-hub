@@ -3,7 +3,7 @@ import urllib.request
 import shutil
 import re
 
-version = '12.1'
+version = '12.2'
 print(f"\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m")
 
 blt = "<strong>•</strong>"
@@ -32,7 +32,7 @@ dl_info = f"""
   Enter your <strong>Huggingface Token</strong> with the role <strong>READ</strong> to download from your private repo. 
   Get one <a href="https://huggingface.co/settings/tokens" class="sdhub-link">Here</a><br>
   Enter your <strong>Civitai API Key</strong> if you encounter an Authorization failed error. Get your key 
-  <a href="https://civitai.com/user/account" class="sdhub-link">Here</a><br>
+  <a href="https://civitai.red/user/account" class="sdhub-link">Here</a><br>
   Save = To automatically load token upon Reload UI or Webui launch<br>
   Load = Load token<br>
   Supported Domains: {blt} <a class="sdhub-nonlink">Civitai</a> {blt} <a class="sdhub-nonlink">Huggingface</a> {blt} 

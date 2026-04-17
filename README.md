@@ -56,37 +56,37 @@ If the source is Huggingface, the SHA256 will be used to match and fetch the inf
 - Basic input.
 ```python
 $ckpt
-https://civitai.com/models/643227?modelVersionId=811710
+https://civitai.red/models/643227?modelVersionId=811710
 ```
 
 - Add subdirectories to the tag if exist.
 ```python
 $ckpt/tmp_ckpt
-https://civitai.com/models/643227?modelVersionId=811710
+https://civitai.red/models/643227?modelVersionId=811710
 ```
 
 - Add an optional path for certain URLs. in that case, the tag will be ignored.
 ```python
 $ckpt
-https://civitai.com/models/1188071/animagine-xl-40
-https://civitai.com/models/643227?modelVersionId=811710 /content/A1111/models/Stable-diffusion/tmp_ckpt
+https://civitai.red/models/1188071/animagine-xl-40
+https://civitai.red/models/643227?modelVersionId=811710 /content/A1111/models/Stable-diffusion/tmp_ckpt
 ```
 
 - Add <code>=</code> after the URL or an optional path (if provided) to download with a custom filename.
 ```python
 $ckpt
-https://civitai.com/models/1188071/animagine-xl-40 = imagine-anime-XL.safetensors
+https://civitai.red/models/1188071/animagine-xl-40 = imagine-anime-XL.safetensors
 
 # or with optional path
 $ckpt
-https://civitai.com/models/643227?modelVersionId=811710 /content/A1111/models/Stable-diffusion = MeichiDarkMix.safetensors
+https://civitai.red/models/643227?modelVersionId=811710 /content/A1111/models/Stable-diffusion = MeichiDarkMix.safetensors
 ```
 
 ● Token box<br>
 ![token](https://github.com/user-attachments/assets/e4e93a3b-425a-4cc6-b5c1-f3101ba78723)<br>
 
 Enter your Huggingface token with the role READ to download from your private repo, get one [Here](https://huggingface.co/settings/tokens).<br>
-Enter your Civitai API key if you encounter an Authorization failed error. Get your key [Here](https://civitai.com/user/account).<br>
+Enter your Civitai API key if you encounter an Authorization failed error. Get your key [Here](https://civitai.red/user/account).<br>
 Save = To automatically load token upon Reload UI or Webui launch.<br>
 Load = Load token.
 
