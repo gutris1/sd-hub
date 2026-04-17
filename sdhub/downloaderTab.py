@@ -101,7 +101,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
             t = re.search(r'oid sha256:([a-fA-F0-9]{64})', response.text)
             if t:
                 sha256 = t.group(1)
-                api_url = f'https://civitai.com/api/v1/model-versions/by-hash/{sha256}'
+                api_url = f'https://civitai.red/api/v1/model-versions/by-hash/{sha256}'
                 j = requests.get(api_url, headers=civitai_headers()).json()
                 r = next((f for f in j.get('files', []) if f.get('hashes', {}).get('SHA256', '').lower() == sha256.lower()), None)
                 if not r: j = None
@@ -109,24 +109,24 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         url = url.replace('/blob/', '/resolve/')
         aria2cmd.extend([f'--header={k}: {v}' for k, v in h.items()])
 
-    elif 'civitai.com' in url:
-        if not CAK: yield 'CivitAI API key is required for downloading models from civitai.com', True; return
+    elif 'civitai.red' in url:
+        if not CAK: yield 'CivitAI API key is required for downloading models from civitai.red', True; return
 
         input_url = url
         url = url.split('?token=')[0] if '?token=' in url else url
 
-        if 'civitai.com/api/download/models/' in url:
+        if 'civitai.red/api/download/models/' in url:
             use_input = True
             versionId = url.split('models/')[1].split('/')[0].split('?')[0]
-            api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
+            api_url = f'https://civitai.red/api/v1/model-versions/{versionId}'
 
-        elif 'civitai.com/models/' in url:
+        elif 'civitai.red/models/' in url:
             use_input = False
             modelId = url.split('models/')[1].split('/')[0].split('?')[0]
             versionId = url.split('?modelVersionId=')[1] if '?modelVersionId=' in url else None
 
-            if versionId: api_url = f'https://civitai.com/api/v1/model-versions/{versionId}'
-            else: api_url = f'https://civitai.com/api/v1/models/{modelId}'
+            if versionId: api_url = f'https://civitai.red/api/v1/model-versions/{versionId}'
+            else: api_url = f'https://civitai.red/api/v1/models/{modelId}'
 
         j = requests.get(api_url, headers=civitai_headers()).json()
 
@@ -164,7 +164,7 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
                 uri = uri_pattern.group(1)
                 url_list = {
                     'huggingface.co': f'## Authorization Failed, Enter your Huggingface Token\n-> {url}\n',
-                    'civitai.com': f'## Authorization Failed, Enter your Civitai API Key\n-> {url}\n'
+                    'civitai.red': f'## Authorization Failed, Enter your Civitai API Key\n-> {url}\n'
                 }
                 for domain, msg in url_list.items():
                     if domain in uri:
@@ -287,7 +287,7 @@ def civitai_earlyAccess(j):
 
     if v:
         modelVersionId = v.get('id')
-        page = f'https://civitai.com/models/{modelId}?modelVersionId={modelVersionId}'
+        page = f'https://civitai.red/models/{modelId}?modelVersionId={modelVersionId}'
         return f'{page}\n-> The model is in early access and requires payment for downloading.', False
 
     return None
@@ -295,7 +295,7 @@ def civitai_earlyAccess(j):
 def url_check(url):
     try:
         supported = {
-            'civitai.com',
+            'civitai.red',
             'huggingface.co',
             'github.com',
             'drive.google.com'
@@ -311,7 +311,7 @@ def url_check(url):
         return False, str(e)
 
 def get_fn(url):
-    if any(x in url for x in ['civitai.com', 'drive.google.com']):
+    if any(x in url for x in ['civitai.red', 'drive.google.com']):
         return None
     return Path(urlparse(url).path).name
 
