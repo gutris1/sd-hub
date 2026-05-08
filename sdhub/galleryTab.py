@@ -16,7 +16,10 @@ import json
 import sys
 import re
 
-import modules.generation_parameters_copypaste as tempe # type: ignore
+try:
+    import modules.generation_parameters_copypaste as tempe  # type: ignore
+except ModuleNotFoundError:
+    import modules.infotext_utils as tempe
 from modules.ui_components import FormRow, FormColumn
 from modules.cache import cache as Cache
 from modules.shared import opts
