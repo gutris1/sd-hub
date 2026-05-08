@@ -956,9 +956,18 @@ body.sdhub-body-no-scrolling {
   color: var(--primary-600);
 }
 
+#SDHub-Gallery-ContextMenu > ul > li:last-child:hover > span > svg {
+  color: var(--body-text-color);
+}
+
 #SDHub-Gallery-ContextMenu li:hover {
   background: var(--sdhub-gallery-cm-li-hover-background);
   color: var(--sdhub-gallery-cm-li-hover-color);
+}
+
+#SDHub-Gallery-ContextMenu > ul > li:last-child:hover {
+  background: #ff2727;
+  color: var(--body-text-color);
 }
 
 #SDHub-Gallery-ContextMenu li.sdhub-gallery-cm-sendto:hover .submenu-arrow {
