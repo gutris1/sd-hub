@@ -1,9 +1,13 @@
+from huggingface_hub import __version__ as hf_version
+from packaging import version
 from pathlib import Path
 import json
 import sys
 import os
 
 from modules.scripts import basedir
+
+HF = version.parse(hf_version) >= version.parse('0.34.0')
 
 config = Path(basedir()) / '.sd-hub-config.json'
 
