@@ -41,31 +41,41 @@ def gitclown(url, fp):
     p.wait()
 
 def gdrown(url, fp=None, fn=None):
-    gfolder = 'drive.google.com/drive/folders' in url
+    folder = 'drive.google.com/drive/folders' in url
     cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
     cmd = cli + ['--fuzzy', url]
+
     fn and cmd.extend(['-O', fn])
-    gfolder and cmd.append('--folder')
+    folder and cmd.append('--folder')
+    cwd = fp or Path.cwd()
 
-    cwd = fp if fp else Path.cwd()
     p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
-    gdown_output, gdown_progress, starting_line, failure = '', None, time.time(), False
 
-    while (output := p.stdout.readline()):  
-        gdown_output += output  
-        failure |= 'Failed to retrieve file url' in output  
-        gdown_progress = output.strip() if re.search(r'\d{1,3}%', output) else gdown_progress  
-        if gdown_progress and time.time() - starting_line >= 1: yield gdown_progress, False; starting_line = time.time()
+    sl = time.time()
+    output, f, prog, n, s = '', False, None, None, None
+    fail = 'Failed to retrieve file url'
 
-    if failure:
-        failed = gdown_output.find('Failed to retrieve file url')
-        lines = gdown_output[failed:]
-        yield lines, False
+    while (o := p.stdout.readline()):
+        output += o
+        f |= fail in o
 
-    for lines in gdown_output.split('\n'):
-        if lines.startswith('To:'):
-            completed = re.search(r'[^/]*$', lines)
-            if completed: yield f'Saved To: {fp}/{completed.group()}', True
+        if o.startswith('To:'):
+            s = o[4:].strip()
+            n = Path(s).name
+            continue
+
+        if re.search(r'\d{1,3}%', o):
+            o = re.sub(r'\|[^|]*\|', '', o, count=1).strip()
+            o = re.sub(r'(\d{1,3}%)', r'(\1)', o, count=1)
+            prog = f'{n} {o}'
+
+        if prog and time.time() - sl >= 1:
+            yield prog, False
+            sl = time.time()
+
+    if f: yield output[output.find(fail):], False
+
+    if s: yield f'Saved To: {Path(s).parent if folder else Path(s)}', True
 
     p.wait()
 
@@ -218,19 +228,21 @@ def ariari(url, fp=None, fn=None, HFR=None, CAK=None, preview=None):
         for lines in output.splitlines():
             if (aria2_progress := re.match(r'\[#\w{6}\s(.*?)\((\d+\%)\).*?DL:(.*?)\s', lines)):
                 sizes, percent, speed = aria2_progress.groups()
-                yield f'{percent} | {fn} | {sizes} | {speed}/s', False
+                yield f'{fn} ({percent}) {sizes} {speed}', False
                 break_line, error = True, False
                 break
 
     civitai = None
-    if not error and (stripe := aria2_output.find('======+====+===========')) != -1:
-        for lines in aria2_output[stripe:].splitlines():
-            if '|' in lines and (pipe := lines.split('|')) and len(pipe) > 3:
+    if not error:
+        for lines in aria2_output.splitlines():
+            if '|' in lines and 'OK' in lines and len(pipe := lines.split('|')) > 3:
                 yield f'Saved To: {pipe[3].strip()}', True
+                break
 
-            if j:
-                civitai_infotags(j, fp, fn)
-                if preview and (img := civitai_preview(j, fp, fn)): yield img, False
+        if j:
+            civitai_infotags(j, fp, fn)
+            if preview and (img := civitai_preview(j, fp, fn)):
+                yield img, False
 
     p.wait()
 
