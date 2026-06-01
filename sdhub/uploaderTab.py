@@ -1,5 +1,4 @@
 from huggingface_hub import model_info, create_repo, create_branch
-from huggingface_hub.utils import RepositoryNotFoundError
 from fastapi import FastAPI
 from pathlib import Path
 import gradio as gr
@@ -13,7 +12,7 @@ import re
 from modules.ui_components import FormRow, FormColumn
 from modules.shared import cmd_opts
 
-from sdhub.config import config, LoadConfig, LoadToken, SaveToken, xyz
+from sdhub.config import config, LoadConfig, LoadToken, SaveToken, xyz, HF
 from sdhub.infotext import upl_title, upl_info
 from sdhub.paths import SDHubPaths, BLOCK
 
@@ -21,7 +20,8 @@ tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
 def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, commit_msg='', ex_ext=None, path_in_repo=None):
     msg = commit_msg.replace('"', '\\"')
-    cli = xyz('huggingface-cli.exe') if sys.platform == 'win32' else xyz('huggingface-cli')
+
+    cli = ['hf'] if HF else xyz('huggingface-cli.exe' if sys.platform == 'win32' else 'huggingface-cli')
     cmd = cli + ['upload', repo_id, file_path]
 
     if path_in_repo:
@@ -35,12 +35,7 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
     if private_repo: cmd.append('--private')
     if ex_ext: cmd += ['--exclude', *[f'*.{ext}' for ext in ex_ext]]
 
-    p = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True
-    )
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
     failed = False
     error = ''
@@ -182,13 +177,8 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
     for file_path, file_name, type_, path_in_repo in task_task:
         yield f'Uploading: {file_name}', False
 
-        try:
-            model_info(repo_id, token=token)
-
-        except RepositoryNotFoundError:
-            private_repo = repo_radio == 'Private'
-            create_repo(repo_id, private=private_repo, token=token)
-
+        private_repo = repo_radio == 'Private'
+        create_repo(repo_id, private=private_repo, token=token, exist_ok=True)
         create_branch(repo_id=repo_id, branch=branch, token=token, exist_ok=True)
         repo_info = model_info(repo_id, token=token)
 
