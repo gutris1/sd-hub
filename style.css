@@ -112,6 +112,25 @@
   filter: brightness(0.6);
 }
 
+#SDHub-Downloader-Download-Button.downloading,
+#SDHub-Downloader-Cancel-Button {
+  display: none;
+}
+
+#SDHub-Downloader-Download-Button,
+#SDHub-Downloader-Cancel-Button.downloading {
+  display: inline-flex;
+}
+
+.sdhub-buttons-anim {
+  animation: downloadCancel .4s;
+}
+
+@keyframes downloadCancel {
+  from { opacity: 0; transform: scale(.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 #SDHub-Downloader-Tab,
 #SDHub-Uploader-Tab,
 #SDHub-Archiver-Tab,
@@ -136,10 +155,12 @@
   max-width: max-content;
 }
 
-#SDHub-Tab #SDHub-Downloader-Preview-Checkbox {
+#SDHub-Tab #SDHub-Downloader-Preview-Checkbox,
+#SDHub-Tab #SDHub-Downloader-HTML-Checkbox {
   justify-content: flex-start;
   width: max-content;
-  margin: 5px 0 5px 10px;
+  max-width: max-content;
+  margin: 5px 0 5px 20px;
 }
 
 #SDHub-Downloader-Scrape-Button,
