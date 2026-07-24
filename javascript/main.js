@@ -258,7 +258,15 @@ async function SDHubDownloader() {
     '$emb': ['txt2img_textual_inversion_extra_refresh', 'img2img_textual_inversion_extra_refresh'],
     '$hn': ['txt2img_hypernetworks_extra_refresh', 'img2img_hypernetworks_extra_refresh'],
     '$cn': ['txt2img_controlnet_ControlNet-0_controlnet_refresh_models', 'img2img_controlnet_ControlNet-0_controlnet_refresh_models']
-  };
+  },
+
+  n = '#SDHub-Downloader',
+  c = 'sdhub-buttons-anim',
+  b = document.querySelector(`${n}-Download-Button`);
+
+  document.querySelectorAll(`${n}-Download-Button, ${n}-Cancel-Button`).forEach(btn => btn.classList.remove('downloading'));
+  b.classList.add(c);
+  setTimeout(() => b.classList.remove(c), 400);
 
   Object.entries(TagMap).forEach(([tags, buttons]) => {
     const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
