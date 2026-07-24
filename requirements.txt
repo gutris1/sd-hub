@@ -1,3 +1,4 @@
 gdown>=5.2.0
 huggingface-hub>=0.24.5
 send2trash>=2.1.0
+h2>=4.3.0
