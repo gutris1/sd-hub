@@ -178,7 +178,7 @@ def ariari(url, fp=None, fn=None, opts=None):
 
                 p.terminate()
                 try:
-                    p.wait(timeout=2)
+                    p.wait(timeout=1)
                 except Exception:
                     p.kill()
 
@@ -229,7 +229,7 @@ def ariari(url, fp=None, fn=None, opts=None):
                 if len(pipe) > 3: yield f'Saved To: {pipe[3].strip()}', True; break
 
         if c and fp:
-            for i in c.extras(fp, fn, opts.preview, opts.html, opts.CAK):
+            for i in c.extras(fp, fn, opts.preview, opts.html):
                 yield i, False
 
         break
@@ -249,10 +249,6 @@ def url_check(url):
     except Exception as e:
         return False, str(e)
 
-
-def get_filename(url):
-    return None if any(u in url for u in (*CIVITAI.DOMAINS, 'drive.google.com')) else Path(urlparse(url).path).name
-
 def process_inputs(url_line, cp, ext_tag, github_repo):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
         return None, None, None, 'Invalid usage, Tag should start with $'
@@ -262,6 +258,7 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
         tags_key = f'${parts[0].lower()}'
         subfolder = parts[1] if len(parts) > 1 else None
         base_path = tag_tag.get(tags_key)
+
         if base_path is not None:
             full_path = Path(base_path, subfolder) if subfolder else Path(base_path)
             cp = full_path
@@ -301,10 +298,10 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
         if not optional_fn_path.suffix:
             return None, None, None, f'{ofn}\nOutput filename is missing its extension.'
 
-    fp = op if op else cp
+    fp = op or cp
     if fp is None or not fp.exists(): return None, None, None, f'{fp}\nDoes not exist.'
 
-    fn = get_filename(url) if not ofn else ofn
+    fn = ofn or (None if any(u in url for u in (*CIVITAI.DOMAINS, 'drive.google.com')) else Path(urlparse(url).path).name)
 
     return fp, url, fn, None
 
@@ -319,7 +316,7 @@ def lobby(inputs, opts):
         return
 
     ext_tag = urls[0].startswith('$ext')
-    github_repo = any('github.com' in url_line and not Path(urlparse(url_line).path).suffix for url_line in urls)
+    github_repo = any(re.match(r'^https?://github\.com/[^/]+/[^/]+/?$', u) for u in urls)
 
     for url_line in urls:
         fp, url, fn, error = process_inputs(url_line, cp, ext_tag, github_repo)
@@ -379,8 +376,6 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
         yield 'Downloading...', ''
 
         for t, f in lobby(inputs, opts):
-            if t == '__CANCELED__': continue
-
             if not f:
                 if any(k in t for k in ngword): # line 459
                     yield 'Error', '\n'.join([t] + output_box)
@@ -401,11 +396,16 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
 
         if any(w in l for w in catcher for l in output_box):
             yield 'Error', '\n'.join(output_box)
+
         elif any(BLOCK in l for l in output_box):
             yield 'Blocked', '\n'.join(output_box)
             assert not cmd_opts.disable_extension_access, BLOCK
+
+        elif '__CANCELED__' in output_box:
+            yield 'Canceled', '\n'.join(output_box)
+
         else:
-            yield 'Done', '\n'.join(output_box)
+            yield '', '\n'.join(output_box)
 
         return gr.update(), gr.State(output_box)
 
@@ -482,7 +482,7 @@ def DownloaderTab():
             )
 
             html = gr.Checkbox(
-                label='Civitai Model Page',
+                label='Civitai HTML',
                 elem_id='SDHub-Downloader-HTML-Checkbox',
                 elem_classes='sdhub-checkbox'
             )
@@ -571,7 +571,7 @@ def DownloaderTab():
                     return e?.type === 'checkbox' ? e.checked : e?.value;
                 });
 
-                document.querySelectorAll(`${id}-Download-Button, ${id}-Cancel-Button`)
+                document.querySelectorAll(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
                     .forEach(b => b.classList.add('downloading'));
 
                 const b = document.querySelector(`${id}-Cancel-Button`);

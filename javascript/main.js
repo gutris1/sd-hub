@@ -264,7 +264,7 @@ async function SDHubDownloader() {
   c = 'sdhub-buttons-anim',
   b = document.querySelector(`${n}-Download-Button`);
 
-  document.querySelectorAll(`${n}-Download-Button, ${n}-Cancel-Button`).forEach(btn => btn.classList.remove('downloading'));
+  document.querySelectorAll(`${n}-Download-Button, ${n}-Cancel-Button, ${n}-Input`).forEach(btn => btn.classList.remove('downloading'));
   b.classList.add(c);
   setTimeout(() => b.classList.remove(c), 400);
 
