@@ -239,10 +239,8 @@ def url_check(url):
         supported = {*CIVITAI.DOMAINS, 'huggingface.co', 'github.com', 'drive.google.com'}
 
         url_parsed = urlparse(url)
-        if not (url_parsed.scheme and url_parsed.netloc):
-            return False, 'Invalid URL.'
-        if url_parsed.netloc not in supported:
-            return False, 'Supported Domain:\n' + '\n'.join(supported)
+        if not (url_parsed.scheme and url_parsed.netloc): return False, 'Invalid URL.'
+        if url_parsed.netloc not in supported: return False, 'Supported Domain:\n' + '\n'.join(supported)
 
         return True, ''
 
@@ -306,8 +304,6 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
     return fp, url, fn, None
 
 def lobby(inputs, opts):
-    if not inputs.strip(): return
-
     cp = None
     urls = [url_line for url_line in inputs.strip().split('\n') if url_line.strip()]
 
@@ -321,13 +317,8 @@ def lobby(inputs, opts):
     for url_line in urls:
         fp, url, fn, error = process_inputs(url_line, cp, ext_tag, github_repo)
 
-        if error:
-            yield error, True
-            return
-
-        if not url:
-            cp = fp
-            continue
+        if error: yield error, True; return
+        if not url: cp = fp; continue
 
         if ext_tag and github_repo:
             if cmd_opts.enable_insecure_extension_access:
@@ -352,6 +343,8 @@ def lobby(inputs, opts):
         if canceled: continue
 
 def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
+    if not inputs.strip(): return
+
     DOWNLOAD_CANCEL.clear()
 
     opts = SN(
@@ -401,9 +394,6 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
             yield 'Blocked', '\n'.join(output_box)
             assert not cmd_opts.disable_extension_access, BLOCK
 
-        elif '__CANCELED__' in output_box:
-            yield 'Canceled', '\n'.join(output_box)
-
         else:
             yield '', '\n'.join(output_box)
 
@@ -425,10 +415,10 @@ def cancel_download():
     DOWNLOAD_CANCEL.set()
 
 def DownloaderTab():
-    _, HFR, CAK, _, _ = LoadToken('downloader')
+    _, HFR, CAK, _, _ = LoadToken()
 
     with gr.TabItem('Downloader', elem_id='SDHub-Downloader-Tab'):
-        gr.HTML(dl_title)
+        gr.HTML(dl_title, elem_id='SDHub-Downloader-Tab-Title')
 
         with FormRow():
             with FormColumn(scale=7):
@@ -544,47 +534,41 @@ def DownloaderTab():
                     elem_classes='sdhub-output'
                 )
 
-        TokenBlur = '() => SDHubTokenBlur()'
-
         load_button.click(
-            fn=lambda: LoadToken('downloader'), inputs=[], outputs=[output_2, token_1, token_2, output_2]
-        ).then(fn=None, _js=TokenBlur)
+            fn=lambda: LoadToken('downloader'),
+            inputs=[],
+            outputs=[output_2, token_1, token_2, output_2]
+        )
 
         save_button.click(
-            fn=lambda HFR, CAK: SaveToken(None, HFR, CAK), inputs=[token_1, token_2], outputs=output_2
-        ).then(fn=None, _js=TokenBlur)
+            fn=lambda HFR, CAK: SaveToken(None, HFR, CAK),
+            inputs=[token_1, token_2],
+            outputs=output_2
+        )
 
         download_button.click(
-            fn=downloader, inputs=[input_box, token_1, token_2, preview, html, gr.State()], outputs=[output_1, output_2],
-            _js="""
-            () => {
-                const id = '#SDHub-Downloader', c = 'sdhub-buttons-anim';
+            fn=downloader,
+            inputs=[input_box, token_1, token_2, preview, html, gr.State()],
+            outputs=[output_1, output_2],
+            _js='() => SDHubDownloader(true)'
+        ).then(
+            fn=None,
+            _js='() => SDHubDownloader()'
+        )
 
-                let v = [
-                    `${id}-Input textarea`,
-                    `${id}-HFR input`,
-                    `${id}-CAK input`,
-                    `${id}-Preview-Checkbox input`,
-                    `${id}-HTML-Checkbox input`
-                ].map(s => {
-                    let e = document.querySelector(s);
-                    return e?.type === 'checkbox' ? e.checked : e?.value;
-                });
+        cancel_button.click(
+            fn=cancel_download,
+            outputs=[]
+        )
 
-                document.querySelectorAll(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
-                    .forEach(b => b.classList.add('downloading'));
+        txt_button.upload(
+            fn=read_txt,
+            inputs=[txt_button, input_box],
+            outputs=input_box
+        )
 
-                const b = document.querySelector(`${id}-Cancel-Button`);
-                b.classList.add(c);
-                setTimeout(() => b.classList.remove(c), 400);
-
-                window.SDHubDownloaderInputsValue = v[0];
-                return [...v, null];
-            }
-            """
-        ).then(fn=None, _js='() => SDHubDownloader()')
-
-        cancel_button.click(fn=cancel_download, outputs=[])
-
-        txt_button.upload(fn=read_txt, inputs=[txt_button, input_box], outputs=input_box)
-        scrape_button.click(fn=scraper, inputs=[input_box, token_1, gr.State()], outputs=[input_box, output_2])
+        scrape_button.click(
+            fn=scraper,
+            inputs=[input_box, token_1, gr.State()],
+            outputs=[input_box, output_2]
+        )

@@ -99,13 +99,11 @@ function SDHubGalleryDOMLoaded() {
     if (!C('tab_SDHub') || !C('SDHub-Gallery-Tab')) return;
 
     const imginfoRow = document.getElementById(`${SDHub.ImgInfo}-Row`),
-    lightBox = document.getElementById(`${SDHub.ImgViewer}`),
     infoCon = document.getElementById('SDHub-Gallery-Info-Container');
 
     if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
-      const i = imginfoRow?.style.display === 'flex', b = lightBox?.style.display === 'flex',
-      s = Setting?.style.display === 'flex', n = infoCon?.style.display === 'flex';
-      if (i || b || s || n) return;
+      const i = imginfoRow?.style.display === 'flex', s = Setting?.style.display === 'flex', n = infoCon?.style.display === 'flex';
+      if (i || SDHubGalleryImageViewer || s || n) return;
 
       const nav = document.querySelector(`.sdhub-gallery-tab-container.active > .${SDHub.page}-nav`),
       btn = nav?.querySelector(e.key === 'ArrowRight' ? `.${SDHub.page}-right-button.btn-on` : `.${SDHub.page}-left-button.btn-on`);
@@ -329,9 +327,38 @@ function SDHubGalleryCreateLightBox() {
     onclick: (e) => (e.stopPropagation(), window.SDHubGalleryImageViewerExit())
   }),
 
-  controls = SDHubEL('div', { id: `${SDHub.ImgViewer}-Control`, append: [nextBtn, prevBtn, exitBtn] }),
+  infoBtn = SDHubEL('span', {
+    id: `${SDHub.ImgViewer}-Info-Button`, class: 'sdhub-gallery-img-viewer-button', html: SDHubSVG.imageInfo()
+  }),
+
+  controls = SDHubEL('div', { id: `${SDHub.ImgViewer}-Control`, append: [nextBtn, prevBtn, infoBtn, exitBtn] }),
   wrapper = SDHubEL('div', { id: `${SDHub.ImgViewer}-Wrapper`}),
   lightBox = SDHubEL('div', { id: `${SDHub.ImgViewer}`, tabindex: 0, append: [controls, wrapper] });
+
+  lightBox.addEventListener('auxclick', (e) => {
+    if (!SDHubGalleryImageViewer) return;
+
+    switch (e.button) {
+      case 1: e.preventDefault(); window.SDHubGalleryImageViewerExit(); break;
+      case 3: e.preventDefault(); SDHubGalleryPrevImage(); break;
+      case 4: e.preventDefault(); SDHubGalleryNextImage(); break;
+    }
+  });
+
+  lightBox.addEventListener('keydown', (e) => {
+    switch (e.key) {
+      case 'Escape': return window.SDHubGalleryImageViewerExit();
+      case 'ArrowLeft': return SDHubGalleryPrevImage();
+      case 'ArrowRight': return SDHubGalleryNextImage();
+    }
+  });
+
+  infoBtn.onclick = (e) => {
+    e.stopPropagation();
+    SDHubGalleryBlur('spin', true);
+    lightBox.classList.add('sdhub-fromViewer');
+    SDHubGalleryImageInfo(document.getElementById(`${SDHub.ImgViewer}-img`), true);
+  };
 
   return lightBox;
 }

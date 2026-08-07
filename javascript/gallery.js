@@ -23,7 +23,16 @@ function SDHubGalleryImageButtonEvents(imgBox) {
   viewerBtn = imgCon.querySelector('.sdhub-gallery-img-btn-imageviewer'),
   favBtn = imgCon.querySelector('.sdhub-gallery-img-btn-fav');
 
-  img.onclick = (e) => e.shiftKey ? checkbox?.click() : SDHubGalleryImageInfo(img);
+  img.onmousedown = (e) => {
+    if (e.button === 1) {
+      e.preventDefault();
+      SDHubGalleryOpenViewerForMulti(img);
+    }
+  };
+
+  img.onclick = (e) => e.shiftKey
+    ? checkbox?.click()
+    : SDHubGalleryImageInfo(img);
 
   favBtn.onclick = async function fav() {
     favBtn.onclick = null;
@@ -46,7 +55,7 @@ function SDHubGalleryImageButtonEvents(imgBox) {
     SDHubGallerySetSelect(imgBox, checkbox);
   };
 
-  viewerBtn.onclick = () => SDHubGalleryOpenViewerFromButton(img);
+  viewerBtn.onclick = () => SDHubGalleryOpenViewerForMulti(img);
 }
 
 async function SDHubGalleryImageFav(imgBox, imgEL) {
@@ -297,9 +306,7 @@ async function SDHubGalleryContextMenuButton(v) {
   { img, path } = SDHubGaleryContextImage(c.includes(v));
 
   switch (v) {
-    case 'open':
-      window.open(path, '_blank');
-      break;
+    case 'open': window.open(path, '_blank'); break;
 
     case 'download':
       fetch(path)
@@ -317,22 +324,16 @@ async function SDHubGalleryContextMenuButton(v) {
       break;
     }
 
-    case 'info':
-      if (img) SDHubGalleryImageInfo(img, new Event('click'));
-      break;
+    case 'info': if (img) SDHubGalleryImageInfo(img, new Event('click')); break;
 
-    case 'viewer':
-      SDHubGalleryDisplayImageViewer('m');
-      break;
+    case 'viewer': SDHubGalleryDisplayImageViewer('m'); break;
 
     case 'select':
     case 'unselect':
       img.parentElement.querySelector('.sdhub-gallery-img-btn-checkbox').click();
       break;
 
-    case 'delete':
-      SDHubGalleryInfoPopUp('delete');
-      break;
+    case 'delete': SDHubGalleryInfoPopUp('delete'); break;
   }
 }
 
@@ -370,21 +371,20 @@ async function SDHubGallerySendImage(v) {
   }
 }
 
-async function SDHubGalleryImageInfo(img) {
+async function SDHubGalleryImageInfo(img, fromViewer = false) {
   const imgInfoRow = document.getElementById(`${SDHub.ImgInfo}-Row`),
   imgInput = imgInfoRow.querySelector(`#${SDHub.ImgInfo}-img input`),
-  infoCon = document.getElementById('SDHub-Gallery-Info-Container'),
-  lightBox = document.getElementById(`${SDHub.ImgViewer}`);
+  infoCon = document.getElementById('SDHub-Gallery-Info-Container');
 
   infoCon.style.display = imgInfoRow.style.display = 'flex';
   imgInfoRow.style.pointerEvents = 'none';
   imgInfoRow.focus();
-  SDHubGalleryBlur('spin');
+  if (!fromViewer) SDHubGalleryBlur('spin');
 
   if (imgInput) {
     setTimeout(async () => {
       window.SDHubGallerySendImageInfo = null;
-      window.SDHubImagePath = window.SDHubImg = img.getAttribute('data-image');
+      window.SDHubImagePath = window.SDHubImg = fromViewer ? img.src : img.getAttribute('data-image');
       await SDHubGalleryUpdateImageInput(imgInput, window.SDHubImagePath);
     }, 100);
 
@@ -393,11 +393,12 @@ async function SDHubGalleryImageInfo(img) {
         imgInfoRow.classList.add(SDHub.style);
         infoCon.style.display = '';
 
+        fromViewer && setTimeout(window.SDHubGalleryImageViewerExit, 150);
         setTimeout(() => SDHubGalleryBlur('remove'), 100);
         setTimeout(() => imgInfoRow.style.pointerEvents = '', 300);
         setTimeout(() => {
           imgInfoRow.onkeydown = (e) => {
-            if (lightBox?.style.display === 'flex') return;
+            if (SDHubGalleryImageViewer) return;
 
             if (e.key === 'Escape') window.SDHubGalleryCloseImageInfo();
 
@@ -772,7 +773,7 @@ function SDHubGalleryCloseInfoPopup(f = false) {
   }, 1100);
 }
 
-function SDHubGalleryBlur(f) {
+function SDHubGalleryBlur(f, fromViewer = false) {
   const layer = document.getElementById('SDHub-Gallery-Tab-Layer'),
   Spinner = document.getElementById('SDHub-Gallery-Info-Spinner'),
 
@@ -794,7 +795,7 @@ function SDHubGalleryBlur(f) {
       layer.style.display = 'flex';
       requestAnimationFrame(() => requestAnimationFrame(() => {
         if (f === 'spin') Spinner.classList.add(SDHub.style);
-        layer.classList.add(SDHub.style);
+        layer.classList.add(fromViewer ? 'sdhub-fromViewer' : SDHub.style);
         document.body.appendChild(Object.assign(document.createElement('style'), { id, textContent: css }));
         document.body.classList.add(SDHub.noScroll);
       }));
@@ -805,7 +806,7 @@ function SDHubGalleryBlur(f) {
 
   e?.remove();
   if (f === 'baygon') document.body.classList.remove(SDHub.noScroll);
-  [layer, Spinner].forEach(l => l.classList.remove(SDHub.style));
+  [layer, Spinner].forEach(l => l.className = '');
   setTimeout(() => layer.style.display = '', 300);
 }
 

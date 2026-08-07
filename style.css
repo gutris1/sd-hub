@@ -31,7 +31,7 @@
 
 #SDHub-Tab > .tab-nav {
   border: 0;
-  margin: 8px 0 8px 0;
+  margin: 8px;
   gap: 15px;
 }
 
@@ -43,7 +43,7 @@
 
 #SDHub-Tab > .tab-nav > button {
   border: 0;
-  border-radius: 1rem;
+  border-radius: 8px;
   transition: .3s ease;
 }
 
@@ -66,12 +66,11 @@
   pointer-events: none;
 }
 
+#SDHub-Downloader-Tab > div,
+#SDHub-Uploader-Tab > div,
+#SDHub-Archiver-Tab > div,
+#SDHub-Tab .sdhub-row,
 .gradio-container-4-40-0 #SDHub-Tab .sdhub-button-output-row {
-  margin-top: -9px;
-  gap: 7px;
-}
-
-#SDHub-Tab .sdhub-row {
   gap: .5em;
 }
 
@@ -81,6 +80,7 @@
 
 #SDHub-Tab .sdhub-button-row-2 {
   flex-grow: 2;
+  gap: .5em;
 }
 
 #SDHub-Tab .sdhub-buttons {
@@ -95,14 +95,14 @@
   font-size: 17px;
   height: 40px;
   border: 0;
-  box-shadow: var(--a) var(--primary-400), var(--b) var(--primary-400), inset 0 0 16px 1px var(--primary-400);
+  box-shadow: var(--a) var(--primary-400), var(--b) var(--primary-400), inset 0 0 14px 0 var(--primary-400);
   color: var(--body-text-color);
-  background: transparent;
+  background: var(--sdhub-main-button);
   padding: 0;
 }
 
 #SDHub-Tab .sdhub-buttons:hover {
-  box-shadow: var(--a) var(--primary-500), var(--b) var(--primary-500), inset 0 0 16px 2px var(--primary-500);;
+  box-shadow: var(--a) var(--primary-500), var(--b) var(--primary-500), inset 0 0 10px 2px var(--primary-500);;
   color: var(--primary-400);
   background: var(--input-background-fill);
 }
@@ -110,6 +110,11 @@
 #SDHub-Tab .sdhub-button-disabled {
   pointer-events: none;
   filter: brightness(0.6);
+}
+
+#SDHub-Downloader-Download-Button,
+#SDHub-Downloader-Cancel-Button {
+  will-change: transform;
 }
 
 #SDHub-Downloader-Download-Button.downloading,
@@ -127,7 +132,7 @@
 }
 
 @keyframes downloadCancel {
-  from { opacity: 0; transform: scale(.5); }
+  from { opacity: 0; transform: scale(.8); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -137,7 +142,7 @@
 #SDHub-Shell-Tab {
   border: 0;
   margin: 0;
-  padding: 10px 0px;
+  padding: 8px;
 }
 
 #SDHub-Texteditor-Tab {
@@ -161,6 +166,12 @@
   width: max-content;
   max-width: max-content;
   margin: 5px 0 5px 20px;
+}
+
+#SDHub-Tab #SDHub-Downloader-Preview-Checkbox > label > span,
+#SDHub-Tab #SDHub-Downloader-HTML-Checkbox > label > span {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 #SDHub-Downloader-Scrape-Button,
@@ -254,7 +265,8 @@
     filter .3s ease,
     border-color .3s ease,
     background-color .3s ease,
-    color .3s ease;
+    color .3s ease,
+    text-shadow .3s ease;
 }
 
 #SDHub-Tab .sdhub-input textarea:focus,
@@ -263,8 +275,19 @@
   box-shadow: var(--sdhub-shadow-focus-hover);
 }
 
-#SDHub-Tab .sdhub-input input:hover {
-  filter: none !important;
+#SDHub-Downloader-HFR input,
+#SDHub-Downloader-CAK input,
+#SDHub-Uploader-HFW input {
+  appearance: none;
+  -webkit-text-security: disc;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+#SDHub-Downloader-HFR input:focus,
+#SDHub-Downloader-CAK input:focus,
+#SDHub-Uploader-HFW input:focus {
+  -webkit-text-security: none;
 }
 
 #SDHub-Tab #SDHub-Downloader-Input {
@@ -349,7 +372,6 @@
 
 .gradio-container-4-40-0 #SDHub-Uploader-Tab > div > .form {
   position: relative !important;
-  margin-top: -10px !important;
 }
 
 #SDHub-Repo {
@@ -373,9 +395,12 @@
 }
 
 #SDHub-Tab .sdhub-tab-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-size: 20px;
-  padding-bottom: 5px;
+  height: 40px;
 }
 
 #SDHub-Tab .sdhub-tab-info {
