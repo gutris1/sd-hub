@@ -11,11 +11,8 @@ async function SDHubGalleryParser() {
     return;
   }
 
-  img.onclick = () => SDHubGalleryDisplayImageViewer('s');
-  img.onload = () => {
-    img.style.opacity = '1';
-    setTimeout(() => window.SDHubGalleryDisplayImageInfo?.(), 200);
-  };
+  img.onclick = img.onauxclick = e => (e.button === 0 || e.button === 1) && (e.preventDefault(), SDHubGalleryDisplayImageViewer('s'));
+  img.onload = () => (img.style.opacity = '1', setTimeout(() => window.SDHubGalleryDisplayImageInfo?.(), 100));
 
   const output = await SharedImageParser(img);
   window.SDHubGalleryImageInfoRaw = RawOutput.value = output;

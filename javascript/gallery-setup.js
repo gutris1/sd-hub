@@ -339,7 +339,6 @@ function SDHubGalleryCreateLightBox() {
     if (!SDHubGalleryImageViewer) return;
 
     switch (e.button) {
-      case 1: e.preventDefault(); window.SDHubGalleryImageViewerExit(); break;
       case 3: e.preventDefault(); SDHubGalleryPrevImage(); break;
       case 4: e.preventDefault(); SDHubGalleryNextImage(); break;
     }
@@ -347,7 +346,11 @@ function SDHubGalleryCreateLightBox() {
 
   lightBox.addEventListener('keydown', (e) => {
     switch (e.key) {
-      case 'Escape': return window.SDHubGalleryImageViewerExit();
+      case 'Escape':
+        e.preventDefault();
+        e.stopPropagation();
+        return window.SDHubGalleryImageViewerExit();
+
       case 'ArrowLeft': return SDHubGalleryPrevImage();
       case 'ArrowRight': return SDHubGalleryNextImage();
     }
@@ -404,7 +407,7 @@ function SDHubGalleryCreateInfoBox() {
     if (!C('tab_SDHub') || !C('SDHub-Gallery-Tab')) return;
 
     if (infoBox.classList.contains(SDHub.style)) {
-      if (e.key === 'Enter') e.preventDefault(); ({ Enter: Yes, Escape: No }[e.key]?.click());
+      if (e.key === 'Enter') e.preventDefault(), e.stopPropagation(); ({ Enter: Yes, Escape: No }[e.key]?.click());
     }
   });
 

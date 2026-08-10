@@ -259,10 +259,12 @@ function SDHubGalleryCreateSetting(SettingButton, Setting) {
 
     setTimeout(() => {
       Setting.onkeydown = (e) => {
-        if (e.key === 'Escape') return killSetting();
-        if (e.key === 'Enter') return applyButton.click();
-        if (e.key === 'ArrowLeft') return leftNav.click();
-        if (e.key === 'ArrowRight') return rightNav.click();
+        switch (e.key) {
+          case 'Escape': return (e.preventDefault(), e.stopPropagation(), killSetting());
+          case 'Enter': return applyButton.click();
+          case 'ArrowLeft': return leftNav.click();
+          case 'ArrowRight': return rightNav.click();
+        }
       };
     }, 300);
   };

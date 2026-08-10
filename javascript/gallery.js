@@ -399,14 +399,11 @@ async function SDHubGalleryImageInfo(img, fromViewer = false) {
         setTimeout(() => {
           imgInfoRow.onkeydown = (e) => {
             if (SDHubGalleryImageViewer) return;
-
-            if (e.key === 'Escape') window.SDHubGalleryCloseImageInfo();
-
+            if (e.key === 'Escape') return (e.preventDefault(), e.stopPropagation(), window.SDHubGalleryCloseImageInfo());
             if (['ArrowUp', 'ArrowDown'].includes(e.key)) {
               const l = window.SDHubGallerySettings['image-info-layout'] === 'full_width',
               el = l ? imgInfoRow : document.getElementById(`${SDHub.ImgInfo}-Output-Panel`),
               s = e.key === 'ArrowUp' ? 0 : e.key === 'ArrowDown' ? el.scrollHeight : null;
-
               if (s !== null) (e.preventDefault(), el.scrollTo({ top: s, behavior: 'smooth' }));
             }
           };

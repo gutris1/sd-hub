@@ -9,7 +9,7 @@ function SDHubGalleryDisplayImageViewer(mode, skip = false) {
   infoBtn = controls.querySelector(`#${SDHub.ImgViewer}-Info-Button`);
 
   if (SDHubGalleryImageViewer) {
-    SDHubGalleryImageViewer.cleanup();
+    SDHubGalleryImageViewer.clearEV();
     SDHubGalleryImageViewer = null;
   }
 
@@ -52,11 +52,11 @@ function SDHubGalleryDisplayImageViewer(mode, skip = false) {
   };
 
   SDHubGalleryImageViewer = new SDImageScriptsViewer(img, lightBox, controls, {
-    dragStart: () => controls.className = '',
+    dragStart: () => controls.className = SDHub.style,
     dragEnd: () => controls.className = '',
     exitStart: () => lightBox.className = '',
     exitEnd: closing,
-    initDelay: skip ? 100 : 100,
+    initDelay: 100,
     eventDelay: skip ? 100 : 150
   });
 

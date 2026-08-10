@@ -86,6 +86,7 @@
 #SDHub-Tab .sdhub-buttons {
   --a: 0 0 3px 0 !important;
   --b: inset 0 0 1px 1px !important;
+  --c: var(--a) var(--primary-400), var(--b) var(--primary-400) !important;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -95,14 +96,14 @@
   font-size: 17px;
   height: 40px;
   border: 0;
-  box-shadow: var(--a) var(--primary-400), var(--b) var(--primary-400), inset 0 0 14px 0 var(--primary-400);
+  box-shadow: var(--c), inset 0 0 14px 6px var(--primary-400);
   color: var(--body-text-color);
   background: var(--sdhub-main-button);
   padding: 0;
 }
 
 #SDHub-Tab .sdhub-buttons:hover {
-  box-shadow: var(--a) var(--primary-500), var(--b) var(--primary-500), inset 0 0 10px 2px var(--primary-500);;
+  box-shadow: var(--c), inset 0 0 10px 2.5px var(--primary-400);;
   color: var(--primary-400);
   background: var(--input-background-fill);
 }

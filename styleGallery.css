@@ -1358,6 +1358,14 @@ body.sdhub-body-no-scrolling {
   filter: none !important;
 }
 
+#SDHub-Gallery-Image-Info-Output-Panel.sdhub-gallery-display-output-panel .sdhub-gallery-image-info-output-section:not(.sdhub-gallery-image-info-models-section) {
+  transition: .2s ease;
+}
+
+#SDHub-Gallery-Image-Info-Output-Panel.sdhub-gallery-display-output-panel .sdhub-gallery-image-info-output-section:not(.sdhub-gallery-image-info-models-section):hover {
+  filter: drop-shadow(0 0 2px var(--primary-400)) drop-shadow(0 0 2px var(--primary-400));
+}
+
 #SDHub-Gallery-Tab .sdhub-gallery-image-info-output-title {
   display: flex;
   justify-content: flex-start;
