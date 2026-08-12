@@ -229,12 +229,11 @@ class CIVITAI:
         return getattr(self, '_page', f'https://{self.domain_name}/models/{self.model_id}?modelVersionId={self.version_id}')
 
     def infotags(self, folder, filename=None):
-        n = f'{Path(filename or self.filename).stem}.json'
-        f = Path(folder) / n
+        f = Path(folder) / f'{Path(filename or self.filename).stem}.json'
 
         j = {
             'modelPageURL': self.page,
-            'modelName': Path(n).stem,
+            'modelName': Path(filename or self.filename).name,
             'modelId': self.model_id,
             'modelVersionId': self.version_id,
             'sd version': self.sd_version,
