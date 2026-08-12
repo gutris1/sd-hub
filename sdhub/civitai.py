@@ -179,6 +179,26 @@ class CIVITAI:
         return self.file.get('hashes', {}).get('SHA256') if self.file else None
 
     @property
+    def autov1(self):
+        return self.file.get('hashes', {}).get('AutoV1') if self.file else None
+
+    @property
+    def autov2(self):
+        return self.file.get('hashes', {}).get('AutoV2') if self.file else None
+
+    @property
+    def crc32(self):
+        return self.file.get('hashes', {}).get('CRC32') if self.file else None
+
+    @property
+    def blake3(self):
+        return self.file.get('hashes', {}).get('BLAKE3') if self.file else None
+
+    @property
+    def autov3(self):
+        return self.file.get('hashes', {}).get('AutoV3') if self.file else None
+
+    @property
     def download_url(self):
         if self.input_url and '/api/download/models/' in self.input_url: return self.input_url
         return self.file.get('downloadUrl') if self.file else None
@@ -209,19 +229,34 @@ class CIVITAI:
         return getattr(self, '_page', f'https://{self.domain_name}/models/{self.model_id}?modelVersionId={self.version_id}')
 
     def infotags(self, folder, filename=None):
-        p = Path(folder) / f'{Path(filename or self.filename).stem}.json'
-        if p.exists(): return
+        n = f'{Path(filename or self.filename).stem}.json'
+        f = Path(folder) / n
 
-        data = {
-            'activation text': self.activation_text,
-            'sd version': self.sd_version,
+        j = {
+            'modelPageURL': self.page,
+            'modelName': Path(n).stem,
             'modelId': self.model_id,
             'modelVersionId': self.version_id,
+            'sd version': self.sd_version,
+            'baseModel': self.version.get('baseModel') or '',
+            'activation text': self.activation_text,
+            'description': self.data.get('description') or '',
+            'versionDescription': self.version.get('description') or '',
+            'autoV1': self.autov1,
+            'autoV2': self.autov2,
             'sha256': self.sha256,
-            'modelPageURL': self.page,
+            'crc32': self.crc32,
+            'blake3': self.blake3,
+            'autoV3': self.autov3,
         }
 
-        p.write_text(json.dumps(data, indent=4))
+        if f.exists():
+            old = json.loads(f.read_text())
+            if all(old.get(k) == v for k, v in j.items()): return
+            old.update(j)
+            j = old
+
+        f.write_text(json.dumps(j, indent=4))
 
     def preview(self, folder, filename=None):
         p = Path(folder) / f'{Path(filename or self.filename).stem}.preview.png'

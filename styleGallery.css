@@ -1238,6 +1238,7 @@ body.sdhub-body-no-scrolling {
   cursor: default;
   user-select: none;
   -webkit-user-select: none;
+  filter: blur(6px) brightness(.75);
 }
 
 #SDHub-Gallery-Image-Info-img-frame {
@@ -1494,7 +1495,7 @@ body.sdhub-body-no-scrolling {
 #SDHub-Gallery-Image-Info-Spinner > svg {
   height: 100%;
   width: 100%;
-  filter: var(--sdhub-gallery-spinner-filter);;
+  filter: var(--sdhub-gallery-spinner-filter);
 }
 
 #SDHub-Gallery-Image-Info-Spinner path,

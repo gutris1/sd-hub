@@ -500,6 +500,7 @@ function SDHubGalleryChangeSettings(
           max-height: 100% !important;
           max-width: 100% !important;
           border-top-right-radius: 1.5rem !important;
+          filter: unset;
         }
 
         #${SDHub.ImgInfo}-Exit-Button {
