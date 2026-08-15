@@ -231,6 +231,8 @@ class CIVITAI:
     def infotags(self, folder, filename=None):
         f = Path(folder) / f'{Path(filename or self.filename).stem}.json'
 
+        if f.exists(): return
+
         j = {
             'modelPageURL': self.page,
             'modelName': Path(filename or self.filename).name,
@@ -249,13 +251,7 @@ class CIVITAI:
             'autoV3': self.autov3,
         }
 
-        if f.exists():
-            old = json.loads(f.read_text())
-            if all(old.get(k) == v for k, v in j.items()): return
-            old.update(j)
-            j = old
-
-        f.write_text(json.dumps(j, indent=4))
+        f.write_text(json.dumps(j, indent=4, ensure_ascii=False), encoding='utf-8')
 
     def preview(self, folder, filename=None):
         p = Path(folder) / f'{Path(filename or self.filename).stem}.preview.png'
