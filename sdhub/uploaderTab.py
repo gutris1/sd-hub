@@ -88,10 +88,7 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
 
     if not inputs.strip() or not all([user, repo, branch, token]):
         params = [
-            name for name, value in zip(
-                ['Input', 'Username', 'Repository', 'Branch', 'Token'],
-                [inputs.strip(), user, repo, branch, token]
-            ) 
+            name for name, value in zip(['Input', 'Username', 'Repository', 'Branch', 'Token'], [inputs.strip(), user, repo, branch, token])
             if not value
         ]
 
@@ -104,40 +101,26 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
     task_task = []
 
     for line in input_lines:
-        parts = shlex.split(line)
-        input_path = parts[0]
-        input_path = input_path.strip('"').strip("'")
-
-        if sys.platform == 'win32':
-            input_path = Path(input_path).as_posix()
-
         given_fn = None
         ex_ext = None
         path_in_repo = None
 
-        if '=' in parts:
-            given_fn_idx = parts.index('=') + 1
-            if given_fn_idx < len(parts):
-                given_fn = parts[given_fn_idx]
-            else:
-                yield 'Invalid usage\n[ = ]', True
-                return
+        if m := re.search(r'\s=\s(\S+)', line):
+            given_fn = m.group(1)
+            line = line.replace(m.group(0), '')
 
-        if '-' in parts:
-            ex_ext_idx = parts.index('-') + 1
-            if ex_ext_idx < len(parts):
-                ex_ext = parts[ex_ext_idx:]
-            else:
-                yield 'Invalid usage\n[ - ]', True
-                return
+        if m := re.search(r'\s>\s(\S+)', line):
+            path_in_repo = m.group(1)
+            line = line.replace(m.group(0), '')
 
-        if '>' in parts:
-            path_in_repo_idx = parts.index('>') + 1
-            if path_in_repo_idx < len(parts):
-                path_in_repo = parts[path_in_repo_idx]
-            else:
-                yield 'Invalid usage\n[ > ]', True
-                return
+        if m := re.search(r'\s-\s(.+)$', line):
+            ex_ext = m.group(1).split()
+            line = line[:m.start()].rstrip()
+
+        input_path = line.strip().strip('"').strip("'")
+
+        if sys.platform == 'win32':
+            input_path = Path(input_path).as_posix()
 
         full_path = Path(input_path) if not input_path.startswith('$') else None
         if input_path.startswith('$'):
@@ -172,9 +155,9 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         if given_fn and not Path(given_fn).suffix and full_path.is_file():
             given_fn += full_path.suffix
 
-        task_task.append((full_path, given_fn or full_path.name, type_, path_in_repo))
+        task_task.append((full_path, given_fn or full_path.name, type_, path_in_repo, ex_ext))
 
-    for file_path, file_name, type_, path_in_repo in task_task:
+    for file_path, file_name, type_, path_in_repo, ex_ext in task_task:
         yield f'Uploading: {file_name}', False
 
         private_repo = repo_radio == 'Private'
@@ -190,14 +173,16 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             file_name=file_name,
             token=token,
             branch=branch,
-            private_repo=repo_radio == 'Private',
+            private_repo=private_repo,
             commit_msg=f'Upload {file_name} using SD-Hub',
             ex_ext=ex_ext,
-            path_in_repo=path_in_repo):
-
+            path_in_repo=path_in_repo,
+        ):
             yield output
 
-            if output[1]: erorr = True; break
+            if output[1]:
+                erorr = True
+                break
 
         if not erorr:
             files = f'{path_in_repo}/{file_name}' if path_in_repo else file_name
@@ -215,8 +200,7 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
 
     for t, f in up_up(inputs, user, repo, branch, token, repo_radio):
         if not f:
-            if 'Uploading' in t:
-                yield t, '\n'.join(output_box)
+            if 'Uploading' in t: yield t, '\n'.join(output_box)
             yield t, '\n'.join(output_box)
         else:
             output_box.append(t)
@@ -225,11 +209,13 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
 
     if any(asu in wc for asu in catcher for wc in output_box):
         yield 'Error', '\n'.join(output_box)
+
     elif any(BLOCK in l for l in output_box):
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
+
     else:
-        yield 'Done', '\n'.join(output_box)
+        yield '', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 
@@ -251,10 +237,10 @@ def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
         return {'username': user, 'repository': repo, 'branch': branch}
 
 def UploaderTab():
-    HFW, _, _, _, _ = LoadToken('uploader')
+    HFW, _, _, _, _ = LoadToken()
 
     with gr.TabItem('Uploader', elem_id='SDHub-Uploader-Tab'):
-        gr.HTML(upl_title)
+        gr.HTML(upl_title, elem_id='SDHub-Uploader-Tab-Title')
 
         with FormRow():
             with FormColumn(scale=7):
@@ -361,15 +347,17 @@ def UploaderTab():
                     elem_classes='sdhub-output'
                 )
 
-        TokenBlur = '() => SDHubTokenBlur()'
-
         load_button.click(
-            fn=lambda: LoadToken('uploader'), inputs=[], outputs=[token_box, output_2, output_2, output_2]
-        ).then(fn=None, _js=TokenBlur)
+            fn=lambda: LoadToken('uploader'),
+            inputs=[],
+            outputs=[token_box, output_2, output_2, output_2]
+        )
 
         save_button.click(
-            fn=lambda HFW: SaveToken(HFW, None, None), inputs=[token_box], outputs=output_2
-        ).then(fn=None, _js=TokenBlur)
+            fn=lambda HFW: SaveToken(HFW, None, None),
+            inputs=[token_box],
+            outputs=output_2
+        )
 
         upload_button.click(
             fn=uploader,
