@@ -1,3 +1,5 @@
+#import sys; [sys.modules.pop(n) for n in list(sys.modules) if n == 'sdhub' or n.startswith('sdhub.')]
+
 import gradio as gr
 
 from modules.script_callbacks import on_ui_tabs, on_app_started, on_image_saved

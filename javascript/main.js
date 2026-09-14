@@ -1,3 +1,7 @@
+window._ ??= id => document.getElementById(id);
+window.$ ??= s => document.querySelector(s);
+window.$$ ??= s => document.querySelectorAll(s);
+
 const SDHub = {
   noScroll: 'sdhub-body-no-scrolling',
   style: 'sdhub-style',
@@ -7,8 +11,8 @@ const SDHub = {
 
   imgSel: 'sdhub-gallery-img-selected',
   imgFav: 'sdhub-gallery-img-favorited',
-  ImgInfo: 'SDHub-Gallery-Image-Info',
-  imgInfo: 'sdhub-gallery-image-info',
+  ImgInfo: 'SDHub-ImgInfo',
+  imginfo: 'sdhub-imginfo',
   ImgViewer: 'SDHub-Gallery-Image-Viewer',
   page: 'sdhub-gallery-page',
   Setting: 'SDHub-Gallery-Setting',
@@ -46,12 +50,15 @@ function SDHubTabChange() {
   const tabId = 'tab_SDHub',
 
   styleId = 'SDHub-Hide-Scroll-Bar',
-  imginfoRow = document.getElementById(`${SDHub.ImgInfo}-Row`),
-  tagList = document.getElementById('SDHub-Tag-Accordion'),
-  tabNav = document.querySelector('#tabs > .tab-nav'),
+  imginfoRow = _(`${SDHub.ImgInfo}-Row`),
+  tagList = _('SDHub-Tag-Accordion'),
+  tabNav = $('#tabs > .tab-nav'),
 
-  repo = document.getElementById('SDHub-Repo'),
-  infoCon = document.getElementById('SDHub-Gallery-Info-Container'),
+  repo = _('SDHub-Repo'),
+  footer = _('footer'),
+  infoCon = _('SDHub-Gallery-Info-Container'),
+
+  refoo = () => [repo, footer].forEach(i => i && (i.style.display = '')),
 
   css = `
     html {
@@ -65,7 +72,7 @@ function SDHubTabChange() {
   `,
 
   Nav = () => {
-    const hubnav = document.querySelectorAll('#SDHub-Tab > .tab-nav > button') || [];
+    const hubnav = $$('#SDHub-Tab > .tab-nav > button') || [];
     hubnav.forEach(btn => {
       const text = btn.textContent.trim(), btnId = SDHubTabButtons[text];
       if (btnId && btn.id !== btnId) btn.id = btnId;
@@ -74,7 +81,7 @@ function SDHubTabChange() {
     });
 
     const navbtn = tabNav?.querySelector('button.selected'),
-    selected = document.querySelector('#SDHub-Tab > .tab-nav > button.selected'),
+    selected = $('#SDHub-Tab > .tab-nav > button.selected'),
 
     HUB = navbtn?.textContent.trim() === 'HUB',
     TextEditor = selected?.id === 'SDHub-Tab-Button-Texteditor',
@@ -83,26 +90,28 @@ function SDHubTabChange() {
     if (HUB) {
       if (TextEditor || Gallery) {
         tagList && (tagList.style.display = 'none');
+
         if (Gallery) {
-          repo && (repo.style.display = 'none');
-          window.SDHubGalleryPageArrowUpdate();
+          [repo, footer].forEach(i => i && (i.style.display = 'none'));
+          requestAnimationFrame(() => window.SDHubGalleryUpdateHeight());
           infoCon?.style.display === 'flex' && document.body.classList.add(SDHub.noScroll);
+          setTimeout(window.SDHubGalleryPageArrow, 0);
         }
 
-        if (!document.getElementById(styleId)) {
+        if (!_(styleId)) {
           document.head.appendChild(SDHubEL('style', { id: styleId, html: css }));
         }
       } else {
-        repo && (repo.style.display = '');
+        refoo();
         tagList && (tagList.style.display = '');
-        document.getElementById(styleId)?.remove();
+        _(styleId)?.remove();
         document.body.classList.remove(SDHub.noScroll);
       }
     }
   },
 
   TabChange = (Id, ON, OFF) => {
-    const tab = document.getElementById(Id),
+    const tab = _(Id),
     check = () => {
       const d = window.getComputedStyle(tab).display !== 'none';
       if (d !== tab.__l) { tab.__l = d; d ? ON?.(tab) : OFF?.(tab); }
@@ -126,9 +135,10 @@ function SDHubTabChange() {
       }
     },
     () => {
-      document.getElementById(styleId)?.remove();
+      _(styleId)?.remove();
       document.body.classList.remove(SDHub.noScroll);
       imginfoRow?.style.display === 'flex' && window.SDHubGalleryCloseImageInfo();
+      refoo();
     }
   );
 }
@@ -142,48 +152,48 @@ async function SDHubTabLoaded() {
   };
 
   for (const [id, key] of Object.entries(titles)) {
-    const button = document.getElementById(id);
+    const button = _(id);
     if (button) button.setAttribute('title', SDHubGetTranslation(key));
   }  
 
-  document.getElementById('SDHub-Texteditor-Load-Button')?.setAttribute('title', SDHubGetTranslation('load_file'));
-  document.getElementById('SDHub-Texteditor-Save-Button')?.setAttribute('title', SDHubGetTranslation('save_changes'));
-  setTimeout(() => document.getElementById('SDHub-Texteditor-Initial-Load')?.click(), 2000);
+  _('SDHub-Texteditor-Load-Button')?.setAttribute('title', SDHubGetTranslation('load_file'));
+  _('SDHub-Texteditor-Save-Button')?.setAttribute('title', SDHubGetTranslation('save_changes'));
+  setTimeout(() => _('SDHub-Texteditor-Initial-Load')?.click(), 2000);
 
   try {
     const res = await fetch('/sd-hub/LoadUploaderInfo'),
     { username, repository, branch } = await res.json();
 
     [['Username', username], ['Repo', repository], ['Branch', branch]].forEach(([id, v]) => {
-      const input = document.querySelector(`#SDHub-Uploader-${id}-Box input`);
+      const input = $(`#SDHub-Uploader-${id}-Box input`);
       input && (input.value = v, updateInput(input));
     });
   } catch (e) { console.error('Error loading info:', e); }
 
-  const table4 = document.querySelector('.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > div > table');
+  const table4 = $('.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > div > table');
   table4 && (table4.style.opacity = '0', table4.style.pointerEvents = 'none');
 }
 
 function SDHubEventListener() {
   const Tab = {
-    downloader: document.getElementById('SDHub-Downloader-Tab'),
-    uploader: document.getElementById('SDHub-Uploader-Tab'),
-    shell: document.getElementById('SDHub-Shell-Tab'),
-    textEditor: document.getElementById('SDHub-Texteditor-Tab')
+    downloader: _('SDHub-Downloader-Tab'),
+    uploader: _('SDHub-Uploader-Tab'),
+    shell: _('SDHub-Shell-Tab'),
+    textEditor: _('SDHub-Texteditor-Tab')
   };
 
   const Button = {
-    downloader: document.getElementById('SDHub-Downloader-Download-Button'),
-    uploader: document.getElementById('SDHub-Uploader-Upload-Button'),
-    shell: document.getElementById('SDHub-Shell-Button'),
-    textEditor: document.getElementById('SDHub-Texteditor-Save-Button')
+    downloader: _('SDHub-Downloader-Download-Button'),
+    uploader: _('SDHub-Uploader-Upload-Button'),
+    shell: _('SDHub-Shell-Button'),
+    textEditor: _('SDHub-Texteditor-Save-Button')
   };
 
   document.addEventListener('keydown', e => {
     const C = el => el?.style.display === 'block',
     { key: k, shiftKey: s, ctrlKey: c } = e;
 
-    if (!C(document.getElementById('tab_SDHub'))) return;
+    if (!C(_('tab_SDHub'))) return;
 
     if (s && k === 'Enter') (
       C(Tab.downloader) && Button.downloader?.click(),
@@ -206,13 +216,13 @@ function SDHubEventListener() {
     }
   });
 
-  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
+  const archiveBtn = _('SDHub-Archiver-Archive-Button');
   archiveBtn.onclick = async () => extractBtn.classList.add('sdhub-button-disabled');
 
-  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  const extractBtn = _('SDHub-Archiver-Extract-Button');
   extractBtn.onclick = async () => archiveBtn.classList.add('sdhub-button-disabled');
 
-  document.querySelectorAll('#SDHub-Tab .sdhub-accordion > .label-wrap').forEach(label => {
+  $$('#SDHub-Tab .sdhub-accordion > .label-wrap').forEach(label => {
     label.onclick = () => {
       const accordion = label.parentElement, content = accordion.lastElementChild,
       open = label.classList.contains('open'), c = 'sdhub-accordion-open', t = 'height .5s ease, opacity .4s ease, margin-top .3s ease';
@@ -245,14 +255,14 @@ async function SDHubDownloader(downloading = false) {
       `${id}-Preview-Checkbox input`,
       `${id}-HTML-Checkbox input`
     ].map(s => {
-      const e = document.querySelector(s);
+      const e = $(s);
       return e?.type === 'checkbox' ? e.checked : e?.value;
     });
 
-    document.querySelectorAll(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
+    $$(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
       .forEach(b => b.classList.add('downloading'));
 
-    const b = document.querySelector(`${id}-Cancel-Button`);
+    const b = $(`${id}-Cancel-Button`);
     b.classList.add(c);
     setTimeout(() => b.classList.remove(c), 400);
 
@@ -260,13 +270,13 @@ async function SDHubDownloader(downloading = false) {
     return [...v, null];
   }
 
-  document.querySelectorAll(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
+  $$(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
     .forEach(btn => btn.classList.remove('downloading'));
 
   const inputs = window.SDHubDownloaderInputsValue,
   refresh = [],
 
-  b = document.querySelector(`${id}-Download-Button`);
+  b = $(`${id}-Download-Button`);
   b.classList.add(c);
   setTimeout(() => b.classList.remove(c), 400);
 
@@ -278,14 +288,14 @@ async function SDHubDownloader(downloading = false) {
   });
 
   for (const id of refresh) {
-    document.getElementById(id)?.click();
+    _(id)?.click();
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 }
 
 async function SDHubArchiver(v) {
-  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button'),
-  extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  const archiveBtn = _('SDHub-Archiver-Archive-Button'),
+  extractBtn = _('SDHub-Archiver-Extract-Button');
 
   if (v === 'finish') {
     [archiveBtn, extractBtn].forEach(btn => btn.classList.remove('sdhub-button-disabled'));
@@ -293,7 +303,7 @@ async function SDHubArchiver(v) {
 }
 
 async function SDHubTextEditorInfo(v) {
-  const info = document.querySelector('#SDHub-Texteditor-Info input');
+  const info = $('#SDHub-Texteditor-Info input');
   if (info && v.trim() !== '') {
     info.style.transition = 'opacity 0.5s ease';
     info.style.opacity = '1';
@@ -384,7 +394,7 @@ function SDHubGetTranslation(k, n = 1) {
 }
 
 function SDHubUITranslation() {
-  let gradio4 = document.querySelector('.gradio-container-4-40-0') !== null,
+  let gradio4 = $('.gradio-container-4-40-0') !== null,
   TabList = gradioApp().querySelectorAll('#SDHub-Tab > .tab-nav > button');
 
   for (let i = 0; i < TabList.length; i++) {
@@ -397,7 +407,7 @@ function SDHubUITranslation() {
 
   let tabs = ['.sdhub-downloader-tab-title', '.sdhub-uploader-tab-title'];
   for (let i = 0; i < tabs.length; i++) {
-    let tab = tabs[i], title = document.querySelector(tab);
+    let tab = tabs[i], title = $(tab);
     if (title) {
       let k = tab === '.sdhub-downloader-tab-title' ? 'download_command_center' : 'upload_to_huggingface';
       if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = SDHubGetTranslation(k);
@@ -481,7 +491,7 @@ function SDHubUITranslation() {
   ];
 
   for (const { t, k, inner, spellcheck } of EL) {
-    const el = document.querySelector(t);
+    const el = $(t);
     if (!el) continue;
 
     if (k) {

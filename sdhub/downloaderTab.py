@@ -29,57 +29,6 @@ aria2cexe = Path(basedir()) / 'aria2c.exe'
 
 DOWNLOAD_CANCEL = threading.Event()
 
-def gitclown(url, fp):
-    cmd = ['git', 'clone'] + shlex.split(url)
-    p = subprocess.Popen(cmd, cwd=str(fp), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
-    git_output = []
-
-    for output in iter(p.stdout.readline, ''):
-        git_output.append(output)
-        yield output, False
-
-    for line in git_output: yield line, True
-    p.wait()
-
-def gdrown(url, fp=None, fn=None):
-    folder = 'drive.google.com/drive/folders' in url
-    cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
-    cmd = cli + ['--fuzzy', url]
-
-    fn and cmd.extend(['-O', fn])
-    folder and cmd.append('--folder')
-    cwd = fp or Path.cwd()
-
-    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
-
-    sl = time.time()
-    output, f, prog, n, s = '', False, None, None, None
-    fail = 'Failed to retrieve file url'
-
-    while (o := p.stdout.readline()):
-        output += o
-        f |= fail in o
-
-        if o.startswith('To:'):
-            s = o[4:].strip()
-            n = Path(s).name
-            continue
-
-        if re.search(r'\d{1,3}%', o):
-            o = re.sub(r'\|[^|]*\|', '', o, count=1).strip()
-            o = re.sub(r'(\d{1,3}%)', r'(\1)', o, count=1)
-            prog = f'{n} {o}'
-
-        if prog and time.time() - sl >= 1:
-            yield prog, False
-            sl = time.time()
-
-    if f: yield output[output.find(fail):], False
-
-    if s: yield f'Saved To: {Path(s).parent if folder else Path(s)}', True
-
-    p.wait()
-
 def ariari(url, fp=None, fn=None, opts=None):
     def _d(url):
         return (
@@ -234,6 +183,80 @@ def ariari(url, fp=None, fn=None, opts=None):
 
         break
 
+def gdrown(url, fp=None, fn=None):
+    folder = 'drive.google.com/drive/folders' in url
+    cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
+    cmd = cli + [url]
+
+    fn and cmd.extend(['-O', fn])
+    folder and cmd.append('--folder')
+    cwd = fp or Path.cwd()
+
+    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
+
+    sl = time.time()
+    output, f, prog, n, s = '', False, None, None, None
+    fail = 'Failed to retrieve'
+
+    while (o := p.stdout.readline()):
+        if DOWNLOAD_CANCEL.is_set():
+            DOWNLOAD_CANCEL.clear()
+
+            p.terminate()
+            try:
+                p.wait(timeout=1)
+            except Exception:
+                p.kill()
+
+            yield f'Canceled: {fn or url}', True
+            return
+
+        output += o
+        f |= fail in o
+
+        if o.startswith('To:'):
+            s = o[4:].strip()
+            n = Path(s).name
+            continue
+
+        if re.search(r'\d{1,3}%', o):
+            o = re.sub(r'\|[^|]*\|', '', o, count=1).strip()
+            o = re.sub(r'(\d{1,3}%)', r'(\1)', o, count=1)
+            prog = f'{n} {o}'
+
+        if prog and time.time() - sl >= 1:
+            yield prog, False
+            sl = time.time()
+
+    if f: yield output[output.find(fail):], False
+    if s: yield f'Saved To: {Path(s).parent if folder else Path(s)}', True
+
+    p.wait()
+
+def gitclown(url, fp):
+    cmd = ['git', 'clone'] + shlex.split(url)
+    p = subprocess.Popen(cmd, cwd=str(fp), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
+    git_output = []
+
+    for output in iter(p.stdout.readline, ''):
+        if DOWNLOAD_CANCEL.is_set():
+            DOWNLOAD_CANCEL.clear()
+
+            p.terminate()
+            try:
+                p.wait(timeout=1)
+            except Exception:
+                p.kill()
+
+            yield f'Canceled: {url}', True
+            return
+
+        git_output.append(output)
+        yield output, False
+
+    for line in git_output: yield line, True
+    p.wait()
+
 def url_check(url):
     try:
         supported = {*CIVITAI.DOMAINS, 'huggingface.co', 'github.com', 'drive.google.com'}
@@ -252,7 +275,7 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
         return None, None, None, 'Invalid usage, Tag should start with $'
 
     if url_line.startswith('$'):
-        parts = url_line[1:].strip().split('/', 1)
+        parts = re.split(r'[/\\]', url_line[1:].strip(), maxsplit=1)
         tags_key = f'${parts[0].lower()}'
         subfolder = parts[1] if len(parts) > 1 else None
         base_path = tag_tag.get(tags_key)
@@ -322,25 +345,20 @@ def lobby(inputs, opts):
 
         if ext_tag and github_repo:
             if cmd_opts.enable_insecure_extension_access:
-                for msg, err in gitclown(url, fp):
-                    yield msg, err
+                for msg, done in gitclown(url, fp):
+                    yield msg, done
+                    if msg.startswith('Canceled:'): return
                 continue
 
         if 'drive.google' in url:
-            for msg, err in gdrown(url, fp, fn):
-                yield msg, err
+            for msg, done in gdrown(url, fp, fn):
+                yield msg, done
+                if msg.startswith('Canceled:'): return
             continue
 
-        canceled = False
-
         for msg, done in ariari(url, fp, fn, opts):
-            if msg == '__CANCELED__':
-                canceled = True
-                break
-
             yield msg, done
-
-        if canceled: continue
+            if msg.startswith('Canceled:'): return
 
 def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
     if not inputs.strip(): return
@@ -393,6 +411,9 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
         elif any(BLOCK in l for l in output_box):
             yield 'Blocked', '\n'.join(output_box)
             assert not cmd_opts.disable_extension_access, BLOCK
+
+        elif any(l.startswith('Canceled:') for l in output_box):
+            yield '', '\n'.join(output_box)
 
         else:
             yield '', '\n'.join(output_box)
@@ -477,49 +498,50 @@ def DownloaderTab():
                 elem_classes='sdhub-checkbox'
             )
 
-        input_box = gr.Textbox(
-            show_label=False,
-            lines=5,
-            placeholder='$tag\nURL',
-            elem_id='SDHub-Downloader-Input',
-            elem_classes='sdhub-input'
-        )
-
         with FormRow(elem_classes='sdhub-button-output-row'):
-            with FormColumn(scale=6), FormRow(elem_classes='sdhub-row'):
-                with FormRow(elem_classes='sdhub-button-row-1'):
-                    download_button = gr.Button(
-                        'DOWNLOAD',
-                        variant='primary',
-                        elem_id='SDHub-Downloader-Download-Button',
-                        elem_classes='sdhub-buttons'
-                    )
+            with FormColumn(scale=6, elem_classes='sdhub-column'):
+                input_box = gr.Textbox(
+                    show_label=False,
+                    lines=5,
+                    placeholder='$tag\nURL',
+                    elem_id='SDHub-Downloader-Input',
+                    elem_classes='sdhub-input'
+                )
 
-                    cancel_button = gr.Button(
-                        'CANCEL',
-                        variant='primary',
-                        elem_id='SDHub-Downloader-Cancel-Button',
-                        elem_classes='sdhub-buttons'
-                    )
+                with FormRow(elem_classes='sdhub-button-row'):
+                    with FormRow(elem_classes='sdhub-button-row-1'):
+                        download_button = gr.Button(
+                            'DOWNLOAD',
+                            variant='primary',
+                            elem_id='SDHub-Downloader-Download-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-                with FormRow(variant='compact', elem_classes='sdhub-button-row-2'):
-                    scrape_button = gr.Button(
-                        'Scrape',
-                        variant='secondary',
-                        min_width=0,
-                        elem_id='SDHub-Downloader-Scrape-Button'
-                    )
+                        cancel_button = gr.Button(
+                            'CANCEL',
+                            variant='primary',
+                            elem_id='SDHub-Downloader-Cancel-Button',
+                            elem_classes='sdhub-buttons'
+                        )
 
-                    txt_button = gr.UploadButton(
-                        label='Insert TXT',
-                        variant='secondary',
-                        file_count='single',
-                        file_types=['.txt'],
-                        min_width=0,
-                        elem_id='SDHub-Downloader-Txt-Button'
-                    )
+                    with FormRow(elem_classes='sdhub-button-row-2'):
+                        scrape_button = gr.Button(
+                            'Scrape',
+                            variant='secondary',
+                            min_width=0,
+                            elem_id='SDHub-Downloader-Scrape-Button'
+                        )
 
-            with FormColumn(scale=4):
+                        txt_button = gr.UploadButton(
+                            label='Insert TXT',
+                            variant='secondary',
+                            file_count='single',
+                            file_types=['.txt'],
+                            min_width=0,
+                            elem_id='SDHub-Downloader-Txt-Button'
+                        )
+
+            with FormColumn(scale=4, elem_classes='sdhub-column'):
                 output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,

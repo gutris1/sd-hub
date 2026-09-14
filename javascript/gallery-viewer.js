@@ -1,7 +1,7 @@
 let SDHubGalleryImageViewer = null;
 
 function SDHubGalleryDisplayImageViewer(mode, skip = false) {
-  const lightBox = document.getElementById(SDHub.ImgViewer),
+  const lightBox = _(SDHub.ImgViewer),
   imgWrapper = lightBox.querySelector(`#${SDHub.ImgViewer}-Wrapper`),
   controls = lightBox.querySelector(`#${SDHub.ImgViewer}-Control`),
   nextBtn = controls.querySelector(`#${SDHub.ImgViewer}-Next-Button`),
@@ -16,7 +16,7 @@ function SDHubGalleryDisplayImageViewer(mode, skip = false) {
   let img;
 
   if (skip) {
-    img = document.getElementById(`${SDHub.ImgViewer}-img`);
+    img = _(`${SDHub.ImgViewer}-img`);
   } else {
     imgWrapper.querySelectorAll('img').forEach(img => img.remove());
     img = SDHubEL('img', { id: `${SDHub.ImgViewer}-img`, src: window.SDHubImagePath });
@@ -44,7 +44,7 @@ function SDHubGalleryDisplayImageViewer(mode, skip = false) {
     infoBtn.style.display = '';
 
     if (mode === 's') {
-      document.getElementById(`${SDHub.ImgInfo}-Row`).focus();
+      _(`${SDHub.ImgInfo}-Row`).focus();
       document.body.classList.add(SDHub.noScroll);
     } else {
       document.body.classList.remove(SDHub.noScroll);
@@ -66,7 +66,7 @@ function SDHubGalleryDisplayImageViewer(mode, skip = false) {
 function SDHubGallerySwitchImage() {
   window.SDHubImagePath = window.SDHubImageList[window.SDHubImageIndex];
 
-  const imgWrapper = document.getElementById(`${SDHub.ImgViewer}-Wrapper`),
+  const imgWrapper = _(`${SDHub.ImgViewer}-Wrapper`),
   img = SDHubEL('img', { id: `${SDHub.ImgViewer}-img`, src: window.SDHubImagePath, class: 'sdhub-gallery-img-0' });
 
   setTimeout(() => {

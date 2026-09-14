@@ -86,10 +86,11 @@ def SaveToken(HFW=None, HFR=None, CAK=None):
     return f'{m}\nSaved To: {config}' if s else 'No Token Saved.'
 
 def xyz(y):
-    x = Path(sys.executable).parent / y
+    x = Path(sys.executable).parent / ('Scripts' if sys.platform == 'win32' else '') / y
 
     if 'COLAB_JUPYTER_TOKEN' in os.environ:
         c = Path('/usr/local/bin') / y
-        if c.exists(): x = c
+        if c.exists():
+            x = c
 
     return [str(x)]

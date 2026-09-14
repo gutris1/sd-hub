@@ -267,17 +267,17 @@ def GalleryTab():
     if imgChestColumn: imgChestColumn()
 
     with gr.TabItem('Gallery', elem_id='SDHub-Gallery-Tab'):
-        with FormRow(equal_height=False, elem_id='SDHub-Gallery-Image-Info-Row'):
-            with FormColumn(variant='compact', scale=3, elem_id='SDHub-Gallery-Image-Info-Image-Column'):
-                image = gr.Image(elem_id='SDHub-Gallery-Image-Info-img', type='pil', show_label=False)
+        with FormRow(equal_height=False, elem_id='SDHub-ImgInfo-Row'):
+            with FormColumn(variant='compact', scale=3, elem_id='SDHub-ImgInfo-Image-Column'):
+                image = gr.Image(elem_id='SDHub-ImgInfo-img', type='pil', source='upload', show_label=False)
                 image.change(fn=None, _js='() => SDHubGalleryParser()')
 
-                with FormRow(variant='compact', elem_id='SDHub-Gallery-Image-Info-SendButton'):
+                with FormRow(variant='compact', elem_id='SDHub-ImgInfo-SendButton'):
                     buttons = tempe.create_buttons(['txt2img', 'img2img', 'inpaint', 'extras'])
 
-            with FormColumn(variant='compact', scale=7, elem_id='SDHub-Gallery-Image-Info-Output-Panel'):
-                geninfo = gr.Textbox(elem_id='SDHub-Gallery-Image-Info-Geninfo', visible=False)
-                gr.HTML(elem_id='SDHub-Gallery-Image-Info-HTML')
+            with FormColumn(variant='compact', scale=7, elem_id='SDHub-ImgInfo-Output-Panel'):
+                geninfo = gr.Textbox(elem_id='SDHub-ImgInfo-Geninfo', visible=False)
+                gr.HTML(elem_id='SDHub-ImgInfo-HTML')
 
         for tabname, button in buttons.items():
             tempe.register_paste_params_button(
