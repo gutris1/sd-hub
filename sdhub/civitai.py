@@ -264,23 +264,16 @@ class CIVITAI:
         resized = self.resizer(r)
 
         if KAGGLE:
-            try:
-                import sd_image_encryption  # type: ignore
+            try: import sd_image_encryption
             except ImportError as e:
-                err = (
-                    f"{str(e)}\nimage preview skipped\n"
-                    "Install https://github.com/gutris1/sd-image-encryption extension "
-                    "or you'll get banned by Kaggle."
-                )
-                print(err)
-                return err
+                err = f"{e}\nimage preview skipped\nInstall https://github.com/gutris1/sd-image-encryption extension or you'll get banned by Kaggle."
+                print(err); return err
 
             img = Image.open(self.resizer(r))
             info = img.info or {}
-            if not all(t in info for t in ('Encrypt', 'EncryptPwdSha')):
-                sd_image_encryption.EncryptedImage.from_image(img).save(p)
-        else:
-            p.write_bytes(self.resizer(r).read())
+            if not all(t in info for t in ('Encrypt', 'EncryptPwdSha')): sd_image_encryption.EncryptedImage.from_image(img).save(p)
+
+        else: p.write_bytes(self.resizer(r).read())
 
         return p
 

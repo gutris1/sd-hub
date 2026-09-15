@@ -1,4 +1,4 @@
-#import sys; [sys.modules.pop(n) for n in list(sys.modules) if n == 'sdhub' or n.startswith('sdhub.')]
+import sys; [sys.modules.pop(n) for n in list(sys.modules) if n == 'sdhub' or n.startswith('sdhub.')]
 
 import gradio as gr
 
@@ -11,7 +11,7 @@ from sdhub.texteditorTab import TextEditorTab
 from sdhub.shellTab import ShellTab
 from sdhub.galleryTab import GalleryTab, GalleryApp, GalleryWS
 
-from sdhub.infotext import repo
+from sdhub.infotext import repo, info
 from sdhub.paths import SDHubPaths
 
 Gallery = GalleryWS()
@@ -43,3 +43,4 @@ on_app_started(LoadUploaderInfo)
 on_app_started(GalleryApp)
 on_image_saved(Gallery.img)
 on_ui_tabs(Tab)
+info()

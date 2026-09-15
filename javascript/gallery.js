@@ -866,7 +866,7 @@ function SDHubCreateGallery() {
     outputPanel.addEventListener('scroll', window.SDHubGalleryImageInfoArrow);
 
     let rT;
-    new ResizeObserver(() => (clearTimeout(rT), rT = setTimeout(window.SDHubGalleryImageInfoArrow, 5))).observe(outputHTML);
+    new ResizeObserver(() => (clearTimeout(rT), rT = setTimeout(window.SDHubGalleryImageInfoArrow, 20))).observe(outputHTML);
 
     ['drop', 'dragover'].forEach(t =>
       document.addEventListener(t, e => {e.target.closest?.(`#${SDHub.imginfo}-Row`) && (e.preventDefault(), e.stopPropagation());

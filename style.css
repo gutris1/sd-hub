@@ -310,12 +310,13 @@
 }
 
 @keyframes sdhub-output-pulseStart {
-  0% { opacity: 0; } 100% { opacity: 1; }
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 @keyframes sdhub-output-pulse {
-  0%, 100% { opacity: 1; box-shadow: var(--b), var(--a); }
-  50% { opacity: .8; box-shadow: inset 0 0 2px 1px var(--primary-400), var(--a); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: .8; --b: inset 0 0 2px 1px var(--primary-400); }
 }
 
 #SDHub-Tab .sdhub-input textarea,

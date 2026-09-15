@@ -28,11 +28,9 @@ def uploaderTabsvg():
     url = 'https://huggingface.co/datasets/huggingface/brand-assets/resolve/main/hf-logo.svg'
     fp = Path(__file__).parent / 'hf-logo.svg'
 
-    if fp.exists():
-        svg = fp.read_text()
+    if fp.exists(): svg = fp.read_text()
     else:
-        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o:
-            shutil.copyfileobj(r, o)
+        with urllib.request.urlopen(url) as r, open(fp, 'wb') as o: shutil.copyfileobj(r, o)
         svg = fp.read_text()
 
     svg = re.sub(r'width="\d+"', 'width="40"', svg)
@@ -59,11 +57,7 @@ repo = f"""
 
 def info():
     m = f'\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m'
-
     d = LoadConfig().get('Token', {})
     l = [f'{v[1]} Loaded' for v in Keys.values() if d.get(v[0])]
     if l: m += ' | ' + ', '.join(l)
-
     print(m)
-
-info()

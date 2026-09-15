@@ -28,8 +28,7 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
         path_in_repo = '/' + path_in_repo.lstrip('/') if path_in_repo.startswith('//') else path_in_repo
         path_in_repo = path_in_repo.rstrip('/')
         cmd += [f'{path_in_repo}/{file_name}']
-    else:
-        cmd += [file_name]
+    else: cmd += [file_name]
 
     cmd += ['--token', token, '--revision', branch, '--commit-message', msg]
     if private_repo: cmd.append('--private')
@@ -44,22 +43,17 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
     for line in p.stdout:
         output = line.strip()
 
-        if 'Bad request' in output:
-            failed = True
-            break
+        if 'Bad request' in output: failed = True; break
 
         kandang = output.split(':', 1)
-        if len(kandang) > 1:
-            asu = kandang[1].strip()
-        else:
-            continue
+        if len(kandang) > 1: asu = kandang[1].strip()
+        else: continue
 
         lari = re.compile(r'\d+%|\d+M/\d+G|\d+\.\d+MB/s')
         now_line = time.time()
         if lari.search(asu):
             if now_line - starting_line >= 1:
-                if 'Consider using' in asu:
-                    continue
+                if 'Consider using' in asu: continue
                 yield asu, False
                 starting_line = now_line
 
@@ -67,9 +61,9 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
         error = output
         while True:
             part = p.stdout.readline()
-            if not part:
-                break
+            if not part: break
             error += part
+
         error = '.\n'.join(error.split('. '))
         yield error, True
 
@@ -79,23 +73,16 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
 def isEmpty(fp):
     for f in fp.iterdir():
         rp = f.resolve()
-        if rp.is_file() or (rp.is_dir() and any(rp.iterdir())):
-            return False
+        if rp.is_file() or (rp.is_dir() and any(rp.iterdir())): return False
     return True
 
 def up_up(inputs, user, repo, branch, token, repo_radio):
     input_lines = [line.strip() for line in inputs.strip().splitlines()]
 
     if not inputs.strip() or not all([user, repo, branch, token]):
-        params = [
-            name for name, value in zip(['Input', 'Username', 'Repository', 'Branch', 'Token'], [inputs.strip(), user, repo, branch, token])
-            if not value
-        ]
-
+        params = [n for n, v in zip(['Input', 'Username', 'Repository', 'Branch', 'Token'], [inputs.strip(), user, repo, branch, token]) if not v]
         missing = ', '.join(params)
-
-        yield f'Missing: [ {missing} ]', True
-        return
+        yield f'Missing: {missing}', True; return
 
     repo_id = f'{user}/{repo}'
     task_task = []
@@ -105,55 +92,36 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         ex_ext = None
         path_in_repo = None
 
-        if m := re.search(r'\s=\s(\S+)', line):
-            given_fn = m.group(1)
-            line = line.replace(m.group(0), '')
-
-        if m := re.search(r'\s>\s(\S+)', line):
-            path_in_repo = m.group(1)
-            line = line.replace(m.group(0), '')
-
-        if m := re.search(r'\s-\s(.+)$', line):
-            ex_ext = m.group(1).split()
-            line = line[:m.start()].rstrip()
+        if m := re.search(r'\s=\s(\S+)', line): given_fn = m.group(1); line = line.replace(m.group(0), '')
+        if m := re.search(r'\s>\s(\S+)', line): path_in_repo = m.group(1); line = line.replace(m.group(0), '')
+        if m := re.search(r'\s-\s(.+)$', line): ex_ext = m.group(1).split(); line = line[:m.start()].rstrip()
 
         input_path = line.strip().strip('"').strip("'")
-
-        if sys.platform == 'win32':
-            input_path = Path(input_path).as_posix()
+        if sys.platform == 'win32': input_path = Path(input_path).as_posix()
 
         full_path = Path(input_path) if not input_path.startswith('$') else None
         if input_path.startswith('$'):
             tag_key, _, subpath_or_file = input_path[1:].partition('/')
             tag_key = f'${tag_key.lower()}'
             resolved_path = tag_tag.get(tag_key)
-            if resolved_path is None:
-                yield f'{tag_key}\nInvalid tag.', True
-                return
+
+            if resolved_path is None: yield f'{tag_key}\nInvalid tag.', True; return
+
             full_path = Path(resolved_path, subpath_or_file)
 
         if not cmd_opts.enable_insecure_extension_access:
             allowed, err = SDHubPaths.SDHubCheckPaths(full_path)
-            if not allowed:
-                yield err, True
-                return
+            if not allowed: yield err, True; return
 
         if full_path.exists():
-            if full_path.is_file():
-                type_ = 'file'
+            if full_path.is_file(): type_ = 'file'
             elif full_path.is_dir():
-                if isEmpty(full_path):
-                    yield f'{full_path}\nInput Path is empty.', True
-                    return
+                if isEmpty(full_path): yield f'{full_path}\nInput Path is empty.', True; return
                 type_ = 'folder'
-            else:
-                type_ = 'unknown'
-        else:
-            yield f'{full_path}\nInput Path does not exist.', True
-            return
+            else: type_ = 'unknown'
+        else: yield f'{full_path}\nInput Path does not exist.', True; return
 
-        if given_fn and not Path(given_fn).suffix and full_path.is_file():
-            given_fn += full_path.suffix
+        if given_fn and not Path(given_fn).suffix and full_path.is_file(): given_fn += full_path.suffix
 
         task_task.append((full_path, given_fn or full_path.name, type_, path_in_repo, ex_ext))
 
@@ -180,9 +148,7 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
         ):
             yield output
 
-            if output[1]:
-                erorr = True
-                break
+            if output[1]: erorr = True; break
 
         if not erorr:
             files = f'{path_in_repo}/{file_name}' if path_in_repo else file_name
@@ -202,8 +168,7 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
         if not f:
             if 'Uploading' in t: yield t, '\n'.join(output_box)
             yield t, '\n'.join(output_box)
-        else:
-            output_box.append(t)
+        else: output_box.append(t)
 
     catcher = ['not', 'Missing', 'Error', 'Invalid']
 
@@ -214,8 +179,7 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
 
-    else:
-        yield '', '\n'.join(output_box)
+    else: yield '', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 

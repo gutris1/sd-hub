@@ -7,10 +7,8 @@ import select
 import sys
 import os
 
-if sys.platform == 'win32':
-    import tarfile, gzip, lz4.frame # type: ignore
-else:
-    import pty
+if sys.platform == 'win32': import tarfile, gzip, lz4.frame
+else: import pty
 
 from modules.ui_components import FormRow, FormColumn
 from modules.shared import cmd_opts
@@ -20,6 +18,23 @@ from sdhub.zipoutputs import ZipOutputs
 from sdhub.infotext import arc_info
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
+
+def _paths(*args):
+    names, values = zip(*args)
+    values = [v.strip('"').strip("'") if isinstance(v, str) else v for v in values]
+    missing = ', '.join(n for n, v in zip(names, values) if not v)
+    if missing: return None, f'Missing: {missing}'
+
+    if sys.platform == 'win32': values = [Path(v).as_posix() for v in values]
+
+    return values, None
+
+def _paths_check(input, output, mkdir):
+    if input or output:
+        if not input.exists(): return f'input path: {input} does not exist'
+        if output.suffix: return f'Output Path: {output} is not a directory.'
+        if not mkdir and not output.exists(): return f'Output Path: {output} does not exist'
+        if mkdir: output.mkdir(parents=True, exist_ok=True)
 
 def tar_win_process(inputs, paths, formats, outputs):
     tar_out = str(outputs) + '.tar'
@@ -228,17 +243,9 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
         yield f'Saved To: {output_zip}', True
 
 def path_archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by):
-    input_path = input_path.strip('"').strip("'")
-    output_path = output_path.strip('"').strip("'")
-
-    if sys.platform == 'win32':
-        input_path = Path(input_path).as_posix()
-        output_path = Path(output_path).as_posix()
-
-    params = [name for name, value in zip(['Input Path', 'Name', 'Output Path'], [input_path, file_name, output_path]) if not value]
-    missing = ', '.join(params)
-
-    if missing: yield f'Missing: [ {missing} ]', True; return
+    P, err = _paths(('Input Path', input_path), ('Name', file_name), ('Output Path', output_path))
+    if err: yield err, True; return
+    input_path, file_name, output_path = P
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
@@ -256,10 +263,7 @@ def path_archive(input_path, file_name, output_path, archiver_format, archiver_m
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        if not input_path_obj.exists(): yield f'{input_path_obj}\ndoes not exist', True; return
-        if output_path_obj.suffix: yield f'{output_path}\nOutput Path is not a directory.', True; return
-        if not archiver_mkdir and not output_path_obj.exists(): yield f'{output_path_obj}\ndoes not exist', True; return
-        elif archiver_mkdir: output_path_obj.mkdir(parents=True, exist_ok=True)
+        if err := _paths_check(input_path_obj, output_path_obj, archiver_mkdir): yield err, True; return
 
         if not cmd_opts.enable_insecure_extension_access:
             for path in [input_path_obj, output_path_obj]:
@@ -303,8 +307,7 @@ def archive(input_path, file_name, output_path, archiver_format, archiver_mkdir,
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
 
-    else:
-        yield 'Done', '\n'.join(output_box)
+    else: yield '', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 
@@ -425,17 +428,9 @@ def extraction(input_path, output_path, format_type):
     if is_done: yield f'Extracted To: {output_path}', True
 
 def path_extract(input_path, output_path, extractor_mkdir):
-    input_path = input_path.strip('"').strip("'")
-    output_path = output_path.strip('"').strip("'")
-
-    if sys.platform == 'win32':
-        input_path = Path(input_path).as_posix()
-        output_path = Path(output_path).as_posix()
-
-    params = [name for name, value in zip(['Input Path', 'Output Path'], [input_path, output_path]) if not value]
-    missing = ', '.join(params)
-
-    if missing: yield f'Missing: [ {missing} ]', True; return
+    P, err = _paths(('Input Path', input_path), ('Output Path', output_path))
+    if err: yield err, True; return
+    input_path, output_path = P
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
@@ -453,10 +448,7 @@ def path_extract(input_path, output_path, extractor_mkdir):
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        if not input_path_obj.exists(): yield f'{input_path_obj}\ndoes not exist', True; return
-        if output_path_obj.suffix: yield f'{output_path}\nOutput Path is not a directory.', True; return
-        if not extractor_mkdir and not output_path_obj.exists(): yield f'{output_path_obj}\ndoes not exist', True; return
-        elif extractor_mkdir: output_path_obj.mkdir(parents=True, exist_ok=True)
+        if err := _paths_check(input_path_obj, output_path_obj, extractor_mkdir): yield err, True; return
 
         if not cmd_opts.enable_insecure_extension_access:
             for path in [input_path_obj, output_path_obj]:
@@ -489,8 +481,7 @@ def extract(input_path, output_path, extractor_mkdir, s=gr.State()):
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
 
-    else:
-        yield 'Done', '\n'.join(output_box)
+    else: yield '', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 

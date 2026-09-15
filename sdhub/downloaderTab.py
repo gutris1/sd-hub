@@ -29,6 +29,11 @@ aria2cexe = Path(basedir()) / 'aria2c.exe'
 
 DOWNLOAD_CANCEL = threading.Event()
 
+def _stop(p):
+    p.terminate()
+    try: p.wait(timeout=1)
+    except Exception: p.kill()
+
 def ariari(url, fp=None, fn=None, opts=None):
     def _d(url):
         return (
@@ -73,28 +78,17 @@ def ariari(url, fp=None, fn=None, opts=None):
         url = url.replace('/blob/', '/resolve/')
 
     elif civitai:
-        if not opts.CAK:
-            yield 'CivitAI API key is required for downloading models from Civitai', True
-            return
+        if not opts.CAK: yield 'CivitAI API key is required for downloading models from Civitai', True; return
 
         c = CIVITAI.from_url(url)
-
-        if not c:
-            yield f'Unable to find download URL for\n-> {url}\n', True
-            return
+        if not c: yield f'Unable to find download URL for\n-> {url}\n', True; return
 
         cd = c.domain_name
-
-        if msg := c.early_access_info():
-            yield msg, True
-            return
-
+        if msg := c.early_access_info(): yield msg, True; return
         fn = fn or c.filename
 
         download_url = c.download_url
-        if not download_url:
-            yield f'Unable to find download URL for\n-> {url}\n', True
-            return
+        if not download_url: yield f'Unable to find download URL for\n-> {url}\n', True; return
 
         url = download_url
 
@@ -122,17 +116,7 @@ def ariari(url, fp=None, fn=None, opts=None):
         aria2_output, error, auth_error, error_msg = '', False, None, None
 
         while output := p.stdout.readline():
-            if DOWNLOAD_CANCEL.is_set():
-                DOWNLOAD_CANCEL.clear()
-
-                p.terminate()
-                try:
-                    p.wait(timeout=1)
-                except Exception:
-                    p.kill()
-
-                yield f'Canceled: {fn or input_url}', True
-                return
+            if DOWNLOAD_CANCEL.is_set(): DOWNLOAD_CANCEL.clear(); _stop(p); yield f'Canceled: {fn or input_url}', True; return
 
             aria2_output += output
 
@@ -199,17 +183,7 @@ def gdrown(url, fp=None, fn=None):
     fail = 'Failed to retrieve'
 
     while (o := p.stdout.readline()):
-        if DOWNLOAD_CANCEL.is_set():
-            DOWNLOAD_CANCEL.clear()
-
-            p.terminate()
-            try:
-                p.wait(timeout=1)
-            except Exception:
-                p.kill()
-
-            yield f'Canceled: {fn or url}', True
-            return
+        if DOWNLOAD_CANCEL.is_set(): DOWNLOAD_CANCEL.clear(); _stop(p); yield f'Canceled: {fn or url}', True; return
 
         output += o
         f |= fail in o
@@ -239,17 +213,7 @@ def gitclown(url, fp):
     git_output = []
 
     for output in iter(p.stdout.readline, ''):
-        if DOWNLOAD_CANCEL.is_set():
-            DOWNLOAD_CANCEL.clear()
-
-            p.terminate()
-            try:
-                p.wait(timeout=1)
-            except Exception:
-                p.kill()
-
-            yield f'Canceled: {url}', True
-            return
+        if DOWNLOAD_CANCEL.is_set(): DOWNLOAD_CANCEL.clear(); _stop(p); yield f'Canceled: {url}', True; return
 
         git_output.append(output)
         yield output, False
@@ -283,8 +247,7 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
         if base_path is not None:
             full_path = Path(base_path, subfolder) if subfolder else Path(base_path)
             cp = full_path
-        else:
-            return None, None, None, f'{tags_key}\nInvalid Tag.'
+        else: return None, None, None, f'{tags_key}\nInvalid Tag.'
 
         return cp, None, None, None
 
@@ -305,8 +268,7 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
                 dash = parts.index('=')
                 rop = ' '.join(parts[1:dash]).strip()
                 ofn = ' '.join(parts[dash + 1:]).strip()
-            else:
-                rop = ' '.join(parts[1:]).strip()
+            else: rop = ' '.join(parts[1:]).strip()
 
             rop = rop.strip('"').strip("'")
             if sys.platform == 'win32' and rop: rop = Path(rop).as_posix()
@@ -330,9 +292,7 @@ def lobby(inputs, opts):
     cp = None
     urls = [url_line for url_line in inputs.strip().split('\n') if url_line.strip()]
 
-    if len(urls) == 1 and urls[0].startswith('$'):
-        yield 'Missing URL.', True
-        return
+    if len(urls) == 1 and urls[0].startswith('$'): yield 'Missing URL.', True; return
 
     ext_tag = urls[0].startswith('$ext')
     github_repo = any(re.match(r'^https?://github\.com/[^/]+/[^/]+/?$', u) for u in urls)
@@ -397,8 +357,8 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
                     assert not cmd_opts.disable_extension_access, BLOCK
 
                 yield t, '\n'.join(output_box)
-            else:
-                output_box.append(t)
+
+            else: output_box.append(t)
 
         catcher = [
             'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL', 'banned by Kaggle',
@@ -415,8 +375,7 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
         elif any(l.startswith('Canceled:') for l in output_box):
             yield '', '\n'.join(output_box)
 
-        else:
-            yield '', '\n'.join(output_box)
+        else: yield '', '\n'.join(output_box)
 
         return gr.update(), gr.State(output_box)
 

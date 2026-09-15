@@ -63,8 +63,6 @@ body.sdhub-body-no-scrolling {
 #SDHub-ImgInfo-Exit-Button,
 #SDHub-Gallery-Image-Viewer-Exit-Button,
 #SDHub-Gallery-Image-Viewer-Info-Button {
-  --a: 0 0 10px 0 #000, 0 0 1px 1px var(--background-fill-secondary);
-  --b: inset 0 0 10px 0 var(--background-fill-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +79,7 @@ body.sdhub-body-no-scrolling {
   padding: 5px;
   border: 0;
   border-bottom-left-radius: 1.2rem;
-  box-shadow: var(--a);
+  box-shadow: var(--sd-img-scripts-cb-bs);
   color: var(--primary-400) !important;
   background: var(--input-background-fill);
   filter: none;
@@ -117,7 +115,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-ImgInfo-Exit-Button,
 #SDHub-Gallery-Image-Viewer-Exit-Button {
-  --z: red;
+  --z: var(--sd-img-scripts-cb-bg-h);
 }
 
 #SDHub-Gallery-Image-Viewer-Info-Button {
@@ -127,10 +125,9 @@ body.sdhub-body-no-scrolling {
 #SDHub-ImgInfo-Exit-Button:hover,
 #SDHub-Gallery-Image-Viewer-Exit-Button:hover,
 #SDHub-Gallery-Image-Viewer-Info-Button:hover {
-  color: #fff !important;
-  box-shadow: var(--a), var(--b) !important;
+  color: var(--sd-img-scripts-cb-c-h) !important;
+  box-shadow: var(--sd-img-scripts-cb-bs-h) !important;
   background: var(--z);
-  filter: drop-shadow(0 0 3px var(--z));
 }
 
 /* ############################################################################################################ */
@@ -1106,14 +1103,12 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-img-viewer-button {
-  --a: 0 0 10px 0 #000, 0 0 1px 1px var(--background-fill-primary);
-  --b: inset 0 0 10px 0 var(--background-fill-primary);
   display: flex;
   position: absolute;
   margin: 0;
   padding: 0;
   border: 0;
-  box-shadow: var(--a);
+  box-shadow: var(--sd-img-scripts-cb-bs);
   color: var(--primary-400);
   background: transparent;
   transform: scale(0);
@@ -1162,10 +1157,9 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-Gallery-Image-Viewer-Next-Button:hover,
 #SDHub-Gallery-Image-Viewer-Prev-Button:hover {
-  color: #fff;
+  color: var(--sd-img-scripts-cb-c-h) !important;
+  box-shadow: var(--sd-img-scripts-cb-bs-h) !important;
   background: var(--primary-400);
-  box-shadow: var(--a), var(--b);
-  filter: drop-shadow(0 0 3px var(--primary-400));
 }
 
 /* ############################################################################################################ */
@@ -1262,9 +1256,8 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-img img {
-  --a: linear-gradient(to bottom, rgb(0 0 0 / 0%) 0%, rgb(0 0 0) 50%, rgb(0 0 0 / 0%) 100%);
-  mask-image: var(--a);
-  -webkit-mask-image: var(--a);
+  mask-image: var(--sd-img-scripts-img-mask);
+  -webkit-mask-image: var(--sd-img-scripts-img-mask);
 }
 
 #SDHub-ImgInfo-img-frame {
@@ -1294,11 +1287,10 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-SendButton {
-  top: 20px;
-  left: 20px;
+  top: 0;
   height: auto;
   max-height: max-content;
-  padding: 0 !important;
+  padding: 20px 0 0 20px !important;
   box-shadow: 0 0 10px 0 #000;
 }
 
@@ -1319,14 +1311,12 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-ImgInfo-SendButton button {
-  --a: var(--input-background-fill);
-  --b: 0 0 1px 1px #000, inset 0 0 16px 0 var(--a), inset 0 0 6px 0 var(--a);
   white-space: nowrap;
   position: relative;
   padding: 8px 20px;
   border: 0;
   border-radius: 0;
-  box-shadow: var(--b);
+  box-shadow: var(--sd-img-scripts-sb-bs);
   color: var(--primary-400);
   background: var(--input-background-fill);
   transition: box-shadow .2s ease, background .2s ease, color .2s ease;
@@ -1334,9 +1324,9 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-ImgInfo-SendButton button:hover {
-  --a: var(--background-fill-secondary);
-  color: var(--background-fill-primary);
-  background: var(--primary-400);
+  color: var(--sd-img-scripts-sb-c-h);
+  background: var(--sd-img-scripts-sb-bg-h);
+  box-shadow: var(--sd-img-scripts-sb-bs-h);
 }
 
 #SDHub-ImgInfo-Output-Panel {
@@ -1360,21 +1350,8 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-ImgInfo-Row.sdhub-style #SDHub-ImgInfo-Output-Panel {
-  --a: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, .2) 0.5%,
-    rgba(0, 0, 0, .5) 1%,
-    rgba(0, 0, 0, .8) 1.5%,
-    black 2%,
-    black 98%,
-    rgba(0, 0, 0, .8) 98.5%,
-    rgba(0, 0, 0, .5) 99%,
-    rgba(0, 0, 0, .2) 99.5%,
-    transparent 100%
-  );
-  mask-image: var(--a);
-  -webkit-mask-image: var(--a);
+  mask-image: var(--sd-img-scripts-op-mask);
+  -webkit-mask-image: var(--sd-img-scripts-op-mask);
 }
 
 #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-Output-Panel {
@@ -2556,7 +2533,7 @@ body.sdhub-body-no-scrolling {
   }
 }
 
-/* imang info side by side ############################################################################################################ */
+/* img info side by side ############################################################################################################ */
 
 #SDHub-ImgInfo-Row.sdhub-imginfo-side-by-side {
   flex-grow: 10 !important;
@@ -2620,7 +2597,6 @@ body.sdhub-body-no-scrolling {
   top: 0 !important;
   right: 0 !important;
   padding: 7px !important;
-  box-shadow: 0 0 7px 0 #000;
 }
 
 #SDHub-ImgInfo-Row.sdhub-imginfo-side-by-side #SDHub-ImgInfo-img-frame {

@@ -16,11 +16,8 @@ import json
 import sys
 import re
 
-try:
-    import modules.generation_parameters_copypaste as tempe  # type: ignore
-except ModuleNotFoundError:
-    import modules.infotext_utils as tempe
 from modules.ui_components import FormRow, FormColumn
+from modules import infotext_utils as tempe
 from modules.cache import cache as Cache
 from modules.shared import opts
 
@@ -121,8 +118,7 @@ def _thumb(fp, size=512):
     if isinstance(fp, list):
         with ThreadPoolExecutor(max_workers=8) as exe: list(exe.map(resize, fp))
         return None
-    else:
-        return resize(fp)
+    else: return resize(fp)
 
 def _entry(fp, query=''):
     return {
@@ -146,8 +142,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             r = await asyncio.to_thread(imgList_List.wait, 3)
             if not r: return {'status': 'waiting'}
 
-            i = []
-            f = []
+            i, f = [], []
             fl = fav.get(fap, [])
 
             for img in imgList:
@@ -158,12 +153,10 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
                 if not fp.exists(): continue
 
                 if r in fl:
-                    if '?favorite' not in c['path'] and '&favorite' not in c['path']:
-                        c['path'] += '&favorite' if '?' in c['path'] else '?favorite'
+                    if '?favorite' not in c['path'] and '&favorite' not in c['path']: c['path'] += '&favorite' if '?' in c['path'] else '?favorite'
                     f.append(c)
 
-                else:
-                    c['path'] = re.sub(r'(\?|&)favorite', '', c['path'])
+                else: c['path'] = re.sub(r'(\?|&)favorite', '', c['path'])
 
                 i.append(c)
 
@@ -195,9 +188,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
 
         if op == 'remove':
             fav.delete(p)
-            if p in fl:
-                fl.remove(p)
-                fav.set(fap, fl)
+            if p in fl: fl.remove(p); fav.set(fap, fl)
 
         elif op == 'add':
             fav.set(p, True)
@@ -210,12 +201,10 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             if path.exists(): path.unlink() if perm else send2trash(path)
             Thumbnails.pop(thumb, None)
             imgList[:] = [img for img in imgList if unquote(img['path'].split('-image=')[-1].split('?')[0]) != path.as_posix()]
-            if str(path) in fav: del fav[str(path)]
-            return True
+            if str(path) in fav: del fav[str(path)]; return True
 
         except Exception as e:
-            print(f'Error deleting {path}: {e}')
-            return False
+            print(f'Error deleting {path}: {e}'); return False
 
     @app.post(BASE + '-delete')
     async def _(req: Request):
@@ -252,6 +241,7 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
     async def _(w: WebSocket):
         await w.accept()
         ws.add(w)
+
         try:
             while True:
                 msg = await w.receive_text()
@@ -281,12 +271,7 @@ def GalleryTab():
 
         for tabname, button in buttons.items():
             tempe.register_paste_params_button(
-                tempe.ParamBinding(
-                    paste_button=button,
-                    tabname=tabname,
-                    source_text_component=geninfo,
-                    source_image_component=image
-                )
+                tempe.ParamBinding(paste_button=button, tabname=tabname, source_text_component=geninfo, source_image_component=image)
             )
 
         with FormColumn(elem_id='SDHub-Gallery-Batch-Column', visible=False):
@@ -333,7 +318,6 @@ class GalleryWS:
         for w in list(ws):
             try:
                 await w.send_text(json.dumps(j))
-
             except Exception as e:
                 print(f'Error WS send: {e}')
                 dead.append(w)
@@ -351,8 +335,7 @@ class GalleryWS:
             imgList_List.set()
 
         except Exception as e:
-            print(f'Error WS proc: {e}')
-            return
+            print(f'Error WS proc: {e}'); return
 
         await self.send(r)
         self.shelf.append(r)
@@ -362,6 +345,9 @@ class GalleryWS:
             self.shelf.clear()
 
     def img(self, params):
-        t = params.p.batch_size * params.p.n_iter
-        if t > 1: t += 1
-        asyncio.run(self.proc(str(Path(params.filename).absolute()), t))
+        p = params.p
+        q = p.p if hasattr(p, 'p') else p
+        imgs = getattr(p, 'images', None)
+        t = len(imgs) if imgs is not None else ((getattr(p, 'batch_size', None) or getattr(q, 'batch_size', 1)) * (getattr(p, 'n_iter', None) or getattr(q, 'n_iter', 1)))
+        t += 1 if t > 1 else 0
+        asyncio.run(self.proc(str(Path(params.filename).resolve()), t))
