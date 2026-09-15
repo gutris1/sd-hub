@@ -58,6 +58,6 @@ repo = f"""
 def info():
     m = f'\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m'
     d = LoadConfig().get('Token', {})
-    l = [f'{v[1]} Loaded' for v in Keys.values() if d.get(v[0])]
+    l = [f'{v[1]} Loaded' for v in reversed(Keys.values()) if d.get(v[0])]
     if l: m += ' | ' + ', '.join(l)
     print(m)

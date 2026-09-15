@@ -65,7 +65,9 @@ def SaveToken(HFW=None, HFR=None, CAK=None):
     i = {k[0]: k[1] for k in Keys.values()}
 
     for k, t in zip([Keys['write'][0], Keys['read'][0], Keys['civitai'][0]], [HFW, HFR, CAK]):
-        if t: T[k] = t; s.append(i[k])
+        if t is not None:
+            T[k] = t
+            if t: s.append(i[k])
 
     v['Token'] = T
 
