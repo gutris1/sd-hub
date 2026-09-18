@@ -398,8 +398,8 @@ body.sdhub-body-no-scrolling {
 }
 
 .sdhub-gallery-img-border {
-  --a: transparent !important;
-  --b: 0 0 5px 1px var(--a), 0 0 0 1px var(--a), inset 0 0 5px 0 var(--a) !important;
+  --a: #000;
+  --b: transparent;
   display: block;
   position: absolute;
   z-index: 2;
@@ -407,27 +407,22 @@ body.sdhub-body-no-scrolling {
   height: 100%;
   border: 0;
   border-radius: 10px;
-  box-shadow: 0 0 2px 1px var(--sdhub-gallery-img-border);
-  transition: .3s ease;
+  box-shadow: 0 0 4px 1px var(--a), 0 0 0 1px var(--b), inset 0 0 5px 1px var(--b);
+  transition: .3s ease, box-shadow .15s ease;
   overflow: hidden;
   pointer-events: none;
 }
 
 .sdhub-gallery-img-container:hover .sdhub-gallery-img-border {
-  --a: var(--primary-400) !important;
-  box-shadow: var(--b);
-  filter: drop-shadow(0 0 10px var(--primary-300));
+  --a: var(--primary-400); --b: var(--primary-400);
 }
 
 #SDHub-Gallery-Tab-Wrapper > :not(#SDHub-Gallery-Favorites-Tab-Container) .sdhub-gallery-img-box:not(.sdhub-gallery-img-selected).sdhub-gallery-img-favorited .sdhub-gallery-img-border {
-  --a: var(--sdhub-gallery-img-fav) !important;
-  box-shadow: var(--b);
-  filter: drop-shadow(0 0 10px var(--a));
+  --a: var(--sdhub-gallery-img-fav); --b: var(--sdhub-gallery-img-fav);
 }
 
 .sdhub-gallery-img-box.sdhub-gallery-img-selected .sdhub-gallery-img-border {
-  --a: var(--sdhub-gallery-img-selected) !important;
-  box-shadow: var(--b);
+  --a: var(--sdhub-gallery-img-selected); --b: var(--sdhub-gallery-img-selected);
 }
 
 #SDHub-Tab .sdhub-sticky-container {

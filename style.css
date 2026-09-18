@@ -302,21 +302,8 @@
 }
 
 #SDHub-Tab .sdhub-output > .generating {
-  --a: inset 0 0 0 1px var(--primary-400);
-  --b: inset 0 0 14px 1px var(--primary-400);
-  animation: sdhub-output-pulseStart 1s cubic-bezier(.4, 0, .6, 1), sdhub-output-pulse 2s cubic-bezier(.4, 0, .6, 1) 1s infinite !important;
   border-color: transparent !important;
-  box-shadow: var(--b), var(--a);
-}
-
-@keyframes sdhub-output-pulseStart {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-@keyframes sdhub-output-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .8; --b: inset 0 0 2px 1px var(--primary-400); }
+  box-shadow: inset 0 0 10px 1px var(--primary-400), inset 0 0 0 1px var(--primary-400) !important;
 }
 
 #SDHub-Tab .sdhub-input textarea,

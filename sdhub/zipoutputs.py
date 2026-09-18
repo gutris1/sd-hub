@@ -84,7 +84,7 @@ def ZipOutputs():
     if not SDHubPaths.getENV(): return
 
     with gr.Accordion('Zip Outputs', open=False, elem_id='SDHub-Archiver-ZipOutputs-Accordion', elem_classes='sdhub-accordion'):
-        with FormRow():
+        with FormRow(elem_classes='sdhub-row'):
             with FormColumn(scale=6):
                 zip_name = gr.Textbox(
                     max_lines=1,

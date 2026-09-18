@@ -10,9 +10,7 @@ from sdhub.archiverTab import ArchiverTab
 from sdhub.texteditorTab import TextEditorTab
 from sdhub.shellTab import ShellTab
 from sdhub.galleryTab import GalleryTab, GalleryApp, GalleryWS
-
-from sdhub.infotext import repo, info
-from sdhub.paths import SDHubPaths
+from sdhub.infotext import repo, tagList
 
 Gallery = GalleryWS()
 
@@ -25,17 +23,8 @@ def Tab():
             TextEditorTab()
             ShellTab()
             GalleryTab()
-
-            with gr.Accordion('Tag List', open=False, elem_id='SDHub-Tag-Accordion', elem_classes='sdhub-accordion'):
-                gr.DataFrame(
-                    [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
-                    headers=['SD-Hub Tag', 'WebUI Path'],
-                    datatype=['str', 'str'],
-                    interactive=False,
-                    elem_id='SDHub-Tag-Dataframe'
-                )
-
-            gr.HTML(repo)
+            tagList()
+            repo()
 
     return (sdhub, 'HUB', 'SDHub'),
 
@@ -43,4 +32,3 @@ on_app_started(LoadUploaderInfo)
 on_app_started(GalleryApp)
 on_image_saved(Gallery.img)
 on_ui_tabs(Tab)
-info()

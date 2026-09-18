@@ -28,9 +28,9 @@ GalleryDefault = {
 }
 
 Keys = {
-    'write': ('huggingface-token-write', 'Huggingface Token (WRITE)'),
+    'civitai': ('civitai-api-key', 'Civitai API Key'),
     'read': ('huggingface-token-read', 'Huggingface Token (READ)'),
-    'civitai': ('civitai-api-key', 'Civitai API Key')
+    'write': ('huggingface-token-write', 'Huggingface Token (WRITE)')
 }
 
 def LoadConfig():

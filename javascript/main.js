@@ -436,6 +436,7 @@ function SDHubUITranslation() {
     { t: '#SDHub-Downloader-CAK > label > input', k: 'civitai_api_key_placeholder', spellcheck: false },
     { t: '#SDHub-Downloader-Input > label > textarea', spellcheck: false },
     { t: '#SDHub-Downloader-Download-Button', k: 'download' },
+    { t: '#SDHub-Downloader-Cancel-Button', k: 'cancel_download' },
     { t: '#SDHub-Downloader-Scrape-Button', k: 'scrape' },
     { t: '#SDHub-Downloader-Txt-Button', k: 'insert_txt' },
     { t: '#SDHub-Downloader-Load-Button', k: 'load' },

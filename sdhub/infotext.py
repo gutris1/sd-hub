@@ -1,9 +1,11 @@
 from pathlib import Path
 import urllib.request
+import gradio as gr
 import shutil
 import re
 
 from sdhub.config import LoadConfig, Keys
+from sdhub.paths import SDHubPaths
 
 version = '13'
 
@@ -41,23 +43,29 @@ def uploaderTabsvg():
     return svg
 
 hflogo = uploaderTabsvg()
+
 upl_title = f"""<h3 class='sdhub-tab-title sdhub-uploader-tab-title'>{hflogo} Upload To Huggingface</h3>"""
-
 upl_info = """<p class='sdhub-tab-info sdhub-uploader-tab-info'></p>"""
-
 arc_info = """<p class='sdhub-tab-info sdhub-archiver-tab-info'></p>"""
 
-repo = f"""
-<h4 id="SDHub-Repo">
-  <a href="https://github.com/gutris1/sd-hub">
-    SD-Hub • v{version}
-  </a>
-</h4>
-"""
+def tagList():
+    with gr.Accordion('Tag List', open=False, elem_id='SDHub-Tag-Accordion', elem_classes='sdhub-accordion'):
+        gr.DataFrame(
+            [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
+            headers=['SD-Hub Tag', 'WebUI Path'],
+            datatype=['str', 'str'],
+            interactive=False,
+            elem_id='SDHub-Tag-Dataframe'
+        )
+
+def repo():
+    gr.HTML(f"""<h4 id='SDHub-Repo'><a href='https://github.com/gutris1/sd-hub'>SD-Hub • v{version}</a></h4>""")
 
 def info():
     m = f'\033[38;5;208m▶\033[0m SD-Hub: \033[38;5;39mv{version}\033[0m'
     d = LoadConfig().get('Token', {})
-    l = [f'{v[1]} Loaded' for v in reversed(Keys.values()) if d.get(v[0])]
+    l = [f'{v[1]} Loaded' for v in Keys.values() if d.get(v[0])]
     if l: m += ' | ' + ', '.join(l)
     print(m)
+
+info()
