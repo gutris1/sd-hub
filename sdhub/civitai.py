@@ -289,7 +289,8 @@ class CIVITAI:
 
     @staticmethod
     def html_desc(l):
-        b = BeautifulSoup(l or '', 'html.parser')
+        if isinstance(l, bytes): l = l.decode('utf-8', errors='replace')
+        b = BeautifulSoup(str(l or ''), 'html.parser')
         for t in b(['script', 'iframe', 'noscript']): t.decompose()
         return str(b)
 
