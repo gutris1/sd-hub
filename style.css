@@ -5,7 +5,7 @@
   --sdhub-shadow-focus-hover: inset 0 0 1px 1px var(--primary-500), inset 0 0 5px 0 var(--primary-500), 0 0 5px 0 var(--primary-500);
   --sdhub-shadow-primy: inset 0 0 1px 1px var(--primary-400), inset 0 0 7px 0 var(--primary-400), 0 0 10px 1px var(--primary-400);
   --sdhub-secondary-button-background: var(--input-background-fill-hover);
-  --sdhub-accordion-border: #000;
+  --sdhub-accordion-border: inset 0 0 7px 0 #000;
   --sdhub-table-head: var(--table-odd-background-fill);
   --sdhub-table-odd: var(--table-even-background-fill);
   --sdhub-table-even: var(--table-odd-background-fill);
@@ -14,7 +14,7 @@
 .dark {
   --sdhub-shadow-1: transparent;
   --sdhub-secondary-button-background: var(--button-secondary-background-fill);
-  --sdhub-accordion-border: var(--block-border-color);
+  --sdhub-accordion-border: inset 0 0 7px 0 #4d4d4d;
   --sdhub-table-head: var(--table-even-background-fill);
   --sdhub-table-odd: var(--table-odd-background-fill);
   --sdhub-table-even: var(--table-even-background-fill);
@@ -64,8 +64,16 @@
 }
 
 @media (max-width: 600px) {
+  #SDHub-Tab > .tab-nav {
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+  }
+
   #SDHub-Tab > .tab-nav > button {
-    min-width: 110px;
+    min-width: unset;
+    padding: 6px 10px;
+    border-radius: 4px !important;
   }
 }
 
@@ -151,23 +159,13 @@
   will-change: transform;
 }
 
-#SDHub-Downloader-Download-Button.downloading,
-#SDHub-Downloader-Cancel-Button {
-  display: none;
-}
-
-#SDHub-Downloader-Download-Button,
-#SDHub-Downloader-Cancel-Button.downloading {
-  display: inline-flex;
-}
-
 #SDHub-Tab #SDHub-Downloader-Cancel-Button:hover {
   box-shadow: var(--a) #fff, var(--b) #fff, inset 0 0 10px 2.5px #fff;
   color: #fff;
   background: red;
 }
 
-.sdhub-buttons-anim {
+#SDHub-Downloader-Cancel-Button:not(.hidden) {
   animation: downloadCancel .4s;
 }
 
@@ -498,7 +496,7 @@
 
 #SDHub-Tab .sdhub-accordion {
   border: 0 !important;
-  box-shadow: inset 0 0 1px 1px var(--sdhub-accordion-border);
+  box-shadow: var(--sdhub-accordion-border);
   transition: .3s ease;
 }
 
@@ -521,6 +519,11 @@
 #SDHub-Tab .sdhub-accordion:hover,
 #SDHub-Tab .sdhub-accordion.sdhub-accordion-open {
   box-shadow: var(--sdhub-shadow-primy);
+}
+
+#SDHub-Tag-Row {
+  padding: 8px;
+  padding-bottom: 0;
 }
 
 #SDHub-Tag-Dataframe {

@@ -49,14 +49,15 @@ upl_info = """<p class='sdhub-tab-info sdhub-uploader-tab-info'></p>"""
 arc_info = """<p class='sdhub-tab-info sdhub-archiver-tab-info'></p>"""
 
 def tagList():
-    with gr.Accordion('Tag List', open=False, elem_id='SDHub-Tag-Accordion', elem_classes='sdhub-accordion'):
-        gr.DataFrame(
-            [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
-            headers=['SD-Hub Tag', 'WebUI Path'],
-            datatype=['str', 'str'],
-            interactive=False,
-            elem_id='SDHub-Tag-Dataframe'
-        )
+    with gr.Row(elem_id='SDHub-Tag-Row'):
+        with gr.Accordion('Tag List', open=False, elem_id='SDHub-Tag-Accordion', elem_classes='sdhub-accordion'):
+            gr.DataFrame(
+                [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
+                headers=['SD-Hub Tag', 'WebUI Path'],
+                datatype=['str', 'str'],
+                interactive=False,
+                elem_id='SDHub-Tag-Dataframe'
+            )
 
 def repo():
     gr.HTML(f"""<h4 id='SDHub-Repo'><a href='https://github.com/gutris1/sd-hub'>SD-Hub • v{version}</a></h4>""")

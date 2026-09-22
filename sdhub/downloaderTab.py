@@ -167,45 +167,44 @@ def ariari(url, fp=None, fn=None, opts=None):
 
         break
 
-def gdrown(url, fp=None, fn=None):
-    folder = 'drive.google.com/drive/folders' in url
+def gdrown(url, fp=None, fn=None, gdown_args=None):
     cli = xyz('gdown.exe') if sys.platform == 'win32' else xyz('gdown')
     cmd = cli + [url]
 
     fn and cmd.extend(['-O', fn])
-    folder and cmd.append('--folder')
+    gdown_args and cmd.extend(gdown_args)
     cwd = fp or Path.cwd()
 
     p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
 
     sl = time.time()
-    output, f, prog, n, s = '', False, None, None, None
-    fail = 'Failed to retrieve'
+    output, f, e, prog, n, s = '', False, False, None, None, None
+    fail = 'Failed'
+    err = 'error:'
 
     while (o := p.stdout.readline()):
         if DOWNLOAD_CANCEL.is_set(): DOWNLOAD_CANCEL.clear(); _stop(p); yield f'Canceled: {fn or url}', True; return
 
         output += o
         f |= fail in o
+        e |= err in o
 
-        if o.startswith('To:'):
-            s = o[4:].strip()
-            n = Path(s).name
-            continue
+        if o.startswith('To:'): s = o[4:].strip(); n = Path(s).name; continue
 
-        if re.search(r'\d{1,3}%', o):
-            o = re.sub(r'\|[^|]*\|', '', o, count=1).strip()
-            o = re.sub(r'(\d{1,3}%)', r'(\1)', o, count=1)
-            prog = f'{n} {o}'
+        if m := re.search(r'(\d{1,3})%', o):
+            pct = int(m.group(1))
+            po = re.sub(r'\|[^|]*\|', '', o, count=1).strip()
+            po = re.sub(r'(\d{1,3}%)', r'(\1)', po, count=1)
+            prog = f'{n} {po}'
 
-        if prog and time.time() - sl >= 1:
-            yield prog, False
-            sl = time.time()
+            if pct == 100 and s: yield f'Saved To: {s}', True; s, n, prog = None, None, None; continue
 
-    if f: yield output[output.find(fail):], False
-    if s: yield f'Saved To: {Path(s).parent if folder else Path(s)}', True
+        if prog and time.time() - sl >= 1: yield prog, False; sl = time.time()
 
     p.wait()
+
+    if e: yield output, True
+    if f: yield output[output.find(fail):], True
 
 def gitclown(url, fp):
     cmd = ['git', 'clone'] + shlex.split(url)
@@ -236,7 +235,7 @@ def url_check(url):
 
 def process_inputs(url_line, cp, ext_tag, github_repo):
     if any(url_line.startswith(char) for char in ('/', '\\', '#')):
-        return None, None, None, 'Invalid usage, Tag should start with $'
+        return None, None, None, None, 'Invalid usage, Tag should start with $'
 
     if url_line.startswith('$'):
         parts = re.split(r'[/\\]', url_line[1:].strip(), maxsplit=1)
@@ -247,22 +246,29 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
         if base_path is not None:
             full_path = Path(base_path, subfolder) if subfolder else Path(base_path)
             cp = full_path
-        else: return None, None, None, f'{tags_key}\nInvalid Tag.'
+        else: return None, None, None, None, f'{tags_key}\nInvalid Tag.'
 
-        return cp, None, None, None
+        return cp, None, None, None, None
 
     parts = shlex.split(url_line, posix=False) if sys.platform == 'win32' else shlex.split(url_line)
     url = parts[0].strip()
+    rest = parts[1:]
+
+    gdown_args = None
+    if 'drive.google' in url:
+        l = next((i for i, p in enumerate(rest) if p.startswith('--')), None)
+        if l is not None: gdown_args = rest[l:]; rest = rest[:l]
+
+    parts = [url] + rest
 
     if not (ext_tag and github_repo):
         allowed, err = url_check(url)
-        if not allowed: return None, None, None, err
+        if not allowed: return None, None, None, None, err
 
     op = ofn = None
 
     if len(parts) > 1:
-        if ext_tag and github_repo:
-            url = ' '.join(parts).strip()
+        if ext_tag and github_repo: url = ' '.join(parts).strip()
         else:
             if '=' in parts:
                 dash = parts.index('=')
@@ -274,19 +280,18 @@ def process_inputs(url_line, cp, ext_tag, github_repo):
             if sys.platform == 'win32' and rop: rop = Path(rop).as_posix()
             op = Path(rop) if rop else None
 
-    if op and op.suffix: return None, None, None, f'{op}\nOutput path is not a path.'
+    if op and op.suffix: return None, None, None, None, f'{op}\nOutput path is not a path.'
 
     if ofn:
         optional_fn_path = Path(ofn)
-        if not optional_fn_path.suffix:
-            return None, None, None, f'{ofn}\nOutput filename is missing its extension.'
+        if not optional_fn_path.suffix: return None, None, None, None, f'{ofn}\nOutput filename is missing its extension.'
 
     fp = op or cp
-    if fp is None or not fp.exists(): return None, None, None, f'{fp}\nDoes not exist.'
+    if fp is None or not fp.exists(): return None, None, None, None, f'{fp}\nDoes not exist.'
 
     fn = ofn or (None if any(u in url for u in (*CIVITAI.DOMAINS, 'drive.google.com')) else Path(urlparse(url).path).name)
 
-    return fp, url, fn, None
+    return fp, url, fn, gdown_args, None
 
 def lobby(inputs, opts):
     cp = None
@@ -298,7 +303,7 @@ def lobby(inputs, opts):
     github_repo = any(re.match(r'^https?://github\.com/[^/]+/[^/]+/?$', u) for u in urls)
 
     for url_line in urls:
-        fp, url, fn, error = process_inputs(url_line, cp, ext_tag, github_repo)
+        fp, url, fn, gdown_args, error = process_inputs(url_line, cp, ext_tag, github_repo)
 
         if error: yield error, True; return
         if not url: cp = fp; continue
@@ -311,7 +316,7 @@ def lobby(inputs, opts):
                 continue
 
         if 'drive.google' in url:
-            for msg, done in gdrown(url, fp, fn):
+            for msg, done in gdrown(url, fp, fn, gdown_args):
                 yield msg, done
                 if msg.startswith('Canceled:'): return
             continue
@@ -320,45 +325,46 @@ def lobby(inputs, opts):
             yield msg, done
             if msg.startswith('Canceled:'): return
 
-def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
+def _s(status='', log='', dl=None, cancel=None, box=None):
+    return (
+        status,
+        log,
+        gr.update(visible=dl) if dl is not None else gr.update(),
+        gr.update(visible=cancel) if cancel is not None else gr.update(),
+        box if box is not None else gr.update(),
+    )
+
+def downloader(inputs, HFR, CAK, preview, html):
     if not inputs.strip(): return
 
     DOWNLOAD_CANCEL.clear()
 
-    opts = SN(
-        HFR=HFR,
-        CAK=CAK,
-        preview=preview,
-        html=html,
-    )
-
-    output_box = box_state if box_state else []
+    opts = SN(HFR=HFR, CAK=CAK, preview=preview, html=html)
+    output_box = []
 
     ngword = [
-        '## Authorization Failed',
-        'The model is in early access',
-        'Unable to find',
-        'errorCode',
-        'Failed to retrieve',
-        'fatal:'
+        '## Authorization Failed', 'The model is in early access', 'Unable to find',
+        'errorCode', 'Failed to retrieve', 'error:', 'fatal:'
     ]
 
     try:
-        yield 'Downloading...', ''
+        yield 'Downloading...', '', gr.update(visible=False), gr.update(visible=True)
 
         for t, f in lobby(inputs, opts):
             if not f:
-                if any(k in t for k in ngword): # line 459
-                    yield 'Error', '\n'.join([t] + output_box)
-                    return gr.update(), gr.State(output_box)
+                if any(k in t for k in ngword):
+                    yield 'Error', '\n'.join([t] + output_box), gr.update(), gr.update()
+                    return
 
-                if 'files from/to outside' in t: 
-                    yield 'Blocked', '\n'.join([t] + output_box)
+                if 'files from/to outside' in t:
+                    yield 'Blocked', '\n'.join([t] + output_box), gr.update(), gr.update()
                     assert not cmd_opts.disable_extension_access, BLOCK
 
-                yield t, '\n'.join(output_box)
+                yield t, '\n'.join(output_box), gr.update(), gr.update()
 
-            else: output_box.append(t)
+            else:
+                output_box.append(t)
+                yield '', '\n'.join(output_box), gr.update(), gr.update()
 
         catcher = [
             'exist', 'Invalid', 'Tag', 'Output', 'Nothing', 'URL', 'banned by Kaggle',
@@ -366,21 +372,16 @@ def downloader(inputs, HFR, CAK, preview, html, box_state=gr.State()):
         ]
 
         if any(w in l for w in catcher for l in output_box):
-            yield 'Error', '\n'.join(output_box)
-
+            yield 'Error', '\n'.join(output_box), gr.update(), gr.update()
         elif any(BLOCK in l for l in output_box):
-            yield 'Blocked', '\n'.join(output_box)
+            yield 'Blocked', '\n'.join(output_box), gr.update(), gr.update()
             assert not cmd_opts.disable_extension_access, BLOCK
-
-        elif any(l.startswith('Canceled:') for l in output_box):
-            yield '', '\n'.join(output_box)
-
-        else: yield '', '\n'.join(output_box)
-
-        return gr.update(), gr.State(output_box)
+        else:
+            yield '', '\n'.join(output_box), gr.update(), gr.update()
 
     finally:
         DOWNLOAD_CANCEL.clear()
+        yield gr.update(), gr.update(), gr.update(visible=True), gr.update(visible=False)
 
 def read_txt(f, box):
     text_box = [box] if box.strip() else []
@@ -480,7 +481,8 @@ def DownloaderTab():
                             'CANCEL',
                             variant='primary',
                             elem_id='SDHub-Downloader-Cancel-Button',
-                            elem_classes='sdhub-buttons'
+                            elem_classes='sdhub-buttons',
+                            visible=False
                         )
 
                     with FormRow(elem_classes='sdhub-button-row-2'):
@@ -529,8 +531,8 @@ def DownloaderTab():
 
         download_button.click(
             fn=downloader,
-            inputs=[input_box, token_1, token_2, preview, html, gr.State()],
-            outputs=[output_1, output_2],
+            inputs=[input_box, token_1, token_2, preview, html],
+            outputs=[output_1, output_2, download_button, cancel_button],
             _js='() => SDHubDownloader(true)'
         ).then(
             fn=None,

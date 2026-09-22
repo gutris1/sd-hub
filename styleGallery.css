@@ -1278,7 +1278,10 @@ body.sdhub-body-no-scrolling {
   width: max-content;
   border-radius: 50px;
   padding: 0 !important;
+  opacity: 0;
   overflow: visible;
+  transition: opacity 0s;
+  pointer-events: none;
 }
 
 #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-SendButton {
@@ -1301,7 +1304,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-ImgInfo-SendButton.sdhub-imginfo-display-output-panel {
   opacity: 1;
-  transition: opacity .6s ease;
+  transition: opacity 1s ease;
   pointer-events: auto;
 }
 
@@ -1341,7 +1344,7 @@ body.sdhub-body-no-scrolling {
   scroll-behavior: smooth;
   scrollbar-width: none;
   will-change: transform;
-  transition: opacity 1s ease;
+  transition: opacity 0s ease;
 }
 
 #SDHub-ImgInfo-Row.sdhub-style #SDHub-ImgInfo-Output-Panel {
@@ -1356,23 +1359,7 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-ImgInfo-Output-Panel.sdhub-imginfo-display-output-panel {
   opacity: 1;
-}
-
-#SDHub-ImgInfo-Output-Panel.sdhub-imginfo-display-output-fail {
-  height: 100%;
-}
-
-#SDHub-ImgInfo-Output-Panel .sdimageinfo-output-failed {
-  display: flex;
-  width: 100%;
-  pointer-events: auto;
-  padding: 5px 10px;
-  color: var(--output-text-color);
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 1rem;
-  box-shadow: 0 0 10px 0 rgb(255 255 255 / 10%), 0 0 5px 0 rgb(255 255 255 / 20%), inset 0 0 5px 0 rgb(255 255 255 / 20%);
-  filter: drop-shadow(0 0 1px rgb(0 0 0 / 50%));
-  background: rgb(0 0 0 / 30%);
+  transition: opacity 1s ease;
 }
 
 #SDHub-ImgInfo-HTML {
@@ -2598,7 +2585,7 @@ body.sdhub-body-no-scrolling {
   display: flex;
   position: absolute !important;
   border-radius: 1rem !important;
-  box-shadow: inset 0 0 1px 1px var(--background-fill-primary), inset 0 0 20px 0 var(--background-fill-primary) !important;
+  box-shadow: inset 0 0 10px 1px var(--background-fill-primary) !important;
   filter: unset !important;
 }
 
@@ -2665,12 +2652,6 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-ImgInfo-Row.sdhub-imginfo-side-by-side #SDHub-ImgInfo-img-area {
   display: none !important;
-}
-
-#SDHub-ImgInfo-Row.sdhub-imginfo-side-by-side #SDHub-ImgInfo-Output-Panel .sdhub-imginfo-output-failed {
-  position: relative !important;
-  margin-top: 5px !important;
-  bottom: unset !important;
 }
 
 @media (max-width: 600px) {

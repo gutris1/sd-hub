@@ -51,7 +51,7 @@ function SDHubTabChange() {
 
   styleId = 'SDHub-Hide-Scroll-Bar',
   imginfoRow = _(`${SDHub.ImgInfo}-Row`),
-  tagList = _('SDHub-Tag-Accordion'),
+  tagRow = _('SDHub-Tag-Row'),
   tabNav = $('#tabs > .tab-nav'),
 
   repo = _('SDHub-Repo'),
@@ -89,7 +89,7 @@ function SDHubTabChange() {
 
     if (HUB) {
       if (TextEditor || Gallery) {
-        tagList && (tagList.style.display = 'none');
+        tagRow && (tagRow.style.display = 'none');
 
         if (Gallery) {
           [repo, footer].forEach(i => i && (i.style.display = 'none'));
@@ -103,7 +103,7 @@ function SDHubTabChange() {
         }
       } else {
         refoo();
-        tagList && (tagList.style.display = '');
+        tagRow && (tagRow.style.display = '');
         _(styleId)?.remove();
         document.body.classList.remove(SDHub.noScroll);
       }
@@ -244,8 +244,7 @@ async function SDHubDownloader(downloading = false) {
     '$cn': ['txt2img_controlnet_ControlNet-0_controlnet_refresh_models', 'img2img_controlnet_ControlNet-0_controlnet_refresh_models']
   },
 
-  id = '#SDHub-Downloader',
-  c = 'sdhub-buttons-anim';
+  id = '#SDHub-Downloader', dlInput = $(`${id}-Input`);
 
   if (downloading) {
     const v = [
@@ -259,27 +258,15 @@ async function SDHubDownloader(downloading = false) {
       return e?.type === 'checkbox' ? e.checked : e?.value;
     });
 
-    $$(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
-      .forEach(b => b.classList.add('downloading'));
-
-    const b = $(`${id}-Cancel-Button`);
-    b.classList.add(c);
-    setTimeout(() => b.classList.remove(c), 400);
+    dlInput.classList.add('downloading');
 
     window.SDHubDownloaderInputsValue = v[0];
     return [...v, null];
   }
 
-  $$(`${id}-Download-Button, ${id}-Cancel-Button, ${id}-Input`)
-    .forEach(btn => btn.classList.remove('downloading'));
+  dlInput.classList.remove('downloading');
 
-  const inputs = window.SDHubDownloaderInputsValue,
-  refresh = [],
-
-  b = $(`${id}-Download-Button`);
-  b.classList.add(c);
-  setTimeout(() => b.classList.remove(c), 400);
-
+  const inputs = window.SDHubDownloaderInputsValue, refresh = [];
   if (!inputs?.trim()) return;
 
   Object.entries(TagMap).forEach(([tags, buttons]) => {
@@ -287,10 +274,7 @@ async function SDHubDownloader(downloading = false) {
     if (Tag.test(inputs)) refresh.push(...buttons);
   });
 
-  for (const id of refresh) {
-    _(id)?.click();
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  }
+  for (const id of refresh) { _(id)?.click(); await new Promise(resolve => setTimeout(resolve, 1000)); }
 }
 
 async function SDHubArchiver(v) {
