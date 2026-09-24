@@ -543,7 +543,8 @@ body.sdhub-body-no-scrolling {
 
 .sdhub-gallery-img-name {
   display: block;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: default;
   overflow: hidden;
   white-space: nowrap;
   position: absolute;

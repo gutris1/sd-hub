@@ -201,10 +201,12 @@ def GalleryApp(_: gr.Blocks, app: FastAPI):
             if path.exists(): path.unlink() if perm else send2trash(path)
             Thumbnails.pop(thumb, None)
             imgList[:] = [img for img in imgList if unquote(img['path'].split('-image=')[-1].split('?')[0]) != path.as_posix()]
-            if str(path) in fav: del fav[str(path)]; return True
+            if str(path) in fav: del fav[str(path)]
+            return True
 
         except Exception as e:
-            print(f'Error deleting {path}: {e}'); return False
+            print(f'Error deleting {path}: {e}')
+            return False
 
     @app.post(BASE + '-delete')
     async def _(req: Request):

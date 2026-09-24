@@ -432,6 +432,7 @@ async function SDHubGalleryDeleteImage() {
     if (!res.ok) throw new Error(await res.text());
 
     const r = await res.json();
+
     if (r.status === 'deleted') {
       if (imgBox?.classList.contains(SDHub.imgSel)) {
         imgBox.classList.remove(SDHub.imgSel);

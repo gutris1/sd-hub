@@ -111,7 +111,9 @@ def ariari(url, fp=None, fn=None, opts=None):
     ]
 
     for retry in range(20 if huggingface else 1):
-        p = subprocess.Popen(aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
+        p = subprocess.Popen(
+            aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True, encoding='utf-8', errors='replace'
+        )
 
         aria2_output, error, auth_error, error_msg = '', False, None, None
 

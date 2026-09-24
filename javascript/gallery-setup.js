@@ -737,17 +737,19 @@ function SDHubGalleryTabImageCounters(tabName) {
 }
 
 function SDHubGalleryImgBoxes({ path, thumb, name, fav = false }, onLoad = null) {
-  const imgBox = Object.assign(_('SDHub-Gallery-imgBox').cloneNode(true), { id: '' });
+  const imgBox = _('SDHub-Gallery-imgBox').cloneNode(true); imgBox.removeAttribute('id');
   SDHubGalleryImageButtonEvents(imgBox);
 
   const img = imgBox.querySelector('img'),
-  nameBox = imgBox.querySelector('.sdhub-gallery-img-name'),
+  imgName = imgBox.querySelector('.sdhub-gallery-img-name'),
   favBtn = imgBox.querySelector('.sdhub-gallery-img-btn-fav'),
   checkBtn = imgBox.querySelector('.sdhub-gallery-img-btn-checkbox'),
   viewerBtn = imgBox.querySelector('.sdhub-gallery-img-btn-imageviewer'),
-  named = decodeURIComponent(name);
+  fn = decodeURIComponent(name);
 
-  nameBox && (nameBox.textContent = named);
+  imgName && (imgName.textContent = fn);
+  imgName.title = fn;
+
   fav && imgBox.classList.add(SDHub.imgFav);
   favBtn && SDHubGallerySetFav(imgBox, favBtn);
   checkBtn && SDHubGallerySetSelect(imgBox, checkBtn);
@@ -756,14 +758,14 @@ function SDHubGalleryImgBoxes({ path, thumb, name, fav = false }, onLoad = null)
   if (img) {
     img.loading = 'lazy';
     img.dataset.image = path;
-    img.title = named;
+    img.title = decodeURIComponent(path.replace(`${SDHub.GalleryBase}-image=`, ''));
 
     const imgThumb = new Image();
     imgThumb.src = thumb;
     imgThumb.onload = () => {
       img.src = thumb;
       onLoad?.();
-    };
+    }; 
   }
 
   return imgBox;
