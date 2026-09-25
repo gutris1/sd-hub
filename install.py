@@ -19,63 +19,48 @@ base = Path(__file__).parent
 py = sys.executable
 run = subprocess.run
 
-def _Req():
+def _js():
     n = 'sd-image-scripts'
     p = Path(extensions_dir) / n
 
     if not p.exists():
         run(['git', 'clone', '-q', f'https://github.com/gutris1/{n}', str(p)], check=True)
 
-        e = {
-            (p / 'javascript/exif-reader.js'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
-            (p / 'javascript/exif-reader-LICENSE'): 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE'
-        }
+    for f, u in {
+        p / 'javascript/exif-reader.js': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/dist/exif-reader.js',
+        p / 'javascript/exif-reader-LICENSE': 'https://raw.githubusercontent.com/mattiasw/ExifReader/main/LICENSE',
 
-        for f, u in e.items():
-            if not f.exists():
-                f.write_bytes(urllib.request.urlopen(u).read())
-
-def _js():
-    e = {
-        (base / 'javascript/XLSX-reader.js'): 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-        (base / 'javascript/XLSX-reader-LICENSE'): 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
-    }
-
-    for f, u in e.items():
-        if not f.exists():
-            f.write_bytes(urllib.request.urlopen(u).read())
+        base / 'javascript/XLSX-reader.js': 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+        base / 'javascript/XLSX-reader-LICENSE': 'https://raw.githubusercontent.com/SheetJS/sheetjs/github/LICENSE',
+    }.items():
+        if not f.exists(): f.write_bytes(urllib.request.urlopen(u).read())
 
 def _req1():
     r, n = [], []
 
-    with open(base / 'requirements.txt') as file:
-        for p in map(str.strip, file):
-            if '==' in p or '>=' in p:
-                pn, pv = p.split('==' if '==' in p else '>=')
+    for p in map(str.strip, (base / 'requirements.txt').read_text(encoding='utf-8').splitlines()):
+        if '==' in p or '>=' in p:
+            pn, pv = p.split('==' if '==' in p else '>=')
 
-                try:
-                    installed = version.parse(metadata.version(pn))
-                    required = version.parse(pv)
+            try:
+                installed = version.parse(metadata.version(pn))
+                required = version.parse(pv)
 
-                    if ('==' in p and installed < required) or ('>=' in p and installed < required):
-                        r.append(p)
-                        n.append(pn)
+                if installed < required:
+                    r.append(p); n.append(pn)
 
-                except metadata.PackageNotFoundError:
-                    r.append(p)
-                    n.append(pn)
+            except metadata.PackageNotFoundError:
+                r.append(p); n.append(pn)
 
-            elif not launch.is_installed(p):
-                r.append(p)
-                n.append(p)
+        elif not launch.is_installed(p):
+            r.append(p); n.append(p)
 
-        if sys.platform != 'win32' and not launch.is_installed('aria2'):
-            r.append('aria2')
-            n.append('aria2')
+    if sys.platform != 'win32' and not launch.is_installed('aria2'):
+        r.append('aria2'); n.append('aria2')
 
-        if r:
-            print(f"Installing SD-Hub requirement: {' '.join(f'{ORG}{p}{RST}' for p in n)}")
-            for p in r: run([py, '-m', 'pip', 'install', '-q', p])
+    if r:
+        print(f"Installing SD-Hub requirement: {' '.join(f'{ORG}{p}{RST}' for p in n)}")
+        for p in r: run([py, '-m', 'pip', 'install', '-q', p])
 
 def _req2():
     pkgs = []
@@ -148,7 +133,6 @@ def _check(p, a, cmd, pkgs):
         pkgs.append(p)
         _sub(cmd.split())
 
-_Req()
 _js()
 _req1()
 _req2()

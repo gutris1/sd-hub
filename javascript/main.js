@@ -1,3 +1,7 @@
+window._ ??= id => document.getElementById(id);
+window.$ ??= s => document.querySelector(s);
+window.$$ ??= s => document.querySelectorAll(s);
+
 const SDHub = {
   noScroll: 'sdhub-body-no-scrolling',
   style: 'sdhub-style',
@@ -7,8 +11,8 @@ const SDHub = {
 
   imgSel: 'sdhub-gallery-img-selected',
   imgFav: 'sdhub-gallery-img-favorited',
-  ImgInfo: 'SDHub-Gallery-Image-Info',
-  imgInfo: 'sdhub-gallery-image-info',
+  ImgInfo: 'SDHub-ImgInfo',
+  imginfo: 'sdhub-imginfo',
   ImgViewer: 'SDHub-Gallery-Image-Viewer',
   page: 'sdhub-gallery-page',
   Setting: 'SDHub-Gallery-Setting',
@@ -36,7 +40,6 @@ let SDHubTranslations = {};
 
 onUiLoaded(() => {
   SDHubTabLoaded();
-  SDHubTokenBlur();
   SDHubEventListener();
   SDHubUITranslation();
   SDHubCreateGallery();
@@ -47,12 +50,15 @@ function SDHubTabChange() {
   const tabId = 'tab_SDHub',
 
   styleId = 'SDHub-Hide-Scroll-Bar',
-  imginfoRow = document.getElementById(`${SDHub.ImgInfo}-Row`),
-  tagList = document.getElementById('SDHub-Tag-Accordion'),
-  tabNav = document.querySelector('#tabs > .tab-nav'),
+  imginfoRow = _(`${SDHub.ImgInfo}-Row`),
+  tagRow = _('SDHub-Tag-Row'),
+  tabNav = $('#tabs > .tab-nav'),
 
-  repo = document.getElementById('SDHub-Repo'),
-  infoCon = document.getElementById('SDHub-Gallery-Info-Container'),
+  repo = _('SDHub-Repo'),
+  footer = _('footer'),
+  infoCon = _('SDHub-Gallery-Info-Container'),
+
+  refoo = () => [repo, footer].forEach(i => i && (i.style.display = '')),
 
   css = `
     html {
@@ -66,7 +72,7 @@ function SDHubTabChange() {
   `,
 
   Nav = () => {
-    const hubnav = document.querySelectorAll('#SDHub-Tab > .tab-nav > button') || [];
+    const hubnav = $$('#SDHub-Tab > .tab-nav > button') || [];
     hubnav.forEach(btn => {
       const text = btn.textContent.trim(), btnId = SDHubTabButtons[text];
       if (btnId && btn.id !== btnId) btn.id = btnId;
@@ -75,7 +81,7 @@ function SDHubTabChange() {
     });
 
     const navbtn = tabNav?.querySelector('button.selected'),
-    selected = document.querySelector('#SDHub-Tab > .tab-nav > button.selected'),
+    selected = $('#SDHub-Tab > .tab-nav > button.selected'),
 
     HUB = navbtn?.textContent.trim() === 'HUB',
     TextEditor = selected?.id === 'SDHub-Tab-Button-Texteditor',
@@ -83,27 +89,29 @@ function SDHubTabChange() {
 
     if (HUB) {
       if (TextEditor || Gallery) {
-        tagList && (tagList.style.display = 'none');
+        tagRow && (tagRow.style.display = 'none');
+
         if (Gallery) {
-          repo && (repo.style.display = 'none');
-          window.SDHubGalleryPageArrowUpdate();
+          [repo, footer].forEach(i => i && (i.style.display = 'none'));
+          requestAnimationFrame(() => window.SDHubGalleryUpdateHeight());
           infoCon?.style.display === 'flex' && document.body.classList.add(SDHub.noScroll);
+          setTimeout(window.SDHubGalleryPageArrow, 0);
         }
 
-        if (!document.getElementById(styleId)) {
+        if (!_(styleId)) {
           document.head.appendChild(SDHubEL('style', { id: styleId, html: css }));
         }
       } else {
-        repo && (repo.style.display = '');
-        tagList && (tagList.style.display = '');
-        document.getElementById(styleId)?.remove();
+        refoo();
+        tagRow && (tagRow.style.display = '');
+        _(styleId)?.remove();
         document.body.classList.remove(SDHub.noScroll);
       }
     }
   },
 
   TabChange = (Id, ON, OFF) => {
-    const tab = document.getElementById(Id),
+    const tab = _(Id),
     check = () => {
       const d = window.getComputedStyle(tab).display !== 'none';
       if (d !== tab.__l) { tab.__l = d; d ? ON?.(tab) : OFF?.(tab); }
@@ -127,9 +135,10 @@ function SDHubTabChange() {
       }
     },
     () => {
-      document.getElementById(styleId)?.remove();
+      _(styleId)?.remove();
       document.body.classList.remove(SDHub.noScroll);
       imginfoRow?.style.display === 'flex' && window.SDHubGalleryCloseImageInfo();
+      refoo();
     }
   );
 }
@@ -143,48 +152,48 @@ async function SDHubTabLoaded() {
   };
 
   for (const [id, key] of Object.entries(titles)) {
-    const button = document.getElementById(id);
+    const button = _(id);
     if (button) button.setAttribute('title', SDHubGetTranslation(key));
   }  
 
-  document.getElementById('SDHub-Texteditor-Load-Button')?.setAttribute('title', SDHubGetTranslation('load_file'));
-  document.getElementById('SDHub-Texteditor-Save-Button')?.setAttribute('title', SDHubGetTranslation('save_changes'));
-  setTimeout(() => document.getElementById('SDHub-Texteditor-Initial-Load')?.click(), 2000);
+  _('SDHub-Texteditor-Load-Button')?.setAttribute('title', SDHubGetTranslation('load_file'));
+  _('SDHub-Texteditor-Save-Button')?.setAttribute('title', SDHubGetTranslation('save_changes'));
+  setTimeout(() => _('SDHub-Texteditor-Initial-Load')?.click(), 2000);
 
   try {
     const res = await fetch('/sd-hub/LoadUploaderInfo'),
     { username, repository, branch } = await res.json();
 
     [['Username', username], ['Repo', repository], ['Branch', branch]].forEach(([id, v]) => {
-      const input = document.querySelector(`#SDHub-Uploader-${id}-Box input`);
+      const input = $(`#SDHub-Uploader-${id}-Box input`);
       input && (input.value = v, updateInput(input));
     });
   } catch (e) { console.error('Error loading info:', e); }
 
-  const table4 = document.querySelector('.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > div > table');
+  const table4 = $('.gradio-container-4-40-0 #SDHub-Tag-Dataframe > div > div > table');
   table4 && (table4.style.opacity = '0', table4.style.pointerEvents = 'none');
 }
 
 function SDHubEventListener() {
   const Tab = {
-    downloader: document.getElementById('SDHub-Downloader-Tab'),
-    uploader: document.getElementById('SDHub-Uploader-Tab'),
-    shell: document.getElementById('SDHub-Shell-Tab'),
-    textEditor: document.getElementById('SDHub-Texteditor-Tab')
+    downloader: _('SDHub-Downloader-Tab'),
+    uploader: _('SDHub-Uploader-Tab'),
+    shell: _('SDHub-Shell-Tab'),
+    textEditor: _('SDHub-Texteditor-Tab')
   };
 
   const Button = {
-    downloader: document.getElementById('SDHub-Downloader-Download-Button'),
-    uploader: document.getElementById('SDHub-Uploader-Upload-Button'),
-    shell: document.getElementById('SDHub-Shell-Button'),
-    textEditor: document.getElementById('SDHub-Texteditor-Save-Button')
+    downloader: _('SDHub-Downloader-Download-Button'),
+    uploader: _('SDHub-Uploader-Upload-Button'),
+    shell: _('SDHub-Shell-Button'),
+    textEditor: _('SDHub-Texteditor-Save-Button')
   };
 
   document.addEventListener('keydown', e => {
     const C = el => el?.style.display === 'block',
     { key: k, shiftKey: s, ctrlKey: c } = e;
 
-    if (!C(document.getElementById('tab_SDHub'))) return;
+    if (!C(_('tab_SDHub'))) return;
 
     if (s && k === 'Enter') (
       C(Tab.downloader) && Button.downloader?.click(),
@@ -196,37 +205,23 @@ function SDHubEventListener() {
   });
 
   document.addEventListener('click', e => {
-    const td = e.target.closest('#SDHub-Tag-Dataframe td'), text = td?.querySelector('span')?.textContent;
+    const td = e.target.closest('#SDHub-Tag-Dataframe td'), text = td?.querySelector('span')?.textContent, ctd = 'pulse-td';
     if (text) {
       navigator.clipboard.writeText(text);
-      td.style.transition = 'all .5s ease';
+      td.classList.remove(ctd);
       void td.offsetWidth;
-      td.classList.add('pulse-td');
-      setTimeout(() => td.classList.remove('pulse-td'), 400);
-      setTimeout(() => td.style.transition = '', 1000);
+      td.classList.add(ctd);
+      td.addEventListener('animationend', () => { td.classList.remove(ctd); }, { once: true });
     }
   });
 
-  const Inputs = {
-    token1: '#SDHub-Downloader-HFR input',
-    token2: '#SDHub-Downloader-CAK input',
-    token3: '#SDHub-Uploader-HFW input'
-  };
-
-  Object.values(Inputs).forEach(el => {
-    document.querySelectorAll(el).forEach(input => {
-      input.addEventListener('blur', () => input.value.trim() !== '' && (input.style.filter = 'blur(3px)'));
-      input.addEventListener('focus', () => (input.style.filter = 'none'));
-    });
-  });
-
-  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button');
+  const archiveBtn = _('SDHub-Archiver-Archive-Button');
   archiveBtn.onclick = async () => extractBtn.classList.add('sdhub-button-disabled');
 
-  const extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  const extractBtn = _('SDHub-Archiver-Extract-Button');
   extractBtn.onclick = async () => archiveBtn.classList.add('sdhub-button-disabled');
 
-  document.querySelectorAll('#SDHub-Tab .sdhub-accordion > .label-wrap').forEach(label => {
+  $$('#SDHub-Tab .sdhub-accordion > .label-wrap').forEach(label => {
     label.onclick = () => {
       const accordion = label.parentElement, content = accordion.lastElementChild,
       open = label.classList.contains('open'), c = 'sdhub-accordion-open', t = 'height .5s ease, opacity .4s ease, margin-top .3s ease';
@@ -238,19 +233,7 @@ function SDHubEventListener() {
   });
 }
 
-async function SDHubTokenBlur() {
-  ['#SDHub-Downloader-HFR input', '#SDHub-Downloader-CAK input', '#SDHub-Uploader-HFW input']
-    .forEach(id => {
-      const el = document.querySelector(id);
-      if (el) el.style.filter = el.value.trim() ? 'blur(3px)' : 'none';
-    }
-  );
-}
-
-async function SDHubDownloader() {
-  let inputs = window.SDHubDownloaderInputsValue;
-  if (!inputs?.trim()) return;
-
+async function SDHubDownloader(downloading = false) {
   const TagMap = {
     '$ckpt': ['txt2img_checkpoints_extra_refresh', 'img2img_checkpoints_extra_refresh', 'refresh_sd_model_checkpoint'],
     '$vae': ['refresh_sd_vae'],
@@ -258,17 +241,44 @@ async function SDHubDownloader() {
     '$emb': ['txt2img_textual_inversion_extra_refresh', 'img2img_textual_inversion_extra_refresh'],
     '$hn': ['txt2img_hypernetworks_extra_refresh', 'img2img_hypernetworks_extra_refresh'],
     '$cn': ['txt2img_controlnet_ControlNet-0_controlnet_refresh_models', 'img2img_controlnet_ControlNet-0_controlnet_refresh_models']
-  };
+  },
+
+  id = '#SDHub-Downloader', dlInput = $(`${id}-Input`);
+
+  if (downloading) {
+    const v = [
+      `${id}-Input textarea`,
+      `${id}-HFR input`,
+      `${id}-CAK input`,
+      `${id}-Preview-Checkbox input`,
+      `${id}-HTML-Checkbox input`
+    ].map(s => {
+      const e = $(s);
+      return e?.type === 'checkbox' ? e.checked : e?.value;
+    });
+
+    dlInput.classList.add('downloading');
+
+    window.SDHubDownloaderInputsValue = v[0];
+    return [...v, null];
+  }
+
+  dlInput.classList.remove('downloading');
+
+  const inputs = window.SDHubDownloaderInputsValue, refresh = [];
+  if (!inputs?.trim()) return;
 
   Object.entries(TagMap).forEach(([tags, buttons]) => {
     const Tag = new RegExp(`\\${tags}(\\/|\\s|$)`);
-    if (Tag.test(inputs)) buttons.forEach(id => document.getElementById(id)?.click());
+    if (Tag.test(inputs)) refresh.push(...buttons);
   });
+
+  for (const id of refresh) { _(id)?.click(); await new Promise(resolve => setTimeout(resolve, 1000)); }
 }
 
 async function SDHubArchiver(v) {
-  const archiveBtn = document.getElementById('SDHub-Archiver-Archive-Button'),
-  extractBtn = document.getElementById('SDHub-Archiver-Extract-Button');
+  const archiveBtn = _('SDHub-Archiver-Archive-Button'),
+  extractBtn = _('SDHub-Archiver-Extract-Button');
 
   if (v === 'finish') {
     [archiveBtn, extractBtn].forEach(btn => btn.classList.remove('sdhub-button-disabled'));
@@ -276,7 +286,7 @@ async function SDHubArchiver(v) {
 }
 
 async function SDHubTextEditorInfo(v) {
-  const info = document.querySelector('#SDHub-Texteditor-Info input');
+  const info = $('#SDHub-Texteditor-Info input');
   if (info && v.trim() !== '') {
     info.style.transition = 'opacity 0.5s ease';
     info.style.opacity = '1';
@@ -367,103 +377,111 @@ function SDHubGetTranslation(k, n = 1) {
 }
 
 function SDHubUITranslation() {
-  let ForgeCheck = document.querySelector('.gradio-container-4-40-0') !== null,
+  let gradio4 = $('.gradio-container-4-40-0') !== null,
   TabList = gradioApp().querySelectorAll('#SDHub-Tab > .tab-nav > button');
 
   for (let i = 0; i < TabList.length; i++) {
-    let btn = TabList[i], t = btn.textContent.trim(), id = SDHubTabButtons[t];
+    let btn = TabList[i], bb = btn.textContent.trim(), id = SDHubTabButtons[bb];
     if (id && btn.id !== id) btn.id = id;
 
-    let c = SDHubGetTranslation(t.toLowerCase());
+    let c = SDHubGetTranslation(bb.toLowerCase());
     if (c) btn.textContent = c;
   }
 
   let tabs = ['.sdhub-downloader-tab-title', '.sdhub-uploader-tab-title'];
   for (let i = 0; i < tabs.length; i++) {
-    let tab = tabs[i], title = document.querySelector(tab);
+    let tab = tabs[i], title = $(tab);
     if (title) {
-      let key = tab === '.sdhub-downloader-tab-title' ? 'download_command_center' : 'upload_to_huggingface';
-      if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = SDHubGetTranslation(key);
+      let k = tab === '.sdhub-downloader-tab-title' ? 'download_command_center' : 'upload_to_huggingface';
+      if (title.lastChild?.nodeType === Node.TEXT_NODE) title.lastChild.textContent = SDHubGetTranslation(k);
     }
   }
 
-  const isThatForge = ForgeCheck ? [
-    { element: '#SDHub-Tag-Accordion > button > span:nth-child(1)', key: 'tag_list' },
-    { element: '#SDHub-Tag-Dataframe > div > div > button > svelte-virtual-table-viewport > table > thead > tr > th:nth-child(1) > div > span', key: 'sdhub_tags' },
-    { element: '#SDHub-Tag-Dataframe > div > div > button > svelte-virtual-table-viewport > table > thead > tr > th:nth-child(2) > div > span', key: 'webui_paths' }
+  const v4 = gradio4 ? [
+    { t: '#SDHub-Tag-Accordion > button > span:nth-child(1)', k: 'tag_list' },
+    { t: '#SDHub-Tag-Dataframe > div > div > button > svelte-virtual-table-viewport > table > thead > tr > th:nth-child(1) > div > span', k: 'sdhub_tags' },
+    { t: '#SDHub-Tag-Dataframe > div > div > button > svelte-virtual-table-viewport > table > thead > tr > th:nth-child(2) > div > span', k: 'webui_paths' }
   ] : [
-    { element: '#SDHub-Tag-Accordion > div > span:nth-child(1)', key: 'tag_list' },
-    { element: '#SDHub-Tag-Dataframe > div > div > div > table > thead > tr > th:nth-child(1) > div > span', key: 'sdhub_tags' },
-    { element: '#SDHub-Tag-Dataframe > div > div > div > table > thead > tr > th:nth-child(2) > div > span', key: 'webui_paths' }
+    { t: '#SDHub-Tag-Accordion > div > span:nth-child(1)', k: 'tag_list' },
+    { t: '#SDHub-Tag-Dataframe > div > div > div > table > thead > tr > th:nth-child(1) > div > span', k: 'sdhub_tags' },
+    { t: '#SDHub-Tag-Dataframe > div > div > div > table > thead > tr > th:nth-child(2) > div > span', k: 'webui_paths' }
   ],
 
   EL = [
-    ...isThatForge,
-    { element: '.sdhub-downloader-tab-info', key: 'downloader_tab_info', inner: true },
-    { element: '.sdhub-uploader-tab-info', key: 'uploader_tab_info', inner: true },
-    { element: '.sdhub-archiver-tab-info', key: 'archiver_tab_info', inner: true },
-    { element: '#SDHub-Downloader-HFR > label > span', key: 'huggingface_token_read' },
-    { element: '#SDHub-Downloader-HFR > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
-    { element: '#SDHub-Downloader-CAK > label > span', key: 'civitai_api_key' },
-    { element: '#SDHub-Downloader-CAK > label > input', key: 'civitai_api_key_placeholder', spellcheck: false },
-    { element: '#SDHub-Downloader-Input > label > textarea', spellcheck: false },
-    { element: '#SDHub-Downloader-Download-Button', key: 'download' },
-    { element: '#SDHub-Downloader-Scrape-Button', key: 'scrape' },
-    { element: '#SDHub-Downloader-Txt-Button', key: 'insert_txt' },
-    { element: '#SDHub-Downloader-Load-Button', key: 'load' },
-    { element: '#SDHub-Downloader-Save-Button', key: 'save' },
-    { element: '#SDHub-Uploader-HFW > label > span', key: 'huggingface_token_write' },
-    { element: '#SDHub-Uploader-HFW > label > input', key: 'huggingface_token_placeholder', spellcheck: false },
-    { element: '#SDHub-Uploader-Input > label > textarea', key: 'input_path', spellcheck: false },
-    { element: '#SDHub-Uploader-Upload-Button', key: 'upload' },
-    { element: '#SDHub-Uploader-Load-Button', key: 'load' },
-    { element: '#SDHub-Uploader-Save-Button', key: 'save' },
-    { element: '#SDHub-Uploader-Username-Box > label > span', key: 'username' },
-    { element: '#SDHub-Uploader-Username-Box > label > input', key: 'username', spellcheck: false },
-    { element: '#SDHub-Uploader-Repo-Box > label > span', key: 'repository' },
-    { element: '#SDHub-Uploader-Repo-Box > label > input', key: 'repository', spellcheck: false },
-    { element: '#SDHub-Uploader-Branch-Box > label > span', key: 'branch' },
-    { element: '#SDHub-Uploader-Branch-Box > label > input', key: 'branch', spellcheck: false },
-    { element: '#SDHub-Uploader-Radio-Box > span', key: 'visibility' },
-    { element: '#SDHub-Uploader-Radio-Box > div > label:nth-child(1) > span', key: 'public2' },
-    { element: '#SDHub-Uploader-Radio-Box > div > label:nth-child(2) > span', key: 'private' },
-    { element: '#SDHub-Archiver-ZipOutputs-Accordion > div > span:nth-child(1)', key: 'zip_outputs' },
-    { element: '#SDHub-Archiver-ZipOutputs-Input-Name > label > input', key: 'zipoutputs_input', spellcheck: false },
-    { element: '#SDHub-Archiver-ZipOutputs-Output-Path > label > input', key: 'zipoutputs_output', spellcheck: false },
-    { element: '#SDHub-Archiver-ZipOutputs-Checkbox > label > span', key: 'makedir' },
-    { element: '#SDHub-Archiver-Archive-Title', key: 'arc_title' },
-    { element: '#SDHub-Archiver-Archive-Input-Name > label > input', key: 'name', spellcheck: false },
-    { element: '#SDHub-Archiver-Archive-Input-Path > label > input', key: 'input_path', spellcheck: false },
-    { element: '#SDHub-Archiver-Archive-Output-Path > label > input', key: 'output_path', spellcheck: false },
-    { element: '#SDHub-Archiver-Archive-Button', key: 'arc_button' },
-    { element: '#SDHub-Archiver-Archive-Checkbox > label > span', key: 'makedir' },
-    { element: '#SDHub-Archiver-Radio-Format > span', key: 'radio_format' },
-    { element: '#SDHub-Archiver-Radio-Split > span', key: 'radio_split' },
-    { element: '#SDHub-Archiver-Radio-Split > div > label:nth-child(1) > span', key: 'none' },
-    { element: '#SDHub-Archiver-Extract-Title', key: 'extr_title' },
-    { element: '#SDHub-Archiver-Extract-Input-Path > label > input', key: 'input_path', spellcheck: false },
-    { element: '#SDHub-Archiver-Extract-Output-Path > label > input', key: 'output_path', spellcheck: false },
-    { element: '#SDHub-Archiver-Extract-Button', key: 'extr_button' },
-    { element: '#SDHub-Archiver-Extract-Checkbox > label > span', key: 'makedir' },
-    { element: '#SDHub-Texteditor-Load-Button', key: 'load' },
-    { element: '#SDHub-Texteditor-Save-Button', key: 'save' },
-    { element: '#SDHub-Texteditor-Input > label > input', key: 'file_path', spellcheck: false },
-    { element: '#SDHub-Shell-Input > label > textarea', key: 'shell_cmd', spellcheck: false },
-    { element: `#${SDHub.ImgInfo}-SendButton > #txt2img_tab`, key: 'send_txt2img' },
-    { element: `#${SDHub.ImgInfo}-SendButton > #img2img_tab`, key: 'send_img2img' },
-    { element: `#${SDHub.ImgInfo}-SendButton > #inpaint_tab`, key: 'send_inpaint' },
-    { element: `#${SDHub.ImgInfo}-SendButton > #extras_tab`, key: 'send_extras' },
-    { element: '#SDHub-Gallery-ImgChest-API > label > input', spellcheck: false }
+    ...v4,
+    { t: '.sdhub-downloader-tab-info', k: 'downloader_tab_info', inner: true },
+    { t: '.sdhub-uploader-tab-info', k: 'uploader_tab_info', inner: true },
+    { t: '.sdhub-archiver-tab-info', k: 'archiver_tab_info', inner: true },
+
+    { t: '#SDHub-Downloader-HFR > label > span', k: 'huggingface_token_read' },
+    { t: '#SDHub-Downloader-HFR > label > input', k: 'huggingface_token_placeholder', spellcheck: false },
+    { t: '#SDHub-Downloader-CAK > label > span', k: 'civitai_api_key' },
+    { t: '#SDHub-Downloader-CAK > label > input', k: 'civitai_api_key_placeholder', spellcheck: false },
+    { t: '#SDHub-Downloader-Input > label > textarea', spellcheck: false },
+    { t: '#SDHub-Downloader-Download-Button', k: 'download' },
+    { t: '#SDHub-Downloader-Cancel-Button', k: 'cancel_download' },
+    { t: '#SDHub-Downloader-Scrape-Button', k: 'scrape' },
+    { t: '#SDHub-Downloader-Txt-Button', k: 'insert_txt' },
+    { t: '#SDHub-Downloader-Load-Button', k: 'load' },
+    { t: '#SDHub-Downloader-Save-Button', k: 'save' },
+    { t: '#SDHub-Downloader-Preview-Checkbox > label > span', k: 'civitai_preview' },
+
+    { t: '#SDHub-Uploader-HFW > label > span', k: 'huggingface_token_write' },
+    { t: '#SDHub-Uploader-HFW > label > input', k: 'huggingface_token_placeholder', spellcheck: false },
+    { t: '#SDHub-Uploader-Input > label > textarea', k: 'input_path', spellcheck: false },
+    { t: '#SDHub-Uploader-Upload-Button', k: 'upload' },
+    { t: '#SDHub-Uploader-Load-Button', k: 'load' },
+    { t: '#SDHub-Uploader-Save-Button', k: 'save' },
+    { t: '#SDHub-Uploader-Username-Box > label > span', k: 'username' },
+    { t: '#SDHub-Uploader-Username-Box > label > input', k: 'username', spellcheck: false },
+    { t: '#SDHub-Uploader-Repo-Box > label > span', k: 'repository' },
+    { t: '#SDHub-Uploader-Repo-Box > label > input', k: 'repository', spellcheck: false },
+    { t: '#SDHub-Uploader-Branch-Box > label > span', k: 'branch' },
+    { t: '#SDHub-Uploader-Branch-Box > label > input', k: 'branch', spellcheck: false },
+    { t: '#SDHub-Uploader-Radio-Box > span', k: 'visibility' },
+    { t: '#SDHub-Uploader-Radio-Box > div > label:nth-child(1) > span', k: 'public2' },
+    { t: '#SDHub-Uploader-Radio-Box > div > label:nth-child(2) > span', k: 'private' },
+
+    { t: '#SDHub-Archiver-ZipOutputs-Accordion > div > span:nth-child(1)', k: 'zip_outputs' },
+    { t: '#SDHub-Archiver-ZipOutputs-Input-Name > label > input', k: 'zipoutputs_input', spellcheck: false },
+    { t: '#SDHub-Archiver-ZipOutputs-Output-Path > label > input', k: 'zipoutputs_output', spellcheck: false },
+    { t: '#SDHub-Archiver-ZipOutputs-Checkbox > label > span', k: 'makedir' },
+    { t: '#SDHub-Archiver-Archive-Title', k: 'arc_title' },
+    { t: '#SDHub-Archiver-Archive-Input-Name > label > input', k: 'name', spellcheck: false },
+    { t: '#SDHub-Archiver-Archive-Input-Path > label > input', k: 'input_path', spellcheck: false },
+    { t: '#SDHub-Archiver-Archive-Output-Path > label > input', k: 'output_path', spellcheck: false },
+    { t: '#SDHub-Archiver-Archive-Button', k: 'arc_button' },
+    { t: '#SDHub-Archiver-Archive-Checkbox > label > span', k: 'makedir' },
+    { t: '#SDHub-Archiver-Radio-Format > span', k: 'radio_format' },
+    { t: '#SDHub-Archiver-Radio-Split > span', k: 'radio_split' },
+    { t: '#SDHub-Archiver-Radio-Split > div > label:nth-child(1) > span', k: 'none' },
+    { t: '#SDHub-Archiver-Extract-Title', k: 'extr_title' },
+    { t: '#SDHub-Archiver-Extract-Input-Path > label > input', k: 'input_path', spellcheck: false },
+    { t: '#SDHub-Archiver-Extract-Output-Path > label > input', k: 'output_path', spellcheck: false },
+    { t: '#SDHub-Archiver-Extract-Button', k: 'extr_button' },
+    { t: '#SDHub-Archiver-Extract-Checkbox > label > span', k: 'makedir' },
+
+    { t: '#SDHub-Texteditor-Load-Button', k: 'load' },
+    { t: '#SDHub-Texteditor-Save-Button', k: 'save' },
+    { t: '#SDHub-Texteditor-Input > label > input', k: 'file_path', spellcheck: false },
+
+    { t: '#SDHub-Shell-Input > label > textarea', k: 'shell_cmd', spellcheck: false },
+
+    { t: `#${SDHub.ImgInfo}-SendButton > #txt2img_tab`, k: 'send_txt2img' },
+    { t: `#${SDHub.ImgInfo}-SendButton > #img2img_tab`, k: 'send_img2img' },
+    { t: `#${SDHub.ImgInfo}-SendButton > #inpaint_tab`, k: 'send_inpaint' },
+    { t: `#${SDHub.ImgInfo}-SendButton > #extras_tab`, k: 'send_extras' },
+    { t: '#SDHub-Gallery-ImgChest-API > label > input', spellcheck: false }
   ];
 
-  for (const { element, key, inner, spellcheck } of EL) {
-    const el = document.querySelector(element);
+  for (const { t, k, inner, spellcheck } of EL) {
+    const el = $(t);
     if (!el) continue;
 
-    if (key) {
-      const translate = SDHubGetTranslation(key);
+    if (k) {
+      const translate = SDHubGetTranslation(k);
       inner ? (el.innerHTML = translate) : el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' 
-              ? (el.placeholder = translate, spellcheck === false && (el.spellcheck = false)) : (el.textContent = translate);
+            ? (el.placeholder = translate, spellcheck === false && (el.spellcheck = false)) : (el.textContent = translate);
     }
 
     spellcheck === false && (el.spellcheck = false);
@@ -479,6 +497,7 @@ async function SDHubRGBA() {
     { c: '--input-background-fill-hover', to: '--sdhub-gallery-img-selected', a: 1, swap: true },
     { c: '--background-fill-primary', to: '--sdhub-gallery-tab-layer-background', ar: 0.6, ad: 0.7 },
     { c: '--background-fill-primary', to: '--sdhub-gallery-cm-ul-fox', a: 0.75 },
+    { c: '--primary-400', to: '--sdhub-main-button', a: 0.5 },
   ];
 
   const css = await (await fetch('/theme.css')).text(),

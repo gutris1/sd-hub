@@ -47,6 +47,7 @@ def imgChest():
                         elem_id='SDHub-Gallery-ImgChest-Privacy',
                         elem_classes='sdhub-radio'
                     )
+
                     nsfwset = gr.Radio(
                         ['True', 'False'],
                         value='True',
@@ -71,6 +72,7 @@ def imgChest():
                         elem_id='SDHub-Gallery-ImgChest-Save-Button',
                         elem_classes='sdhub-buttons'
                     )
+
                     loadbtn = gr.Button(
                         'Load', variant='primary',
                         elem_id='SDHub-Gallery-ImgChest-Load-Button',
@@ -100,13 +102,9 @@ def imgChest():
                     r = await c.get(img['url'])
                     r.raise_for_status()
                     mime, _ = mimetypes.guess_type(img['name'])
-                    files.append((
-                        'images[]',
-                        (img['name'], r.content, mime or r.headers.get('content-type', 'application/octet-stream'))
-                    ))
+                    files.append(('images[]', (img['name'], r.content, mime or r.headers.get('content-type', 'application/octet-stream'))))
 
-                except Exception as e:
-                    print(f'Error fetching {img.get("url")}: {e}')
+                except Exception as e: print(f'Error fetching {img.get("url")}: {e}')
 
             form = {
                 'title': title or (images[0]['name'] if images else ''),
@@ -123,15 +121,11 @@ def imgChest():
                 )
 
                 r.raise_for_status()
-                if not r.content:
-                    return {'status': 'ok', 'reason': 'nothing'}
-                try:
-                    return r.json()
+                if not r.content: return {'status': 'ok', 'reason': 'nothing'}
 
-                except Exception as e:
-                    return {'status': 'error', 'reason': f'JSON failed: {str(e)}', 'content': r.text}
+                try: return r.json()
+                except Exception as e: return {'status': 'error', 'reason': f'JSON failed: {str(e)}', 'content': r.text}
 
-            except Exception as e:
-                return {'status': 'error', 'reason': str(e)}
+            except Exception as e: return {'status': 'error', 'reason': str(e)}
 
     return column, app, uploader

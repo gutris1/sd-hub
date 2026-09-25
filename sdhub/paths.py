@@ -66,17 +66,15 @@ class SDPathsSDHub:
                     v = getattr(opts, attr, None)
                     if isinstance(v, str) and v: outpath.append(Path(v).resolve())
 
-                except Exception:
-                    pass
+                except Exception: pass
 
         except Exception as e:
             print(f'Error outdir: {e}')
             outpath = []
 
         allowed = list(self.SDHubTagsList.values()) + outpath
+        if not any(d in paths.parents or paths == d for d in allowed): return False, f'{paths}\n\n{BLOCK}'
 
-        if not any(d in paths.parents or paths == d for d in allowed):
-            return False, f'{paths}\n\n{BLOCK}'
         return True, ''
 
     def SDHubTagsAndPaths(self):
@@ -93,6 +91,7 @@ class SDPathsSDHub:
 
         for v, p in e.items():
             if v in os.environ: return p.resolve()
+
         return None
 
 SDHubPaths = SDPathsSDHub(ROOT_PATH, MODELS_PATH)

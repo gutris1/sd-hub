@@ -7,10 +7,8 @@ import select
 import sys
 import os
 
-if sys.platform == 'win32':
-    import tarfile, gzip, lz4.frame # type: ignore
-else:
-    import pty
+if sys.platform == 'win32': import tarfile, gzip, lz4.frame
+else: import pty
 
 from modules.ui_components import FormRow, FormColumn
 from modules.shared import cmd_opts
@@ -21,6 +19,23 @@ from sdhub.infotext import arc_info
 
 tag_tag = SDHubPaths.SDHubTagsAndPaths()
 
+def _paths(*args):
+    names, values = zip(*args)
+    values = [v.strip('"').strip("'") if isinstance(v, str) else v for v in values]
+    missing = ', '.join(n for n, v in zip(names, values) if not v)
+    if missing: return None, f'Missing: {missing}'
+
+    if sys.platform == 'win32': values = [Path(v).as_posix() for v in values]
+
+    return values, None
+
+def _paths_check(input, output, mkdir):
+    if input or output:
+        if not input.exists(): return f'input path: {input} does not exist'
+        if output.suffix: return f'Output Path: {output} is not a directory.'
+        if not mkdir and not output.exists(): return f'Output Path: {output} does not exist'
+        if mkdir: output.mkdir(parents=True, exist_ok=True)
+
 def tar_win_process(inputs, paths, formats, outputs):
     tar_out = str(outputs) + '.tar'
 
@@ -30,19 +45,16 @@ def tar_win_process(inputs, paths, formats, outputs):
 
     if formats == 'lz4':
         lz4_out = str(outputs) + '.tar.lz4'
-        with open(tar_out, 'rb') as tar_file:
-            with open(lz4_out, 'wb') as lz4_file:
-                data = lz4.frame.compress(tar_file.read())
-                lz4_file.write(data)
-
+        with open(tar_out, 'rb') as tar_file, lz4.frame.open(lz4_out, 'wb') as lz4_file:
+            while chunk := tar_file.read(4 * 1024 * 1024):
+                lz4_file.write(chunk)
         Path(tar_out).unlink()
 
     elif formats == 'gz':
         gz_out = str(outputs) + '.tar.gz'
-        with open(tar_out, 'rb') as tar_file:
-            with gzip.open(gz_out, 'wb') as gz_file:
-                gz_file.write(tar_file.read())
-
+        with open(tar_out, 'rb') as tar_file, gzip.open(gz_out, 'wb') as gz_file:
+            while chunk := tar_file.read(4 * 1024 * 1024):
+                gz_file.write(chunk)
         Path(tar_out).unlink()
 
     yield f'Saved to: {outputs}.tar.{formats}', True
@@ -72,52 +84,8 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
         yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
 
 def tar_process(_tar, _pv, _format, _output):
-    ayu, rika = pty.openpty() # type: ignore
-
-    p_tar = subprocess.Popen(
-        _tar,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-
-    p_pv = subprocess.Popen(
-        _pv,
-        stdin=p_tar.stdout,
-        stdout=subprocess.PIPE,
-        stderr=rika,
-        text=True
-    )
-
-    p_type = subprocess.Popen(
-        _format,
-        stdin=p_pv.stdout,
-        stdout=open(str(_output), 'wb'),
-        stderr=subprocess.PIPE,
-        text=True
-    )
-
-    os.close(rika)
-
-    while True:
-        try:
-            temenan, _, _ = select.select([ayu], [], [])
-            if temenan:
-                ketemuan = os.read(ayu, 8192)
-                if not ketemuan:
-                    break
-
-                yield ketemuan.decode('utf-8'), False
-
-        except OSError:
-            break
-
-    p_tar.stdout.close()
-    p_pv.stdout.close()
-
-    _ = p_tar.wait()
-    _ = p_pv.wait()
-    _ = p_type.wait()
+    for chunk, _ in unix_pipe([_tar, _pv, _format], output=_output, pty_cmd_index=1):
+        yield chunk, False
 
     yield f'Saved to: {_output}', True
 
@@ -127,10 +95,8 @@ def tar_tar(input_path, file_name, output_path, input_type, format_type, split_b
 
     parent_dir = str(input_path_obj.parent)
 
-    if format_type == 'gz':
-        comp_type = 'gzip'
-    elif format_type == 'lz4':
-        comp_type = 'lz4'
+    if format_type == 'gz': comp_type = 'gzip'
+    elif format_type == 'lz4': comp_type = 'lz4'
 
     _pv = ['pv']
     _format = [comp_type]
@@ -171,7 +137,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
     if input_type == 'folder':
         cwd = zip_in
         all_files = [
-            file for file in cwd.iterdir() 
+            file for file in cwd.iterdir()
             if (file.is_file() or (file.is_dir() and any(file.iterdir())))
         ]
 
@@ -184,8 +150,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             end = (i + 1) * (total_parts // files_split) if i < files_split - 1 else None
             _split = all_files[start:end]
 
-            if not _split:
-                continue
+            if not _split: continue
 
             _count += 1
             output_zip = zip_out / f"{file_name}{'_' + str(_count) if split_by > 0 else ''}.zip"
@@ -193,7 +158,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             yield f'Compressing {output_zip.name}', False
 
             with tqdm(
-                total=sum(f.stat().st_size for f in _split if f.is_file()), 
+                total=sum(f.stat().st_size for f in _split if f.is_file()),
                 unit='B', unit_scale=True, bar_format=_bar
             ) as pbar:
                 with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -217,44 +182,21 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
 
         yield f'Compressing {output_zip.name}', False
 
-        with tqdm(
-            total=zip_in.stat().st_size, unit='B', unit_scale=True, bar_format=_bar
-        ) as pbar:
+        with tqdm(total=zip_in.stat().st_size, unit='B', unit_scale=True, bar_format=_bar) as pbar:
             with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 chunk_size = 4096 * 1024
-                with open(zip_in, 'rb') as file_to_compress:
-                    while True:
-                        chunk = file_to_compress.read(chunk_size)
-                        if not chunk:
-                            break
-
-                        zipf.writestr(zip_in.name, chunk)
+                with open(zip_in, 'rb') as file_to_compress, zipf.open(zip_in.name, 'w') as dest:
+                    while chunk := file_to_compress.read(chunk_size):
+                        dest.write(chunk)
                         pbar.update(len(chunk))
-
                         yield pbar, False
 
         yield f'Saved To: {output_zip}', True
 
 def path_archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by):
-    input_path = input_path.strip('"').strip("'")
-    output_path = output_path.strip('"').strip("'")
-
-    if sys.platform == 'win32':
-        input_path = Path(input_path).as_posix()
-        output_path = Path(output_path).as_posix()
-
-    params = [
-        name for name, value in zip(
-            ['Input Path', 'Name', 'Output Path'],
-            [input_path, file_name, output_path]
-        ) if not value
-    ]
-
-    missing = ', '.join(params)
-
-    if missing:
-        yield f'Missing: [ {missing} ]', True
-        return
+    P, err = _paths(('Input Path', input_path), ('Name', file_name), ('Output Path', output_path))
+    if err: yield err, True; return
+    input_path, file_name, output_path = P
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
@@ -262,50 +204,28 @@ def path_archive(input_path, file_name, output_path, archiver_format, archiver_m
             tag_key = f'${tag_key.lower()}'
             resolved_path = tag_tag.get(tag_key)
 
-            if resolved_path is None:
-                yield f'{tag_key}\nInvalid tag.', True
-                return
+            if resolved_path is None: yield f'{tag_key}\nInvalid tag.', True; return
 
             resolved_path = Path(resolved_path, subpath_or_file)
-            if i == 0:
-                input_path = resolved_path
-            else:
-                output_path = resolved_path
+            if i == 0: input_path = resolved_path
+            else: output_path = resolved_path
 
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        if not input_path_obj.exists():
-            yield f'{input_path_obj}\ndoes not exist', True
-            return
-
-        if output_path_obj.suffix:
-            yield f'{output_path}\nOutput Path is not a directory.', True
-            return
-
-        if not archiver_mkdir and not output_path_obj.exists():
-            yield f'{output_path_obj}\ndoes not exist', True
-            return
-        elif archiver_mkdir:
-            output_path_obj.mkdir(parents=True, exist_ok=True)
+        if err := _paths_check(input_path_obj, output_path_obj, archiver_mkdir): yield err, True; return
 
         if not cmd_opts.enable_insecure_extension_access:
             for path in [input_path_obj, output_path_obj]:
                 allowed, err = SDHubPaths.SDHubCheckPaths(path)
-                if not allowed:
-                    yield err, True
-                    return
+                if not allowed: yield err, True; return
 
-    if input_path_obj.is_file():
-        input_type = 'file'
-    elif input_path_obj.is_dir():
-        input_type = 'folder'
+    if input_path_obj.is_file(): input_type = 'file'
+    elif input_path_obj.is_dir(): input_type = 'folder'
 
-    if sys.platform == 'win32':
-        select_arc = {'zip': _zip, 'tar.gz': tar_win, 'tar.lz4': tar_win}
-    else:
-        select_arc = {'zip': _zip, 'tar.gz': tar_tar, 'tar.lz4': tar_tar}
+    tar = tar_win if sys.platform == 'win32' else tar_tar
+    select_arc = {'zip': _zip, 'tar.gz': tar, 'tar.lz4': tar}
 
     arc_select = select_arc.get(archiver_format)
 
@@ -322,26 +242,68 @@ def path_archive(input_path, file_name, output_path, archiver_format, archiver_m
     ):
         yield output
 
-def archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by, box_state=gr.State()):
-    output_box = box_state if box_state else []
+def archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by, s=gr.State()):
+    output_box = s if s else []
 
-    for t, f in path_archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by):
-        if not f:
-            yield t, '\n'.join(output_box)
-        else:
-            output_box.append(t)
+    for l, f in path_archive(input_path, file_name, output_path, archiver_format, archiver_mkdir, split_by):
+        if not f: yield l, '\n'.join(output_box)
+        else: output_box.append(l)
 
-    catcher = ['not', 'Missing', 'Invalid']
+    c = ['not', 'Missing', 'Invalid']
 
-    if any(asu in wc for asu in catcher for wc in output_box):
+    if any(t in l for t in c for l in output_box):
         yield 'Error', '\n'.join(output_box)
+
     elif any(BLOCK in l for l in output_box):
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
-    else:
-        yield 'Done', '\n'.join(output_box)
 
-    return gr.update(), gr.State(output_box)
+    else: yield '', '\n'.join(output_box)
+
+####################################################################################
+####################################################################################
+
+def unix_pipe(commands, output=None, pty_cmd_index=0):
+    ayu, rika = pty.openpty()  # type: ignore
+
+    procs = []
+    prev = None
+    out_file = None
+
+    for i, cmd in enumerate(commands):
+        last = (i == len(commands) - 1)
+        stderr = rika if i == pty_cmd_index else subprocess.PIPE
+
+        if last and output:
+            out_file = open(str(output), 'wb')
+            stdout = out_file
+        else:
+            stdout = subprocess.PIPE
+
+        p = subprocess.Popen(cmd, stdin=prev, stdout=stdout, stderr=stderr, text=True)
+        procs.append(p)
+        prev = p.stdout
+
+    os.close(rika)
+
+    while True:
+        try:
+            ready, _, _ = select.select([ayu], [], [])
+            if ready:
+                chunk = os.read(ayu, 8192)
+                if not chunk: break
+                yield chunk.decode('utf-8'), False
+        except OSError:
+            break
+
+    for p in procs[:-1]:
+        if p.stdout: p.stdout.close()
+
+    for p in procs:
+        p.wait()
+
+    if out_file: out_file.close()
+    os.close(ayu)
 
 ####################################################################################
 ####################################################################################
@@ -360,12 +322,7 @@ def extraction_win(input_path, output_path, format_type):
             file_list = zip_ref.namelist()
             total_files = len(file_list)
 
-            with tqdm(
-                total=total_files,
-                unit='file',
-                bar_format=_bar,
-                ascii='▷▶'
-            ) as pbar:
+            with tqdm(total=total_files, unit='file', bar_format=_bar, ascii='▷▶') as pbar:
                 for file_name in file_list:
                     zip_ref.extract(file_name, output_path_obj)
                     pbar.update(1)
@@ -388,8 +345,7 @@ def extraction_win(input_path, output_path, format_type):
 
         is_done = True
 
-    if is_done:
-        yield f'Extracted To: {output_path}', True
+    if is_done: yield f'Extracted To: {output_path}', True
 
 def extraction(input_path, output_path, format_type):
     input_path_obj = Path(input_path)
@@ -405,12 +361,7 @@ def extraction(input_path, output_path, format_type):
             file_list = zip_ref.namelist()
             total_files = len(file_list)
 
-            with tqdm(
-                total=total_files,
-                unit='file',
-                bar_format=_bar,
-                ascii='▷▶'
-            ) as pbar:
+            with tqdm(total=total_files, unit='file', bar_format=_bar, ascii='▷▶') as pbar:
                 for file_name in file_list:
                     zip_ref.extract(file_name, output_path_obj)
                     pbar.update(1)
@@ -422,77 +373,16 @@ def extraction(input_path, output_path, format_type):
         _type = ['gzip', '-d'] if format_type == 'tar.gz' else ['lz4', '-d']
         _tar = ['tar', 'xf', '-', '-C', str(output_path_obj)]
 
-        ayu, rika = pty.openpty() # type: ignore
+        for chunk, _ in unix_pipe([_pv, _type, _tar], pty_cmd_index=0):
+            yield chunk, False
+            is_done = True
 
-        p_pv = subprocess.Popen(
-            _pv, 
-            stdout=subprocess.PIPE, 
-            stderr=rika, 
-            text=True
-        )
-
-        p_type = subprocess.Popen(
-            _type, 
-            stdin=p_pv.stdout, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            text=True
-        )
-
-        p_tar = subprocess.Popen(
-            _tar, 
-            stdin=p_type.stdout, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            text=True
-        )
-
-        os.close(rika)
-
-        while True:
-            try:
-                temenan, _, _ = select.select([ayu], [], [])
-                if temenan:
-                    ketemuan = os.read(ayu, 8192)
-                    if not ketemuan:
-                        break
-
-                    yield ketemuan.decode('utf-8'), False
-                    is_done = True
-
-            except OSError:
-                break
-
-        p_pv.stdout.close()
-        p_type.stdout.close()
-
-        _ = p_pv.wait()
-        _ = p_type.wait()
-        _ = p_tar.wait()
-
-    if is_done:
-        yield f'Extracted To: {output_path}', True
+    if is_done: yield f'Extracted To: {output_path}', True
 
 def path_extract(input_path, output_path, extractor_mkdir):
-    input_path = input_path.strip('"').strip("'")
-    output_path = output_path.strip('"').strip("'")
-
-    if sys.platform == 'win32':
-        input_path = Path(input_path).as_posix()
-        output_path = Path(output_path).as_posix()
-
-    params = [
-        name for name, value in zip(
-            ['Input Path', 'Output Path'],
-            [input_path, output_path]
-        ) if not value
-    ]
-
-    missing = ', '.join(params)
-
-    if missing:
-        yield f'Missing: [ {missing} ]', True
-        return
+    P, err = _paths(('Input Path', input_path), ('Output Path', output_path))
+    if err: yield err, True; return
+    input_path, output_path = P
 
     for i, path_str in enumerate([input_path, output_path]):
         if path_str.startswith('$'):
@@ -500,74 +390,50 @@ def path_extract(input_path, output_path, extractor_mkdir):
             tag_key = f'${tag_key.lower()}'
             resolved_path = tag_tag.get(tag_key)
 
-            if resolved_path is None:
-                yield f'{tag_key}\nInvalid tag.', True
-                return
+            if resolved_path is None: yield f'{tag_key}\nInvalid tag.', True; return
 
             resolved_path = Path(resolved_path, subpath_or_file)
-            if i == 0:
-                input_path = resolved_path
-            else:
-                output_path = resolved_path
+            if i == 0: input_path = resolved_path
+            else: output_path = resolved_path
 
     input_path_obj = Path(input_path)
     output_path_obj = Path(output_path)
 
     if input_path_obj or output_path_obj:
-        if not input_path_obj.exists():
-            yield f'{input_path_obj}\ndoes not exist', True
-            return
-
-        if output_path_obj.suffix:
-            yield f'{output_path}\nOutput Path is not a directory.', True
-            return
-
-        if not extractor_mkdir and not output_path_obj.exists():
-            yield f'{output_path_obj}\ndoes not exist', True
-            return
-        elif extractor_mkdir:
-            output_path_obj.mkdir(parents=True, exist_ok=True)
+        if err := _paths_check(input_path_obj, output_path_obj, extractor_mkdir): yield err, True; return
 
         if not cmd_opts.enable_insecure_extension_access:
             for path in [input_path_obj, output_path_obj]:
                 allowed, err = SDHubPaths.SDHubCheckPaths(path)
-                if not allowed:
-                    yield err, True
-                    return
+                if not allowed: yield err, True; return
 
     select_ext = {'.zip': 'zip', '.tar.gz': 'tar.gz', '.tar.lz4': 'tar.lz4'}
     input_ext = ''.join(input_path_obj.suffixes)
     format_type = select_ext.get(input_ext)
 
-    if not format_type:
-        yield f'Unsupported format: {input_ext}', True
-        return
+    if not format_type: yield f'Unsupported format: {input_ext}', True; return
 
     ext_func = extraction_win if sys.platform == 'win32' else extraction
 
-    for output in ext_func(input_path, output_path, format_type):
-        yield output
+    for output in ext_func(input_path, output_path, format_type): yield output
 
-def extract(input_path, output_path, extractor_mkdir, box_state=gr.State()):
-    output_box = box_state if box_state else []
+def extract(input_path, output_path, extractor_mkdir, s=gr.State()):
+    output_box = s if s else []
 
     for t, f in path_extract(input_path, output_path, extractor_mkdir):
-        if not f:
-            yield t, '\n'.join(output_box)
-        else:
-            output_box.append(t)
+        if not f: yield t, '\n'.join(output_box)
+        else: output_box.append(t)
 
-    catcher = ['not', 'Missing', 'Invalid', 'Unsupported']
+    c = ['not', 'Missing', 'Invalid', 'Unsupported']
 
-    if any(asu in wc for asu in catcher for wc in output_box):
+    if any(t in l for t in c for l in output_box):
         yield 'Error', '\n'.join(output_box)
+
     elif 'files from/to outside' in output_box:
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
-    else:
-        yield 'Done', '\n'.join(output_box)
 
-    return gr.update(), gr.State(output_box)
+    else: yield '', '\n'.join(output_box)
 
 def ArchiverTab():
     with gr.TabItem('Archiver', elem_id='SDHub-Archiver-Tab'):
@@ -581,107 +447,109 @@ def ArchiverTab():
 
         ZipOutputs()
 
-        gr.HTML("""<h3 style='font-size: 17px;' id='SDHub-Archiver-Archive-Title'>Archive</h3>""")
+        with FormRow():
+            with FormColumn(elem_classes='sdhub-column'):
+                gr.HTML("""<h3 style='font-size: 17px;' id='SDHub-Archiver-Archive-Title'>Archive</h3>""")
 
-        with FormRow(elem_id='SDHub-Archiver-Radio-Row'):
-            archiver_format = gr.Radio(
-                ['tar.lz4', 'tar.gz', 'zip'],
-                value='tar.lz4',
-                label='Format',
-                scale=5,
-                interactive=True,
-                elem_id='SDHub-Archiver-Radio-Format',
-                elem_classes='sdhub-radio'
-            )
+                with FormRow(elem_id='SDHub-Archiver-Radio-Row'):
+                    archiver_format = gr.Radio(
+                        ['tar.lz4', 'tar.gz', 'zip'],
+                        value='tar.lz4',
+                        label='Format',
+                        scale=5,
+                        interactive=True,
+                        elem_id='SDHub-Archiver-Radio-Format',
+                        elem_classes='sdhub-radio'
+                    )
 
-            archiver_split = gr.Radio(
-                ['None', '2', '3', '4', '5'],
-                value='None',
-                label='Split by',
-                scale=5,
-                interactive=True,
-                elem_id='SDHub-Archiver-Radio-Split',
-                elem_classes='sdhub-radio'
-            )
+                    archiver_split = gr.Radio(
+                        ['None', '2', '3', '4', '5'],
+                        value='None',
+                        label='Split by',
+                        scale=5,
+                        interactive=True,
+                        elem_id='SDHub-Archiver-Radio-Split',
+                        elem_classes='sdhub-radio'
+                    )
 
-        archiver_name = gr.Textbox(
-            max_lines=1,
-            placeholder='Name',
-            show_label=False,
-            elem_id='SDHub-Archiver-Archive-Input-Name',
-            elem_classes='sdhub-input'
-        )
-
-        archiver_input = gr.Textbox(
-            max_lines=1,
-            placeholder='Input Path',
-            show_label=False,
-            elem_id='SDHub-Archiver-Archive-Input-Path',
-            elem_classes='sdhub-input'
-        )
-
-        archiver_output = gr.Textbox(
-            max_lines=1,
-            placeholder='Output Path',
-            show_label=False,
-            elem_id='SDHub-Archiver-Archive-Output-Path',
-            elem_classes='sdhub-input'
-        )
-
-        with FormRow(elem_classes='sdhub-button-output-row'):
-            with FormColumn(scale=6):
-                with FormRow(elem_classes='sdhub-row'):
-                    with FormRow(elem_classes='sdhub-button-row-1'):
-                        archiver_button = gr.Button(
-                            'Compress',
-                            variant='primary',
-                            elem_id='SDHub-Archiver-Archive-Button',
-                            elem_classes='sdhub-buttons'
+                with FormRow(elem_classes='sdhub-button-output-row'):
+                    with FormColumn(scale=6, elem_classes='sdhub-column'):
+                        archiver_name = gr.Textbox(
+                            max_lines=1,
+                            placeholder='Name',
+                            show_label=False,
+                            elem_id='SDHub-Archiver-Archive-Input-Name',
+                            elem_classes='sdhub-input'
                         )
 
-                    with FormRow(elem_classes='sdhub-button-row-2'):
-                        archiver_mkdir = gr.Checkbox(
-                            label='Create Directory',
-                            elem_id='SDHub-Archiver-Archive-Checkbox',
-                            elem_classes='sdhub-checkbox'
+                        archiver_input = gr.Textbox(
+                            max_lines=1,
+                            placeholder='Input Path',
+                            show_label=False,
+                            elem_id='SDHub-Archiver-Archive-Input-Path',
+                            elem_classes='sdhub-input'
                         )
 
-            with FormColumn(scale=4):
-                archiver_output_1 = gr.Textbox(
-                    show_label=False,
-                    interactive=False,
+                        archiver_output = gr.Textbox(
+                            max_lines=1,
+                            placeholder='Output Path',
+                            show_label=False,
+                            elem_id='SDHub-Archiver-Archive-Output-Path',
+                            elem_classes='sdhub-input'
+                        )
+
+                        with FormRow(elem_classes='sdhub-button-output-row'):
+                            with FormRow(elem_classes='sdhub-button-row-1'):
+                                archiver_button = gr.Button(
+                                    'Compress',
+                                    variant='primary',
+                                    elem_id='SDHub-Archiver-Archive-Button',
+                                    elem_classes='sdhub-buttons'
+                                )
+
+                            with FormRow(elem_classes='sdhub-button-row-2'):
+                                archiver_mkdir = gr.Checkbox(
+                                    label='Create Directory',
+                                    elem_id='SDHub-Archiver-Archive-Checkbox',
+                                    elem_classes='sdhub-checkbox'
+                                )
+
+                    with FormColumn(scale=4, elem_id='SDHub-Archiver-Output', elem_classes='sdhub-column'):
+                        archiver_output_1 = gr.Textbox(
+                            show_label=False,
+                            interactive=False,
+                            max_lines=1,
+                            elem_classes='sdhub-output'
+                        )
+
+                        archiver_output_2 = gr.Textbox(
+                            show_label=False,
+                            interactive=False,
+                            lines=5,
+                            elem_classes='sdhub-output'
+                        )
+
+        with FormRow(elem_id='SDHub-Archiver-Extract-Row', elem_classes='sdhub-button-output-row'):
+            with FormColumn(scale=6, elem_classes='sdhub-column'):
+                gr.HTML("""<h3 style='font-size: 17px;' id='SDHub-Archiver-Extract-Title'>Extract</h3>""")
+
+                extractor_input = gr.Textbox(
                     max_lines=1,
-                    elem_classes='sdhub-output'
-                )
-
-                archiver_output_2 = gr.Textbox(
+                    placeholder='Input Path',
                     show_label=False,
-                    interactive=False,
-                    lines=5,
-                    elem_classes='sdhub-output'
+                    elem_id='SDHub-Archiver-Extract-Input-Path',
+                    elem_classes='sdhub-input'
                 )
 
-        gr.HTML("""<h3 style='font-size: 17px;' id='SDHub-Archiver-Extract-Title'>Extract</h3>""")
+                extractor_output = gr.Textbox(
+                    max_lines=1,
+                    placeholder='Output Path',
+                    show_label=False,
+                    elem_id='SDHub-Archiver-Extract-Output-Path',
+                    elem_classes='sdhub-input'
+                )
 
-        extractor_input = gr.Textbox(
-            max_lines=1,
-            placeholder='Input Path',
-            show_label=False,
-            elem_id='SDHub-Archiver-Extract-Input-Path',
-            elem_classes='sdhub-input'
-        )
-
-        extractor_output = gr.Textbox(
-            max_lines=1,
-            placeholder='Output Path',
-            show_label=False,
-            elem_id='SDHub-Archiver-Extract-Output-Path',
-            elem_classes='sdhub-input'
-        )
-
-        with FormRow(elem_classes='sdhub-button-output-row'):
-            with FormColumn(scale=6):
-                with FormRow(elem_classes='sdhub-row'):
+                with FormRow(elem_classes='sdhub-button-output-row'):
                     with FormRow(elem_classes='sdhub-button-row-1'):
                         extractor_button = gr.Button(
                             'Decompress',
@@ -697,8 +565,8 @@ def ArchiverTab():
                             elem_classes='sdhub-checkbox'
                         )
 
-            with FormColumn(scale=4):
-                gr.Textbox(show_label=False, max_lines=1, elem_classes='sdhub-hidden')
+            with FormColumn(scale=4, elem_classes='sdhub-column'):
+                gr.Textbox(max_lines=1, show_label=False, elem_classes='sdhub-hidden')
 
         finish = '() => SDHubArchiver("finish")'
 

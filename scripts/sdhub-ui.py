@@ -1,3 +1,5 @@
+import sys; [sys.modules.pop(n) for n in list(sys.modules) if n == 'sdhub' or n.startswith('sdhub.')]
+
 import gradio as gr
 
 from modules.script_callbacks import on_ui_tabs, on_app_started, on_image_saved
@@ -8,9 +10,7 @@ from sdhub.archiverTab import ArchiverTab
 from sdhub.texteditorTab import TextEditorTab
 from sdhub.shellTab import ShellTab
 from sdhub.galleryTab import GalleryTab, GalleryApp, GalleryWS
-
-from sdhub.infotext import repo
-from sdhub.paths import SDHubPaths
+from sdhub.infotext import repo, tagList
 
 Gallery = GalleryWS()
 
@@ -23,17 +23,8 @@ def Tab():
             TextEditorTab()
             ShellTab()
             GalleryTab()
-
-            with gr.Accordion('Tag List', open=False, elem_id='SDHub-Tag-Accordion', elem_classes='sdhub-accordion'):
-                gr.DataFrame(
-                    [[tag, path] for tag, path in SDHubPaths.SDHubTagsAndPaths().items()],
-                    headers=['SD-Hub Tag', 'WebUI Path'],
-                    datatype=['str', 'str'],
-                    interactive=False,
-                    elem_id='SDHub-Tag-Dataframe'
-                )
-
-            gr.HTML(repo)
+            tagList()
+            repo()
 
     return (sdhub, 'HUB', 'SDHub'),
 

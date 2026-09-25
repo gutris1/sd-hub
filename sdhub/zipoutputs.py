@@ -18,13 +18,10 @@ def check(output_path):
         subfolder = parts[1] if len(parts) > 1 else None
         path = tag_tag.get(tags_key)
 
-        if path is not None:
-            fp = Path(path, subfolder) if subfolder else Path(path)
-            return fp, None
-        else:
-            return None, f'Invalid tag: {tags_key}'
-    else:
-        return Path(output_path), None
+        if path is not None: fp = Path(path, subfolder) if subfolder else Path(path); return fp, None
+        else: return None, f'Invalid tag: {tags_key}'
+
+    else: return Path(output_path), None
 
 def zipping(file_name, output_path, mkdir_zip):
     resolved, err = check(output_path)
@@ -35,8 +32,7 @@ def zipping(file_name, output_path, mkdir_zip):
 
     if not mkdir_zip:
         if not out.exists(): yield f'{out}\nOutput path does not exist.', True; return
-    else:
-        out.mkdir(parents=True, exist_ok=True)
+    else: out.mkdir(parents=True, exist_ok=True)
 
     zip_in = opts.outdir_samples or Path(data_path) / 'outputs'
     if not zip_in.exists(): yield f'{zip_in} not found', True; return
@@ -53,13 +49,7 @@ def zipping(file_name, output_path, mkdir_zip):
 
     yield f'zipping {zip_out.name}', False
 
-    with tqdm(
-        total=total_size,
-        unit='B',
-        unit_scale=True,
-        bar_format=zip_bar,
-        ascii='▷▶'
-    ) as pbar:
+    with tqdm(total=total_size, unit='B', unit_scale=True, bar_format=zip_bar, ascii='▷▶') as pbar:
         with zipfile.ZipFile(zip_out, 'w', zipfile.ZIP_DEFLATED) as zipf:
             chunk_size = 4096 * 1024
             for file_to_compress in zip_in.rglob('*'):
@@ -80,17 +70,13 @@ def zipzip(file_name, output_path, mkdir_zip, box_state=gr.State()):
     output_box = box_state if box_state else []
 
     for t, f in zipping(file_name, output_path, mkdir_zip):
-        if not f:
-            yield t, '\n'.join(output_box)
-        else:
-            output_box.append(t)
+        if not f: yield t, '\n'.join(output_box)
+        else: output_box.append(t)
 
     cc = ['not', 'Missing', 'Invalid', 'is empty']
 
-    if any(aa in bb for aa in cc for bb in output_box):
-        yield 'Error', '\n'.join(output_box)
-    else:
-        yield 'Done', '\n'.join(output_box)
+    if any(aa in bb for aa in cc for bb in output_box): yield 'Error', '\n'.join(output_box)
+    else: yield '', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 
@@ -98,7 +84,7 @@ def ZipOutputs():
     if not SDHubPaths.getENV(): return
 
     with gr.Accordion('Zip Outputs', open=False, elem_id='SDHub-Archiver-ZipOutputs-Accordion', elem_classes='sdhub-accordion'):
-        with FormRow():
+        with FormRow(elem_classes='sdhub-row'):
             with FormColumn(scale=6):
                 zip_name = gr.Textbox(
                     max_lines=1,

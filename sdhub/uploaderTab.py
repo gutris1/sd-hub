@@ -28,14 +28,20 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
         path_in_repo = '/' + path_in_repo.lstrip('/') if path_in_repo.startswith('//') else path_in_repo
         path_in_repo = path_in_repo.rstrip('/')
         cmd += [f'{path_in_repo}/{file_name}']
-    else:
-        cmd += [file_name]
+    else: cmd += [file_name]
 
     cmd += ['--token', token, '--revision', branch, '--commit-message', msg]
     if private_repo: cmd.append('--private')
     if ex_ext: cmd += ['--exclude', *[f'*.{ext}' for ext in ex_ext]]
 
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding='utf-8',
+        errors='replace'
+    )
 
     failed = False
     error = ''
@@ -44,22 +50,17 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
     for line in p.stdout:
         output = line.strip()
 
-        if 'Bad request' in output:
-            failed = True
-            break
+        if 'Bad request' in output: failed = True; break
 
         kandang = output.split(':', 1)
-        if len(kandang) > 1:
-            asu = kandang[1].strip()
-        else:
-            continue
+        if len(kandang) > 1: asu = kandang[1].strip()
+        else: continue
 
         lari = re.compile(r'\d+%|\d+M/\d+G|\d+\.\d+MB/s')
         now_line = time.time()
         if lari.search(asu):
             if now_line - starting_line >= 1:
-                if 'Consider using' in asu:
-                    continue
+                if 'Consider using' in asu: continue
                 yield asu, False
                 starting_line = now_line
 
@@ -67,9 +68,9 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
         error = output
         while True:
             part = p.stdout.readline()
-            if not part:
-                break
+            if not part: break
             error += part
+
         error = '.\n'.join(error.split('. '))
         yield error, True
 
@@ -79,102 +80,59 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
 def isEmpty(fp):
     for f in fp.iterdir():
         rp = f.resolve()
-        if rp.is_file() or (rp.is_dir() and any(rp.iterdir())):
-            return False
+        if rp.is_file() or (rp.is_dir() and any(rp.iterdir())): return False
     return True
 
 def up_up(inputs, user, repo, branch, token, repo_radio):
     input_lines = [line.strip() for line in inputs.strip().splitlines()]
 
     if not inputs.strip() or not all([user, repo, branch, token]):
-        params = [
-            name for name, value in zip(
-                ['Input', 'Username', 'Repository', 'Branch', 'Token'],
-                [inputs.strip(), user, repo, branch, token]
-            ) 
-            if not value
-        ]
-
+        params = [n for n, v in zip(['Input', 'Username', 'Repository', 'Branch', 'Token'], [inputs.strip(), user, repo, branch, token]) if not v]
         missing = ', '.join(params)
-
-        yield f'Missing: [ {missing} ]', True
-        return
+        yield f'Missing: {missing}', True; return
 
     repo_id = f'{user}/{repo}'
     task_task = []
 
     for line in input_lines:
-        parts = shlex.split(line)
-        input_path = parts[0]
-        input_path = input_path.strip('"').strip("'")
-
-        if sys.platform == 'win32':
-            input_path = Path(input_path).as_posix()
-
         given_fn = None
         ex_ext = None
         path_in_repo = None
 
-        if '=' in parts:
-            given_fn_idx = parts.index('=') + 1
-            if given_fn_idx < len(parts):
-                given_fn = parts[given_fn_idx]
-            else:
-                yield 'Invalid usage\n[ = ]', True
-                return
+        if m := re.search(r'\s=\s(\S+)', line): given_fn = m.group(1); line = line.replace(m.group(0), '')
+        if m := re.search(r'\s>\s(\S+)', line): path_in_repo = m.group(1); line = line.replace(m.group(0), '')
+        if m := re.search(r'\s-\s(.+)$', line): ex_ext = m.group(1).split(); line = line[:m.start()].rstrip()
 
-        if '-' in parts:
-            ex_ext_idx = parts.index('-') + 1
-            if ex_ext_idx < len(parts):
-                ex_ext = parts[ex_ext_idx:]
-            else:
-                yield 'Invalid usage\n[ - ]', True
-                return
-
-        if '>' in parts:
-            path_in_repo_idx = parts.index('>') + 1
-            if path_in_repo_idx < len(parts):
-                path_in_repo = parts[path_in_repo_idx]
-            else:
-                yield 'Invalid usage\n[ > ]', True
-                return
+        input_path = line.strip().strip('"').strip("'")
+        if sys.platform == 'win32': input_path = Path(input_path).as_posix()
 
         full_path = Path(input_path) if not input_path.startswith('$') else None
         if input_path.startswith('$'):
             tag_key, _, subpath_or_file = input_path[1:].partition('/')
             tag_key = f'${tag_key.lower()}'
             resolved_path = tag_tag.get(tag_key)
-            if resolved_path is None:
-                yield f'{tag_key}\nInvalid tag.', True
-                return
+
+            if resolved_path is None: yield f'{tag_key}\nInvalid tag.', True; return
+
             full_path = Path(resolved_path, subpath_or_file)
 
         if not cmd_opts.enable_insecure_extension_access:
             allowed, err = SDHubPaths.SDHubCheckPaths(full_path)
-            if not allowed:
-                yield err, True
-                return
+            if not allowed: yield err, True; return
 
         if full_path.exists():
-            if full_path.is_file():
-                type_ = 'file'
+            if full_path.is_file(): type_ = 'file'
             elif full_path.is_dir():
-                if isEmpty(full_path):
-                    yield f'{full_path}\nInput Path is empty.', True
-                    return
+                if isEmpty(full_path): yield f'{full_path}\nInput Path is empty.', True; return
                 type_ = 'folder'
-            else:
-                type_ = 'unknown'
-        else:
-            yield f'{full_path}\nInput Path does not exist.', True
-            return
+            else: type_ = 'unknown'
+        else: yield f'{full_path}\nInput Path does not exist.', True; return
 
-        if given_fn and not Path(given_fn).suffix and full_path.is_file():
-            given_fn += full_path.suffix
+        if given_fn and not Path(given_fn).suffix and full_path.is_file(): given_fn += full_path.suffix
 
-        task_task.append((full_path, given_fn or full_path.name, type_, path_in_repo))
+        task_task.append((full_path, given_fn or full_path.name, type_, path_in_repo, ex_ext))
 
-    for file_path, file_name, type_, path_in_repo in task_task:
+    for file_path, file_name, type_, path_in_repo, ex_ext in task_task:
         yield f'Uploading: {file_name}', False
 
         private_repo = repo_radio == 'Private'
@@ -190,11 +148,11 @@ def up_up(inputs, user, repo, branch, token, repo_radio):
             file_name=file_name,
             token=token,
             branch=branch,
-            private_repo=repo_radio == 'Private',
+            private_repo=private_repo,
             commit_msg=f'Upload {file_name} using SD-Hub',
             ex_ext=ex_ext,
-            path_in_repo=path_in_repo):
-
+            path_in_repo=path_in_repo,
+        ):
             yield output
 
             if output[1]: erorr = True; break
@@ -215,21 +173,20 @@ def uploader(inputs, user, repo, branch, token, repo_radio, box_state=gr.State()
 
     for t, f in up_up(inputs, user, repo, branch, token, repo_radio):
         if not f:
-            if 'Uploading' in t:
-                yield t, '\n'.join(output_box)
+            if 'Uploading' in t: yield t, '\n'.join(output_box)
             yield t, '\n'.join(output_box)
-        else:
-            output_box.append(t)
+        else: output_box.append(t)
 
     catcher = ['not', 'Missing', 'Error', 'Invalid']
 
     if any(asu in wc for asu in catcher for wc in output_box):
         yield 'Error', '\n'.join(output_box)
+
     elif any(BLOCK in l for l in output_box):
         yield 'Blocked', '\n'.join(output_box)
         assert not cmd_opts.disable_extension_access, BLOCK
-    else:
-        yield 'Done', '\n'.join(output_box)
+
+    else: yield '', '\n'.join(output_box)
 
     return gr.update(), gr.State(output_box)
 
@@ -251,10 +208,10 @@ def LoadUploaderInfo(_: gr.Blocks, app: FastAPI):
         return {'username': user, 'repository': repo, 'branch': branch}
 
 def UploaderTab():
-    HFW, _, _, _, _ = LoadToken('uploader')
+    HFW, _, _, _, _ = LoadToken()
 
     with gr.TabItem('Uploader', elem_id='SDHub-Uploader-Tab'):
-        gr.HTML(upl_title)
+        gr.HTML(upl_title, elem_id='SDHub-Uploader-Tab-Title')
 
         with FormRow():
             with FormColumn(scale=7):
@@ -324,17 +281,17 @@ def UploaderTab():
                 elem_classes='sdhub-radio'
             )
 
-        input_box = gr.Textbox(
-            show_label=False,
-            lines=5,
-            placeholder='Input File Path',
-            elem_id='SDHub-Uploader-Input',
-            elem_classes='sdhub-input'
-        )
-
         with FormRow(elem_classes='sdhub-button-output-row'):
-            with FormColumn(scale=6):
-                with FormRow(elem_classes='sdhub-row'):
+            with FormColumn(scale=6, elem_classes='sdhub-column'):
+                input_box = gr.Textbox(
+                    show_label=False,
+                    lines=5,
+                    placeholder='Input File Path',
+                    elem_id='SDHub-Uploader-Input',
+                    elem_classes='sdhub-input'
+                )
+
+                with FormRow(elem_classes='sdhub-button-row'):
                     with FormRow(elem_classes='sdhub-button-row-1'):
                         upload_button = gr.Button(
                             'UPLOAD',
@@ -346,7 +303,7 @@ def UploaderTab():
                     with FormRow(elem_classes='sdhub-button-row-2'):
                         gr.Button('hantu', variant='primary', elem_classes='sdhub-hidden')
 
-            with FormColumn(scale=4):
+            with FormColumn(scale=4, elem_classes='sdhub-column'):
                 output_1 = gr.Textbox(
                     show_label=False,
                     interactive=False,
@@ -361,15 +318,17 @@ def UploaderTab():
                     elem_classes='sdhub-output'
                 )
 
-        TokenBlur = '() => SDHubTokenBlur()'
-
         load_button.click(
-            fn=lambda: LoadToken('uploader'), inputs=[], outputs=[token_box, output_2, output_2, output_2]
-        ).then(fn=None, _js=TokenBlur)
+            fn=lambda: LoadToken('uploader'),
+            inputs=[],
+            outputs=[token_box, output_2, output_2, output_2]
+        )
 
         save_button.click(
-            fn=lambda HFW: SaveToken(HFW, None, None), inputs=[token_box], outputs=output_2
-        ).then(fn=None, _js=TokenBlur)
+            fn=lambda HFW: SaveToken(HFW, None, None),
+            inputs=[token_box],
+            outputs=output_2
+        )
 
         upload_button.click(
             fn=uploader,
