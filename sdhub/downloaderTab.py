@@ -112,7 +112,13 @@ def ariari(url, fp=None, fn=None, opts=None):
 
     for retry in range(20 if huggingface else 1):
         p = subprocess.Popen(
-            aria2cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True, encoding='utf-8', errors='replace'
+            aria2cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1,
+            text=True,
+            encoding='utf-8',
+            errors='replace'
         )
 
         aria2_output, error, auth_error, error_msg = '', False, None, None
@@ -177,7 +183,16 @@ def gdrown(url, fp=None, fn=None, gdown_args=None):
     gdown_args and cmd.extend(gdown_args)
     cwd = fp or Path.cwd()
 
-    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
+    p = subprocess.Popen(
+        cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+        text=True,
+        encoding='utf-8',
+        errors='replace'
+    )
 
     sl = time.time()
     output, f, e, prog, n, s = '', False, False, None, None, None
@@ -210,7 +225,18 @@ def gdrown(url, fp=None, fn=None, gdown_args=None):
 
 def gitclown(url, fp):
     cmd = ['git', 'clone'] + shlex.split(url)
-    p = subprocess.Popen(cmd, cwd=str(fp), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1, text=True)
+
+    p = subprocess.Popen(
+        cmd,
+        cwd=str(fp),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        bufsize=1,
+        text=True,
+        encoding='utf-8',
+        errors='replace'
+    )
+
     git_output = []
 
     for output in iter(p.stdout.readline, ''):

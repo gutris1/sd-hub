@@ -1199,8 +1199,8 @@ body.sdhub-body-no-scrolling {
 
 #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-Image-Column {
   position: relative;
-  height: auto;
-  max-height: max-content;
+  height: 60px;
+  max-height: 60px;
 }
 
 #SDHub-ImgInfo-img {
@@ -1286,20 +1286,25 @@ body.sdhub-body-no-scrolling {
 }
 
 #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-SendButton {
-  top: 0;
+  top: 20px;
+  left: 20px;
   height: auto;
   max-height: max-content;
-  padding: 20px 0 0 20px !important;
+  padding: 0 !important;
   box-shadow: 0 0 10px 0 #000;
 }
 
 @media (max-width: 600px) {
+  #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-Image-Column {
+    height: 100px;
+    max-height: 100px;
+  }
+
   #SDHub-ImgInfo-Row:not(.sdhub-imginfo-side-by-side) #SDHub-ImgInfo-SendButton {
     grid-template-columns: repeat(2, 1fr) !important;
     transform: scale(.85);
     transform-origin: left top;
     border-radius: 1rem;
-    margin-bottom: 20px;
   }
 }
 

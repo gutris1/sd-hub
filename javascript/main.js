@@ -205,14 +205,13 @@ function SDHubEventListener() {
   });
 
   document.addEventListener('click', e => {
-    const td = e.target.closest('#SDHub-Tag-Dataframe td'), text = td?.querySelector('span')?.textContent;
+    const td = e.target.closest('#SDHub-Tag-Dataframe td'), text = td?.querySelector('span')?.textContent, ctd = 'pulse-td';
     if (text) {
       navigator.clipboard.writeText(text);
-      td.style.transition = 'all .5s ease';
+      td.classList.remove(ctd);
       void td.offsetWidth;
-      td.classList.add('pulse-td');
-      setTimeout(() => td.classList.remove('pulse-td'), 400);
-      setTimeout(() => td.style.transition = '', 1000);
+      td.classList.add(ctd);
+      td.addEventListener('animationend', () => { td.classList.remove(ctd); }, { once: true });
     }
   });
 

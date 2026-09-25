@@ -9,6 +9,7 @@
   --sdhub-table-head: var(--table-odd-background-fill);
   --sdhub-table-odd: var(--table-even-background-fill);
   --sdhub-table-even: var(--table-odd-background-fill);
+  --sdhub-button-bsc: 0 0 1px 1px #000;
 }
 
 .dark {
@@ -18,6 +19,7 @@
   --sdhub-table-head: var(--table-even-background-fill);
   --sdhub-table-odd: var(--table-odd-background-fill);
   --sdhub-table-even: var(--table-even-background-fill);
+  --sdhub-button-bsc: 0 0 1px 1px var(--background-fill-primary);
 }
 
 @media (max-width: 768px) {
@@ -125,9 +127,8 @@
 }
 
 #SDHub-Tab .sdhub-buttons {
-  --a: 0 0 5px 0 !important;
-  --b: inset 0 0 1px 1px !important;
-  --c: var(--a) var(--primary-400), var(--b) var(--primary-400) !important;
+  --a: inset 0 0 5px 2px !important;
+  --b: inset 0 0 17px 1px !important;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -137,14 +138,14 @@
   font-size: 17px;
   height: 40px;
   border: 0;
-  box-shadow: var(--c), inset 0 0 14px 6px var(--primary-400);
+  box-shadow: var(--sdhub-button-bsc), inset 0 0 17px 5px var(--primary-400), var(--a) var(--primary-400);
   color: var(--body-text-color);
   background: var(--sdhub-main-button);
   padding: 0;
 }
 
 #SDHub-Tab .sdhub-buttons:hover {
-  box-shadow: var(--c), inset 0 0 10px 2.5px var(--primary-400);;
+  box-shadow: var(--sdhub-button-bsc), var(--b) var(--primary-400), var(--a) var(--primary-400);
   color: var(--primary-400);
   background: var(--input-background-fill);
 }
@@ -160,7 +161,7 @@
 }
 
 #SDHub-Tab #SDHub-Downloader-Cancel-Button:hover {
-  box-shadow: var(--a) #fff, var(--b) #fff, inset 0 0 10px 2.5px #fff;
+  box-shadow: var(--sdhub-button-bsc), var(--b) #fff, var(--a) #fff;
   color: #fff;
   background: red;
 }
@@ -572,13 +573,6 @@
   border: 0;
 }
 
-#SDHub-Tag-Dataframe td:hover {
-  box-shadow: inset 0 0 7px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-500);
-  color: var(--primary-400);
-  background: transparent;
-  filter: drop-shadow(0 0 4px var(--primary-500));
-}
-
 #SDHub-Tag-Dataframe thead {
   pointer-events: none;
 }
@@ -589,15 +583,30 @@
 
 #SDHub-Tag-Dataframe thead svg,
 #SDHub-Tag-Dataframe td {
+  --a: inset 0 0 7px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-500);
+  --b: drop-shadow(0 0 4px var(--primary-500));
   box-shadow: inset 0 0 0 0 transparent;
   pointer-events: auto;
 }
 
+#SDHub-Tag-Dataframe td:hover {
+  box-shadow: var(--a);
+  color: var(--primary-400);
+  background: transparent;
+  filter: var(--b);
+}
+
 #SDHub-Tag-Dataframe td.pulse-td {
-  box-shadow: inset 0 0 7px 0 var(--primary-400), inset 0 0 1px 1px var(--primary-500);
-  color: var(--background-fill-primary);
-  background: var(--primary-400);
-  filter: drop-shadow(0 0 4px var(--primary-500));
+  animation: pulse-td 1s ease;
+}
+
+@keyframes pulse-td {
+  50% {
+    box-shadow: var(--a);
+    color: var(--background-fill-primary);
+    background: var(--primary-400);
+    filter: var(--b);
+  }
 }
 
 .gradio-container:not(.gradio-container-4-40-0) #SDHub-Tag-Dataframe table {

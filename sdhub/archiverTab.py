@@ -45,19 +45,16 @@ def tar_win_process(inputs, paths, formats, outputs):
 
     if formats == 'lz4':
         lz4_out = str(outputs) + '.tar.lz4'
-        with open(tar_out, 'rb') as tar_file:
-            with open(lz4_out, 'wb') as lz4_file:
-                data = lz4.frame.compress(tar_file.read())
-                lz4_file.write(data)
-
+        with open(tar_out, 'rb') as tar_file, lz4.frame.open(lz4_out, 'wb') as lz4_file:
+            while chunk := tar_file.read(4 * 1024 * 1024):
+                lz4_file.write(chunk)
         Path(tar_out).unlink()
 
     elif formats == 'gz':
         gz_out = str(outputs) + '.tar.gz'
-        with open(tar_out, 'rb') as tar_file:
-            with gzip.open(gz_out, 'wb') as gz_file:
-                gz_file.write(tar_file.read())
-
+        with open(tar_out, 'rb') as tar_file, gzip.open(gz_out, 'wb') as gz_file:
+            while chunk := tar_file.read(4 * 1024 * 1024):
+                gz_file.write(chunk)
         Path(tar_out).unlink()
 
     yield f'Saved to: {outputs}.tar.{formats}', True
@@ -87,50 +84,8 @@ def tar_win(input_path, file_name, output_path, input_type, format_type, split_b
         yield from tar_win_process([input_path_obj], input_path_obj.parent, format_type, output)
 
 def tar_process(_tar, _pv, _format, _output):
-    ayu, rika = pty.openpty() # type: ignore
-
-    p_tar = subprocess.Popen(
-        _tar,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True
-    )
-
-    p_pv = subprocess.Popen(
-        _pv,
-        stdin=p_tar.stdout,
-        stdout=subprocess.PIPE,
-        stderr=rika,
-        text=True
-    )
-
-    p_type = subprocess.Popen(
-        _format,
-        stdin=p_pv.stdout,
-        stdout=open(str(_output), 'wb'),
-        stderr=subprocess.PIPE,
-        text=True
-    )
-
-    os.close(rika)
-
-    while True:
-        try:
-            temenan, _, _ = select.select([ayu], [], [])
-            if temenan:
-                ketemuan = os.read(ayu, 8192)
-                if not ketemuan: break
-
-                yield ketemuan.decode('utf-8'), False
-
-        except OSError: break
-
-    p_tar.stdout.close()
-    p_pv.stdout.close()
-
-    _ = p_tar.wait()
-    _ = p_pv.wait()
-    _ = p_type.wait()
+    for chunk, _ in unix_pipe([_tar, _pv, _format], output=_output, pty_cmd_index=1):
+        yield chunk, False
 
     yield f'Saved to: {_output}', True
 
@@ -182,7 +137,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
     if input_type == 'folder':
         cwd = zip_in
         all_files = [
-            file for file in cwd.iterdir() 
+            file for file in cwd.iterdir()
             if (file.is_file() or (file.is_dir() and any(file.iterdir())))
         ]
 
@@ -203,7 +158,7 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
             yield f'Compressing {output_zip.name}', False
 
             with tqdm(
-                total=sum(f.stat().st_size for f in _split if f.is_file()), 
+                total=sum(f.stat().st_size for f in _split if f.is_file()),
                 unit='B', unit_scale=True, bar_format=_bar
             ) as pbar:
                 with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -230,14 +185,10 @@ def _zip(input_path, file_name, output_path, input_type, format_type, split_by):
         with tqdm(total=zip_in.stat().st_size, unit='B', unit_scale=True, bar_format=_bar) as pbar:
             with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 chunk_size = 4096 * 1024
-                with open(zip_in, 'rb') as file_to_compress:
-                    while True:
-                        chunk = file_to_compress.read(chunk_size)
-                        if not chunk: break
-
-                        zipf.writestr(zip_in.name, chunk)
+                with open(zip_in, 'rb') as file_to_compress, zipf.open(zip_in.name, 'w') as dest:
+                    while chunk := file_to_compress.read(chunk_size):
+                        dest.write(chunk)
                         pbar.update(len(chunk))
-
                         yield pbar, False
 
         yield f'Saved To: {output_zip}', True
@@ -309,7 +260,50 @@ def archive(input_path, file_name, output_path, archiver_format, archiver_mkdir,
 
     else: yield '', '\n'.join(output_box)
 
-    return gr.update(), gr.State(output_box)
+####################################################################################
+####################################################################################
+
+def unix_pipe(commands, output=None, pty_cmd_index=0):
+    ayu, rika = pty.openpty()  # type: ignore
+
+    procs = []
+    prev = None
+    out_file = None
+
+    for i, cmd in enumerate(commands):
+        last = (i == len(commands) - 1)
+        stderr = rika if i == pty_cmd_index else subprocess.PIPE
+
+        if last and output:
+            out_file = open(str(output), 'wb')
+            stdout = out_file
+        else:
+            stdout = subprocess.PIPE
+
+        p = subprocess.Popen(cmd, stdin=prev, stdout=stdout, stderr=stderr, text=True)
+        procs.append(p)
+        prev = p.stdout
+
+    os.close(rika)
+
+    while True:
+        try:
+            ready, _, _ = select.select([ayu], [], [])
+            if ready:
+                chunk = os.read(ayu, 8192)
+                if not chunk: break
+                yield chunk.decode('utf-8'), False
+        except OSError:
+            break
+
+    for p in procs[:-1]:
+        if p.stdout: p.stdout.close()
+
+    for p in procs:
+        p.wait()
+
+    if out_file: out_file.close()
+    os.close(ayu)
 
 ####################################################################################
 ####################################################################################
@@ -379,51 +373,9 @@ def extraction(input_path, output_path, format_type):
         _type = ['gzip', '-d'] if format_type == 'tar.gz' else ['lz4', '-d']
         _tar = ['tar', 'xf', '-', '-C', str(output_path_obj)]
 
-        ayu, rika = pty.openpty() # type: ignore
-
-        p_pv = subprocess.Popen(
-            _pv, 
-            stdout=subprocess.PIPE, 
-            stderr=rika, 
-            text=True
-        )
-
-        p_type = subprocess.Popen(
-            _type, 
-            stdin=p_pv.stdout, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            text=True
-        )
-
-        p_tar = subprocess.Popen(
-            _tar, 
-            stdin=p_type.stdout, 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE, 
-            text=True
-        )
-
-        os.close(rika)
-
-        while True:
-            try:
-                temenan, _, _ = select.select([ayu], [], [])
-                if temenan:
-                    ketemuan = os.read(ayu, 8192)
-                    if not ketemuan: break
-
-                    yield ketemuan.decode('utf-8'), False
-                    is_done = True
-
-            except OSError: break
-
-        p_pv.stdout.close()
-        p_type.stdout.close()
-
-        _ = p_pv.wait()
-        _ = p_type.wait()
-        _ = p_tar.wait()
+        for chunk, _ in unix_pipe([_pv, _type, _tar], pty_cmd_index=0):
+            yield chunk, False
+            is_done = True
 
     if is_done: yield f'Extracted To: {output_path}', True
 
@@ -482,8 +434,6 @@ def extract(input_path, output_path, extractor_mkdir, s=gr.State()):
         assert not cmd_opts.disable_extension_access, BLOCK
 
     else: yield '', '\n'.join(output_box)
-
-    return gr.update(), gr.State(output_box)
 
 def ArchiverTab():
     with gr.TabItem('Archiver', elem_id='SDHub-Archiver-Tab'):

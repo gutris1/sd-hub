@@ -34,7 +34,14 @@ def push_push(repo_id, file_path, file_name, token, branch, private_repo=False, 
     if private_repo: cmd.append('--private')
     if ex_ext: cmd += ['--exclude', *[f'*.{ext}' for ext in ex_ext]]
 
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding='utf-8',
+        errors='replace'
+    )
 
     failed = False
     error = ''
